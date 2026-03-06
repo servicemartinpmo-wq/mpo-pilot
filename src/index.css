@@ -2,95 +2,83 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* MARTIN PMO-OPs Command Center — Design System
+   All colors MUST be HSL. Mission-control aesthetic.
 */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core surfaces */
+    --background: 220 25% 97%;
+    --foreground: 225 55% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 225 55% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 225 55% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
+    /* Navy primary */
+    --primary: 225 55% 18%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Teal accent */
+    --teal: 185 70% 38%;
+    --teal-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Electric Blue highlight */
+    --electric-blue: 210 100% 50%;
+    --electric-blue-foreground: 0 0% 100%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Secondary: light gray panels */
+    --secondary: 220 20% 94%;
+    --secondary-foreground: 225 40% 25%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --muted: 220 20% 92%;
+    --muted-foreground: 220 15% 52%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --accent: 210 100% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 75% 52%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 20% 88%;
+    --input: 220 20% 88%;
+    --ring: 210 100% 50%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Signal colors */
+    --signal-red: 0 75% 52%;
+    --signal-yellow: 42 95% 52%;
+    --signal-green: 145 55% 42%;
+    --signal-blue: 210 100% 50%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    /* Sidebar */
+    --sidebar-background: 225 55% 14%;
+    --sidebar-foreground: 210 30% 85%;
+    --sidebar-primary: 210 100% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 225 45% 22%;
+    --sidebar-accent-foreground: 210 30% 90%;
+    --sidebar-border: 225 45% 22%;
+    --sidebar-ring: 210 100% 60%;
+
+    /* Score tiers */
+    --tier-foundational: 0 75% 52%;
+    --tier-developing: 42 95% 52%;
+    --tier-structured: 185 70% 38%;
+    --tier-managed: 210 100% 50%;
+    --tier-optimized: 145 55% 42%;
+
+    /* Gradient */
+    --gradient-navy: linear-gradient(135deg, hsl(225 55% 14%), hsl(225 55% 22%));
+    --gradient-electric: linear-gradient(135deg, hsl(210 100% 45%), hsl(185 70% 38%));
+    --shadow-card: 0 1px 3px 0 hsl(225 55% 12% / 0.08), 0 1px 2px -1px hsl(225 55% 12% / 0.05);
+    --shadow-elevated: 0 4px 12px -2px hsl(225 55% 12% / 0.12), 0 2px 4px -1px hsl(225 55% 12% / 0.06);
   }
 }
 
@@ -101,5 +89,54 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  code, .mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer utilities {
+  .text-signal-red { color: hsl(var(--signal-red)); }
+  .text-signal-yellow { color: hsl(var(--signal-yellow)); }
+  .text-signal-green { color: hsl(var(--signal-green)); }
+  .text-signal-blue { color: hsl(var(--signal-blue)); }
+
+  .bg-signal-red { background-color: hsl(var(--signal-red)); }
+  .bg-signal-yellow { background-color: hsl(var(--signal-yellow)); }
+  .bg-signal-green { background-color: hsl(var(--signal-green)); }
+  .bg-signal-blue { background-color: hsl(var(--signal-blue)); }
+
+  .bg-signal-red\/10 { background-color: hsl(var(--signal-red) / 0.10); }
+  .bg-signal-yellow\/10 { background-color: hsl(var(--signal-yellow) / 0.10); }
+  .bg-signal-green\/10 { background-color: hsl(var(--signal-green) / 0.10); }
+  .bg-signal-blue\/10 { background-color: hsl(var(--signal-blue) / 0.10); }
+
+  .border-signal-red { border-color: hsl(var(--signal-red)); }
+  .border-signal-yellow { border-color: hsl(var(--signal-yellow)); }
+  .border-signal-green { border-color: hsl(var(--signal-green)); }
+  .border-signal-blue { border-color: hsl(var(--signal-blue)); }
+
+  .bg-teal { background-color: hsl(var(--teal)); }
+  .text-teal { color: hsl(var(--teal)); }
+  .bg-electric-blue { background-color: hsl(var(--electric-blue)); }
+  .text-electric-blue { color: hsl(var(--electric-blue)); }
+
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-elevated { box-shadow: var(--shadow-elevated); }
+
+  .gradient-navy { background: var(--gradient-navy); }
+  .gradient-electric { background: var(--gradient-electric); }
+
+  .score-bar-track {
+    @apply w-full h-1.5 rounded-full bg-muted overflow-hidden;
+  }
+
+  .pmo-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
   }
 }
