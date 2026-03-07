@@ -99,7 +99,44 @@ export default function Admin() {
             {label}
           </button>
         ))}
-      </div>
+                </div>
+
+      {/* CUSTOMIZE TAB */}
+      {activeTab === "customize" && (
+        <AdminSection title="Customize Your Command Center" icon={Settings}>
+          <div className="space-y-5 max-w-lg">
+            <div>
+              <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-1.5">Organization Name</label>
+              <input className="w-full border rounded-lg px-3 py-2.5 text-sm bg-background text-foreground focus:outline-none focus:ring-2" value={companyProfile.name} onChange={e => setCompanyProfile(p => ({ ...p, name: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-1.5">Mission Statement</label>
+              <textarea className="w-full border rounded-lg px-3 py-2.5 text-sm bg-background text-foreground focus:outline-none focus:ring-2 resize-none" rows={2} value={companyProfile.mission} onChange={e => setCompanyProfile(p => ({ ...p, mission: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-1.5">Logo</label>
+              <div className="flex items-center gap-3">
+                {companyProfile.logo && <img src={companyProfile.logo} alt="logo" className="h-10 object-contain rounded border" />}
+                <button onClick={() => fileRef.current?.click()} className="text-xs px-3 py-2 rounded-lg border border-border hover:bg-secondary transition-colors">Upload Logo</button>
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-2">Accent Color Hue</label>
+              <input type="range" min={0} max={359} value={companyProfile.accentHue} onChange={e => setCompanyProfile(p => ({ ...p, accentHue: Number(e.target.value) }))}
+                className="w-full h-3 rounded-full cursor-pointer appearance-none"
+                style={{ background: "linear-gradient(to right, hsl(0,90%,50%), hsl(60,90%,50%), hsl(120,90%,50%), hsl(180,90%,50%), hsl(240,90%,50%), hsl(300,90%,50%), hsl(360,90%,50%))" }} />
+              <div className="w-6 h-6 rounded-full mt-2 border" style={{ background: `hsl(${companyProfile.accentHue} 90% 50%)` }} />
+            </div>
+            <button onClick={saveCustomize} className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: `hsl(${companyProfile.accentHue} 90% 45%)` }}>
+              Save Changes
+            </button>
+          </div>
+        </AdminSection>
+      )}
+    </div>
+  );
+}
 
       {/* SYSTEM TAB */}
       {activeTab === "system" && (
