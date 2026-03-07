@@ -29,11 +29,7 @@ const BASE_INPUT =
 const BASE_TEXTAREA =
   "w-full rounded-lg px-4 py-3 text-sm text-white placeholder-white/30 outline-none resize-none transition-all duration-200 font-light";
 
-const ORG_TYPES = [
-  "SaaS", "Professional Services", "Agency", "Consulting",
-  "Non-profit", "Retail / E-commerce", "Manufacturing",
-  "Healthcare", "Government", "Education", "Other",
-];
+const ORG_TYPES = ["For-Profit", "Non-Profit"];
 
 const INDUSTRIES = [
   "Agriculture & Agribusiness",
