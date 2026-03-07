@@ -4,6 +4,7 @@ export type SignalLevel = "red" | "yellow" | "green" | "blue";
 export type MaturityTier = "Foundational" | "Developing" | "Structured" | "Managed" | "Optimized";
 export type InsightType = "Risk Escalation" | "Strategic Misalignment" | "Capacity Constraint" | "Dependency Bottleneck" | "Performance Anomaly" | "Execution Delay";
 export type InitiativeStatus = "On Track" | "At Risk" | "Delayed" | "Blocked" | "Completed";
+export type InitiativeCategory = "Directive" | "Supportive" | "Controlling" | "Diagnostic" | "Strategic";
 export type Framework = "Porter" | "Rumelt" | "BSC" | "OKR" | "Lean" | "Six Sigma" | "TOC";
 export type GovernanceLogType = "Risk" | "Decision" | "Change";
 export type ActionItemStatus = "Not Started" | "In Progress" | "Completed" | "Blocked";
@@ -58,6 +59,7 @@ export interface Initiative {
   id: string;
   name: string;
   department: string;
+  category: InitiativeCategory;
   owner: string;
   executiveOwner: string;
   strategicPillar: string;
@@ -664,6 +666,7 @@ export const initiatives: Initiative[] = [
     id: "ini-001",
     name: "Enterprise GTM Acceleration",
     department: "Sales & Development",
+    category: "Strategic",
     owner: "Omar Patel",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Revenue Acceleration",
@@ -700,6 +703,7 @@ export const initiatives: Initiative[] = [
     id: "ini-002",
     name: "Customer Portal v2",
     department: "Product Development",
+    category: "Directive",
     owner: "Priya Nair",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Customer Experience",
@@ -736,6 +740,7 @@ export const initiatives: Initiative[] = [
     id: "ini-003",
     name: "Operational Excellence Program",
     department: "Operations",
+    category: "Controlling",
     owner: "Nadia Wolfe",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Operational Excellence",
@@ -770,6 +775,7 @@ export const initiatives: Initiative[] = [
     id: "ini-004",
     name: "IT Infrastructure Modernization",
     department: "IT / Systems",
+    category: "Directive",
     owner: "Ryan Torres",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Technology Modernization",
@@ -806,6 +812,7 @@ export const initiatives: Initiative[] = [
     id: "ini-005",
     name: "CX Onboarding Redesign",
     department: "Customer Experience",
+    category: "Supportive",
     owner: "Leila Hassan",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Customer Experience",
@@ -840,6 +847,7 @@ export const initiatives: Initiative[] = [
     id: "ini-006",
     name: "Technical Talent Acquisition Sprint",
     department: "Human Capital",
+    category: "Supportive",
     owner: "Amara Diallo",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Talent & Culture",
@@ -874,6 +882,7 @@ export const initiatives: Initiative[] = [
     id: "ini-007",
     name: "Brand Refresh Campaign",
     department: "Marketing",
+    category: "Supportive",
     owner: "Chloe Berger",
     executiveOwner: "Marcus Osei",
     strategicPillar: "Revenue Acceleration",
@@ -908,6 +917,7 @@ export const initiatives: Initiative[] = [
     id: "ini-008",
     name: "Data Analytics Integration",
     department: "Data & Analytics",
+    category: "Diagnostic",
     owner: "Sasha Novak",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Technology Modernization",
@@ -942,6 +952,7 @@ export const initiatives: Initiative[] = [
     id: "ini-009",
     name: "Financial Systems Optimization",
     department: "Finance",
+    category: "Controlling",
     owner: "Elena Vasquez",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Operational Excellence",
@@ -975,6 +986,7 @@ export const initiatives: Initiative[] = [
     id: "ini-010",
     name: "Leadership Development Program",
     department: "Human Capital",
+    category: "Strategic",
     owner: "Amara Diallo",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Talent & Culture",

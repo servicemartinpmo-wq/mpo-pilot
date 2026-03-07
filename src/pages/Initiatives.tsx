@@ -7,7 +7,16 @@ import {
   GitBranch, Target, Shield, FileText, X, Users, AlertTriangle, Flag
 } from "lucide-react";
 import { useState } from "react";
-import type { InitiativeStatus, Initiative } from "@/lib/pmoData";
+import type { InitiativeStatus, InitiativeCategory, Initiative } from "@/lib/pmoData";
+
+// ── Initiative Category badge styles ──
+const categoryStyles: Record<InitiativeCategory, { cls: string; label: string }> = {
+  Directive:    { label: "Directive",    cls: "text-electric-blue bg-electric-blue/10 border-electric-blue/30" },
+  Supportive:   { label: "Supportive",   cls: "text-teal bg-teal/10 border-teal/30" },
+  Controlling:  { label: "Controlling",  cls: "text-signal-yellow bg-signal-yellow/10 border-signal-yellow/30" },
+  Diagnostic:   { label: "Diagnostic",   cls: "text-signal-orange bg-signal-orange/10 border-signal-orange/30" },
+  Strategic:    { label: "Strategic",    cls: "text-signal-green bg-signal-green/10 border-signal-green/30" },
+};
 
 // ── Status styles — updated color coding per user spec ──
 // On Track = blue, Completed = green, Delayed = orange, Blocked → "Needs Attention" = distinct purple/amber
@@ -61,6 +70,7 @@ function InitiativeDrawer({ ini, onClose }: { ini: Initiative; onClose: () => vo
               <h2 className="text-base font-bold text-foreground leading-tight">{ini.name}</h2>
               <div className="flex flex-wrap items-center gap-2 mt-1">
                 <span className={cn("text-xs font-medium px-2 py-0.5 rounded border", statusInfo.cls)}>{statusInfo.label}</span>
+                <span className={cn("text-xs font-medium px-2 py-0.5 rounded border", categoryStyles[ini.category].cls)}>{categoryStyles[ini.category].label}</span>
                 <span className="text-xs text-muted-foreground">{ini.department}</span>
                 <span className="text-xs text-muted-foreground">·</span>
                 <span className="text-xs text-muted-foreground">{ini.strategicPillar}</span>
@@ -550,7 +560,9 @@ export default function Initiatives() {
                           {hasDeadlines && <Clock className="w-3 h-3 text-signal-orange flex-shrink-0" />}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-muted-foreground">{ini.department}</span>
+                          <span className={cn("text-xs font-medium px-1.5 py-0.5 rounded border", categoryStyles[ini.category].cls)}>
+                            {categoryStyles[ini.category].label}
+                          </span>
                           <span className="text-xs text-muted-foreground flex items-center gap-0.5">
                             <User className="w-3 h-3" />
                             {ini.owner.split(" ")[0]}
