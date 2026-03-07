@@ -432,7 +432,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
 
                   {/* Revenue Range */}
                   <div>
-                    <FieldLabel>Revenue Range <span style={{ color: "hsl(5 75% 55%)" }}>*</span></FieldLabel>
+                    <FieldLabel>Revenue Range <span style={{ color: "hsl(5 72% 50%)" }}>*</span></FieldLabel>
                     <div className="grid grid-cols-3 gap-2">
                       {REVENUE_RANGES.map(r => (
                         <SelectPill key={r} label={r} selected={form.revenueRange === r}
