@@ -1,8 +1,13 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import { useState } from "react";
 import {
   LayoutDashboard, Rocket, Activity, Building2,
   Settings, Zap, ChevronRight, FileText, ToggleLeft, ToggleRight, CheckSquare
 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { CompanyProfile } from "@/lib/companyStore";
+import { saveProfile } from "@/lib/companyStore";
+import { orgMetrics } from "@/lib/pmoData";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
