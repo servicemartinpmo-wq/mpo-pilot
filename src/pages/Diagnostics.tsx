@@ -684,6 +684,177 @@ export default function Diagnostics() {
           </div>
         </div>
       )}
+
+      {/* ── Org Audit Modal ── */}
+      {(auditStatus === "selecting" || auditStatus === "running" || auditStatus === "complete") && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={() => auditStatus !== "running" && setAuditStatus("idle")} />
+          <div className="relative w-full max-w-2xl bg-card border-2 border-border rounded-2xl shadow-elevated animate-fade-in max-h-[90vh] flex flex-col">
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3 px-6 py-4 border-b-2 border-border bg-secondary/60 rounded-t-2xl">
+              <ClipboardList className="w-5 h-5 text-teal" />
+              <div className="flex-1">
+                <h2 className="text-sm font-bold text-foreground">Full Organizational Audit</h2>
+                <p className="text-xs text-muted-foreground">
+                  {auditStatus === "selecting" && "Select audit type to begin"}
+                  {auditStatus === "running" && `Running ${auditType === "external" ? "External Compliance" : "Internal Operational"} Audit…`}
+                  {auditStatus === "complete" && `${auditType === "external" ? "External Compliance" : "Internal Operational"} Audit Complete`}
+                </p>
+              </div>
+              {auditStatus !== "running" && (
+                <button onClick={() => setAuditStatus("idle")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+
+            {/* Audit Type Selection */}
+            {auditStatus === "selecting" && (
+              <div className="p-6 space-y-4">
+                <p className="text-sm text-muted-foreground">Choose the type of audit to run against your organization:</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* External Audit */}
+                  <button
+                    onClick={() => startAudit("external")}
+                    className="text-left p-5 rounded-xl border-2 border-border hover:border-teal/50 hover:bg-teal/4 transition-all group"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-teal/10 border border-teal/30 flex items-center justify-center">
+                        <Building2 className="w-4 h-4 text-teal" />
+                      </div>
+                      <span className="text-sm font-bold text-foreground group-hover:text-teal transition-colors">External Audit</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                      Checks your organization against standards that actual external auditors and compliance bodies use. Focuses on regulatory requirements, governance controls, financial oversight, and legal compliance.
+                    </p>
+                    <div className="space-y-1">
+                      {["SOX compliance & financial controls", "ISO 31000 risk register standards", "COSO internal control framework", "GDPR & regulatory alignment", "Corporate governance (OECD)"].map(item => (
+                        <div key={item} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <span className="w-1 h-1 rounded-full bg-teal flex-shrink-0" />
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 text-xs font-semibold text-teal">Run External Audit →</div>
+                  </button>
+
+                  {/* Internal Audit */}
+                  <button
+                    onClick={() => startAudit("internal")}
+                    className="text-left p-5 rounded-xl border-2 border-border hover:border-electric-blue/50 hover:bg-electric-blue/4 transition-all group"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-electric-blue/10 border border-electric-blue/30 flex items-center justify-center">
+                        <Search className="w-4 h-4 text-electric-blue" />
+                      </div>
+                      <span className="text-sm font-bold text-foreground group-hover:text-electric-blue transition-colors">Internal Audit</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                      Checks that everything inside your organization is running smoothly. Focuses on operational health, strategic alignment, execution discipline, and process adherence.
+                    </p>
+                    <div className="space-y-1">
+                      {["Strategic & OKR alignment", "Initiative health & delivery", "Execution discipline & backlog", "Leadership bandwidth & span", "Knowledge capture & maturity"].map(item => (
+                        <div key={item} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <span className="w-1 h-1 rounded-full bg-electric-blue flex-shrink-0" />
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 text-xs font-semibold text-electric-blue">Run Internal Audit →</div>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Running State */}
+            {auditStatus === "running" && (
+              <div className="p-8 flex flex-col items-center gap-6">
+                <div className="w-16 h-16 rounded-full border-4 border-teal/20 border-t-teal animate-spin" />
+                <div className="text-center">
+                  <div className="text-sm font-bold text-foreground mb-1">Scanning organizational data…</div>
+                  <div className="text-xs text-muted-foreground">Running {auditType === "external" ? "compliance and governance" : "operational and strategic"} checks</div>
+                </div>
+                <div className="w-full max-w-xs">
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
+                    <span>Progress</span>
+                    <span>{auditProgress}%</span>
+                  </div>
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-teal rounded-full transition-all duration-300"
+                      style={{ width: `${auditProgress}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Results */}
+            {auditStatus === "complete" && (
+              <div className="flex flex-col overflow-hidden">
+                {/* Score summary */}
+                <div className="grid grid-cols-3 divide-x border-b border-border">
+                  <div className="py-3 text-center">
+                    <div className="text-xl font-bold font-mono text-signal-green">{auditPass}</div>
+                    <div className="text-xs text-muted-foreground">Passed</div>
+                  </div>
+                  <div className="py-3 text-center">
+                    <div className="text-xl font-bold font-mono text-signal-yellow">{auditWarn}</div>
+                    <div className="text-xs text-muted-foreground">Warnings</div>
+                  </div>
+                  <div className="py-3 text-center">
+                    <div className="text-xl font-bold font-mono text-signal-red">{auditFail}</div>
+                    <div className="text-xs text-muted-foreground">Failed</div>
+                  </div>
+                </div>
+
+                <div className="overflow-y-auto divide-y">
+                  {auditFindings.map((finding, i) => (
+                    <div key={i} className="px-5 py-4 hover:bg-secondary/20 transition-colors">
+                      <div className="flex items-start gap-3">
+                        {finding.status === "pass"
+                          ? <CheckCircle className="w-4 h-4 text-signal-green mt-0.5 flex-shrink-0" />
+                          : finding.status === "warn"
+                          ? <AlertCircle className="w-4 h-4 text-signal-yellow mt-0.5 flex-shrink-0" />
+                          : <AlertTriangle className="w-4 h-4 text-signal-red mt-0.5 flex-shrink-0" />}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <span className="text-xs font-bold text-foreground">{finding.area}</span>
+                            <span className={cn("text-xs px-1.5 py-0.5 rounded border font-medium",
+                              finding.status === "pass" ? "text-signal-green bg-signal-green/10 border-signal-green/30" :
+                              finding.status === "warn" ? "text-signal-yellow bg-signal-yellow/10 border-signal-yellow/30" :
+                              "text-signal-red bg-signal-red/10 border-signal-red/30"
+                            )}>{finding.status === "pass" ? "Pass" : finding.status === "warn" ? "Warning" : "Fail"}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-1.5 leading-relaxed">{finding.finding}</p>
+                          <div className="flex items-start gap-1.5">
+                            <ArrowRightCircle className="w-3 h-3 text-teal mt-0.5 flex-shrink-0" />
+                            <p className="text-xs text-foreground/70 leading-relaxed">{finding.recommendation}</p>
+                          </div>
+                          <div className="mt-1.5 text-xs text-muted-foreground/70 italic">Source: {finding.source}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="px-6 py-4 border-t border-border bg-secondary/30 rounded-b-2xl flex items-center justify-between gap-3">
+                  <span className="text-xs text-muted-foreground">
+                    {auditType === "external" ? "External Compliance Audit" : "Internal Operational Audit"} · {new Date().toLocaleDateString()}
+                  </span>
+                  <button
+                    onClick={() => setAuditStatus("selecting")}
+                    className="text-xs px-3 py-1.5 rounded-lg border border-teal/40 text-teal hover:bg-teal/8 transition-colors font-medium"
+                  >
+                    Run Other Audit
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
