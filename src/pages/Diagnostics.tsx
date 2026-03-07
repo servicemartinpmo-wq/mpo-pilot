@@ -153,6 +153,11 @@ export default function Diagnostics() {
             {showSummary ? "Hide" : "Show"} Summary
             {showSummary ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
+          <button onClick={() => setAuditStatus("selecting")}
+            className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border-2 border-teal/40 text-teal font-semibold hover:bg-teal/8 transition-colors">
+            <ClipboardList className="w-3.5 h-3.5" />
+            Full Org Audit
+          </button>
           <div className="text-right">
             <div className="text-xs text-muted-foreground mb-0.5">Open Items</div>
             <div className={cn("text-2xl font-bold font-mono", openGovCount > 4 ? "text-signal-red" : "text-signal-yellow")}>{openGovCount}</div>
