@@ -812,6 +812,7 @@ export const initiatives: Initiative[] = [
     id: "ini-005",
     name: "CX Onboarding Redesign",
     department: "Customer Experience",
+    category: "Supportive",
     owner: "Leila Hassan",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Customer Experience",
