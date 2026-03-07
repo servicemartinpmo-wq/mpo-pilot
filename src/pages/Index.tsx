@@ -573,8 +573,8 @@ export default function Dashboard() {
           </button>
           {showInsights && (
             <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
-              {sortedInsights.slice(0, 6).map(insight => (
-                <InsightCard key={insight.id} insight={insight} />
+              {sortedInsights.slice(0, 6).map((insight, i) => (
+                <InsightCard key={insight.id} insight={insight} rank={i + 1} />
               ))}
             </div>
           )}
