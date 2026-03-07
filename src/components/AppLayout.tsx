@@ -19,6 +19,7 @@ const navItems = [
   { to: "/diagnostics", label: "Diagnostics", icon: Activity, group: "main" },
   { to: "/reports", label: "Reports", icon: FileText, group: "tools" },
   { to: "/knowledge", label: "Resource Hub", icon: BookOpen, group: "tools" },
+  { to: "/workflows", label: "Workflows", icon: GitBranch, group: "tools" },
   { to: "/advisory", label: "Advisory", icon: Headphones, group: "tools" },
   { to: "/integrations", label: "Integrations", icon: Plug, group: "tools" },
   { to: "/admin", label: "Systems", icon: Settings, group: "tools" },
