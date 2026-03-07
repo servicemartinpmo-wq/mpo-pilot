@@ -11,33 +11,33 @@
 @layer base {
   :root {
     /* ── Core surfaces ── */
-    --background: 38 25% 97%;          /* warm off-white */
-    --foreground: 225 45% 14%;         /* deep navy text */
+    --background: 38 22% 97%;          /* warm off-white */
+    --foreground: 225 48% 12%;         /* deep navy text — higher contrast */
 
     --card: 0 0% 100%;
-    --card-foreground: 225 45% 14%;
+    --card-foreground: 225 48% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 225 45% 14%;
+    --popover-foreground: 225 48% 12%;
 
     /* Navy primary */
     --primary: 225 50% 22%;
     --primary-foreground: 38 25% 97%;
 
-    /* Teal accent */
-    --teal: 183 55% 36%;
+    /* Teal accent — slightly more vivid */
+    --teal: 183 60% 34%;
     --teal-foreground: 0 0% 100%;
 
-    /* Periwinkle — main interactive accent (replaces electric-blue) */
-    --electric-blue: 233 65% 62%;
+    /* Electric blue — richer, more cinematic periwinkle */
+    --electric-blue: 233 72% 60%;
     --electric-blue-foreground: 0 0% 100%;
 
     /* Secondary: very light grey-blue */
-    --secondary: 220 18% 94%;
-    --secondary-foreground: 225 35% 28%;
+    --secondary: 220 20% 93%;
+    --secondary-foreground: 225 40% 22%;
 
-    --muted: 220 15% 91%;
-    --muted-foreground: 220 12% 48%;
+    --muted: 220 16% 90%;
+    --muted-foreground: 220 14% 40%;   /* stronger — was 48% */
 
     --accent: 233 65% 62%;
     --accent-foreground: 0 0% 100%;
