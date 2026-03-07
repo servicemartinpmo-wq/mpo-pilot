@@ -284,9 +284,9 @@ export default function OnboardingWizard({ onComplete }: Props) {
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: ACCENT }}>
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-black tracking-widest text-sm uppercase" style={{ color: "hsl(225 45% 14%)" }}>MARTIN</span>
+            <span className="font-black tracking-widest text-sm uppercase text-foreground">MARTIN</span>
           </div>
-          <span className="text-xs font-semibold" style={{ color: "hsl(233 50% 55%)" }}>{current.badge}</span>
+          <span className="text-xs font-semibold text-electric-blue">{current.badge}</span>
         </div>
 
         {/* Scrollable form */}
