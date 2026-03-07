@@ -3,11 +3,16 @@ import { ScoreBadge, SignalDot } from "@/components/ScoreBadge";
 import { cn } from "@/lib/utils";
 import {
   Activity, AlertCircle, GitBranch, Layers, Target, Shield, Clock,
-  CheckCircle, Eye, Zap, ChevronDown, ChevronUp, X, User, Users,
-  ChevronRight, RefreshCw, ArrowRightCircle
+  CheckCircle, Eye, Zap, ChevronDown, ChevronUp, X, Users,
+  ChevronRight, ArrowRightCircle, Database, Brain, Network, TrendingUp,
+  FlaskConical, AlertTriangle, BarChart3, Cpu
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { InsightType } from "@/lib/pmoData";
+import { getEngineState } from "@/lib/engine";
+import type { DetectedSignal } from "@/lib/engine/signals";
+import type { DiagnosisResult } from "@/lib/engine/diagnosis";
+import { getFrameworksRunBy } from "@/lib/frameworkData";
 
 // ── 4-Stage Pipeline ──
 const pipeline = [
@@ -35,11 +40,28 @@ const integrityChecks = [
 
 type FilterType = InsightType | "All";
 
+// Signal severity color helpers
+const severityColor = (s: DetectedSignal["severity"]) =>
+  s === "Critical" ? "text-signal-red bg-signal-red/10 border-signal-red/30" :
+  s === "High" ? "text-signal-yellow bg-signal-yellow/10 border-signal-yellow/30" :
+  s === "Medium" ? "text-electric-blue bg-electric-blue/10 border-electric-blue/30" :
+  "text-signal-green bg-signal-green/10 border-signal-green/30";
+
+const severityDot = (s: DetectedSignal["severity"]) =>
+  s === "Critical" ? "bg-signal-red" :
+  s === "High" ? "bg-signal-yellow" :
+  s === "Medium" ? "bg-electric-blue" : "bg-signal-green";
+
 export default function Diagnostics() {
   const [typeFilter, setTypeFilter] = useState<FilterType>("All");
   const [govTab, setGovTab] = useState<"all" | "Risk" | "Decision" | "Change">("all");
   const [showSummary, setShowSummary] = useState(false);
   const [selectedCheck, setSelectedCheck] = useState<{ label: string; detail: string; status: string } | null>(null);
+  const [engineTab, setEngineTab] = useState<"signals" | "diagnosis" | "frameworks" | "chains">("signals");
+  const [expandedDiag, setExpandedDiag] = useState<string | null>(null);
+
+  // Run engine once (memoized)
+  const engine = useMemo(() => getEngineState(), []);
 
   const insightTypes = [...new Set(insights.map(i => i.type))];
   const filtered = [...insights]
@@ -52,13 +74,15 @@ export default function Diagnostics() {
   const criticalSignals = insights.filter(i => i.signal === "red").length;
   const pendingActions = actionItems.filter(a => a.status !== "Completed").length;
 
+  const diagnosticsFrameworks = getFrameworksRunBy("Diagnostics");
+
   return (
     <div className="p-6 space-y-6">
       {/* ── Header ── */}
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground mb-0.5">Diagnostics</h1>
-          <p className="text-sm text-muted-foreground">Signal detection · Root cause · Governance oversight</p>
+          <p className="text-sm text-muted-foreground">Signal detection · Root cause · Governance oversight · Framework engine</p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={() => setShowSummary(v => !v)}
@@ -130,6 +154,252 @@ export default function Diagnostics() {
             <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
           </div>
         ))}
+      </div>
+
+      {/* ── ENGINE INTELLIGENCE PANEL ── */}
+      <div className="bg-card rounded-lg border-2 border-border shadow-card">
+        <div className="px-4 py-3 border-b-2 border-border bg-secondary/60 rounded-t-lg flex flex-wrap items-center gap-2">
+          <Brain className="w-4 h-4 text-electric-blue" />
+          <h2 className="text-sm font-semibold text-foreground">Apphia Engine — Live Intelligence</h2>
+          <div className="flex items-center gap-1.5 ml-2">
+            <span className="w-2 h-2 rounded-full bg-signal-green animate-pulse" />
+            <span className="text-xs text-signal-green font-medium">Running</span>
+          </div>
+          <div className="ml-auto flex gap-1">
+            {([
+              { key: "signals", label: "Signals", icon: Activity },
+              { key: "diagnosis", label: "Diagnosis", icon: FlaskConical },
+              { key: "frameworks", label: "Frameworks", icon: Database },
+              { key: "chains", label: "System Chains", icon: Network },
+            ] as const).map(({ key, label, icon: Icon }) => (
+              <button key={key} onClick={() => setEngineTab(key)}
+                className={cn("text-xs px-2.5 py-1 rounded-full border transition-all flex items-center gap-1",
+                  engineTab === key
+                    ? "bg-electric-blue/10 text-electric-blue border-electric-blue/40 font-medium"
+                    : "bg-card text-muted-foreground border-border"
+                )}>
+                <Icon className="w-3 h-3" />
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Signals Tab ── */}
+        {engineTab === "signals" && (
+          <div>
+            {/* Stats row */}
+            <div className="grid grid-cols-4 divide-x border-b border-border">
+              {[
+                { label: "Total Signals", value: engine.signals.length, color: "text-foreground" },
+                { label: "Critical", value: engine.signals.filter(s => s.severity === "Critical").length, color: "text-signal-red" },
+                { label: "High", value: engine.signals.filter(s => s.severity === "High").length, color: "text-signal-yellow" },
+                { label: "Active Chains", value: engine.activeChains.length, color: "text-electric-blue" },
+              ].map(stat => (
+                <div key={stat.label} className="px-4 py-3 text-center">
+                  <div className={cn("text-xl font-bold font-mono", stat.color)}>{stat.value}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+            <div className="divide-y max-h-80 overflow-y-auto">
+              {engine.signals.map(sig => (
+                <div key={sig.id} className="px-4 py-3 flex items-start gap-3 hover:bg-secondary/20 transition-colors">
+                  <span className={cn("w-2 h-2 rounded-full flex-shrink-0 mt-1.5", severityDot(sig.severity))} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <span className={cn("text-xs font-medium px-1.5 py-0.5 rounded border", severityColor(sig.severity))}>
+                        {sig.severity}
+                      </span>
+                      <span className="text-xs font-medium text-foreground">{sig.title}</span>
+                      <span className="text-xs text-muted-foreground">{sig.source}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-snug line-clamp-2">{sig.description}</p>
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {sig.recommendedFrameworks.slice(0, 3).map(fw => (
+                        <span key={fw} className="text-xs px-1.5 py-0.5 bg-electric-blue/8 text-electric-blue rounded border border-electric-blue/20">
+                          {fw}
+                        </span>
+                      ))}
+                      {sig.recommendedFrameworks.length > 3 && (
+                        <span className="text-xs text-muted-foreground">+{sig.recommendedFrameworks.length - 3} more</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className={cn("text-lg font-bold font-mono",
+                      sig.score >= 85 ? "text-signal-red" : sig.score >= 70 ? "text-signal-yellow" : "text-signal-green"
+                    )}>{sig.score}</div>
+                    <div className="text-xs text-muted-foreground">score</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Diagnosis Tab ── */}
+        {engineTab === "diagnosis" && (
+          <div className="divide-y max-h-[480px] overflow-y-auto">
+            {engine.diagnoses.length === 0 && (
+              <div className="px-4 py-8 text-center text-sm text-muted-foreground">No diagnoses generated yet.</div>
+            )}
+            {engine.diagnoses.map(diag => (
+              <div key={diag.signalId} className="hover:bg-secondary/20 transition-colors">
+                <button
+                  className="w-full px-4 py-3 flex items-start gap-3 text-left"
+                  onClick={() => setExpandedDiag(expandedDiag === diag.signalId ? null : diag.signalId)}
+                >
+                  <FlaskConical className="w-4 h-4 text-teal mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                      <span className="text-xs font-semibold text-foreground">{diag.rootCause}</span>
+                      <span className="text-xs px-1.5 py-0.5 bg-teal/10 text-teal border border-teal/30 rounded">
+                        {diag.signalCategory}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {diag.firedFrameworks.length} frameworks fired
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{diag.rootCauseDescription}</p>
+                  </div>
+                  <div className="flex-shrink-0 flex items-center gap-2">
+                    <div className="text-right">
+                      <div className="text-sm font-bold font-mono text-electric-blue">{diag.confidence}%</div>
+                      <div className="text-xs text-muted-foreground">confidence</div>
+                    </div>
+                    <ChevronRight className={cn("w-4 h-4 text-muted-foreground transition-transform",
+                      expandedDiag === diag.signalId && "rotate-90")} />
+                  </div>
+                </button>
+
+                {expandedDiag === diag.signalId && (
+                  <div className="px-4 pb-4 space-y-3 border-t border-border/50 bg-secondary/10">
+                    <div className="pt-3">
+                      <div className="text-xs font-semibold text-foreground mb-2 uppercase tracking-wide">Framework Findings</div>
+                      <div className="space-y-2">
+                        {diag.frameworkFindings.map(ff => (
+                          <div key={ff.frameworkId} className="bg-card rounded-lg p-3 border border-border">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Database className="w-3.5 h-3.5 text-electric-blue" />
+                              <span className="text-xs font-semibold text-foreground">{ff.frameworkName}</span>
+                              <span className={cn("text-xs px-1.5 py-0.5 rounded border ml-auto",
+                                ff.severity === "Critical" ? "text-signal-red bg-signal-red/10 border-signal-red/30" :
+                                ff.severity === "High" ? "text-signal-yellow bg-signal-yellow/10 border-signal-yellow/30" :
+                                "text-electric-blue bg-electric-blue/10 border-electric-blue/30"
+                              )}>{ff.severity}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground leading-relaxed">{ff.finding}</p>
+                            <div className="flex gap-1 mt-1.5">
+                              {ff.outputsTo.map(m => (
+                                <span key={m} className="text-xs px-1 py-0.5 bg-secondary rounded text-muted-foreground">→ {m}</span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="bg-card rounded-lg p-3 border border-border">
+                        <div className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1">
+                          <ArrowRightCircle className="w-3.5 h-3.5 text-signal-green" />
+                          Advisory Triggers
+                        </div>
+                        {diag.advisoryTriggers.map(t => (
+                          <div key={t} className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1">
+                            <span className="w-1 h-1 rounded-full bg-signal-green" />
+                            {t}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="bg-card rounded-lg p-3 border border-border">
+                        <div className="text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1">
+                          <AlertTriangle className="w-3.5 h-3.5 text-signal-yellow" />
+                          Structural Flags
+                        </div>
+                        {diag.structuralFlags.map(f => (
+                          <div key={f} className="text-xs text-muted-foreground flex items-center gap-1.5 mb-1">
+                            <span className="w-1 h-1 rounded-full bg-signal-yellow" />
+                            {f}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Frameworks Tab ── */}
+        {engineTab === "frameworks" && (
+          <div>
+            <div className="px-4 py-2.5 border-b border-border bg-secondary/30">
+              <p className="text-xs text-muted-foreground">
+                {diagnosticsFrameworks.length} frameworks assigned to Diagnostics module ·
+                Fires on signal detection · Outputs to Dashboard, Reports, Initiatives
+              </p>
+            </div>
+            <div className="divide-y max-h-80 overflow-y-auto">
+              {diagnosticsFrameworks.map(fw => (
+                <div key={fw.id} className="px-4 py-3 hover:bg-secondary/20 transition-colors">
+                  <div className="flex items-start gap-3">
+                    <Database className="w-3.5 h-3.5 text-electric-blue mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                        <span className="text-xs font-semibold text-foreground">{fw.name}</span>
+                        <span className="text-xs px-1.5 py-0.5 bg-secondary rounded text-muted-foreground">{fw.domain}</span>
+                        <span className="text-xs px-1.5 py-0.5 bg-electric-blue/8 text-electric-blue rounded border border-electric-blue/20">{fw.temporalContext}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{fw.statusRelevance}</p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {fw.outputsTo.map(m => (
+                          <span key={m} className="text-xs px-1 py-0.5 bg-secondary rounded text-muted-foreground border border-border">→ {m}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── System Chains Tab ── */}
+        {engineTab === "chains" && (
+          <div>
+            <div className="px-4 py-2.5 border-b border-border bg-secondary/30">
+              <p className="text-xs text-muted-foreground">
+                {engine.activeChains.length} chains active · Last full engine run: {new Date(engine.orgHealth.updatedAt).toLocaleTimeString()}
+              </p>
+            </div>
+            <div className="divide-y max-h-80 overflow-y-auto">
+              {engine.activeChains.map(chainId => {
+                const def = { "strategic-alignment": "Strategic Alignment System", "initiative-portfolio": "Initiative Portfolio Management", "project-delivery": "Project Delivery System", "operational-bottleneck": "Operational Bottleneck Detection", "operational-performance": "Operational Performance System", "org-structure": "Org Structure System", "risk-management": "Risk Management System", "resource-capacity": "Resource & Capacity System", "process-improvement": "Process Improvement System", "org-health-monitoring": "Org Health Monitoring System" }[chainId] || chainId;
+                const chainSignals = engine.signals.filter(s => s.id.includes(chainId.split("-")[0]));
+                const hasCritical = engine.signals.some(s => s.severity === "Critical");
+                const status = hasCritical ? "Triggered" : "Active";
+                return (
+                  <div key={chainId} className="px-4 py-3 flex items-center gap-3 hover:bg-secondary/20 transition-colors">
+                    <Cpu className="w-4 h-4 text-electric-blue flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold text-foreground">{def}</div>
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        Monitoring {engine.signals.length} signals · {engine.recommendations.length} recommendations generated
+                      </div>
+                    </div>
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium border",
+                      status === "Triggered"
+                        ? "text-signal-red bg-signal-red/10 border-signal-red/30"
+                        : "text-signal-green bg-signal-green/10 border-signal-green/30"
+                    )}>{status}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Strategic Clarity + Structural Integrity ── */}
@@ -224,6 +494,45 @@ export default function Diagnostics() {
           ))}
         </div>
       </div>
+
+      {/* ── Advisory Recommendations from Engine ── */}
+      {engine.recommendations.length > 0 && (
+        <div className="bg-card rounded-lg border-2 border-border shadow-card">
+          <div className="px-4 py-3 border-b-2 border-border bg-secondary/60 rounded-t-lg flex items-center gap-2">
+            <Brain className="w-4 h-4 text-signal-green" />
+            <h2 className="text-sm font-semibold text-foreground">Engine-Generated Recommendations</h2>
+            <span className="ml-auto text-xs text-muted-foreground">{engine.recommendations.length} recommendations · {engine.generatedActions.length} actions created</span>
+          </div>
+          <div className="divide-y max-h-72 overflow-y-auto">
+            {engine.recommendations.slice(0, 6).map(rec => (
+              <div key={rec.id} className="px-4 py-3 hover:bg-secondary/20 transition-colors">
+                <div className="flex items-start gap-3">
+                  <ArrowRightCircle className={cn("w-4 h-4 flex-shrink-0 mt-0.5",
+                    rec.priority === "Immediate" ? "text-signal-red" :
+                    rec.priority === "This Week" ? "text-signal-yellow" : "text-signal-green"
+                  )} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-0.5">
+                      <span className={cn("text-xs font-medium px-1.5 py-0.5 rounded border",
+                        rec.priority === "Immediate" ? "text-signal-red bg-signal-red/10 border-signal-red/30" :
+                        rec.priority === "This Week" ? "text-signal-yellow bg-signal-yellow/10 border-signal-yellow/30" :
+                        "text-signal-green bg-signal-green/10 border-signal-green/30"
+                      )}>{rec.priority}</span>
+                      <span className="text-xs font-semibold text-foreground">{rec.title}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{rec.action}</p>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                      <span>Owner: {rec.owner}</span>
+                      <span>→ {rec.timeToImpact}</span>
+                      <span className="text-electric-blue">{rec.category}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ── Governance Log ── */}
       <div className="bg-card rounded-lg border-2 border-border shadow-card">
