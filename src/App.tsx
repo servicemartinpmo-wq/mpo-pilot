@@ -14,7 +14,7 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import OnboardingWizard from "./components/OnboardingWizard";
 import ActionItems from "./pages/ActionItems";
-import { loadProfile, applyAccentColor, applyFont } from "./lib/companyStore";
+import { loadProfile, applyAccentColor, applyFont, resetOnboarding } from "./lib/companyStore";
 import type { CompanyProfile } from "./lib/companyStore";
 
 const queryClient = new QueryClient();
