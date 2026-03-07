@@ -420,10 +420,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
               {/* ── STEP 1: Scale & Direction ── */}
               {step === 1 && (
                 <div className="space-y-5">
-                  <div>
-                    <h2 className="text-2xl xl:text-3xl font-black mb-1.5 tracking-tight text-foreground">{current.headline}</h2>
-                    <p className="text-sm font-light text-muted-foreground">{current.sub}</p>
-                  </div>
+                  <p className="text-sm text-muted-foreground">{current.sub}</p>
 
                   {/* Team Size */}
                   <div>
