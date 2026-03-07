@@ -615,7 +615,7 @@ export default function Admin() {
             </div>
           </Block>
 
-          <Block title="Creator Lab" icon={FlaskConical} accent="purple">
+          <Block title="Creator Lab" icon={FlaskConical} accent="blue">
             <p className="text-sm text-muted-foreground mb-4">
               Access the private creator workspace to customize the app with prompts, manage feature flags, tweak engine settings, and apply design configurations — visible only to you.
             </p>
