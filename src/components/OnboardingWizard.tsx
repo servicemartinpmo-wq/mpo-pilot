@@ -102,7 +102,7 @@ const STEPS = [
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label className="text-[11px] font-bold uppercase tracking-[0.16em] block mb-2" style={{ color: "hsl(220 12% 48%)" }}>
+    <label className="text-[11px] font-bold uppercase tracking-[0.16em] block mb-2 text-muted-foreground">
       {children}
     </label>
   );
@@ -117,10 +117,10 @@ function SelectPill({
       onClick={onClick}
       className="text-xs px-3 py-2 rounded-lg font-medium transition-all duration-200 text-left"
       style={{
-        background: selected ? "hsl(233 65% 62% / 0.12)" : "hsl(220 20% 97%)",
-        border: selected ? "1.5px solid hsl(233 65% 62% / 0.55)" : "1.5px solid hsl(220 18% 85%)",
-        color: selected ? "hsl(233 65% 42%)" : "hsl(220 12% 42%)",
-        boxShadow: selected ? "0 0 0 2px hsl(233 65% 62% / 0.07)" : "none",
+        background: selected ? "hsl(var(--electric-blue) / 0.12)" : "hsl(var(--background))",
+        border: selected ? "1.5px solid hsl(var(--electric-blue) / 0.55)" : "1.5px solid hsl(var(--border))",
+        color: selected ? "hsl(var(--electric-blue))" : "hsl(var(--muted-foreground))",
+        boxShadow: selected ? "0 0 0 2px hsl(var(--electric-blue) / 0.07)" : "none",
       }}>
       {label}
     </button>
