@@ -13,7 +13,7 @@
  */
 
 import type { DetectedSignal, SignalCategory } from "./signals";
-import { allFrameworks } from "@/lib/frameworkData";
+import { ALL_FRAMEWORKS } from "@/lib/frameworkData";
 import type { FrameworkRecord } from "@/lib/frameworkData";
 
 export type RootCauseCategory =
