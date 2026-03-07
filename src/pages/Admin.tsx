@@ -1,5 +1,5 @@
 import { frameworks, departments, orgMetrics, orgProfile, authorityMatrix, sopRecords, actionItems, governanceLogs } from "@/lib/pmoData";
-import { loadProfile, saveProfile, applyAccentColor, applyFont } from "@/lib/companyStore";
+import { loadProfile, saveProfile, applyAccentColor, applyFont, resetOnboarding } from "@/lib/companyStore";
 import type { CompanyProfile } from "@/lib/companyStore";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
@@ -508,6 +508,11 @@ export default function Admin() {
               className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90"
               style={{ background: `hsl(${companyProfile.accentHue} 90% 45%)` }}>
               Save Changes
+            </button>
+            <button
+              onClick={() => { resetOnboarding(); window.location.reload(); }}
+              className="px-4 py-2 rounded-lg text-sm font-semibold border transition-all hover:bg-signal-red/10 text-signal-red border-signal-red/30">
+              Reset Onboarding
             </button>
           </div>
         </AdminSection>
