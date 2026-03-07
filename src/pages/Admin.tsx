@@ -1,5 +1,5 @@
 import { frameworks, departments, orgMetrics, orgProfile, authorityMatrix, sopRecords, actionItems, governanceLogs } from "@/lib/pmoData";
-import { loadProfile, saveProfile, applyAccentColor, applyFont } from "@/lib/companyStore";
+import { loadProfile, saveProfile, applyAccentColor, applyFont, resetOnboarding } from "@/lib/companyStore";
 import type { CompanyProfile } from "@/lib/companyStore";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
