@@ -52,15 +52,26 @@ export interface FrameworkFinding {
 
 // ── Framework Selector (Canonical: Rumelt's Good Strategy principle — diagnosis precedes strategy) ──
 const SIGNAL_TO_FRAMEWORKS: Record<SignalCategory, string[]> = {
-  "Capacity Constraint":     ["toc", "lean", "ccpm", "criticalPath", "valueStreamMapping"],
-  "Strategic Misalignment":  ["bsc", "okr", "hoshinKanri", "swot", "mckinsey7s", "porterFiveForces"],
-  "Dependency Bottleneck":   ["toc", "ccpm", "criticalPath", "pert", "raidLog", "systemsThinking"],
-  "Performance Anomaly":     ["bsc", "kpiTree", "sixSigmaDMAIC", "spc", "benchmarking", "leadingLagging"],
-  "Execution Delay":         ["ccpm", "criticalPath", "pmbok", "stageGate", "pert"],
-  "Risk Escalation":         ["riskHeatMap", "erm", "iso31000", "fmea", "bowtie", "scenarioPlanning"],
-  "Resource Overload":       ["toc", "lean", "spanOfControl", "organisationalNetworkAnalysis"],
-  "KPI Underperformance":    ["bsc", "kpiTree", "operationalMaturity", "efqm", "benchmarking"],
-  "Deadline Variance":       ["criticalPath", "pert", "ccpm", "pmbok"],
+  "Capacity Constraint":          ["toc", "lean", "ccpm", "criticalPath", "valueStreamMapping"],
+  "Strategic Misalignment":       ["bsc", "okr", "hoshinKanri", "swot", "mckinsey7s", "porterFiveForces"],
+  "Dependency Bottleneck":        ["toc", "ccpm", "criticalPath", "pert", "raidLog"],
+  "Performance Anomaly":          ["bsc", "kpiTree", "sixSigmaDMAIC", "statisticalProcessControl", "benchmarking", "leadingLagging"],
+  "Execution Delay":              ["ccpm", "criticalPath", "pmbok", "stageGate", "pert"],
+  "Risk Escalation":              ["riskHeatMap", "erm", "iso31000", "fmea", "bowtie", "scenarioPlanning"],
+  "Resource Overload":            ["toc", "lean", "spanOfControl"],
+  "KPI Underperformance":         ["bsc", "kpiTree", "operationalMaturityModels", "efqm", "benchmarking"],
+  "Deadline Variance":            ["criticalPath", "pert", "ccpm", "pmbok"],
+  // Extended signal categories (Systems 11-25)
+  "Decision Bottleneck":          ["decisionTrees", "weightedDecisionMatrix", "spanOfControl"],
+  "Leadership Bandwidth":         ["spanOfControl", "leadershipPipeline", "galbraithStar", "mckinsey7s"],
+  "Cross-Department Conflict":    ["organisationalNetworkAnalysis", "mckinsey7s", "systemsThinking"],
+  "Innovation Gap":               ["horizonModel", "innovationAmbitionMatrix", "blueOcean"],
+  "Execution Velocity Decline":   ["lean", "toc", "kpiTree", "statisticalProcessControl"],
+  "Portfolio Imbalance":          ["bcgMatrix", "geMcKinseyMatrix", "mosCoW", "weightedDecisionMatrix"],
+  "Change Resistance":            ["kotter8Step", "adkar", "lewinChangeModel"],
+  "Knowledge Gap":                ["cmmi", "bsc", "operationalMaturityModels"],
+  "Benchmarking Gap":             ["benchmarking", "bsc", "efqm"],
+  "Strategic Opportunity":        ["blueOcean", "horizonModel", "innovationAmbitionMatrix"],
 };
 
 const ROOT_CAUSE_MAP: Record<SignalCategory, RootCauseCategory> = {
