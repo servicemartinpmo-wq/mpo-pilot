@@ -16,12 +16,12 @@ import collageImage from "@/assets/onboard-collage.jpg";
 /* ── input style helper ── */
 function inputStyle(filled: boolean): React.CSSProperties {
   return {
-    background: filled ? "hsl(220 30% 98%)" : "hsl(220 20% 97%)",
+    background: "hsl(var(--background))",
     border: filled
-      ? "1.5px solid hsl(233 65% 62% / 0.6)"
-      : "1.5px solid hsl(220 18% 84%)",
-    boxShadow: filled ? "0 0 0 3px hsl(233 65% 62% / 0.08)" : "none",
-    color: "hsl(225 45% 14%)",
+      ? "1.5px solid hsl(var(--electric-blue) / 0.6)"
+      : "1.5px solid hsl(var(--border))",
+    boxShadow: filled ? "0 0 0 3px hsl(var(--electric-blue) / 0.08)" : "none",
+    color: "hsl(var(--foreground))",
   };
 }
 
