@@ -467,15 +467,15 @@ export default function OnboardingWizard({ onComplete }: Props) {
               {step === 2 && (
                 <div className="space-y-5">
                   <div>
-                    <h2 className="text-2xl xl:text-3xl font-black text-white mb-1.5 tracking-tight">{current.headline}</h2>
-                    <p className="text-sm font-light" style={{ color: "hsl(220 10% 48%)" }}>{current.sub}</p>
+                    <h2 className="text-2xl xl:text-3xl font-black mb-1.5 tracking-tight" style={{ color: "hsl(225 45% 14%)" }}>{current.headline}</h2>
+                    <p className="text-sm font-light" style={{ color: "hsl(220 12% 48%)" }}>{current.sub}</p>
                   </div>
 
                   {/* Departments */}
                   <div>
                     <FieldLabel>Active Departments</FieldLabel>
                     <div className="grid grid-cols-2 gap-2 mb-3 max-h-52 overflow-y-auto pr-1"
-                      style={{ scrollbarWidth: "thin", scrollbarColor: "hsl(220 15% 25%) transparent" }}>
+                      style={{ scrollbarWidth: "thin", scrollbarColor: "hsl(220 15% 80%) transparent" }}>
                       {DEFAULT_DEPTS.map(dept => (
                         <SelectPill key={dept} label={dept} selected={form.departments.includes(dept)}
                           onClick={() => toggleDept(dept)} />
@@ -487,8 +487,8 @@ export default function OnboardingWizard({ onComplete }: Props) {
                           </div>
                           <button type="button" onClick={() => toggleDept(dept)}
                             className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                            style={{ background: "hsl(220 20% 14%)", border: "1.5px solid hsl(220 15% 22%)" }}>
-                            <X className="w-3 h-3 text-white/40" />
+                            style={{ background: "hsl(220 15% 92%)", border: "1.5px solid hsl(220 18% 84%)" }}>
+                            <X className="w-3 h-3" style={{ color: "hsl(220 12% 48%)" }} />
                           </button>
                         </div>
                       ))}
@@ -496,7 +496,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                     {/* Custom dept input */}
                     <div className="flex gap-2">
                       <input
-                        className="flex-1 rounded-lg px-3 py-2.5 text-xs text-white placeholder-white/30 outline-none"
+                        className="flex-1 rounded-lg px-3 py-2.5 text-xs placeholder-[hsl(220_12%_58%)] outline-none"
                         style={inputStyle(!!customDept)}
                         placeholder="Add custom department..."
                         value={customDept}
@@ -505,14 +505,14 @@ export default function OnboardingWizard({ onComplete }: Props) {
                       <button type="button" onClick={addCustomDept}
                         className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-all"
                         style={{
-                          background: customDept.trim() ? "hsl(215 80% 55% / 0.2)" : "hsl(220 20% 12%)",
-                          border: `1.5px solid hsl(215 80% 55% / ${customDept.trim() ? 0.5 : 0.15})`,
+                          background: customDept.trim() ? "hsl(233 65% 62% / 0.15)" : "hsl(220 18% 93%)",
+                          border: `1.5px solid hsl(233 65% 62% / ${customDept.trim() ? 0.5 : 0.2})`,
                         }}>
-                        <Plus className="w-4 h-4 text-white/60" />
+                        <Plus className="w-4 h-4" style={{ color: "hsl(233 50% 52%)" }} />
                       </button>
                     </div>
                     {form.departments.length > 0 && (
-                      <div className="mt-2 text-xs font-medium" style={{ color: "hsl(215 70% 65%)" }}>
+                      <div className="mt-2 text-xs font-medium" style={{ color: "hsl(233 55% 50%)" }}>
                         {form.departments.length} department{form.departments.length !== 1 ? "s" : ""} selected
                       </div>
                     )}
@@ -523,8 +523,8 @@ export default function OnboardingWizard({ onComplete }: Props) {
                     <FieldLabel>Operations Manual / SOPs</FieldLabel>
                     <div className="grid grid-cols-2 gap-3">
                       {[
-                        { val: true,  label: "Yes — we have SOPs",     desc: "Documented processes are in place" },
-                        { val: false, label: "No — starting fresh",    desc: "We'll build them from the ground up" },
+                        { val: true,  label: "Yes — we have SOPs",   desc: "Documented processes are in place" },
+                        { val: false, label: "No — starting fresh",  desc: "We'll build them from the ground up" },
                       ].map(opt => {
                         const sel = form.hasSops === opt.val;
                         return (
@@ -532,22 +532,22 @@ export default function OnboardingWizard({ onComplete }: Props) {
                             onClick={() => setForm(f => ({ ...f, hasSops: opt.val }))}
                             className="rounded-xl p-4 text-left transition-all duration-200"
                             style={{
-                              background: sel ? "hsl(215 80% 55% / 0.12)" : "hsl(220 20% 11%)",
+                              background: sel ? "hsl(233 65% 62% / 0.10)" : "hsl(220 18% 97%)",
                               border: sel
-                                ? "1.5px solid hsl(215 80% 55% / 0.5)"
-                                : "1.5px solid hsl(220 15% 22%)",
+                                ? "1.5px solid hsl(233 65% 62% / 0.5)"
+                                : "1.5px solid hsl(220 18% 85%)",
                             }}>
                             <div className="flex items-center gap-2 mb-1">
                               <div className="w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0"
                                 style={{
-                                  borderColor: sel ? ACCENT : "hsl(220 15% 35%)",
+                                  borderColor: sel ? ACCENT : "hsl(220 15% 68%)",
                                   background: sel ? ACCENT : "transparent",
                                 }}>
                                 {sel && <Check className="w-2.5 h-2.5 text-white" />}
                               </div>
-                              <span className="text-xs font-bold text-white">{opt.label}</span>
+                              <span className="text-xs font-bold" style={{ color: "hsl(225 45% 14%)" }}>{opt.label}</span>
                             </div>
-                            <p className="text-xs pl-6" style={{ color: "hsl(220 10% 42%)" }}>{opt.desc}</p>
+                            <p className="text-xs pl-6" style={{ color: "hsl(220 12% 50%)" }}>{opt.desc}</p>
                           </button>
                         );
                       })}
@@ -559,13 +559,13 @@ export default function OnboardingWizard({ onComplete }: Props) {
 
             {/* Navigation */}
             <div className="flex items-center justify-between mt-8 pt-5"
-              style={{ borderTop: "1px solid hsl(220 15% 16%)" }}>
+              style={{ borderTop: "1px solid hsl(220 18% 88%)" }}>
               <button type="button" onClick={() => goTo(step - 1)}
                 className={cn(
                   "text-xs font-semibold px-4 py-2.5 rounded-xl transition-all duration-200",
-                  step === 0 ? "opacity-0 pointer-events-none" : "hover:bg-white/5"
+                  step === 0 ? "opacity-0 pointer-events-none" : "hover:bg-black/5"
                 )}
-                style={{ color: "hsl(220 10% 45%)" }}>
+                style={{ color: "hsl(220 12% 48%)" }}>
                 ← Back
               </button>
 
@@ -574,7 +574,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                 disabled={!canAdvance}
                 className="flex items-center gap-2 text-sm font-bold px-6 py-3 rounded-xl transition-all duration-200 disabled:opacity-35 disabled:cursor-not-allowed text-white"
                 style={{
-                  background: canAdvance ? ACCENT : "hsl(220 15% 22%)",
+                  background: canAdvance ? ACCENT : "hsl(220 15% 82%)",
                   boxShadow: canAdvance ? `0 4px 18px ${ACCENT_GLOW}` : "none",
                 }}>
                 {step < STEPS.length - 1 ? (
