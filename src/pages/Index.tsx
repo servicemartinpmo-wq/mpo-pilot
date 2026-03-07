@@ -4,7 +4,7 @@ import DepartmentCard from "@/components/DepartmentCard";
 import FrameworkPanel from "@/components/FrameworkPanel";
 import OrgHealthOrb from "@/components/OrgHealthOrb";
 import { ScoreBadge, SignalDot } from "@/components/ScoreBadge";
-import { AlertTriangle, Rocket, Users, TrendingUp, Clock, DollarSign, Shield, BarChart3, ArrowUp, Target, FileText, CheckCircle, ChevronRight } from "lucide-react";
+import { AlertTriangle, Rocket, Users, TrendingUp, Clock, DollarSign, Shield, BarChart3, ArrowUp, Target, FileText, CheckCircle, ChevronRight, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 
