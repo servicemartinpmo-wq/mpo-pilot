@@ -8,7 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
 import { saveProfile } from "@/lib/companyStore";
-import { runOrgHealthScoring } from "@/lib/engine/maturity";
+import { runOrgHealthScoring, runMaturityScoring } from "@/lib/engine/maturity";
 
 const navItems = [
   { to: "/",              label: "Dashboard",    icon: LayoutDashboard, group: "main" },
