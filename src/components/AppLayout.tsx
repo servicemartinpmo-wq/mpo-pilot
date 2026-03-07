@@ -38,7 +38,8 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   const [animatedScore, setAnimatedScore] = useState(0);
 
   useEffect(() => {
-    const orgHealth = runOrgHealthScoring();
+    const scores = runMaturityScoring();
+    const orgHealth = runOrgHealthScoring(scores);
     setHealthScore(orgHealth.overall);
     // Animate score counter
     let current = 0;
