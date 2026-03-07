@@ -986,6 +986,7 @@ export const initiatives: Initiative[] = [
     id: "ini-010",
     name: "Leadership Development Program",
     department: "Human Capital",
+    category: "Strategic",
     owner: "Amara Diallo",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Talent & Culture",
