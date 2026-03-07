@@ -917,6 +917,7 @@ export const initiatives: Initiative[] = [
     id: "ini-008",
     name: "Data Analytics Integration",
     department: "Data & Analytics",
+    category: "Diagnostic",
     owner: "Sasha Novak",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Technology Modernization",
