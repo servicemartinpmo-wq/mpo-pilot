@@ -1,8 +1,8 @@
-import { insights, frameworks, initiatives, departments, actionItems, governanceLogs, getRiskSeveritySignal } from "@/lib/pmoData";
+import { insights, frameworks, initiatives, departments, actionItems, governanceLogs } from "@/lib/pmoData";
 import InsightCard from "@/components/InsightCard";
 import { ScoreBadge, SignalDot } from "@/components/ScoreBadge";
 import { cn } from "@/lib/utils";
-import { Activity, AlertCircle, GitBranch, Layers, Target, Shield, Clock, CheckCircle, Cpu } from "lucide-react";
+import { Activity, AlertCircle, GitBranch, Layers, Target, Shield, Clock, CheckCircle, Eye, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import type { InsightType } from "@/lib/pmoData";
 
