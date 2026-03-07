@@ -13,7 +13,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { loadProfile } from "@/lib/companyStore";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { getEngineState } from "@/lib/engine";
 
 const sortedInsights = [...insights].sort((a, b) => b.executivePriorityScore - a.executivePriorityScore);
 
@@ -128,13 +129,22 @@ export default function Dashboard() {
   const [dismissedPopups, setDismissedPopups] = useState<Set<string>>(new Set());
   const [popupsVisible, setPopupsVisible] = useState(false);
 
+  // Run engine once (memoized)
+  const engine = useMemo(() => getEngineState(), []);
+
+  // Live engine values
+  const liveHealth = engine.orgHealth;
+  const liveMaturity = engine.maturityScores;
+  const liveSignals = engine.signals;
+  const liveRecs = engine.recommendations;
+
   // Show popups after a brief delay on mount
   useEffect(() => {
     const t = setTimeout(() => setPopupsVisible(true), 800);
     return () => clearTimeout(t);
   }, []);
 
-  const criticalCount = insights.filter(i => i.signal === "red").length;
+  const criticalCount = liveSignals.filter(s => s.severity === "Critical").length || insights.filter(i => i.signal === "red").length;
   const budgetPct = Math.round((orgMetrics.totalBudgetUsed / orgMetrics.totalBudgetAllocated) * 100);
   const pendingActions = actionItems.filter(a => a.status !== "Completed").length;
   const escalatedGov = governanceLogs.filter(g => g.status === "Escalated").length;
@@ -142,6 +152,14 @@ export default function Dashboard() {
   const onTrackCount = initiatives.filter(i => i.status === "On Track").length;
   const atRiskCount = initiatives.filter(i => i.status === "At Risk" || i.status === "Delayed" || i.status === "Blocked").length;
   const aboveBoard = insights.filter(i => i.signal === "blue").length + onTrackCount;
+
+  // Live engine scores
+  const liveOverallHealth = liveHealth?.overall ?? orgMetrics.overallMaturityScore;
+  const liveExecutionHealth = liveHealth?.executionHealth ?? orgMetrics.avgExecutionHealth;
+  const liveStrategicClarity = liveHealth?.strategicClarity ?? orgMetrics.avgStrategicAlignment;
+  const liveRiskPosture = liveHealth?.riskPosture ?? 60;
+  const liveActiveChains = engine.activeChains.length;
+  const liveCriticalRecs = liveRecs.filter(r => r.priority === "Immediate").length;
 
   const firstName = profile.userName?.split(" ")[0] || "";
   const hour = new Date().getHours();
@@ -238,16 +256,20 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="flex-shrink-0 text-right space-y-3">
-            <div>
-              <div className="section-label mb-1">Avg: Maturity</div>
-              <ScoreBadge score={orgMetrics.overallMaturityScore} signal={getScoreSignal(orgMetrics.overallMaturityScore)} size="lg" showLabel />
+              <div className="flex-shrink-0 text-right space-y-3">
+              <div>
+                <div className="section-label mb-1">Org Health Score</div>
+                <ScoreBadge score={liveOverallHealth} signal={getScoreSignal(liveOverallHealth)} size="lg" showLabel />
+              </div>
+              <div>
+                <div className="section-label mb-1">Execution Health</div>
+                <ScoreBadge score={liveExecutionHealth} signal={getScoreSignal(liveExecutionHealth)} size="sm" />
+              </div>
+              <div className="flex items-center gap-1.5 justify-end">
+                <span className="w-1.5 h-1.5 rounded-full bg-signal-green animate-pulse" />
+                <span className="text-[10px] text-muted-foreground">{liveActiveChains} AI chains active</span>
+              </div>
             </div>
-            <div>
-              <div className="section-label mb-1">Avg: SOP Adherence</div>
-              <ScoreBadge score={orgMetrics.avgSopAdherence} signal={getScoreSignal(orgMetrics.avgSopAdherence)} size="sm" />
-            </div>
-          </div>
         </div>
 
         {/* ── Status strip ── */}
@@ -357,11 +379,11 @@ export default function Dashboard() {
             </div>
             <div className="p-5 space-y-4">
               {[
-                { label: "Avg: Maturity",      val: orgMetrics.overallMaturityScore, sig: getScoreSignal(orgMetrics.overallMaturityScore) },
-                { label: "Execution Health",    val: orgMetrics.avgExecutionHealth,   sig: getScoreSignal(orgMetrics.avgExecutionHealth) },
-                { label: "Avg: SOP Adherence",  val: orgMetrics.avgSopAdherence,      sig: getScoreSignal(orgMetrics.avgSopAdherence) },
-                { label: "SOP Coverage",        val: orgMetrics.sopCoverage,          sig: getScoreSignal(orgMetrics.sopCoverage) },
-                { label: "Strategic Alignment", val: orgMetrics.avgStrategicAlignment,sig: getScoreSignal(orgMetrics.avgStrategicAlignment) },
+                { label: "Org Health Score",    val: liveOverallHealth,          sig: getScoreSignal(liveOverallHealth) },
+                { label: "Execution Health",    val: liveExecutionHealth,        sig: getScoreSignal(liveExecutionHealth) },
+                { label: "Strategic Clarity",   val: liveStrategicClarity,      sig: getScoreSignal(liveStrategicClarity) },
+                { label: "Risk Posture",        val: liveRiskPosture,            sig: getScoreSignal(liveRiskPosture) },
+                { label: "Avg: SOP Adherence",  val: orgMetrics.avgSopAdherence, sig: getScoreSignal(orgMetrics.avgSopAdherence) },
               ].map(({ label, val, sig }) => (
                 <div key={label}>
                   <div className="flex justify-between mb-1.5">
@@ -379,6 +401,14 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
+              {/* Live engine status */}
+              <div className="flex items-center justify-between pt-1 border-t border-border text-[10px]">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <span className="w-1.5 h-1.5 rounded-full bg-signal-green animate-pulse" />
+                  <span>{liveActiveChains} AI chains active</span>
+                </div>
+                <span className="text-signal-yellow font-semibold">{liveCriticalRecs} immediate recs</span>
+              </div>
 
               <div className="cin-divider pt-3 grid grid-cols-2 gap-2.5">
                 <div className="text-center p-3 rounded-lg bg-secondary">
