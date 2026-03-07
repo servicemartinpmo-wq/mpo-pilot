@@ -13,6 +13,7 @@ import Reports from "./pages/Reports";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import OnboardingWizard from "./components/OnboardingWizard";
+import ActionItems from "./pages/ActionItems";
 import { loadProfile, applyAccentColor, applyFont } from "./lib/companyStore";
 import type { CompanyProfile } from "./lib/companyStore";
 
