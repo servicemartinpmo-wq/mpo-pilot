@@ -68,7 +68,12 @@ const raciToMocha: Record<string, { key: string; label: string }> = {
   Informed:    { key: "H", label: "Helper / FYI" },
 };
 
-type SortKey = "priorityScore" | "strategicAlignment" | "dependencyRisk" | "completionPct" | "targetDate";
+type SortKey = "impactScore" | "dependencyRisk" | "completionPct" | "targetDate";
+
+// Impact Score = weighted average of priorityScore (60%) + strategicAlignment (40%)
+function getImpactScore(ini: Initiative): number {
+  return Math.round(ini.priorityScore * 0.6 + ini.strategicAlignment * 0.4);
+}
 
 // ────────────────────────────────────────────────
 // DETAIL MODAL
