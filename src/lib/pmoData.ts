@@ -740,6 +740,7 @@ export const initiatives: Initiative[] = [
     id: "ini-003",
     name: "Operational Excellence Program",
     department: "Operations",
+    category: "Controlling",
     owner: "Nadia Wolfe",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Operational Excellence",
