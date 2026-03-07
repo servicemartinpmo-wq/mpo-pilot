@@ -202,9 +202,9 @@ function InitiativeDrawer({ ini, onClose }: { ini: Initiative; onClose: () => vo
                 </div>
               )}
 
-              {/* Frameworks */}
+              {/* Analysis Modules */}
               <div>
-                <div className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Applied Frameworks</div>
+                <div className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Analysis Modules Applied</div>
                 <div className="flex flex-wrap gap-1.5">
                   {ini.frameworks.map(f => (
                     <span key={f} className="text-xs bg-electric-blue/10 text-electric-blue border border-electric-blue/20 px-2 py-0.5 rounded font-medium">{f}</span>

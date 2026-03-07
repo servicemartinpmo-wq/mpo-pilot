@@ -1,8 +1,8 @@
-import { insights, frameworks, initiatives, departments, actionItems, governanceLogs, getRiskSeveritySignal } from "@/lib/pmoData";
+import { insights, frameworks, initiatives, departments, actionItems, governanceLogs } from "@/lib/pmoData";
 import InsightCard from "@/components/InsightCard";
 import { ScoreBadge, SignalDot } from "@/components/ScoreBadge";
 import { cn } from "@/lib/utils";
-import { Activity, AlertCircle, GitBranch, Layers, Target, Shield, Clock, CheckCircle, Cpu } from "lucide-react";
+import { Activity, AlertCircle, GitBranch, Layers, Target, Shield, Clock, CheckCircle, Eye, Zap, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import type { InsightType } from "@/lib/pmoData";
 
@@ -51,6 +51,7 @@ export default function Diagnostics() {
   const [typeFilter, setTypeFilter] = useState<FilterType>("All");
   const [signalFilter, setSignalFilter] = useState<"all" | "red" | "yellow" | "green" | "blue">("all");
   const [govTab, setGovTab] = useState<"all" | "Risk" | "Decision" | "Change">("all");
+  const [showSummary, setShowSummary] = useState(false);
 
   const insightTypes = [...new Set(insights.map((i) => i.type))];
 
@@ -60,29 +61,81 @@ export default function Diagnostics() {
     .sort((a, b) => b.executivePriorityScore - a.executivePriorityScore);
 
   const blockedInitiatives = initiatives.filter((i) => i.dependencies.length > 0);
-
   const filteredGovLogs = governanceLogs.filter(g => govTab === "all" || g.type === govTab);
-
-  // Pending actions summary
   const pendingActions = actionItems.filter(a => a.status !== "Completed");
-  const highPriorityActions = pendingActions.filter(a => a.priority === "High");
+
+  const openGovCount = governanceLogs.filter(g => g.status !== "Resolved").length;
+  const goodSignals = insights.filter(i => i.signal === "green" || i.signal === "blue").length;
+  const criticalSignals = insights.filter(i => i.signal === "red").length;
 
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground mb-0.5">Diagnostics</h1>
-          <p className="text-sm text-muted-foreground">4-stage reasoning pipeline · Framework-driven root cause analysis · Governance oversight</p>
+          <p className="text-sm text-muted-foreground">4-stage analysis · Root cause breakdown · Governance oversight</p>
         </div>
-        <div className="text-right">
-          <div className="text-xs text-muted-foreground mb-0.5">Open Governance Items</div>
-          <div className={cn("text-2xl font-bold font-mono",
-            governanceLogs.filter(g => g.status !== "Resolved").length > 4 ? "text-signal-red" : "text-signal-yellow"
-          )}>
-            {governanceLogs.filter(g => g.status !== "Resolved").length}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowSummary(v => !v)}
+            className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border-2 border-electric-blue/40 text-electric-blue font-semibold hover:bg-electric-blue/8 transition-colors"
+          >
+            <Zap className="w-3.5 h-3.5" />
+            {showSummary ? "Hide" : "Summarize"} Status
+            {showSummary ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+          <div className="text-right">
+            <div className="text-xs text-muted-foreground mb-0.5">Open Items</div>
+            <div className={cn("text-2xl font-bold font-mono",
+              openGovCount > 4 ? "text-signal-red" : "text-signal-yellow"
+            )}>{openGovCount}</div>
           </div>
         </div>
       </div>
+
+      {/* Summary panel */}
+      {showSummary && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+          <div className="bg-signal-green/8 border-2 border-signal-green/30 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle className="w-4 h-4 text-signal-green" />
+              <span className="text-xs font-bold text-signal-green uppercase tracking-wide">What's Going Right</span>
+            </div>
+            <ul className="space-y-2">
+              {[
+                `${goodSignals} positive signals across all departments`,
+                `${initiatives.filter(i => i.status === "On Track").length} initiatives currently on track`,
+                `${actionItems.filter(a => a.status === "Completed").length} action items resolved`,
+                `${departments.filter(d => d.maturityScore >= 70).length} departments at Managed or Optimized tier`,
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
+                  <span className="w-1.5 h-1.5 rounded-full bg-signal-green mt-1.5 flex-shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="bg-signal-red/8 border-2 border-signal-red/30 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertCircle className="w-4 h-4 text-signal-red" />
+              <span className="text-xs font-bold text-signal-red uppercase tracking-wide">What Needs Fixing</span>
+            </div>
+            <ul className="space-y-2">
+              {[
+                `${criticalSignals} critical alerts require immediate action`,
+                `${initiatives.filter(i => i.status === "Blocked").length} initiatives are blocked`,
+                `${pendingActions.filter(a => a.priority === "High").length} high-priority actions are overdue`,
+                `${governanceLogs.filter(g => g.status === "Escalated").length} governance items escalated`,
+              ].map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
+                  <span className="w-1.5 h-1.5 rounded-full bg-signal-red mt-1.5 flex-shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* 4-Stage Pipeline */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
@@ -158,8 +211,8 @@ export default function Diagnostics() {
       {/* Framework Diagnosis Summary */}
       <div className="bg-card rounded-lg border shadow-card">
         <div className="px-4 py-3 border-b flex items-center gap-2">
-          <Cpu className="w-4 h-4 text-electric-blue" />
-          <h2 className="text-sm font-semibold text-foreground">Framework Diagnosis Summary</h2>
+          <Activity className="w-4 h-4 text-electric-blue" />
+          <h2 className="text-sm font-semibold text-foreground">Analysis Module Summary</h2>
         </div>
         <div className="divide-y">
           {frameworks.map((fw) => (

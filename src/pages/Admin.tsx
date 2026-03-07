@@ -1,11 +1,14 @@
 import { frameworks, departments, orgMetrics, orgProfile, authorityMatrix, sopRecords, actionItems, governanceLogs } from "@/lib/pmoData";
+import { loadProfile, saveProfile, applyAccentColor, applyFont } from "@/lib/companyStore";
+import type { CompanyProfile } from "@/lib/companyStore";
 import { cn } from "@/lib/utils";
+import { useState, useRef } from "react";
 import {
   Settings, Database, Cpu, Users, FileText, Shield, Building2,
   AlertTriangle, CheckCircle, Clock, Target, GitBranch, BookOpen,
   BarChart3
 } from "lucide-react";
-import { useState } from "react";
+
 
 function AdminSection({ title, icon: Icon, children, badge }: { title: string; icon: React.ElementType; children: React.ReactNode; badge?: React.ReactNode }) {
   return (
@@ -21,7 +24,21 @@ function AdminSection({ title, icon: Icon, children, badge }: { title: string; i
 }
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState<"system" | "org" | "frameworks" | "authority" | "sops" | "access">("system");
+  const [activeTab, setActiveTab] = useState<"system" | "org" | "frameworks" | "authority" | "sops" | "access" | "customize">("system");
+  const [companyProfile, setCompanyProfile] = useState<CompanyProfile>(loadProfile());
+  const fileRef = useRef<HTMLInputElement | null>(null);
+  function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => setCompanyProfile(p => ({ ...p, logo: ev.target?.result as string }));
+    reader.readAsDataURL(file);
+  }
+  function saveCustomize() {
+    saveProfile(companyProfile);
+    applyAccentColor(companyProfile.accentHue);
+    applyFont(companyProfile.font);
+  }
 
   const pendingActions = actionItems.filter(a => a.status !== "Completed").length;
   const openGovItems = governanceLogs.filter(g => g.status !== "Resolved").length;
@@ -46,9 +63,9 @@ export default function Admin() {
       {/* System health summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Reasoning Engine", status: "Operational", icon: Cpu, ok: true },
+          { label: "Analytics Engine", status: "Operational", icon: Cpu, ok: true },
           { label: "Data Layer", status: "Synced", icon: Database, ok: true },
-          { label: "Framework Logic", status: "7/7 Active", icon: Shield, ok: true },
+          { label: "Analysis Modules", status: "7/7 Active", icon: Shield, ok: true },
           { label: "Signal Detection", status: "Live", icon: AlertTriangle, ok: true },
         ].map(({ label, status, icon: Icon, ok }) => (
           <div key={label} className="bg-card rounded-lg border shadow-card p-3">
@@ -69,10 +86,11 @@ export default function Admin() {
         {([
           { key: "system", label: "System" },
           { key: "org", label: "Org Profile" },
-          { key: "frameworks", label: "Frameworks" },
+          { key: "frameworks", label: "Analysis Modules" },
           { key: "authority", label: "Authority Matrix" },
           { key: "sops", label: "SOP Library" },
           { key: "access", label: "Access & Roles" },
+          { key: "customize", label: "Customize" },
         ] as const).map(({ key, label }) => (
           <button key={key} onClick={() => setActiveTab(key)}
             className={cn("text-sm px-4 py-2.5 font-medium transition-all border-b-2 -mb-px",
@@ -81,7 +99,44 @@ export default function Admin() {
             {label}
           </button>
         ))}
-      </div>
+                </div>
+
+      {/* CUSTOMIZE TAB */}
+      {activeTab === "customize" && (
+        <AdminSection title="Customize Your Command Center" icon={Settings}>
+          <div className="space-y-5 max-w-lg">
+            <div>
+              <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-1.5">Organization Name</label>
+              <input className="w-full border rounded-lg px-3 py-2.5 text-sm bg-background text-foreground focus:outline-none focus:ring-2" value={companyProfile.name} onChange={e => setCompanyProfile(p => ({ ...p, name: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-1.5">Mission Statement</label>
+              <textarea className="w-full border rounded-lg px-3 py-2.5 text-sm bg-background text-foreground focus:outline-none focus:ring-2 resize-none" rows={2} value={companyProfile.mission} onChange={e => setCompanyProfile(p => ({ ...p, mission: e.target.value }))} />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-1.5">Logo</label>
+              <div className="flex items-center gap-3">
+                {companyProfile.logo && <img src={companyProfile.logo} alt="logo" className="h-10 object-contain rounded border" />}
+                <button onClick={() => fileRef.current?.click()} className="text-xs px-3 py-2 rounded-lg border border-border hover:bg-secondary transition-colors">Upload Logo</button>
+                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-2">Accent Color Hue</label>
+              <input type="range" min={0} max={359} value={companyProfile.accentHue} onChange={e => setCompanyProfile(p => ({ ...p, accentHue: Number(e.target.value) }))}
+                className="w-full h-3 rounded-full cursor-pointer appearance-none"
+                style={{ background: "linear-gradient(to right, hsl(0,90%,50%), hsl(60,90%,50%), hsl(120,90%,50%), hsl(180,90%,50%), hsl(240,90%,50%), hsl(300,90%,50%), hsl(360,90%,50%))" }} />
+              <div className="w-6 h-6 rounded-full mt-2 border" style={{ background: `hsl(${companyProfile.accentHue} 90% 50%)` }} />
+            </div>
+            <button onClick={saveCustomize} className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90" style={{ background: `hsl(${companyProfile.accentHue} 90% 45%)` }}>
+              Save Changes
+            </button>
+          </div>
+        </AdminSection>
+      )}
+    </div>
+  );
+}
 
       {/* SYSTEM TAB */}
       {activeTab === "system" && (
@@ -96,7 +151,7 @@ export default function Admin() {
                 { label: "Action Items", records: actionItems.length, lastSync: "5 min ago", status: "ok" },
                 { label: "Governance Logs", records: governanceLogs.length, lastSync: "3 min ago", status: "ok" },
                 { label: "SOPs & Procedures", records: sopRecords.length, lastSync: "1 hour ago", status: "warning" },
-                { label: "OKR Framework", records: 32, lastSync: "30 min ago", status: "ok" },
+                { label: "Goals Tracking", records: 32, lastSync: "30 min ago", status: "ok" },
                 { label: "Authority Matrix", records: authorityMatrix.length, lastSync: "1 hour ago", status: "ok" },
                 { label: "Dependency Map", records: 8, lastSync: "5 min ago", status: "ok" },
                 { label: "RACI Matrices", records: 10, lastSync: "10 min ago", status: "ok" },
@@ -118,12 +173,12 @@ export default function Admin() {
             <div className="space-y-1.5 font-mono text-xs">
               {[
                 { time: "2025-03-06 14:02", msg: "Signal Detection triggered: Capacity Constraint — Program Delivery (Score: 94)", level: "red" },
-                { time: "2025-03-06 13:48", msg: "Framework BSC: Strategic Misalignment detected in Marketing OKR alignment", level: "red" },
+                { time: "2025-03-06 13:48", msg: "Balanced Scorecard Module: Strategic Misalignment detected in Marketing OKR alignment", level: "red" },
                 { time: "2025-03-06 13:21", msg: "Dependency bottleneck escalated: INI-002 blocked 19 days", level: "yellow" },
-                { time: "2025-03-06 12:15", msg: "Advisory generated for Sales pipeline velocity decline (Rumelt)", level: "yellow" },
+                { time: "2025-03-06 12:15", msg: "Advisory generated for Sales pipeline velocity decline", level: "yellow" },
                 { time: "2025-03-06 11:40", msg: "Department sync complete: 14 departments refreshed", level: "green" },
-                { time: "2025-03-06 10:30", msg: "Framework Engine: Theory of Constraints activated for Program Delivery", level: "blue" },
-                { time: "2025-03-06 09:00", msg: "Daily reasoning pipeline executed: 8 insights generated", level: "green" },
+                { time: "2025-03-06 10:30", msg: "Bottleneck Analysis Module: Theory of Constraints activated for Program Delivery", level: "blue" },
+                { time: "2025-03-06 09:00", msg: "Daily analysis pipeline executed: 8 insights generated", level: "green" },
                 { time: "2025-03-05 17:22", msg: "Governance log gov-001 escalated: API Dependency SLA Breach", level: "red" },
                 { time: "2025-03-05 15:10", msg: "Action items generated for 8 active insights", level: "blue" },
                 { time: "2025-03-05 09:00", msg: "SOP adherence scan: 3 departments below 70% threshold", level: "yellow" },
