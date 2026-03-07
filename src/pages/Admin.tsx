@@ -6,11 +6,13 @@ import { loadProfile, saveProfile, applyAccentColor, applyFont } from "@/lib/com
 import type { CompanyProfile } from "@/lib/companyStore";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { BANNER_THEMES } from "@/components/PageBanner";
 import {
   Settings, Database, Cpu, Users, FileText, Shield, Building2,
   AlertTriangle, CheckCircle, Clock, Target, GitBranch, BarChart3,
   Activity, TrendingUp, TrendingDown, Minus, ChevronDown, Zap,
-  UserCheck, Lock, ArrowUpRight, RefreshCw, Bell
+  UserCheck, Lock, ArrowUpRight, RefreshCw, Bell, Layout, Check, FlaskConical
 } from "lucide-react";
 
 function Block({ title, icon: Icon, children, badge, accent }: {
@@ -38,7 +40,10 @@ function Block({ title, icon: Icon, children, badge, accent }: {
 }
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState<"system" | "org" | "frameworks" | "authority" | "sops" | "access" | "customize">("system");
+  const [activeTab, setActiveTab] = useState<"system" | "org" | "frameworks" | "authority" | "sops" | "access" | "customize" | "banner">("system");
+  const [bannerTheme, setBannerTheme] = useState(
+    typeof window !== "undefined" ? (localStorage.getItem("apphia_banner_theme") || "deep-space") : "deep-space"
+  );
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile>(loadProfile());
   const [expandedRole, setExpandedRole] = useState<string | null>(null);
 
@@ -59,6 +64,7 @@ export default function Admin() {
     { key: "sops", label: "SOP Library" },
     { key: "access", label: "Access & Roles" },
     { key: "customize", label: "Customize" },
+    { key: "banner", label: "Banner & Theme" },
   ] as const;
 
   const signalMetrics = [
@@ -573,6 +579,58 @@ export default function Admin() {
           </div>
         </Block>
       )}
+
+      {/* ═══ BANNER & THEME TAB ═══ */}
+      {activeTab === "banner" && (
+        <div className="space-y-5">
+          <Block title="Dashboard Banner Theme" icon={Layout} accent="blue">
+            <p className="text-sm text-muted-foreground mb-4">
+              Choose a theme for the animated carousel banner on the Dashboard. It auto-advances every 8 seconds and can also be changed directly on the dashboard by hovering over the banner.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {BANNER_THEMES.map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => { setBannerTheme(t.id); localStorage.setItem("apphia_banner_theme", t.id); }}
+                  className={cn(
+                    "group relative rounded-2xl overflow-hidden h-24 border-2 transition-all hover:scale-[1.02]",
+                    bannerTheme === t.id ? "border-electric-blue shadow-elevated" : "border-border"
+                  )}
+                >
+                  <div className="absolute inset-0" style={{ background: t.gradient }} />
+                  <div className="absolute inset-0" style={{ background: t.overlay }} />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                    <span className="text-xs font-bold text-white/80 uppercase tracking-wide drop-shadow">{t.label}</span>
+                    {bannerTheme === t.id && (
+                      <span className="text-[10px] text-white/50">Active</span>
+                    )}
+                  </div>
+                  {bannerTheme === t.id && (
+                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-electric-blue flex items-center justify-center">
+                      <Check className="w-3 h-3 text-white" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </Block>
+
+          <Block title="Creator Lab" icon={FlaskConical} accent="blue">
+            <p className="text-sm text-muted-foreground mb-4">
+              Access the private creator workspace to customize the app with prompts, manage feature flags, tweak engine settings, and apply design configurations — visible only to you.
+            </p>
+            <Link
+              to="/creator-lab"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, hsl(272 60% 40%), hsl(233 65% 55%))" }}
+            >
+              <FlaskConical className="w-4 h-4" />
+              Open Creator Lab
+            </Link>
+          </Block>
+        </div>
+      )}
+
     </div>
   );
 }

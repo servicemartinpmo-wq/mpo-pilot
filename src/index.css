@@ -345,6 +345,24 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes float-orb {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  33%       { transform: translateY(-14px) scale(1.05); }
+  66%       { transform: translateY(-7px) scale(0.97); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%       { opacity: 1; transform: scale(1.6); }
+}
+
+@keyframes scan-line {
+  0%   { top: -5%; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { top: 105%; opacity: 0; }
+}
+
 /* ── Scrollbar styling ── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
