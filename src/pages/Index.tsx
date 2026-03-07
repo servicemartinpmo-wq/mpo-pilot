@@ -3,13 +3,83 @@ import InsightCard from "@/components/InsightCard";
 import DepartmentCard from "@/components/DepartmentCard";
 import FrameworkPanel from "@/components/FrameworkPanel";
 import OrgHealthOrb from "@/components/OrgHealthOrb";
-import { ScoreBadge, SignalDot } from "@/components/ScoreBadge";
-import { AlertTriangle, Rocket, Users, TrendingUp, Clock, DollarSign, Shield, BarChart3, ArrowUp, Target, FileText, CheckCircle, ChevronRight, Building2 } from "lucide-react";
+import { ScoreBadge } from "@/components/ScoreBadge";
+import { AlertTriangle, Rocket, Users, TrendingUp, Clock, DollarSign, Shield, BarChart3, ArrowUp, Target, FileText, CheckCircle, ChevronRight, Building2, Sparkles, Zap, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import { loadProfile } from "@/lib/companyStore";
 
 const sortedInsights = [...insights].sort((a, b) => b.executivePriorityScore - a.executivePriorityScore);
 const topDepts = [...departments].sort((a, b) => b.maturityScore - a.maturityScore).slice(0, 6);
+
+// ── Tier definitions ──
+const TIERS = [
+  {
+    id: "free",
+    label: "Free",
+    price: null,
+    tagline: "Quick Wins",
+    color: "hsl(var(--muted-foreground))",
+    bg: "hsl(var(--secondary))",
+    border: "hsl(var(--border))",
+    features: ["Prioritization Matrix", "Tailored Next Steps", "2 file uploads/day", "Diagnostic (no solution)"],
+    cta: "Current Plan",
+    locked: false,
+  },
+  {
+    id: "tier1",
+    label: "Tier 1",
+    price: "$29.99/mo",
+    tagline: "Quick Wins+",
+    color: "hsl(var(--electric-blue))",
+    bg: "hsl(var(--electric-blue) / 0.07)",
+    border: "hsl(var(--electric-blue) / 0.3)",
+    features: ["Impact/Effort/Risk ranking", "Ambiguity → Actionable steps", "Full diagnostic + solutions", "Priority initiative pipeline"],
+    cta: "Upgrade to Tier 1",
+    locked: true,
+  },
+  {
+    id: "tier2",
+    label: "Tier 2",
+    price: "$49.99/mo",
+    tagline: "High-Impact",
+    color: "hsl(var(--teal))",
+    bg: "hsl(var(--teal) / 0.07)",
+    border: "hsl(var(--teal) / 0.3)",
+    features: ["Operational Advisory", "Org Structuring + Design", "Bottleneck Diagnosis", "Executive Voice Development"],
+    cta: "Upgrade to Tier 2",
+    locked: true,
+  },
+  {
+    id: "tier3",
+    label: "Tier 3",
+    price: "$129.99/mo",
+    tagline: "Automation & Data",
+    color: "hsl(var(--navy))",
+    bg: "hsl(var(--navy) / 0.07)",
+    border: "hsl(var(--navy) / 0.3)",
+    features: ["Workflow + KPI automation", "Consolidated reporting", "PMO best practices embedded", "Full strategy execution layer"],
+    cta: "Upgrade to Tier 3",
+    locked: true,
+  },
+];
+
+// ── Generate advisory blurb from profile data ──
+function getAdvisoryBlurb(currentState: string, futureState: string, orgName: string): string {
+  if (!currentState && !futureState) return `Martin PMO brings years of consulting expertise to help ${orgName || "your organization"} convert unstructured ambition into governed execution.`;
+  if (futureState) {
+    const lower = futureState.toLowerCase();
+    if (lower.includes("restructur") || lower.includes("reorganiz")) return `Let's map the restructure of ${orgName || "your organization"} — we'll diagnose current bottlenecks, design your future-state org structure, and build a sequenced execution plan with clear ownership at every layer.`;
+    if (lower.includes("scale") || lower.includes("grow") || lower.includes("expand")) return `Scaling ${orgName || "your organization"} requires more than headcount — we'll build the operational infrastructure, governance frameworks, and decision architecture needed to grow without chaos.`;
+    if (lower.includes("revenue") || lower.includes("sales") || lower.includes("pipeline")) return `Let's accelerate revenue for ${orgName || "your organization"} — we'll align your pipeline strategy, remove execution drag, and build the operational playbook that converts vision into consistent growth.`;
+    if (lower.includes("process") || lower.includes("efficienc") || lower.includes("streamlin")) return `We'll systematically eliminate the friction inside ${orgName || "your organization"} — mapping your processes, closing SOP gaps, and embedding governance that frees your team to execute at full capacity.`;
+    if (lower.includes("team") || lower.includes("talent") || lower.includes("hire") || lower.includes("culture")) return `Building a high-performance team inside ${orgName || "your organization"} starts with clarity — we'll define roles, authority matrices, and the operating rhythm that turns good people into great execution.`;
+  }
+  if (currentState) {
+    return `Based on where ${orgName || "your organization"} stands today, Martin PMO will turn your current state into a structured roadmap — diagnosing gaps, sequencing priorities, and ensuring every initiative has a clear owner and measurable outcome.`;
+  }
+  return `Martin PMO brings years of consulting expertise to help ${orgName || "your organization"} convert ambition into governed, measurable execution.`;
+}
 
 // ── Section wrapper with clear segmentation ──
 function Section({ title, action, actionTo, children }: {
