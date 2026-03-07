@@ -168,7 +168,7 @@ function getStructuralFlags(rootCause: RootCauseCategory): string[] {
  * Selects relevant frameworks, generates findings, and outputs to Advisory.
  */
 export function runDiagnosis(signals: DetectedSignal[]): DiagnosisResult[] {
-  const fwMap = new Map(allFrameworks.map(f => [f.id, f]));
+  const fwMap = new Map<string, FrameworkRecord>(ALL_FRAMEWORKS.map(f => [f.id, f]));
 
   return signals
     .filter(s => s.requiresDiagnosis)
