@@ -204,7 +204,7 @@ export default function Diagnostics() {
         <div className="divide-y">
           {filtered.map(ins => (
             <div key={ins.id} className="px-4 py-3 flex items-start gap-3 hover:bg-secondary/20 transition-colors">
-              <SignalDot signal={ins.signal} size="sm" />
+              <SignalDot signal={ins.signal} />
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
                   <span className={cn("text-xs font-medium px-1.5 py-0.5 rounded border",
