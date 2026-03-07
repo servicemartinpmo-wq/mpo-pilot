@@ -202,7 +202,7 @@ function InitiativeDrawer({ ini, onClose }: { ini: Initiative; onClose: () => vo
                 </div>
               )}
 
-              {/* Frameworks */}
+              {/* Analysis Modules */}
               <div>
                 <div className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Applied Frameworks</div>
                 <div className="flex flex-wrap gap-1.5">
