@@ -74,6 +74,7 @@ const App = () => {
               <Route path="/team" element={<Team />} />
               
               <Route path="/admin" element={<Admin />} />
+              <Route path="/creator-lab" element={<CreatorLab />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AppLayout>
