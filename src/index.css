@@ -149,4 +149,41 @@
     grid-template-columns: 240px 1fr;
     min-height: 100vh;
   }
+
+  .animate-float-slow {
+    animation: float-slow 6s ease-in-out infinite;
+  }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-12px) rotate(3deg); }
+  66%       { transform: translateY(-6px) rotate(-2deg); }
+}
+
+@keyframes float-particle {
+  0%   { transform: translate(0, 0) scale(1);    opacity: 0.4; }
+  100% { transform: translate(0, -20px) scale(1.3); opacity: 0; }
+}
+
+/* Range input thumb styling for onboarding color picker */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid hsl(var(--accent));
+  box-shadow: 0 2px 8px hsl(0 0% 0% / 0.4);
+  cursor: pointer;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid hsl(var(--accent));
+  box-shadow: 0 2px 8px hsl(0 0% 0% / 0.4);
+  cursor: pointer;
+  border: none;
 }
