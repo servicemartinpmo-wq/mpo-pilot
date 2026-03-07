@@ -4,6 +4,7 @@ export type SignalLevel = "red" | "yellow" | "green" | "blue";
 export type MaturityTier = "Foundational" | "Developing" | "Structured" | "Managed" | "Optimized";
 export type InsightType = "Risk Escalation" | "Strategic Misalignment" | "Capacity Constraint" | "Dependency Bottleneck" | "Performance Anomaly" | "Execution Delay";
 export type InitiativeStatus = "On Track" | "At Risk" | "Delayed" | "Blocked" | "Completed";
+export type InitiativeCategory = "Directive" | "Supportive" | "Controlling" | "Diagnostic" | "Strategic";
 export type Framework = "Porter" | "Rumelt" | "BSC" | "OKR" | "Lean" | "Six Sigma" | "TOC";
 export type GovernanceLogType = "Risk" | "Decision" | "Change";
 export type ActionItemStatus = "Not Started" | "In Progress" | "Completed" | "Blocked";
