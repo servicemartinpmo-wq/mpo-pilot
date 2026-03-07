@@ -703,6 +703,7 @@ export const initiatives: Initiative[] = [
     id: "ini-002",
     name: "Customer Portal v2",
     department: "Product Development",
+    category: "Directive",
     owner: "Priya Nair",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Customer Experience",
