@@ -118,9 +118,9 @@ export default function Admin() {
             <div className="space-y-1.5 font-mono text-xs">
               {[
                 { time: "2025-03-06 14:02", msg: "Signal Detection triggered: Capacity Constraint — Program Delivery (Score: 94)", level: "red" },
-                { time: "2025-03-06 13:48", msg: "Framework BSC: Strategic Misalignment detected in Marketing OKR alignment", level: "red" },
+                { time: "2025-03-06 13:48", msg: "Balanced Scorecard Module: Strategic Misalignment detected in Marketing OKR alignment", level: "red" },
                 { time: "2025-03-06 13:21", msg: "Dependency bottleneck escalated: INI-002 blocked 19 days", level: "yellow" },
-                { time: "2025-03-06 12:15", msg: "Advisory generated for Sales pipeline velocity decline (Rumelt)", level: "yellow" },
+                { time: "2025-03-06 12:15", msg: "Advisory generated for Sales pipeline velocity decline", level: "yellow" },
                 { time: "2025-03-06 11:40", msg: "Department sync complete: 14 departments refreshed", level: "green" },
                 { time: "2025-03-06 10:30", msg: "Bottleneck Analysis Module: Theory of Constraints activated for Program Delivery", level: "blue" },
                 { time: "2025-03-06 09:00", msg: "Daily analysis pipeline executed: 8 insights generated", level: "green" },
