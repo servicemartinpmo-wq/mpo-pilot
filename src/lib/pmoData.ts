@@ -775,6 +775,7 @@ export const initiatives: Initiative[] = [
     id: "ini-004",
     name: "IT Infrastructure Modernization",
     department: "IT / Systems",
+    category: "Directive",
     owner: "Ryan Torres",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Technology Modernization",
