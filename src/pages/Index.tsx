@@ -13,7 +13,13 @@ const sortedInsights = [...insights].sort((a, b) => b.executivePriorityScore - a
 const topDepts = [...departments].sort((a, b) => b.maturityScore - a.maturityScore).slice(0, 6);
 
 // ── Tier definitions ──
-const TIERS = [
+// status: "current" | "subscribe" | "trial" | "locked"
+const TIERS: {
+  id: string; label: string; price: string | null; tagline: string;
+  color: string; bg: string; border: string; features: string[];
+  cta: string; status: "current" | "subscribe" | "trial" | "locked";
+  badge?: string;
+}[] = [
   {
     id: "free",
     label: "Free",
@@ -24,7 +30,7 @@ const TIERS = [
     border: "hsl(var(--border))",
     features: ["Prioritization Matrix", "Tailored Next Steps", "2 file uploads/day", "Diagnostic (no solution)"],
     cta: "Current Plan",
-    locked: false,
+    status: "current",
   },
   {
     id: "tier1",
@@ -35,8 +41,8 @@ const TIERS = [
     bg: "hsl(var(--electric-blue) / 0.07)",
     border: "hsl(var(--electric-blue) / 0.3)",
     features: ["Impact/Effort/Risk ranking", "Ambiguity → Actionable steps", "Full diagnostic + solutions", "Priority initiative pipeline"],
-    cta: "Upgrade to Tier 1",
-    locked: true,
+    cta: "Subscribe — $29.99/mo",
+    status: "subscribe",
   },
   {
     id: "tier2",
@@ -47,8 +53,9 @@ const TIERS = [
     bg: "hsl(var(--teal) / 0.07)",
     border: "hsl(var(--teal) / 0.3)",
     features: ["Operational Advisory", "Org Structuring + Design", "Bottleneck Diagnosis", "Executive Voice Development"],
-    cta: "Upgrade to Tier 2",
-    locked: true,
+    cta: "Start 7-Day Free Trial",
+    status: "trial",
+    badge: "7-Day Free Trial",
   },
   {
     id: "tier3",
@@ -56,11 +63,11 @@ const TIERS = [
     price: "$129.99/mo",
     tagline: "Automation & Data",
     color: "hsl(var(--navy))",
-    bg: "hsl(var(--navy) / 0.07)",
-    border: "hsl(var(--navy) / 0.3)",
+    bg: "hsl(var(--secondary))",
+    border: "hsl(var(--border))",
     features: ["Workflow + KPI automation", "Consolidated reporting", "PMO best practices embedded", "Full strategy execution layer"],
-    cta: "Upgrade to Tier 3",
-    locked: true,
+    cta: "Coming Soon",
+    status: "locked",
   },
 ];
 
@@ -425,46 +432,69 @@ export default function Dashboard() {
           <span className="text-xs text-muted-foreground">Years of consulting expertise, built into every tier</span>
         </div>
         <div className="p-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          {TIERS.map((tier) => (
-            <div key={tier.id} className="rounded-xl border-2 p-4 flex flex-col gap-3 relative"
-              style={{ borderColor: tier.border, background: tier.bg }}>
-              {tier.locked && (
-                <div className="absolute top-3 right-3">
-                  <Lock className="w-3.5 h-3.5 text-muted-foreground opacity-50" />
-                </div>
-              )}
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: tier.color }}>{tier.label}</span>
-                  {tier.price && (
-                    <span className="text-xs font-mono font-semibold text-foreground">{tier.price}</span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">{tier.tagline}</p>
-              </div>
-              <ul className="space-y-1.5 flex-1">
-                {tier.features.map((f) => (
-                  <li key={f} className="flex items-start gap-1.5 text-xs text-foreground/75">
-                    <CheckCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: tier.color }} />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <button
-                disabled={!tier.locked}
-                className="w-full text-xs font-semibold py-2 px-3 rounded-lg border transition-all"
+          {TIERS.map((tier) => {
+            const isCurrent = tier.status === "current";
+            const isLocked = tier.status === "locked";
+            const isTrial = tier.status === "trial";
+            const isSubscribe = tier.status === "subscribe";
+            return (
+              <div key={tier.id} className="rounded-xl border-2 p-4 flex flex-col gap-3 relative"
                 style={{
-                  borderColor: tier.locked ? tier.color : "hsl(var(--border))",
-                  color: tier.locked ? tier.color : "hsl(var(--muted-foreground))",
-                  background: tier.locked ? `${tier.bg}` : "transparent",
-                  opacity: tier.locked ? 1 : 0.7,
-                  cursor: tier.locked ? "pointer" : "default",
-                }}
-              >
-                {tier.cta}
-              </button>
-            </div>
-          ))}
+                  borderColor: tier.border,
+                  background: tier.bg,
+                  opacity: isLocked ? 0.55 : 1,
+                }}>
+                {/* Badge */}
+                {isTrial && tier.badge && (
+                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap"
+                      style={{ background: "hsl(var(--teal))", color: "#fff" }}>
+                      {tier.badge}
+                    </span>
+                  </div>
+                )}
+                {isLocked && (
+                  <div className="absolute top-3 right-3">
+                    <Lock className="w-3.5 h-3.5 text-muted-foreground opacity-60" />
+                  </div>
+                )}
+                {isCurrent && (
+                  <div className="absolute top-3 right-3">
+                    <CheckCircle className="w-3.5 h-3.5 opacity-50" style={{ color: tier.color }} />
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: tier.color }}>{tier.label}</span>
+                    {tier.price && (
+                      <span className="text-xs font-mono font-semibold text-foreground">{tier.price}</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{tier.tagline}</p>
+                </div>
+                <ul className="space-y-1.5 flex-1">
+                  {tier.features.map((f) => (
+                    <li key={f} className="flex items-start gap-1.5 text-xs" style={{ color: isLocked ? "hsl(var(--muted-foreground))" : "hsl(var(--foreground) / 0.75)" }}>
+                      <CheckCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: isLocked ? "hsl(var(--muted-foreground))" : tier.color }} />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  disabled={isCurrent || isLocked}
+                  className="w-full text-xs font-semibold py-2 px-3 rounded-lg border-2 transition-all"
+                  style={{
+                    borderColor: isCurrent || isLocked ? "hsl(var(--border))" : tier.color,
+                    color: isCurrent ? "hsl(var(--muted-foreground))" : isLocked ? "hsl(var(--muted-foreground))" : tier.color,
+                    background: isTrial ? `hsl(var(--teal) / 0.1)` : isSubscribe ? `hsl(var(--electric-blue) / 0.08)` : "transparent",
+                    cursor: isCurrent || isLocked ? "default" : "pointer",
+                  }}
+                >
+                  {tier.cta}
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

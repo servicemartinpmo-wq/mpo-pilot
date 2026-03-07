@@ -493,11 +493,15 @@ export default function Admin() {
               style={{ background: `hsl(${companyProfile.accentHue} 90% 45%)` }}>
               Save Changes
             </button>
-            <button
-              onClick={() => { resetOnboarding(); window.location.reload(); }}
-              className="px-4 py-2 rounded-lg text-sm font-semibold border transition-all hover:bg-signal-red/10 text-signal-red border-signal-red/30">
-              Reset Onboarding
-            </button>
+            <div className="pt-3 border-t border-border">
+              <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-1">Danger Zone</label>
+              <p className="text-xs text-muted-foreground mb-3">This will clear all onboarding data and restart the intake wizard on next reload.</p>
+              <button
+                onClick={() => { resetOnboarding(); window.location.reload(); }}
+                className="px-5 py-2.5 rounded-lg text-sm font-semibold border-2 transition-all hover:bg-signal-red/10 text-signal-red border-signal-red/40 flex items-center gap-2">
+                ↺ Reset Onboarding
+              </button>
+            </div>
           </div>
         </AdminSection>
       )}
