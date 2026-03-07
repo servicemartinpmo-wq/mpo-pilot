@@ -5,7 +5,7 @@ import {
   Activity, AlertCircle, GitBranch, Layers, Target, Shield, Clock,
   CheckCircle, Eye, Zap, ChevronDown, ChevronUp, X, Users,
   ChevronRight, ArrowRightCircle, Database, Brain, Network, TrendingUp,
-  FlaskConical, AlertTriangle, BarChart3, Cpu
+  FlaskConical, AlertTriangle, BarChart3, Cpu, ClipboardList, Building2, Search
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import type { InsightType } from "@/lib/pmoData";
