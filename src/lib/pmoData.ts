@@ -59,6 +59,7 @@ export interface Initiative {
   id: string;
   name: string;
   department: string;
+  category: InitiativeCategory;
   owner: string;
   executiveOwner: string;
   strategicPillar: string;
