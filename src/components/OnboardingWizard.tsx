@@ -3,7 +3,7 @@
  * Full-bleed split layout: 3D art left panel + glassmorphic form right panel.
  * Each step has a unique hero image and visual identity.
  */
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
 import {
   Building2, Palette, Type, LayoutGrid,
