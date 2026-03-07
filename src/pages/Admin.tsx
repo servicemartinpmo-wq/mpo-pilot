@@ -489,14 +489,6 @@ export default function Admin() {
               <input className="w-full border rounded-lg px-3 py-2.5 text-sm bg-background text-foreground focus:outline-none focus:ring-2" value={companyProfile.userName} onChange={e => setCompanyProfile(p => ({ ...p, userName: e.target.value }))} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-1.5">Logo</label>
-              <div className="flex items-center gap-3">
-                {companyProfile.logo && <img src={companyProfile.logo} alt="logo" className="h-10 object-contain rounded border" />}
-                <button onClick={() => fileRef.current?.click()} className="text-xs px-3 py-2 rounded-lg border border-border hover:bg-secondary transition-colors">Upload Logo</button>
-                <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
-              </div>
-            </div>
-            <div>
               <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-2">Accent Color</label>
               <input type="range" min={0} max={359} value={companyProfile.accentHue}
                 onChange={e => setCompanyProfile(p => ({ ...p, accentHue: Number(e.target.value) }))}
