@@ -379,11 +379,11 @@ export default function Dashboard() {
             </div>
             <div className="p-5 space-y-4">
               {[
-                { label: "Avg: Maturity",      val: orgMetrics.overallMaturityScore, sig: getScoreSignal(orgMetrics.overallMaturityScore) },
-                { label: "Execution Health",    val: orgMetrics.avgExecutionHealth,   sig: getScoreSignal(orgMetrics.avgExecutionHealth) },
-                { label: "Avg: SOP Adherence",  val: orgMetrics.avgSopAdherence,      sig: getScoreSignal(orgMetrics.avgSopAdherence) },
-                { label: "SOP Coverage",        val: orgMetrics.sopCoverage,          sig: getScoreSignal(orgMetrics.sopCoverage) },
-                { label: "Strategic Alignment", val: orgMetrics.avgStrategicAlignment,sig: getScoreSignal(orgMetrics.avgStrategicAlignment) },
+                { label: "Org Health Score",    val: liveOverallHealth,          sig: getScoreSignal(liveOverallHealth) },
+                { label: "Execution Health",    val: liveExecutionHealth,        sig: getScoreSignal(liveExecutionHealth) },
+                { label: "Strategic Clarity",   val: liveStrategicClarity,      sig: getScoreSignal(liveStrategicClarity) },
+                { label: "Risk Posture",        val: liveRiskPosture,            sig: getScoreSignal(liveRiskPosture) },
+                { label: "Avg: SOP Adherence",  val: orgMetrics.avgSopAdherence, sig: getScoreSignal(orgMetrics.avgSopAdherence) },
               ].map(({ label, val, sig }) => (
                 <div key={label}>
                   <div className="flex justify-between mb-1.5">
@@ -401,6 +401,14 @@ export default function Dashboard() {
                   </div>
                 </div>
               ))}
+              {/* Live engine status */}
+              <div className="flex items-center justify-between pt-1 border-t border-border text-[10px]">
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <span className="w-1.5 h-1.5 rounded-full bg-signal-green animate-pulse" />
+                  <span>{liveActiveChains} AI chains active</span>
+                </div>
+                <span className="text-signal-yellow font-semibold">{liveCriticalRecs} immediate recs</span>
+              </div>
 
               <div className="cin-divider pt-3 grid grid-cols-2 gap-2.5">
                 <div className="text-center p-3 rounded-lg bg-secondary">
