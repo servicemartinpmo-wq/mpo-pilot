@@ -1,14 +1,16 @@
 /**
  * Advisory — 5 core + 4 optional advisors with request modals, tier gating, and AI recommendation
  */
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import {
   Brain, Cog, Rocket, Shield, GitBranch, DollarSign, BarChart3,
   Cpu, Headphones, Target, ChevronRight, X, Upload, MessageSquare,
   Mail, Star, Lock, Zap, CheckCircle, Clock, ArrowUpRight, User,
-  Sparkles, FileText
+  Sparkles, FileText, AlertTriangle, Activity
 } from "lucide-react";
+import { getEngineState } from "@/lib/engine";
+import type { AdvisoryRecommendation } from "@/lib/engine/advisory";
 
 type AdvisorCategory = "core" | "optional";
 type RequestStatus = "idle" | "submitting" | "submitted";
