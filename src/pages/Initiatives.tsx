@@ -176,12 +176,12 @@ function InitiativeModal({ ini, onClose }: { ini: Initiative; onClose: () => voi
               {/* Score tiles */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="bg-secondary rounded-xl p-3 text-center">
-                  <div className="text-xs text-muted-foreground mb-1">Priority Score</div>
-                  <ScoreBadge score={ini.priorityScore} signal={getScoreSignal(ini.priorityScore)} size="lg" showLabel />
+                  <div className="text-xs text-muted-foreground mb-1">Impact Score</div>
+                  <ScoreBadge score={getImpactScore(ini)} signal={getScoreSignal(getImpactScore(ini))} size="lg" showLabel />
                 </div>
                 <div className="bg-secondary rounded-xl p-3 text-center">
-                  <div className="text-xs text-muted-foreground mb-1">Strategic Alignment</div>
-                  <ScoreBadge score={ini.strategicAlignment} signal={getScoreSignal(ini.strategicAlignment)} size="lg" showLabel />
+                  <div className="text-xs text-muted-foreground mb-1">Priority</div>
+                  <ScoreBadge score={ini.priorityScore} signal={getScoreSignal(ini.priorityScore)} size="lg" showLabel />
                 </div>
                 <div className="bg-secondary rounded-xl p-3 text-center">
                   <div className="text-xs text-muted-foreground mb-1">Dependency Risk</div>
