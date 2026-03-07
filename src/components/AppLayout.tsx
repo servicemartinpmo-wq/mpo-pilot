@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Rocket, Activity, Building2,
   Settings, Zap, ChevronRight, FileText, ToggleLeft, ToggleRight, CheckSquare,
-  BookOpen, Plug, Users, ChevronLeft, Headphones, TrendingUp, GitBranch
+  BookOpen, Plug, Users, ChevronLeft, Headphones, TrendingUp, GitBranch, Database
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
@@ -23,6 +23,7 @@ const navItems = [
   { to: "/advisory", label: "Advisory", icon: Headphones, group: "tools" },
   { to: "/integrations", label: "Integrations", icon: Plug, group: "tools" },
   { to: "/admin", label: "Systems", icon: Settings, group: "tools" },
+  { to: "/superbase", label: "Knowledge Engine", icon: Database, group: "tools" },
 ];
 
 interface Props {
