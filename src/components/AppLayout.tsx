@@ -5,6 +5,11 @@ import {
   Settings, Zap, ChevronRight, FileText, ToggleLeft, ToggleRight, CheckSquare,
   BookOpen, Plug
 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { CompanyProfile } from "@/lib/companyStore";
+import { saveProfile } from "@/lib/companyStore";
+import { orgMetrics } from "@/lib/pmoData";
+
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
