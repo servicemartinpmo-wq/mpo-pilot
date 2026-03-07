@@ -6,11 +6,13 @@ import { loadProfile, saveProfile, applyAccentColor, applyFont } from "@/lib/com
 import type { CompanyProfile } from "@/lib/companyStore";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import { BANNER_THEMES } from "@/components/PageBanner";
 import {
   Settings, Database, Cpu, Users, FileText, Shield, Building2,
   AlertTriangle, CheckCircle, Clock, Target, GitBranch, BarChart3,
   Activity, TrendingUp, TrendingDown, Minus, ChevronDown, Zap,
-  UserCheck, Lock, ArrowUpRight, RefreshCw, Bell
+  UserCheck, Lock, ArrowUpRight, RefreshCw, Bell, Layout, Check, FlaskConical
 } from "lucide-react";
 
 function Block({ title, icon: Icon, children, badge, accent }: {
