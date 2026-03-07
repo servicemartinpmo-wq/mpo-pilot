@@ -5,7 +5,7 @@ import {
   Flag, ChevronDown, Filter, Star, Mail, MessageSquare,
   Video, Target, X, ChevronRight, Plus,
   FileText, Link as LinkIcon, Paperclip, Info, ArrowRight,
-  Inbox, PhoneCall, Repeat
+  Repeat, Zap
 } from "lucide-react";
 import { useState } from "react";
 
