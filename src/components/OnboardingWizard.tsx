@@ -210,12 +210,12 @@ export default function OnboardingWizard({ onComplete }: Props) {
           style={{ filter: "brightness(0.82) saturate(1.1)" }}
         />
 
-        {/* Overlay: dark vignette on right edge + subtle gradient */}
+        {/* Overlay: subtle vignette blending left panel into right */}
         <div className="absolute inset-0 pointer-events-none"
           style={{
             background: `
-              linear-gradient(to right, transparent 55%, ${PANEL_BG} 100%),
-              linear-gradient(to bottom, hsl(220 25% 5% / 0.55) 0%, transparent 20%, transparent 80%, hsl(220 25% 5% / 0.6) 100%)
+              linear-gradient(to right, transparent 50%, ${PANEL_BG} 100%),
+              linear-gradient(to bottom, hsl(225 48% 8% / 0.45) 0%, transparent 18%, transparent 82%, hsl(225 48% 8% / 0.45) 100%)
             `,
           }} />
 
@@ -228,7 +228,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
             </div>
             <div>
               <div className="text-white font-black tracking-[0.2em] text-sm uppercase leading-none">MARTIN</div>
-              <div className="text-xs tracking-widest uppercase mt-0.5 font-medium" style={{ color: "hsl(215 70% 70%)" }}>
+              <div className="text-xs tracking-widest uppercase mt-0.5 font-medium" style={{ color: "hsl(233 60% 78%)" }}>
                 PMO-Ops Command Center
               </div>
             </div>
@@ -239,12 +239,12 @@ export default function OnboardingWizard({ onComplete }: Props) {
         <div className="relative z-10 mt-auto px-8 xl:px-10 pb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold"
             style={{
-              background: "hsl(0 0% 100% / 0.08)",
-              border: "1px solid hsl(0 0% 100% / 0.15)",
+              background: "hsl(0 0% 100% / 0.15)",
+              border: "1px solid hsl(0 0% 100% / 0.25)",
               backdropFilter: "blur(10px)",
-              color: "hsl(0 0% 100% / 0.7)",
+              color: "hsl(0 0% 100% / 0.85)",
             }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
+            <span className="w-1.5 h-1.5 rounded-full bg-white/80" />
             {current.badge}
           </div>
         </div>
@@ -253,24 +253,29 @@ export default function OnboardingWizard({ onComplete }: Props) {
       {/* ── RIGHT PANEL: Form ── */}
       <div className="relative flex-1 flex flex-col overflow-hidden" style={{ background: PANEL_BG }}>
 
-        {/* Subtle grid texture */}
+        {/* Subtle tonal texture — very faint dot grid */}
         <div className="absolute inset-0 pointer-events-none"
           style={{
-            opacity: 0.025,
-            backgroundImage: `
-              linear-gradient(hsl(215 60% 70%) 1px, transparent 1px),
-              linear-gradient(90deg, hsl(215 60% 70%) 1px, transparent 1px)
-            `,
-            backgroundSize: "44px 44px",
+            backgroundImage: `radial-gradient(circle, hsl(220 18% 80%) 1px, transparent 1px)`,
+            backgroundSize: "28px 28px",
+            opacity: 0.18,
           }} />
 
-        {/* Ambient glow blob */}
+        {/* Ambient teal glow top-right */}
         <div className="absolute pointer-events-none"
           style={{
-            top: "-20%", right: "-10%",
-            width: 500, height: 500,
-            background: `radial-gradient(circle, hsl(215 60% 40% / 0.1) 0%, transparent 65%)`,
-            filter: "blur(60px)",
+            top: "-15%", right: "-10%",
+            width: 480, height: 480,
+            background: `radial-gradient(circle, hsl(183 55% 36% / 0.08) 0%, transparent 65%)`,
+            filter: "blur(55px)",
+          }} />
+        {/* Periwinkle glow bottom-left */}
+        <div className="absolute pointer-events-none"
+          style={{
+            bottom: "-10%", left: "-12%",
+            width: 400, height: 400,
+            background: `radial-gradient(circle, hsl(233 65% 62% / 0.07) 0%, transparent 65%)`,
+            filter: "blur(55px)",
           }} />
 
         {/* Mobile header */}
@@ -279,9 +284,9 @@ export default function OnboardingWizard({ onComplete }: Props) {
             <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: ACCENT }}>
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-white font-black tracking-widest text-sm uppercase">MARTIN</span>
+            <span className="font-black tracking-widest text-sm uppercase" style={{ color: "hsl(225 45% 14%)" }}>MARTIN</span>
           </div>
-          <span className="text-xs font-semibold" style={{ color: "hsl(215 70% 65%)" }}>{current.badge}</span>
+          <span className="text-xs font-semibold" style={{ color: "hsl(233 50% 55%)" }}>{current.badge}</span>
         </div>
 
         {/* Scrollable form */}
