@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Rocket, Activity, Building2,
   Settings, Zap, ChevronRight, FileText, ToggleLeft, ToggleRight, CheckSquare,
-  BookOpen, Plug, Users, ChevronLeft, Headphones, TrendingUp, GitBranch
+  BookOpen, Plug, Users, ChevronLeft, Headphones, TrendingUp, GitBranch, Database
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
