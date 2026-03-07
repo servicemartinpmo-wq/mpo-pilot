@@ -70,6 +70,7 @@ function InitiativeDrawer({ ini, onClose }: { ini: Initiative; onClose: () => vo
               <h2 className="text-base font-bold text-foreground leading-tight">{ini.name}</h2>
               <div className="flex flex-wrap items-center gap-2 mt-1">
                 <span className={cn("text-xs font-medium px-2 py-0.5 rounded border", statusInfo.cls)}>{statusInfo.label}</span>
+                <span className={cn("text-xs font-medium px-2 py-0.5 rounded border", categoryStyles[ini.category].cls)}>{categoryStyles[ini.category].label}</span>
                 <span className="text-xs text-muted-foreground">{ini.department}</span>
                 <span className="text-xs text-muted-foreground">·</span>
                 <span className="text-xs text-muted-foreground">{ini.strategicPillar}</span>
