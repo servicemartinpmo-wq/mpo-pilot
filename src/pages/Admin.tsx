@@ -69,7 +69,7 @@ export default function Admin() {
         {([
           { key: "system", label: "System" },
           { key: "org", label: "Org Profile" },
-          { key: "frameworks", label: "Frameworks" },
+          { key: "frameworks", label: "Analysis Modules" },
           { key: "authority", label: "Authority Matrix" },
           { key: "sops", label: "SOP Library" },
           { key: "access", label: "Access & Roles" },
