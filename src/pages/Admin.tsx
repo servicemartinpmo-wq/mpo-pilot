@@ -96,7 +96,7 @@ export default function Admin() {
                 { label: "Action Items", records: actionItems.length, lastSync: "5 min ago", status: "ok" },
                 { label: "Governance Logs", records: governanceLogs.length, lastSync: "3 min ago", status: "ok" },
                 { label: "SOPs & Procedures", records: sopRecords.length, lastSync: "1 hour ago", status: "warning" },
-                { label: "OKR Framework", records: 32, lastSync: "30 min ago", status: "ok" },
+                { label: "Goals Tracking", records: 32, lastSync: "30 min ago", status: "ok" },
                 { label: "Authority Matrix", records: authorityMatrix.length, lastSync: "1 hour ago", status: "ok" },
                 { label: "Dependency Map", records: 8, lastSync: "5 min ago", status: "ok" },
                 { label: "RACI Matrices", records: 10, lastSync: "10 min ago", status: "ok" },
