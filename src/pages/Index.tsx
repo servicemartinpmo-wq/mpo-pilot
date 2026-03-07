@@ -13,7 +13,13 @@ const sortedInsights = [...insights].sort((a, b) => b.executivePriorityScore - a
 const topDepts = [...departments].sort((a, b) => b.maturityScore - a.maturityScore).slice(0, 6);
 
 // ── Tier definitions ──
-const TIERS = [
+// status: "current" | "subscribe" | "trial" | "locked"
+const TIERS: {
+  id: string; label: string; price: string | null; tagline: string;
+  color: string; bg: string; border: string; features: string[];
+  cta: string; status: "current" | "subscribe" | "trial" | "locked";
+  badge?: string;
+}[] = [
   {
     id: "free",
     label: "Free",
@@ -24,7 +30,7 @@ const TIERS = [
     border: "hsl(var(--border))",
     features: ["Prioritization Matrix", "Tailored Next Steps", "2 file uploads/day", "Diagnostic (no solution)"],
     cta: "Current Plan",
-    locked: false,
+    status: "current",
   },
   {
     id: "tier1",
@@ -35,8 +41,8 @@ const TIERS = [
     bg: "hsl(var(--electric-blue) / 0.07)",
     border: "hsl(var(--electric-blue) / 0.3)",
     features: ["Impact/Effort/Risk ranking", "Ambiguity → Actionable steps", "Full diagnostic + solutions", "Priority initiative pipeline"],
-    cta: "Upgrade to Tier 1",
-    locked: true,
+    cta: "Subscribe — $29.99/mo",
+    status: "subscribe",
   },
   {
     id: "tier2",
@@ -47,8 +53,9 @@ const TIERS = [
     bg: "hsl(var(--teal) / 0.07)",
     border: "hsl(var(--teal) / 0.3)",
     features: ["Operational Advisory", "Org Structuring + Design", "Bottleneck Diagnosis", "Executive Voice Development"],
-    cta: "Upgrade to Tier 2",
-    locked: true,
+    cta: "Start 7-Day Free Trial",
+    status: "trial",
+    badge: "7-Day Free Trial",
   },
   {
     id: "tier3",
@@ -56,11 +63,11 @@ const TIERS = [
     price: "$129.99/mo",
     tagline: "Automation & Data",
     color: "hsl(var(--navy))",
-    bg: "hsl(var(--navy) / 0.07)",
-    border: "hsl(var(--navy) / 0.3)",
+    bg: "hsl(var(--secondary))",
+    border: "hsl(var(--border))",
     features: ["Workflow + KPI automation", "Consolidated reporting", "PMO best practices embedded", "Full strategy execution layer"],
-    cta: "Upgrade to Tier 3",
-    locked: true,
+    cta: "Coming Soon",
+    status: "locked",
   },
 ];
 
