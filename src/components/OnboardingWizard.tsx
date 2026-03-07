@@ -304,16 +304,20 @@ export default function OnboardingWizard({ onComplete }: Props) {
                       disabled={i > step}
                       className={cn(
                         "flex items-center gap-2 text-xs font-semibold transition-all duration-200 rounded-lg px-2.5 py-1.5",
-                        i === step ? "text-white cursor-default"
-                          : i < step ? "cursor-pointer hover:bg-white/5"
+                        i === step ? "cursor-default"
+                          : i < step ? "cursor-pointer hover:bg-black/5"
                           : "cursor-default"
                       )}
-                      style={{ color: i === step ? "white" : i < step ? "hsl(220 10% 50%)" : "hsl(220 10% 30%)" }}>
+                      style={{
+                        color: i === step ? "hsl(225 45% 14%)"
+                          : i < step ? "hsl(220 12% 52%)"
+                          : "hsl(220 10% 72%)",
+                      }}>
                       <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                         style={{
-                          background: i < step ? "hsl(145 55% 40%)"
+                          background: i < step ? "hsl(148 52% 38%)"
                             : i === step ? ACCENT
-                            : "hsl(220 15% 20%)",
+                            : "hsl(220 18% 86%)",
                           boxShadow: i === step ? `0 0 12px ${ACCENT_GLOW}` : "none",
                         }}>
                         {i < step
@@ -323,7 +327,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                       </div>
                       <span className="hidden sm:inline">{s.label}</span>
                     </button>
-                    {i < STEPS.length - 1 && <ChevronRight className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(220 10% 28%)" }} />}
+                    {i < STEPS.length - 1 && <ChevronRight className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(220 12% 72%)" }} />}
                   </div>
                 );
               })}
