@@ -5,7 +5,7 @@ import {
   Activity, AlertCircle, GitBranch, Layers, Target, Shield, Clock,
   CheckCircle, Eye, Zap, ChevronDown, ChevronUp, X, Users,
   ChevronRight, ArrowRightCircle, Database, Brain, Network, TrendingUp,
-  FlaskConical, AlertTriangle, BarChart3, Cpu
+  FlaskConical, AlertTriangle, BarChart3, Cpu, ClipboardList, Building2, Search
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import type { InsightType } from "@/lib/pmoData";
@@ -52,6 +52,41 @@ const severityDot = (s: DetectedSignal["severity"]) =>
   s === "High" ? "bg-signal-yellow" :
   s === "Medium" ? "bg-electric-blue" : "bg-signal-green";
 
+type AuditType = "internal" | "external";
+type AuditStatus = "idle" | "selecting" | "running" | "complete";
+
+interface AuditFinding {
+  area: string;
+  status: "pass" | "warn" | "fail";
+  finding: string;
+  recommendation: string;
+  source: string;
+}
+
+const EXTERNAL_AUDIT_AREAS: AuditFinding[] = [
+  { area: "Financial Controls", status: "warn", finding: "Budget approval thresholds exceed single-signatory limits on 3 initiatives", recommendation: "Implement dual-control approval for expenditures >$50K", source: "SOX Section 302/404" },
+  { area: "Risk Register Compliance", status: "pass", finding: "7/10 initiatives have documented, active risk registers", recommendation: "Extend to all initiatives — INI-001, INI-002, INI-003 remain undocumented", source: "ISO 31000:2018" },
+  { area: "Governance Documentation", status: "warn", finding: "3 initiatives lack board-level approval thresholds", recommendation: "Define escalation thresholds for all capital commitments", source: "COSO ERM Framework" },
+  { area: "Policy Adherence", status: "pass", finding: "Operational policies reviewed and current across 8/9 departments", recommendation: "Refresh Technology policy — last reviewed 14 months ago", source: "ISO 9001:2015" },
+  { area: "Audit Trail Integrity", status: "pass", finding: "Governance log entries present for all major decisions", recommendation: "Introduce automated timestamping for decision log entries", source: "SOX Audit Trail Requirements" },
+  { area: "Segregation of Duties", status: "fail", finding: "2 departments lack segregation between approver and executor roles", recommendation: "Immediate role separation required for Program Delivery and Finance", source: "COSO Internal Control Framework" },
+  { area: "Regulatory Alignment", status: "warn", finding: "GDPR data handling review overdue by 60 days", recommendation: "Schedule immediate data privacy audit with DPO", source: "GDPR Article 35" },
+  { area: "Compliance Reporting", status: "pass", finding: "Board reports issued quarterly with no missed cycles", recommendation: "Add risk register summary to board pack for completeness", source: "OECD Corporate Governance Principles" },
+];
+
+const INTERNAL_AUDIT_AREAS: AuditFinding[] = [
+  { area: "Strategic Alignment", status: "warn", finding: "Marketing Q2 OKRs misaligned with pipeline targets (68% brand vs 45% demand-gen)", recommendation: "Realign Marketing OKRs in next sprint planning cycle", source: "Balanced Scorecard (Kaplan & Norton)" },
+  { area: "Initiative Health", status: "warn", finding: "INI-007 at 94% capacity load with no deferral plan in place", recommendation: "Pause or rescope INI-007 until Program Delivery capacity drops below 80%", source: "PMBOK Resource Management" },
+  { area: "Execution Discipline", status: "fail", finding: "Average action item close rate: 61% — target is 80%", recommendation: "Introduce weekly action item review cadence with department leads", source: "Lean Execution (Womack & Jones)" },
+  { area: "Capacity Utilization", status: "warn", finding: "Program Delivery at 94%, Technology at 87% — above sustainable threshold", recommendation: "Reallocate 2 FTEs from underutilized Customer Success (62%) to delivery", source: "Lean Workload Analysis" },
+  { area: "Dependency Mapping", status: "pass", finding: "Critical dependencies mapped for 8/10 active initiatives", recommendation: "Complete dependency mapping for INI-004 and INI-009", source: "Critical Chain (Goldratt)" },
+  { area: "Process Adherence", status: "pass", finding: "Core operational processes documented and followed in 7/9 departments", recommendation: "Update Sales process SOPs to reflect new CRM workflow", source: "PDCA Cycle (Deming)" },
+  { area: "Leadership Bandwidth", status: "warn", finding: "COO approval required for 14 items currently pending — creating bottleneck", recommendation: "Delegate Tier 3 decisions to department heads via updated authority matrix", source: "Span of Control Analysis (Galbraith)" },
+  { area: "Knowledge Capture", status: "fail", finding: "No lessons-learned documentation in last 2 completed initiatives", recommendation: "Implement post-project retrospective template — mandatory for all closures", source: "Agile Retrospectives (Derby & Larsen)" },
+  { area: "Communication Flows", status: "pass", finding: "Weekly status reports issued for all active Tier 1 initiatives", recommendation: "Extend to Tier 2 — currently only 40% have standing updates", source: "PMBOK Communications Management" },
+  { area: "Maturity Progression", status: "warn", finding: "2 departments stuck at CMMI Level 2 for 3+ consecutive quarters", recommendation: "Assign improvement sponsor and 90-day maturity improvement plan", source: "CMMI Maturity Model" },
+];
+
 export default function Diagnostics() {
   const [typeFilter, setTypeFilter] = useState<FilterType>("All");
   const [govTab, setGovTab] = useState<"all" | "Risk" | "Decision" | "Change">("all");
@@ -59,9 +94,36 @@ export default function Diagnostics() {
   const [selectedCheck, setSelectedCheck] = useState<{ label: string; detail: string; status: string } | null>(null);
   const [engineTab, setEngineTab] = useState<"signals" | "diagnosis" | "frameworks" | "chains">("signals");
   const [expandedDiag, setExpandedDiag] = useState<string | null>(null);
+  const [auditStatus, setAuditStatus] = useState<AuditStatus>("idle");
+  const [auditType, setAuditType] = useState<AuditType | null>(null);
+  const [auditProgress, setAuditProgress] = useState(0);
+  const [auditFindings, setAuditFindings] = useState<AuditFinding[]>([]);
 
   // Run engine once (memoized)
   const engine = useMemo(() => getEngineState(), []);
+
+  function startAudit(type: AuditType) {
+    setAuditType(type);
+    setAuditStatus("running");
+    setAuditProgress(0);
+    setAuditFindings([]);
+    const findings = type === "external" ? EXTERNAL_AUDIT_AREAS : INTERNAL_AUDIT_AREAS;
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.floor(Math.random() * 12) + 8;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        setAuditFindings(findings);
+        setAuditStatus("complete");
+      }
+      setAuditProgress(Math.min(progress, 100));
+    }, 220);
+  }
+
+  const auditPass = auditFindings.filter(f => f.status === "pass").length;
+  const auditWarn = auditFindings.filter(f => f.status === "warn").length;
+  const auditFail = auditFindings.filter(f => f.status === "fail").length;
 
   const insightTypes = [...new Set(insights.map(i => i.type))];
   const filtered = [...insights]
@@ -90,6 +152,11 @@ export default function Diagnostics() {
             <Zap className="w-3.5 h-3.5" />
             {showSummary ? "Hide" : "Show"} Summary
             {showSummary ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+          <button onClick={() => setAuditStatus("selecting")}
+            className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border-2 border-teal/40 text-teal font-semibold hover:bg-teal/8 transition-colors">
+            <ClipboardList className="w-3.5 h-3.5" />
+            Full Org Audit
           </button>
           <div className="text-right">
             <div className="text-xs text-muted-foreground mb-0.5">Open Items</div>
@@ -614,6 +681,177 @@ export default function Diagnostics() {
             <div className="bg-secondary rounded-lg p-4">
               <p className="text-sm text-muted-foreground leading-relaxed">{selectedCheck.detail}</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Org Audit Modal ── */}
+      {(auditStatus === "selecting" || auditStatus === "running" || auditStatus === "complete") && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={() => auditStatus !== "running" && setAuditStatus("idle")} />
+          <div className="relative w-full max-w-2xl bg-card border-2 border-border rounded-2xl shadow-elevated animate-fade-in max-h-[90vh] flex flex-col">
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3 px-6 py-4 border-b-2 border-border bg-secondary/60 rounded-t-2xl">
+              <ClipboardList className="w-5 h-5 text-teal" />
+              <div className="flex-1">
+                <h2 className="text-sm font-bold text-foreground">Full Organizational Audit</h2>
+                <p className="text-xs text-muted-foreground">
+                  {auditStatus === "selecting" && "Select audit type to begin"}
+                  {auditStatus === "running" && `Running ${auditType === "external" ? "External Compliance" : "Internal Operational"} Audit…`}
+                  {auditStatus === "complete" && `${auditType === "external" ? "External Compliance" : "Internal Operational"} Audit Complete`}
+                </p>
+              </div>
+              {auditStatus !== "running" && (
+                <button onClick={() => setAuditStatus("idle")} className="p-1.5 rounded-lg hover:bg-secondary transition-colors">
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+
+            {/* Audit Type Selection */}
+            {auditStatus === "selecting" && (
+              <div className="p-6 space-y-4">
+                <p className="text-sm text-muted-foreground">Choose the type of audit to run against your organization:</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* External Audit */}
+                  <button
+                    onClick={() => startAudit("external")}
+                    className="text-left p-5 rounded-xl border-2 border-border hover:border-teal/50 hover:bg-teal/4 transition-all group"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-teal/10 border border-teal/30 flex items-center justify-center">
+                        <Building2 className="w-4 h-4 text-teal" />
+                      </div>
+                      <span className="text-sm font-bold text-foreground group-hover:text-teal transition-colors">External Audit</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                      Checks your organization against standards that actual external auditors and compliance bodies use. Focuses on regulatory requirements, governance controls, financial oversight, and legal compliance.
+                    </p>
+                    <div className="space-y-1">
+                      {["SOX compliance & financial controls", "ISO 31000 risk register standards", "COSO internal control framework", "GDPR & regulatory alignment", "Corporate governance (OECD)"].map(item => (
+                        <div key={item} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <span className="w-1 h-1 rounded-full bg-teal flex-shrink-0" />
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 text-xs font-semibold text-teal">Run External Audit →</div>
+                  </button>
+
+                  {/* Internal Audit */}
+                  <button
+                    onClick={() => startAudit("internal")}
+                    className="text-left p-5 rounded-xl border-2 border-border hover:border-electric-blue/50 hover:bg-electric-blue/4 transition-all group"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 rounded-lg bg-electric-blue/10 border border-electric-blue/30 flex items-center justify-center">
+                        <Search className="w-4 h-4 text-electric-blue" />
+                      </div>
+                      <span className="text-sm font-bold text-foreground group-hover:text-electric-blue transition-colors">Internal Audit</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                      Checks that everything inside your organization is running smoothly. Focuses on operational health, strategic alignment, execution discipline, and process adherence.
+                    </p>
+                    <div className="space-y-1">
+                      {["Strategic & OKR alignment", "Initiative health & delivery", "Execution discipline & backlog", "Leadership bandwidth & span", "Knowledge capture & maturity"].map(item => (
+                        <div key={item} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <span className="w-1 h-1 rounded-full bg-electric-blue flex-shrink-0" />
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 text-xs font-semibold text-electric-blue">Run Internal Audit →</div>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Running State */}
+            {auditStatus === "running" && (
+              <div className="p-8 flex flex-col items-center gap-6">
+                <div className="w-16 h-16 rounded-full border-4 border-teal/20 border-t-teal animate-spin" />
+                <div className="text-center">
+                  <div className="text-sm font-bold text-foreground mb-1">Scanning organizational data…</div>
+                  <div className="text-xs text-muted-foreground">Running {auditType === "external" ? "compliance and governance" : "operational and strategic"} checks</div>
+                </div>
+                <div className="w-full max-w-xs">
+                  <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
+                    <span>Progress</span>
+                    <span>{auditProgress}%</span>
+                  </div>
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-teal rounded-full transition-all duration-300"
+                      style={{ width: `${auditProgress}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Results */}
+            {auditStatus === "complete" && (
+              <div className="flex flex-col overflow-hidden">
+                {/* Score summary */}
+                <div className="grid grid-cols-3 divide-x border-b border-border">
+                  <div className="py-3 text-center">
+                    <div className="text-xl font-bold font-mono text-signal-green">{auditPass}</div>
+                    <div className="text-xs text-muted-foreground">Passed</div>
+                  </div>
+                  <div className="py-3 text-center">
+                    <div className="text-xl font-bold font-mono text-signal-yellow">{auditWarn}</div>
+                    <div className="text-xs text-muted-foreground">Warnings</div>
+                  </div>
+                  <div className="py-3 text-center">
+                    <div className="text-xl font-bold font-mono text-signal-red">{auditFail}</div>
+                    <div className="text-xs text-muted-foreground">Failed</div>
+                  </div>
+                </div>
+
+                <div className="overflow-y-auto divide-y">
+                  {auditFindings.map((finding, i) => (
+                    <div key={i} className="px-5 py-4 hover:bg-secondary/20 transition-colors">
+                      <div className="flex items-start gap-3">
+                        {finding.status === "pass"
+                          ? <CheckCircle className="w-4 h-4 text-signal-green mt-0.5 flex-shrink-0" />
+                          : finding.status === "warn"
+                          ? <AlertCircle className="w-4 h-4 text-signal-yellow mt-0.5 flex-shrink-0" />
+                          : <AlertTriangle className="w-4 h-4 text-signal-red mt-0.5 flex-shrink-0" />}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <span className="text-xs font-bold text-foreground">{finding.area}</span>
+                            <span className={cn("text-xs px-1.5 py-0.5 rounded border font-medium",
+                              finding.status === "pass" ? "text-signal-green bg-signal-green/10 border-signal-green/30" :
+                              finding.status === "warn" ? "text-signal-yellow bg-signal-yellow/10 border-signal-yellow/30" :
+                              "text-signal-red bg-signal-red/10 border-signal-red/30"
+                            )}>{finding.status === "pass" ? "Pass" : finding.status === "warn" ? "Warning" : "Fail"}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-1.5 leading-relaxed">{finding.finding}</p>
+                          <div className="flex items-start gap-1.5">
+                            <ArrowRightCircle className="w-3 h-3 text-teal mt-0.5 flex-shrink-0" />
+                            <p className="text-xs text-foreground/70 leading-relaxed">{finding.recommendation}</p>
+                          </div>
+                          <div className="mt-1.5 text-xs text-muted-foreground/70 italic">Source: {finding.source}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="px-6 py-4 border-t border-border bg-secondary/30 rounded-b-2xl flex items-center justify-between gap-3">
+                  <span className="text-xs text-muted-foreground">
+                    {auditType === "external" ? "External Compliance Audit" : "Internal Operational Audit"} · {new Date().toLocaleDateString()}
+                  </span>
+                  <button
+                    onClick={() => setAuditStatus("selecting")}
+                    className="text-xs px-3 py-1.5 rounded-lg border border-teal/40 text-teal hover:bg-teal/8 transition-colors font-medium"
+                  >
+                    Run Other Audit
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
