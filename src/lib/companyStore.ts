@@ -1,9 +1,21 @@
-// Company customization store — persisted to localStorage
+// Company profile store — persisted to localStorage
 export interface CompanyProfile {
-  name: string;
-  logo: string | null; // base64 data URL
-  mission: string;
-  accentHue: number; // 0-360
+  // Identity
+  userName: string;
+  orgName: string;
+  orgType: string;
+  industry: string;
+  // Scale
+  teamSize: string;
+  revenueRange: string;
+  // Direction
+  currentState: string;
+  futureState: string;
+  // Structure
+  departments: string[];
+  hasSops: boolean;
+  // App settings (kept for theme continuity)
+  accentHue: number;
   font: "inter" | "mono" | "rounded";
   density: "compact" | "comfortable" | "spacious";
   analyticsEnabled: boolean;
@@ -13,9 +25,16 @@ export interface CompanyProfile {
 const STORAGE_KEY = "martin_company_profile";
 
 const defaults: CompanyProfile = {
-  name: "Your Organization",
-  logo: null,
-  mission: "",
+  userName: "",
+  orgName: "",
+  orgType: "",
+  industry: "",
+  teamSize: "",
+  revenueRange: "",
+  currentState: "",
+  futureState: "",
+  departments: [],
+  hasSops: false,
   accentHue: 210,
   font: "inter",
   density: "comfortable",
