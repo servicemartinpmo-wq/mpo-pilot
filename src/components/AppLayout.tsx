@@ -2,9 +2,9 @@ import { NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Rocket, Activity, Building2,
-  Settings, Zap, ChevronRight, FileText, ToggleLeft, ToggleRight, CheckSquare,
+  Settings, Zap, ChevronRight, FileText, CheckSquare,
   BookOpen, Plug, Users, ChevronLeft, Headphones, TrendingUp, GitBranch,
-  Brain, BarChart3
+  Brain, BarChart3, Moon, BellOff, Bell, Clock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
@@ -26,6 +26,15 @@ const navItems = [
   { to: "/admin",        label: "Systems",      icon: Settings,        group: "tools" },
 ];
 
+type SnoozeDuration = "off" | "1h" | "3h" | "tonight" | "weekend" | "custom";
+
+interface SnoozeState {
+  active: boolean;
+  duration: SnoozeDuration;
+  until?: Date;
+  label: string;
+}
+
 interface Props {
   children: React.ReactNode;
   profile: CompanyProfile;
@@ -33,10 +42,20 @@ interface Props {
 }
 
 export default function AppLayout({ children, profile, onProfileUpdate }: Props) {
-  const [analyticsOn, setAnalyticsOn] = useState(profile.analyticsEnabled);
   const [collapsed, setCollapsed] = useState(false);
   const [healthScore, setHealthScore] = useState(0);
   const [animatedScore, setAnimatedScore] = useState(0);
+  const [snoozeOpen, setSnoozeOpen] = useState(false);
+  const [snooze, setSnooze] = useState<SnoozeState>(() => {
+    try {
+      const raw = localStorage.getItem("apphia_snooze");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed.until && new Date(parsed.until) > new Date()) return parsed;
+      }
+    } catch {}
+    return { active: false, duration: "off", label: "Notifications on" };
+  });
 
   useEffect(() => {
     const scores = runMaturityScoring();
@@ -52,11 +71,33 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
     return () => clearInterval(interval);
   }, []);
 
-  function toggleAnalytics() {
-    const updated = { ...profile, analyticsEnabled: !analyticsOn };
-    setAnalyticsOn(!analyticsOn);
-    saveProfile(updated);
-    onProfileUpdate(updated);
+  function activateSnooze(duration: SnoozeDuration, label: string) {
+    const now = new Date();
+    let until: Date | undefined;
+    if (duration === "1h") { until = new Date(now.getTime() + 60 * 60 * 1000); }
+    else if (duration === "3h") { until = new Date(now.getTime() + 3 * 60 * 60 * 1000); }
+    else if (duration === "tonight") {
+      until = new Date(now);
+      until.setHours(23, 59, 59, 0);
+    } else if (duration === "weekend") {
+      // Until Monday 7am
+      const monday = new Date(now);
+      const daysUntilMonday = (8 - monday.getDay()) % 7 || 7;
+      monday.setDate(monday.getDate() + daysUntilMonday);
+      monday.setHours(7, 0, 0, 0);
+      until = monday;
+    }
+    const newSnooze: SnoozeState = { active: true, duration, until, label };
+    setSnooze(newSnooze);
+    localStorage.setItem("apphia_snooze", JSON.stringify(newSnooze));
+    setSnoozeOpen(false);
+  }
+
+  function clearSnooze() {
+    const newSnooze: SnoozeState = { active: false, duration: "off", label: "Notifications on" };
+    setSnooze(newSnooze);
+    localStorage.removeItem("apphia_snooze");
+    setSnoozeOpen(false);
   }
 
   const commandNav = navItems.filter((n) => n.group === "command");
@@ -98,7 +139,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           background: "radial-gradient(ellipse 130% 100% at 50% 115%, hsl(183 55% 35% / 0.12) 0%, transparent 70%)"
         }} />
 
-        {/* ── Left edge accent line ── */}
+        {/* ── Right edge accent line ── */}
         <div className="absolute inset-y-0 right-0 w-px z-10" style={{
           background: "linear-gradient(180deg, transparent 0%, hsl(0 0% 100% / 0.06) 20%, hsl(0 0% 100% / 0.06) 80%, transparent 100%)"
         }} />
@@ -165,23 +206,12 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
               </div>
 
               {/* Score bar */}
-              <div className="h-1 rounded-full overflow-hidden mb-2.5" style={{ background: "hsl(0 0% 100% / 0.09)" }}>
+              <div className="h-1 rounded-full overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.09)" }}>
                 <div className="h-full rounded-full transition-all duration-1000" style={{
                   width: `${animatedScore}%`,
                   background: `linear-gradient(90deg, ${scoreColor}, hsl(183 55% 42%))`
                 }} />
               </div>
-
-              {/* Analytics toggle */}
-              <button
-                onClick={toggleAnalytics}
-                className="flex items-center gap-1.5 text-[10px] font-medium transition-all hover:opacity-100"
-                style={{ color: analyticsOn ? "hsl(var(--signal-green))" : "hsl(0 0% 100% / 0.3)" }}>
-                {analyticsOn
-                  ? <ToggleRight className="w-3.5 h-3.5" />
-                  : <ToggleLeft className="w-3.5 h-3.5" />}
-                Analytics {analyticsOn ? "on" : "off"}
-              </button>
             </div>
           )}
 
@@ -271,22 +301,90 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
             </div>
           </nav>
 
-          {/* Footer */}
-          {!collapsed && (
-            <div className="px-3.5 py-3.5 border-t space-y-2" style={{ borderColor: "hsl(0 0% 100% / 0.07)" }}>
-              <div className="flex items-center gap-2">
-                <Brain className="w-3 h-3" style={{ color: "hsl(233 65% 65% / 0.6)" }} />
-                <span className="text-[10px] font-semibold" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
-                  Apphia Engine Active
-                </span>
-                <div className="ml-auto w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--signal-green))" }} />
+          {/* ── Footer: Engine Status + Snooze ── */}
+          <div className="px-3 pb-3 pt-2 border-t space-y-2 relative" style={{ borderColor: "hsl(0 0% 100% / 0.07)" }}>
+
+            {/* Engine status (only when expanded) */}
+            {!collapsed && (
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <Brain className="w-3 h-3" style={{ color: "hsl(233 65% 65% / 0.6)" }} />
+                  <span className="text-[10px] font-semibold" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                    Apphia Engine Active
+                  </span>
+                  <div className="ml-auto w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--signal-green))" }} />
+                </div>
+                <div className="flex items-center gap-1.5" style={{ color: "hsl(0 0% 100% / 0.2)" }}>
+                  <BarChart3 className="w-3 h-3" />
+                  <span className="text-[10px]">25 AI systems · 100+ frameworks</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5" style={{ color: "hsl(0 0% 100% / 0.2)" }}>
-                <BarChart3 className="w-3 h-3" />
-                <span className="text-[10px]">25 AI systems · 100+ frameworks</span>
-              </div>
+            )}
+
+            {/* ── Snooze Control ── */}
+            <div className="relative">
+              <button
+                onClick={() => setSnoozeOpen(o => !o)}
+                className={cn(
+                  "w-full flex items-center gap-2 px-2.5 py-2 rounded-lg transition-all",
+                  snooze.active
+                    ? "bg-signal-yellow/10 border border-signal-yellow/20"
+                    : "hover:bg-white/[0.05]"
+                )}>
+                {snooze.active
+                  ? <Moon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "hsl(var(--signal-yellow))" }} />
+                  : <Bell className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "hsl(0 0% 100% / 0.35)" }} />
+                }
+                {!collapsed && (
+                  <span className="text-[11px] font-medium truncate" style={{
+                    color: snooze.active ? "hsl(var(--signal-yellow))" : "hsl(0 0% 100% / 0.35)"
+                  }}>
+                    {snooze.active ? snooze.label : "Notifications on"}
+                  </span>
+                )}
+              </button>
+
+              {/* Snooze dropdown */}
+              {snoozeOpen && (
+                <div className="absolute bottom-full mb-2 left-0 right-0 rounded-xl border overflow-hidden shadow-2xl z-50"
+                  style={{
+                    background: "hsl(225 52% 11%)",
+                    borderColor: "hsl(0 0% 100% / 0.1)"
+                  }}>
+                  <div className="px-3 py-2 border-b" style={{ borderColor: "hsl(0 0% 100% / 0.07)" }}>
+                    <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                      Snooze Notifications
+                    </span>
+                  </div>
+                  {[
+                    { d: "1h" as const, label: "For 1 hour", icon: Clock },
+                    { d: "3h" as const, label: "For 3 hours", icon: Clock },
+                    { d: "tonight" as const, label: "Until tomorrow", icon: Moon },
+                    { d: "weekend" as const, label: "Weekend mode", icon: Moon },
+                  ].map(({ d, label, icon: Icon }) => (
+                    <button
+                      key={d}
+                      onClick={() => activateSnooze(d, label)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-[12px] transition-all hover:bg-white/[0.06]"
+                      style={{ color: "hsl(0 0% 100% / 0.65)" }}>
+                      <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "hsl(var(--signal-yellow) / 0.6)" }} />
+                      {!collapsed && label}
+                    </button>
+                  ))}
+                  {snooze.active && (
+                    <button
+                      onClick={clearSnooze}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-[12px] transition-all hover:bg-white/[0.06] border-t"
+                      style={{ borderColor: "hsl(0 0% 100% / 0.07)", color: "hsl(var(--signal-green) / 0.7)" }}>
+                      <Bell className="w-3.5 h-3.5 flex-shrink-0" />
+                      {!collapsed && "Turn on again"}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
-          )}
+          </div>
+
         </div>
       </aside>
 
