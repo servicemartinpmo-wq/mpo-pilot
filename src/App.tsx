@@ -24,6 +24,8 @@ const App = () => {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // DEV RESET: uncomment the next line to force onboarding, then recomment it
+    // resetOnboarding();
     const p = loadProfile();
     if (p.onboardingComplete) {
       applyAccentColor(p.accentHue);
