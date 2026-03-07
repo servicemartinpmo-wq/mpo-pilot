@@ -581,10 +581,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                     <div className="flex gap-2">
                       <input
                         className="flex-1 rounded-xl px-3 py-2.5 text-xs outline-none font-medium"
-                        style={{
-                          ...inputStyle(!!customDept),
-                          placeholder: "hsl(var(--muted-foreground))",
-                        }}
+                      style={inputStyle(!!customDept)}
                         placeholder="Add custom department..."
                         value={customDept}
                         onChange={e => setCustomDept(e.target.value)}
