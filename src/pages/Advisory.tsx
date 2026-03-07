@@ -146,6 +146,13 @@ export default function Advisory() {
   const [requestStatus, setRequestStatus] = useState<RequestStatus>("idle");
   const [hoveredAdvisor, setHoveredAdvisor] = useState<string | null>(null);
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
+  const [showRecs, setShowRecs] = useState(false);
+
+  // Live engine recommendations
+  const engine = useMemo(() => getEngineState(), []);
+  const immediateRecs = engine.recommendations.filter(r => r.priority === "Immediate");
+  const weekRecs = engine.recommendations.filter(r => r.priority === "This Week");
+  const monthRecs = engine.recommendations.filter(r => r.priority === "This Month");
 
   const coreAdvisors = ADVISORS.filter(a => a.category === "core");
   const optionalAdvisors = ADVISORS.filter(a => a.category === "optional");
