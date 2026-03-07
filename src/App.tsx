@@ -15,6 +15,7 @@ import NotFound from "./pages/NotFound";
 import OnboardingWizard from "./components/OnboardingWizard";
 import ActionItems from "./pages/ActionItems";
 import Knowledge from "./pages/Knowledge";
+import Workflows from "./pages/Workflows";
 import Integrations from "./pages/Integrations";
 import Advisory from "./pages/Advisory";
 import Team from "./pages/Team";
