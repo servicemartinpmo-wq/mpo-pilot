@@ -347,13 +347,13 @@ export default function OnboardingWizard({ onComplete }: Props) {
               {step === 0 && (
                 <div className="space-y-5">
                   <div>
-                    <h2 className="text-2xl xl:text-3xl font-black text-white mb-1.5 tracking-tight">{current.headline}</h2>
-                    <p className="text-sm font-light" style={{ color: "hsl(220 10% 48%)" }}>{current.sub}</p>
+                    <h2 className="text-2xl xl:text-3xl font-black mb-1.5 tracking-tight" style={{ color: "hsl(225 45% 14%)" }}>{current.headline}</h2>
+                    <p className="text-sm font-light" style={{ color: "hsl(220 12% 48%)" }}>{current.sub}</p>
                   </div>
 
                   {/* Your Name */}
                   <div>
-                    <FieldLabel>Your Name <span style={{ color: "hsl(5 75% 55%)" }}>*</span></FieldLabel>
+                    <FieldLabel>Your Name <span style={{ color: "hsl(5 72% 50%)" }}>*</span></FieldLabel>
                     <div className="relative">
                       <input className={BASE_INPUT} style={inputStyle(!!form.userName)}
                         placeholder="e.g. Jordan Martin"
@@ -362,7 +362,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                         autoFocus />
                       {form.userName && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center"
-                          style={{ background: "hsl(145 55% 40%)" }}>
+                          style={{ background: "hsl(148 52% 38%)" }}>
                           <Check className="w-3 h-3 text-white" />
                         </div>
                       )}
@@ -371,7 +371,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
 
                   {/* Organization Name */}
                   <div>
-                    <FieldLabel>Organization Name <span style={{ color: "hsl(5 75% 55%)" }}>*</span></FieldLabel>
+                    <FieldLabel>Organization Name <span style={{ color: "hsl(5 72% 50%)" }}>*</span></FieldLabel>
                     <div className="relative">
                       <input className={BASE_INPUT} style={inputStyle(!!form.orgName)}
                         placeholder="e.g. Apex Operations Group"
@@ -379,7 +379,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                         onChange={e => setForm(f => ({ ...f, orgName: e.target.value }))} />
                       {form.orgName && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center"
-                          style={{ background: "hsl(145 55% 40%)" }}>
+                          style={{ background: "hsl(148 52% 38%)" }}>
                           <Check className="w-3 h-3 text-white" />
                         </div>
                       )}
@@ -389,7 +389,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                   {/* Org Type */}
                   <div>
                     <FieldLabel>Organization Type</FieldLabel>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 gap-3">
                       {ORG_TYPES.map(t => (
                         <SelectPill key={t} label={t} selected={form.orgType === t}
                           onClick={() => setForm(f => ({ ...f, orgType: t }))} />
@@ -401,7 +401,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                   <div>
                     <FieldLabel>Industry</FieldLabel>
                     <div className="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1"
-                      style={{ scrollbarWidth: "thin", scrollbarColor: "hsl(220 15% 25%) transparent" }}>
+                      style={{ scrollbarWidth: "thin", scrollbarColor: "hsl(220 15% 80%) transparent" }}>
                       {INDUSTRIES.map(ind => (
                         <SelectPill key={ind} label={ind} selected={form.industry === ind}
                           onClick={() => setForm(f => ({ ...f, industry: ind }))} />
