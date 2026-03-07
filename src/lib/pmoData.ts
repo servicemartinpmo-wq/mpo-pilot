@@ -882,6 +882,7 @@ export const initiatives: Initiative[] = [
     id: "ini-007",
     name: "Brand Refresh Campaign",
     department: "Marketing",
+    category: "Supportive",
     owner: "Chloe Berger",
     executiveOwner: "Marcus Osei",
     strategicPillar: "Revenue Acceleration",
