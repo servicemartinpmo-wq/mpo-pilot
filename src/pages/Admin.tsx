@@ -90,6 +90,7 @@ export default function Admin() {
           { key: "authority", label: "Authority Matrix" },
           { key: "sops", label: "SOP Library" },
           { key: "access", label: "Access & Roles" },
+          { key: "customize", label: "Customize" },
         ] as const).map(({ key, label }) => (
           <button key={key} onClick={() => setActiveTab(key)}
             className={cn("text-sm px-4 py-2.5 font-medium transition-all border-b-2 -mb-px",
