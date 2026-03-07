@@ -42,22 +42,20 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
         {/* Logo / Brand */}
         <div className="px-5 pt-6 pb-4 border-b-2" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
           <div className="flex items-center gap-2.5 mb-1">
-            {profile.logo ? (
-              <img src={profile.logo} alt="logo" className="w-7 h-7 rounded object-contain bg-white/10" />
-            ) : (
-              <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: "var(--gradient-electric)" }}>
-                <Zap className="w-3.5 h-3.5 text-white" />
-              </div>
-            )}
+            <div className="w-7 h-7 rounded flex items-center justify-center" style={{ background: "var(--gradient-electric)" }}>
+              <Zap className="w-3.5 h-3.5 text-white" />
+            </div>
             <div className="min-w-0">
               <span className="text-xs font-bold tracking-widest uppercase block truncate" style={{ color: "hsl(var(--sidebar-primary))" }}>
-                {profile.name.length > 18 ? profile.name.slice(0, 17) + "…" : profile.name || "MARTIN"}
+                {profile.orgName
+                  ? (profile.orgName.length > 18 ? profile.orgName.slice(0, 17) + "…" : profile.orgName)
+                  : "MARTIN"}
               </span>
             </div>
           </div>
-          {profile.mission && (
+          {profile.currentState && (
             <p className="text-xs mt-1 leading-snug line-clamp-2" style={{ color: "hsl(var(--sidebar-foreground) / 0.45)" }}>
-              {profile.mission}
+              {profile.currentState}
             </p>
           )}
           <p className="text-xs mt-0.5" style={{ color: "hsl(var(--sidebar-foreground) / 0.4)" }}>
