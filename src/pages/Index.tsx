@@ -428,13 +428,13 @@ export default function Dashboard() {
               {greeting}{firstName ? `, ${firstName}` : ""}.
             </h1>
             <div className="flex flex-wrap items-center gap-2 text-sm mb-2">
-              {profile.orgName && <span className="font-semibold text-foreground">{profile.orgName}</span>}
-              {profile.industry && (<><span className="text-border">·</span><span className="text-muted-foreground">{profile.industry}</span></>)}
-              {profile.orgType && (<><span className="text-border">·</span><span className="text-muted-foreground">{profile.orgType}</span></>)}
+              {data.orgName && <span className="font-semibold text-foreground">{data.orgName}</span>}
+              {data.industry && (<><span className="text-border">·</span><span className="text-muted-foreground">{data.industry}</span></>)}
+              {data.orgType && (<><span className="text-border">·</span><span className="text-muted-foreground">{data.orgType}</span></>)}
             </div>
-            {profile.futureState && (
+            {data.futureState && (
               <p className="text-sm text-muted-foreground max-w-xl leading-relaxed">
-                <span className="text-foreground font-medium">Vision — </span>{profile.futureState}
+                <span className="text-foreground font-medium">Vision — </span>{data.futureState}
               </p>
             )}
           </div>
