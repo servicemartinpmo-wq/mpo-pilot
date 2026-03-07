@@ -847,6 +847,7 @@ export const initiatives: Initiative[] = [
     id: "ini-006",
     name: "Technical Talent Acquisition Sprint",
     department: "Human Capital",
+    category: "Supportive",
     owner: "Amara Diallo",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Talent & Culture",
