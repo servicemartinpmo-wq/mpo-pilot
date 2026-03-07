@@ -59,7 +59,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
             </p>
           )}
           <p className="text-xs mt-0.5" style={{ color: "hsl(var(--sidebar-foreground) / 0.4)" }}>
-            PMO-OPs Command Center
+            PMO-Ops Command Center
           </p>
         </div>
 
