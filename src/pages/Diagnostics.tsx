@@ -211,8 +211,8 @@ export default function Diagnostics() {
       {/* Framework Diagnosis Summary */}
       <div className="bg-card rounded-lg border shadow-card">
         <div className="px-4 py-3 border-b flex items-center gap-2">
-          <Cpu className="w-4 h-4 text-electric-blue" />
-          <h2 className="text-sm font-semibold text-foreground">Framework Diagnosis Summary</h2>
+          <Activity className="w-4 h-4 text-electric-blue" />
+          <h2 className="text-sm font-semibold text-foreground">Analysis Module Summary</h2>
         </div>
         <div className="divide-y">
           {frameworks.map((fw) => (
