@@ -432,46 +432,69 @@ export default function Dashboard() {
           <span className="text-xs text-muted-foreground">Years of consulting expertise, built into every tier</span>
         </div>
         <div className="p-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          {TIERS.map((tier) => (
-            <div key={tier.id} className="rounded-xl border-2 p-4 flex flex-col gap-3 relative"
-              style={{ borderColor: tier.border, background: tier.bg }}>
-              {tier.locked && (
-                <div className="absolute top-3 right-3">
-                  <Lock className="w-3.5 h-3.5 text-muted-foreground opacity-50" />
-                </div>
-              )}
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: tier.color }}>{tier.label}</span>
-                  {tier.price && (
-                    <span className="text-xs font-mono font-semibold text-foreground">{tier.price}</span>
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">{tier.tagline}</p>
-              </div>
-              <ul className="space-y-1.5 flex-1">
-                {tier.features.map((f) => (
-                  <li key={f} className="flex items-start gap-1.5 text-xs text-foreground/75">
-                    <CheckCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: tier.color }} />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <button
-                disabled={!tier.locked}
-                className="w-full text-xs font-semibold py-2 px-3 rounded-lg border transition-all"
+          {TIERS.map((tier) => {
+            const isCurrent = tier.status === "current";
+            const isLocked = tier.status === "locked";
+            const isTrial = tier.status === "trial";
+            const isSubscribe = tier.status === "subscribe";
+            return (
+              <div key={tier.id} className="rounded-xl border-2 p-4 flex flex-col gap-3 relative"
                 style={{
-                  borderColor: tier.locked ? tier.color : "hsl(var(--border))",
-                  color: tier.locked ? tier.color : "hsl(var(--muted-foreground))",
-                  background: tier.locked ? `${tier.bg}` : "transparent",
-                  opacity: tier.locked ? 1 : 0.7,
-                  cursor: tier.locked ? "pointer" : "default",
-                }}
-              >
-                {tier.cta}
-              </button>
-            </div>
-          ))}
+                  borderColor: tier.border,
+                  background: tier.bg,
+                  opacity: isLocked ? 0.55 : 1,
+                }}>
+                {/* Badge */}
+                {isTrial && tier.badge && (
+                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2">
+                    <span className="text-xs font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap"
+                      style={{ background: "hsl(var(--teal))", color: "#fff" }}>
+                      {tier.badge}
+                    </span>
+                  </div>
+                )}
+                {isLocked && (
+                  <div className="absolute top-3 right-3">
+                    <Lock className="w-3.5 h-3.5 text-muted-foreground opacity-60" />
+                  </div>
+                )}
+                {isCurrent && (
+                  <div className="absolute top-3 right-3">
+                    <CheckCircle className="w-3.5 h-3.5 opacity-50" style={{ color: tier.color }} />
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: tier.color }}>{tier.label}</span>
+                    {tier.price && (
+                      <span className="text-xs font-mono font-semibold text-foreground">{tier.price}</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{tier.tagline}</p>
+                </div>
+                <ul className="space-y-1.5 flex-1">
+                  {tier.features.map((f) => (
+                    <li key={f} className="flex items-start gap-1.5 text-xs" style={{ color: isLocked ? "hsl(var(--muted-foreground))" : "hsl(var(--foreground) / 0.75)" }}>
+                      <CheckCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: isLocked ? "hsl(var(--muted-foreground))" : tier.color }} />
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  disabled={isCurrent || isLocked}
+                  className="w-full text-xs font-semibold py-2 px-3 rounded-lg border-2 transition-all"
+                  style={{
+                    borderColor: isCurrent || isLocked ? "hsl(var(--border))" : tier.color,
+                    color: isCurrent ? "hsl(var(--muted-foreground))" : isLocked ? "hsl(var(--muted-foreground))" : tier.color,
+                    background: isTrial ? `hsl(var(--teal) / 0.1)` : isSubscribe ? `hsl(var(--electric-blue) / 0.08)` : "transparent",
+                    cursor: isCurrent || isLocked ? "default" : "pointer",
+                  }}
+                >
+                  {tier.cta}
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
