@@ -357,10 +357,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
               {/* ── STEP 0: Identity ── */}
               {step === 0 && (
                 <div className="space-y-5">
-                  <div>
-                    <h2 className="text-2xl xl:text-3xl font-black mb-1.5 tracking-tight text-foreground">{current.headline}</h2>
-                    <p className="text-sm font-light text-muted-foreground">{current.sub}</p>
-                  </div>
+                  <p className="text-sm text-muted-foreground">{current.sub}</p>
 
                   {/* Your Name */}
                   <div>
