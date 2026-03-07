@@ -412,6 +412,62 @@ export default function Dashboard() {
           ))}
         </div>
       </Section>
+
+      {/* ── Tier / Membership Cards ── */}
+      <div className="rounded-2xl border-2 overflow-hidden"
+        style={{ borderColor: "hsl(var(--navy) / 0.15)", background: "linear-gradient(135deg, hsl(var(--navy) / 0.06) 0%, hsl(var(--secondary)) 100%)" }}>
+        <div className="px-6 py-4 border-b-2 flex items-center justify-between"
+          style={{ borderColor: "hsl(var(--navy) / 0.12)" }}>
+          <div className="flex items-center gap-2">
+            <Zap className="w-4 h-4" style={{ color: "hsl(var(--electric-blue))" }} />
+            <span className="text-sm font-bold text-foreground uppercase tracking-wide">Unlock More with Martin PMO</span>
+          </div>
+          <span className="text-xs text-muted-foreground">Years of consulting expertise, built into every tier</span>
+        </div>
+        <div className="p-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {TIERS.map((tier) => (
+            <div key={tier.id} className="rounded-xl border-2 p-4 flex flex-col gap-3 relative"
+              style={{ borderColor: tier.border, background: tier.bg }}>
+              {tier.locked && (
+                <div className="absolute top-3 right-3">
+                  <Lock className="w-3.5 h-3.5 text-muted-foreground opacity-50" />
+                </div>
+              )}
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: tier.color }}>{tier.label}</span>
+                  {tier.price && (
+                    <span className="text-xs font-mono font-semibold text-foreground">{tier.price}</span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">{tier.tagline}</p>
+              </div>
+              <ul className="space-y-1.5 flex-1">
+                {tier.features.map((f) => (
+                  <li key={f} className="flex items-start gap-1.5 text-xs text-foreground/75">
+                    <CheckCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: tier.color }} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <button
+                disabled={!tier.locked}
+                className="w-full text-xs font-semibold py-2 px-3 rounded-lg border transition-all"
+                style={{
+                  borderColor: tier.locked ? tier.color : "hsl(var(--border))",
+                  color: tier.locked ? tier.color : "hsl(var(--muted-foreground))",
+                  background: tier.locked ? `${tier.bg}` : "transparent",
+                  opacity: tier.locked ? 1 : 0.7,
+                  cursor: tier.locked ? "pointer" : "default",
+                }}
+              >
+                {tier.cta}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
+
