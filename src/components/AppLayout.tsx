@@ -2,12 +2,14 @@ import { NavLink } from "react-router-dom";
 import { useState } from "react";
 import {
   LayoutDashboard, Rocket, Activity, Building2,
-  Settings, Zap, ChevronRight, FileText, ToggleLeft, ToggleRight, CheckSquare
+  Settings, Zap, ChevronRight, FileText, ToggleLeft, ToggleRight, CheckSquare,
+  BookOpen, Plug
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
 import { saveProfile } from "@/lib/companyStore";
 import { orgMetrics } from "@/lib/pmoData";
+
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -16,6 +18,8 @@ const navItems = [
   { to: "/action-items", label: "Action Items", icon: CheckSquare },
   { to: "/departments", label: "Departments", icon: Building2 },
   { to: "/reports", label: "Reports", icon: FileText },
+  { to: "/knowledge", label: "Knowledge", icon: BookOpen },
+  { to: "/integrations", label: "Integrations", icon: Plug },
   { to: "/admin", label: "Admin", icon: Settings },
 ];
 
