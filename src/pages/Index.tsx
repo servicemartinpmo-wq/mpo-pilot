@@ -129,6 +129,15 @@ export default function Dashboard() {
   const [dismissedPopups, setDismissedPopups] = useState<Set<string>>(new Set());
   const [popupsVisible, setPopupsVisible] = useState(false);
 
+  // Run engine once (memoized)
+  const engine = useMemo(() => getEngineState(), []);
+
+  // Live engine values
+  const liveHealth = engine.orgHealth;
+  const liveMaturity = engine.maturityScores;
+  const liveSignals = engine.signals;
+  const liveRecs = engine.recommendations;
+
   // Show popups after a brief delay on mount
   useEffect(() => {
     const t = setTimeout(() => setPopupsVisible(true), 800);
