@@ -46,9 +46,9 @@ export default function Admin() {
       {/* System health summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: "Reasoning Engine", status: "Operational", icon: Cpu, ok: true },
+          { label: "Analytics Engine", status: "Operational", icon: Cpu, ok: true },
           { label: "Data Layer", status: "Synced", icon: Database, ok: true },
-          { label: "Framework Logic", status: "7/7 Active", icon: Shield, ok: true },
+          { label: "Analysis Modules", status: "7/7 Active", icon: Shield, ok: true },
           { label: "Signal Detection", status: "Live", icon: AlertTriangle, ok: true },
         ].map(({ label, status, icon: Icon, ok }) => (
           <div key={label} className="bg-card rounded-lg border shadow-card p-3">
