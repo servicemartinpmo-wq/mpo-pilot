@@ -64,7 +64,7 @@ export default {
         "signal-green": "hsl(var(--signal-green))",
         "signal-blue": "hsl(var(--signal-blue))",
         navy: {
-          DEFAULT: "hsl(225 55% 18%)",
+          DEFAULT: "hsl(var(--navy))",
           50: "hsl(225 60% 97%)",
           100: "hsl(225 55% 92%)",
           200: "hsl(225 50% 82%)",
