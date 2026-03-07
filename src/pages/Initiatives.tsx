@@ -643,31 +643,55 @@ export default function Initiatives() {
     return counts;
   }, []);
 
-  return (
-    <div className="p-6 space-y-5">
+  const onTrack    = initiatives.filter(i => i.status === "On Track").length;
+  const blocked    = initiatives.filter(i => i.status === "Blocked").length;
+  const totalBudget = initiatives.reduce((s, i) => s + i.budget, 0);
+  const usedBudget  = initiatives.reduce((s, i) => s + i.budgetUsed, 0);
 
-      {/* ── Header ── */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-foreground mb-1">Initiatives</h1>
-          <p className="text-sm text-muted-foreground">
-            {initiatives.length} initiatives · Priority-scored against strategic OKRs and pillars
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowFilters(v => !v)}
-            className={cn("flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-xl border-2 transition-all",
-              showFilters
-                ? "bg-electric-blue/10 text-electric-blue border-electric-blue/40"
-                : "bg-card text-muted-foreground border-border hover:border-foreground/20"
-            )}>
-            <Filter className="w-3.5 h-3.5" />
-            Filters
-            {showFilters ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
+  return (
+    <div className="flex flex-col min-h-screen bg-background">
+
+      {/* ── LAYER 1: Page Header ── */}
+      <div className="page-header bg-card">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="section-label mb-1.5">Portfolio</div>
+            <h1 className="text-2xl font-black text-foreground tracking-tight mb-1">Initiatives</h1>
+            <p className="text-sm text-muted-foreground">
+              {initiatives.length} initiatives · Impact scored · OKR & strategic pillar alignment
+            </p>
+          </div>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-secondary rounded-xl px-3 py-2 text-center">
+                <div className="text-xl font-black font-mono text-signal-green">{onTrack}</div>
+                <div className="section-label">On Track</div>
+              </div>
+              <div className="bg-secondary rounded-xl px-3 py-2 text-center">
+                <div className="text-xl font-black font-mono text-signal-orange">{blocked}</div>
+                <div className="section-label">Blocked</div>
+              </div>
+              <div className="bg-secondary rounded-xl px-3 py-2 text-center">
+                <div className="text-xl font-black font-mono text-electric-blue">{Math.round((usedBudget / totalBudget) * 100)}%</div>
+                <div className="section-label">Budget</div>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowFilters(v => !v)}
+              className={cn("flex items-center gap-2 text-xs font-bold px-3 py-2.5 rounded-xl border transition-all",
+                showFilters
+                  ? "bg-electric-blue/10 text-electric-blue border-electric-blue/30"
+                  : "bg-card text-muted-foreground border-border hover:border-border/80"
+              )}>
+              <Filter className="w-3.5 h-3.5" />
+              Filters
+              {showFilters ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+          </div>
         </div>
       </div>
+
+      <div className="p-6 space-y-5">
 
       {/* ── Decision deadline banner ── */}
       {totalDecisionDeadlines > 0 && (
@@ -848,9 +872,10 @@ export default function Initiatives() {
         </div>
       )}
 
-      <p className="text-xs text-muted-foreground text-center">
-        Click any initiative card to view full detail, MOCHA ownership, governance logs, decision deadlines, and action items.
-      </p>
+        <p className="text-xs text-muted-foreground text-center">
+          Click any initiative card to view full detail, MOCHA ownership, governance logs, decision deadlines, and action items.
+        </p>
+      </div>
 
       {selectedIni && <InitiativeModal ini={selectedIni} onClose={() => setSelectedIni(null)} />}
     </div>

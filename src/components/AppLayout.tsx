@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import {
   LayoutDashboard, Rocket, Activity, Building2,
   Settings, Zap, ChevronRight, FileText, ToggleLeft, ToggleRight, CheckSquare,
-  BookOpen, Plug, Users, ChevronLeft, Headphones, TrendingUp, GitBranch
+  BookOpen, Plug, Users, ChevronLeft, Headphones, TrendingUp, GitBranch,
+  Brain, BarChart3
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
@@ -11,18 +12,18 @@ import { saveProfile } from "@/lib/companyStore";
 import { runOrgHealthScoring, runMaturityScoring } from "@/lib/engine/maturity";
 
 const navItems = [
-  { to: "/",              label: "Dashboard",    icon: LayoutDashboard, group: "main" },
-  { to: "/initiatives",   label: "Initiatives",  icon: Rocket,          group: "main" },
-  { to: "/action-items",  label: "Action Items", icon: CheckSquare,     group: "main" },
-  { to: "/departments",   label: "Departments",  icon: Building2,       group: "main" },
-  { to: "/team",          label: "Team",         icon: Users,           group: "main" },
-  { to: "/diagnostics",   label: "Diagnostics",  icon: Activity,        group: "main" },
-  { to: "/reports",       label: "Reports",      icon: FileText,        group: "tools" },
-  { to: "/knowledge",     label: "Resource Hub", icon: BookOpen,        group: "tools" },
-  { to: "/workflows",     label: "Workflows",    icon: GitBranch,       group: "tools" },
-  { to: "/advisory",      label: "Advisory",     icon: Headphones,      group: "tools" },
-  { to: "/integrations",  label: "Integrations", icon: Plug,            group: "tools" },
-  { to: "/admin",         label: "Systems",      icon: Settings,        group: "tools" },
+  { to: "/",             label: "Dashboard",    icon: LayoutDashboard, group: "command" },
+  { to: "/initiatives",  label: "Initiatives",  icon: Rocket,          group: "command" },
+  { to: "/action-items", label: "Action Items", icon: CheckSquare,     group: "command" },
+  { to: "/departments",  label: "Departments",  icon: Building2,       group: "command" },
+  { to: "/team",         label: "Team",         icon: Users,           group: "command" },
+  { to: "/diagnostics",  label: "Diagnostics",  icon: Activity,        group: "command" },
+  { to: "/reports",      label: "Reports",      icon: FileText,        group: "tools" },
+  { to: "/knowledge",    label: "Resource Hub", icon: BookOpen,        group: "tools" },
+  { to: "/workflows",    label: "Workflows",    icon: GitBranch,       group: "tools" },
+  { to: "/advisory",     label: "Advisory",     icon: Headphones,      group: "tools" },
+  { to: "/integrations", label: "Integrations", icon: Plug,            group: "tools" },
+  { to: "/admin",        label: "Systems",      icon: Settings,        group: "tools" },
 ];
 
 interface Props {
@@ -41,7 +42,6 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
     const scores = runMaturityScoring();
     const orgHealth = runOrgHealthScoring(scores);
     setHealthScore(orgHealth.overall);
-    // Animate score counter
     let current = 0;
     const step = orgHealth.overall / 40;
     const interval = setInterval(() => {
@@ -59,7 +59,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
     onProfileUpdate(updated);
   }
 
-  const mainNav = navItems.filter((n) => n.group === "main");
+  const commandNav = navItems.filter((n) => n.group === "command");
   const toolsNav = navItems.filter((n) => n.group === "tools");
 
   const scoreColor =
@@ -67,44 +67,46 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
     animatedScore >= 50 ? "hsl(var(--signal-yellow))" :
     "hsl(var(--signal-red))";
 
+  const sidebarWidth = collapsed ? 60 : 230;
+
   return (
-    <div className="pmo-grid" style={{ gridTemplateColumns: collapsed ? "60px 1fr" : "230px 1fr" }}>
+    <div className="pmo-grid" style={{ gridTemplateColumns: `${sidebarWidth}px 1fr` }}>
 
       {/* ── Sidebar ── */}
       <aside
         className="flex flex-col h-screen sticky top-0 overflow-hidden transition-all duration-300 relative"
-        style={{ width: collapsed ? 60 : 230 }}>
+        style={{ width: sidebarWidth }}>
 
-        {/* ── Deep layered background ── */}
+        {/* ── Base background ── */}
         <div className="absolute inset-0 z-0" style={{
-          background: "linear-gradient(175deg, hsl(225 55% 8%) 0%, hsl(228 50% 12%) 45%, hsl(230 45% 15%) 100%)"
+          background: "linear-gradient(180deg, hsl(225 52% 9%) 0%, hsl(227 48% 12%) 50%, hsl(229 44% 14%) 100%)"
         }} />
 
-        {/* ── Subtle grid overlay ── */}
-        <div className="absolute inset-0 z-0 opacity-[0.04]" style={{
-          backgroundImage: "linear-gradient(hsl(var(--sidebar-primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--sidebar-primary)) 1px, transparent 1px)",
-          backgroundSize: "28px 28px"
+        {/* ── Subtle grid pattern ── */}
+        <div className="absolute inset-0 z-0 opacity-[0.03]" style={{
+          backgroundImage: "linear-gradient(hsl(233 65% 65%) 1px, transparent 1px), linear-gradient(90deg, hsl(233 65% 65%) 1px, transparent 1px)",
+          backgroundSize: "24px 24px"
         }} />
 
-        {/* ── Radial glow top ── */}
-        <div className="absolute top-0 left-0 right-0 h-48 z-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse 140% 120% at 50% -10%, hsl(233 65% 60% / 0.18) 0%, transparent 70%)"
+        {/* ── Top radial glow (electric blue) ── */}
+        <div className="absolute top-0 left-0 right-0 h-56 z-0 pointer-events-none" style={{
+          background: "radial-gradient(ellipse 160% 120% at 50% -15%, hsl(233 65% 60% / 0.15) 0%, transparent 70%)"
         }} />
 
-        {/* ── Radial glow bottom ── */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 z-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse 120% 100% at 50% 110%, hsl(183 55% 32% / 0.12) 0%, transparent 70%)"
+        {/* ── Bottom radial glow (teal) ── */}
+        <div className="absolute bottom-0 left-0 right-0 h-36 z-0 pointer-events-none" style={{
+          background: "radial-gradient(ellipse 130% 100% at 50% 115%, hsl(183 55% 35% / 0.12) 0%, transparent 70%)"
         }} />
 
-        {/* ── Thin electric left border ── */}
-        <div className="absolute inset-y-0 left-0 w-px z-10" style={{
-          background: "linear-gradient(180deg, transparent 0%, hsl(233 65% 60% / 0.6) 30%, hsl(183 55% 40% / 0.4) 70%, transparent 100%)"
+        {/* ── Left edge accent line ── */}
+        <div className="absolute inset-y-0 right-0 w-px z-10" style={{
+          background: "linear-gradient(180deg, transparent 0%, hsl(0 0% 100% / 0.06) 20%, hsl(0 0% 100% / 0.06) 80%, transparent 100%)"
         }} />
 
         {/* ── Content ── */}
         <div className="relative z-10 flex flex-col h-full">
 
-          {/* Brand */}
+          {/* Brand header */}
           <div className="flex items-center gap-3 px-3.5 py-4 border-b" style={{ borderColor: "hsl(0 0% 100% / 0.07)" }}>
             <div
               className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg"
@@ -114,22 +116,22 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
 
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <div className="text-[11px] font-black tracking-[0.18em] uppercase truncate text-white">
+                <div className="text-[12px] font-bold tracking-wide truncate text-white leading-tight">
                   {profile.orgName
                     ? profile.orgName.length > 14
                       ? profile.orgName.slice(0, 13) + "…"
                       : profile.orgName
-                    : "MARTIN"}
+                    : "PMO Command"}
                 </div>
-                <div className="text-[10px] mt-0.5 font-medium tracking-wide" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
-                  PMO Command
+                <div className="text-[10px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                  Apphia Command
                 </div>
               </div>
             )}
 
             <button
               onClick={() => setCollapsed((c) => !c)}
-              className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center transition-all hover:opacity-100 opacity-35 hover:scale-110"
+              className="flex-shrink-0 w-5 h-5 rounded flex items-center justify-center transition-all opacity-30 hover:opacity-70"
               style={{ color: "hsl(0 0% 100% / 0.8)" }}>
               {collapsed ? <ChevronRight className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
             </button>
@@ -141,19 +143,19 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
               background: "hsl(0 0% 100% / 0.04)",
               borderColor: "hsl(0 0% 100% / 0.08)"
             }}>
-              {/* Glow behind score */}
+              {/* Score glow */}
               <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full pointer-events-none" style={{
-                background: `radial-gradient(circle, ${scoreColor}25 0%, transparent 70%)`
+                background: `radial-gradient(circle, ${scoreColor}22 0%, transparent 70%)`
               }} />
 
-              {/* Header row */}
-              <div className="flex items-center justify-between mb-3">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-2.5">
                 <div className="flex items-center gap-1.5">
                   <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "hsl(var(--signal-green))" }} />
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "hsl(var(--signal-green))" }} />
                   </span>
-                  <span className="text-[10px] font-semibold tracking-wide" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                  <span className="text-[10px] font-semibold" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
                     Org Health
                   </span>
                 </div>
@@ -163,10 +165,10 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
               </div>
 
               {/* Score bar */}
-              <div className="h-1 rounded-full overflow-hidden mb-3" style={{ background: "hsl(0 0% 100% / 0.1)" }}>
+              <div className="h-1 rounded-full overflow-hidden mb-2.5" style={{ background: "hsl(0 0% 100% / 0.09)" }}>
                 <div className="h-full rounded-full transition-all duration-1000" style={{
                   width: `${animatedScore}%`,
-                  background: `linear-gradient(90deg, ${scoreColor}, hsl(183 55% 40%))`
+                  background: `linear-gradient(90deg, ${scoreColor}, hsl(183 55% 42%))`
                 }} />
               </div>
 
@@ -184,17 +186,16 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           )}
 
           {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5"
-            style={{ scrollbarWidth: "none" }}>
+          <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5" style={{ scrollbarWidth: "none" }}>
 
             {!collapsed && (
-              <p className="text-[9px] font-black uppercase tracking-[0.22em] px-2 pb-1 pt-1.5"
+              <p className="text-[9px] font-bold uppercase tracking-[0.2em] px-2 pb-1 pt-1.5"
                 style={{ color: "hsl(0 0% 100% / 0.2)" }}>
                 Command
               </p>
             )}
 
-            {mainNav.map(({ to, label, icon: Icon }) => (
+            {commandNav.map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -202,24 +203,26 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                 className={({ isActive }) =>
                   cn(
                     "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 group relative",
-                    !isActive && "hover:bg-white/[0.06]"
+                    !isActive && "hover:bg-white/[0.05]"
                   )
                 }
                 style={({ isActive }) => ({
-                  color: isActive ? "#fff" : "hsl(0 0% 100% / 0.55)",
-                  background: isActive ? "hsl(233 65% 60% / 0.18)" : undefined,
-                  boxShadow: isActive ? "inset 1px 0 0 hsl(233 65% 60% / 0.8)" : undefined,
+                  color: isActive ? "#fff" : "hsl(0 0% 100% / 0.5)",
+                  background: isActive ? "hsl(233 65% 60% / 0.16)" : undefined,
+                  boxShadow: isActive ? "inset 2px 0 0 hsl(233 65% 65% / 0.7)" : undefined,
                 })}>
                 {({ isActive }) => (
                   <>
-                    <Icon className={cn("w-4 h-4 flex-shrink-0 transition-colors", isActive && "text-white")}
-                      style={{ color: isActive ? "hsl(233 65% 70%)" : undefined }} />
-                    {!collapsed && <span className="flex-1 truncate">{label}</span>}
+                    <Icon className="w-4 h-4 flex-shrink-0"
+                      style={{ color: isActive ? "hsl(233 65% 72%)" : "hsl(0 0% 100% / 0.45)" }} />
                     {!collapsed && (
-                      <ChevronRight className={cn(
-                        "w-2.5 h-2.5 transition-all",
-                        isActive ? "opacity-60" : "opacity-0 group-hover:opacity-20"
-                      )} />
+                      <>
+                        <span className="flex-1 truncate" style={{ color: isActive ? "#fff" : "hsl(0 0% 100% / 0.62)" }}>{label}</span>
+                        <ChevronRight className={cn(
+                          "w-2.5 h-2.5 transition-all",
+                          isActive ? "opacity-40" : "opacity-0 group-hover:opacity-20"
+                        )} style={{ color: "hsl(0 0% 100% / 0.5)" }} />
+                      </>
                     )}
                   </>
                 )}
@@ -228,7 +231,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
 
             <div className="mt-3">
               {!collapsed && (
-                <p className="text-[9px] font-black uppercase tracking-[0.22em] px-2 pb-1 pt-2"
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] px-2 pb-1 pt-2"
                   style={{ color: "hsl(0 0% 100% / 0.2)" }}>
                   Tools
                 </p>
@@ -240,24 +243,26 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                   className={({ isActive }) =>
                     cn(
                       "flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 group relative",
-                      !isActive && "hover:bg-white/[0.06]"
+                      !isActive && "hover:bg-white/[0.05]"
                     )
                   }
                   style={({ isActive }) => ({
-                    color: isActive ? "#fff" : "hsl(0 0% 100% / 0.55)",
-                    background: isActive ? "hsl(183 55% 32% / 0.2)" : undefined,
-                    boxShadow: isActive ? "inset 1px 0 0 hsl(183 55% 50% / 0.8)" : undefined,
+                    color: isActive ? "#fff" : "hsl(0 0% 100% / 0.5)",
+                    background: isActive ? "hsl(183 55% 32% / 0.18)" : undefined,
+                    boxShadow: isActive ? "inset 2px 0 0 hsl(183 55% 52% / 0.7)" : undefined,
                   })}>
                   {({ isActive }) => (
                     <>
                       <Icon className="w-4 h-4 flex-shrink-0"
-                        style={{ color: isActive ? "hsl(183 55% 60%)" : undefined }} />
-                      {!collapsed && <span className="flex-1 truncate">{label}</span>}
+                        style={{ color: isActive ? "hsl(183 55% 62%)" : "hsl(0 0% 100% / 0.45)" }} />
                       {!collapsed && (
-                        <ChevronRight className={cn(
-                          "w-2.5 h-2.5 transition-all",
-                          isActive ? "opacity-60" : "opacity-0 group-hover:opacity-20"
-                        )} />
+                        <>
+                          <span className="flex-1 truncate" style={{ color: isActive ? "#fff" : "hsl(0 0% 100% / 0.62)" }}>{label}</span>
+                          <ChevronRight className={cn(
+                            "w-2.5 h-2.5 transition-all",
+                            isActive ? "opacity-40" : "opacity-0 group-hover:opacity-20"
+                          )} style={{ color: "hsl(0 0% 100% / 0.5)" }} />
+                        </>
                       )}
                     </>
                   )}
@@ -268,18 +273,17 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
 
           {/* Footer */}
           {!collapsed && (
-            <div className="px-3.5 py-3.5 border-t" style={{ borderColor: "hsl(0 0% 100% / 0.07)" }}>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--signal-green))" }} />
-                  <span className="text-[10px] font-semibold" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                    Apphia Engine Active
-                  </span>
-                </div>
+            <div className="px-3.5 py-3.5 border-t space-y-2" style={{ borderColor: "hsl(0 0% 100% / 0.07)" }}>
+              <div className="flex items-center gap-2">
+                <Brain className="w-3 h-3" style={{ color: "hsl(233 65% 65% / 0.6)" }} />
+                <span className="text-[10px] font-semibold" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                  Apphia Engine Active
+                </span>
+                <div className="ml-auto w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--signal-green))" }} />
               </div>
-              <div className="flex items-center gap-1.5" style={{ color: "hsl(0 0% 100% / 0.25)" }}>
-                <TrendingUp className="w-3 h-3" />
-                <span className="text-[10px]">25 AI systems · 100 workflows</span>
+              <div className="flex items-center gap-1.5" style={{ color: "hsl(0 0% 100% / 0.2)" }}>
+                <BarChart3 className="w-3 h-3" />
+                <span className="text-[10px]">25 AI systems · 100+ frameworks</span>
               </div>
             </div>
           )}
