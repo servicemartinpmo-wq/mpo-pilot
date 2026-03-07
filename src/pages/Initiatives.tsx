@@ -592,7 +592,7 @@ export default function Initiatives() {
   const [statusFilter, setStatusFilter]   = useState<InitiativeStatus | "All">("All");
   const [ownerFilter, setOwnerFilter]     = useState<string>("All");
   const [deptFilter, setDeptFilter]       = useState<string>("All");
-  const [sortKey, setSortKey]             = useState<SortKey>("priorityScore");
+  const [sortKey, setSortKey]             = useState<SortKey>("impactScore");
   const [sortDir, setSortDir]             = useState<"asc" | "desc">("desc");
   const [search, setSearch]               = useState("");
   const [selectedIni, setSelectedIni]     = useState<Initiative | null>(null);
@@ -621,6 +621,9 @@ export default function Initiatives() {
         const av = new Date(a.targetDate).getTime();
         const bv = new Date(b.targetDate).getTime();
         return sortDir === "asc" ? av - bv : bv - av;
+      }
+      if (sortKey === "impactScore") {
+        return sortDir === "asc" ? getImpactScore(a) - getImpactScore(b) : getImpactScore(b) - getImpactScore(a);
       }
       return sortDir === "asc" ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey];
     });
