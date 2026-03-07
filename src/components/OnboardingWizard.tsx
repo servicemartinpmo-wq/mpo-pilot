@@ -415,13 +415,13 @@ export default function OnboardingWizard({ onComplete }: Props) {
               {step === 1 && (
                 <div className="space-y-5">
                   <div>
-                    <h2 className="text-2xl xl:text-3xl font-black text-white mb-1.5 tracking-tight">{current.headline}</h2>
-                    <p className="text-sm font-light" style={{ color: "hsl(220 10% 48%)" }}>{current.sub}</p>
+                    <h2 className="text-2xl xl:text-3xl font-black mb-1.5 tracking-tight" style={{ color: "hsl(225 45% 14%)" }}>{current.headline}</h2>
+                    <p className="text-sm font-light" style={{ color: "hsl(220 12% 48%)" }}>{current.sub}</p>
                   </div>
 
                   {/* Team Size */}
                   <div>
-                    <FieldLabel>Team Size <span style={{ color: "hsl(5 75% 55%)" }}>*</span></FieldLabel>
+                    <FieldLabel>Team Size <span style={{ color: "hsl(5 72% 50%)" }}>*</span></FieldLabel>
                     <div className="grid grid-cols-4 gap-2">
                       {TEAM_SIZES.map(s => (
                         <SelectPill key={s} label={s} selected={form.teamSize === s}
