@@ -3,13 +3,83 @@ import InsightCard from "@/components/InsightCard";
 import DepartmentCard from "@/components/DepartmentCard";
 import FrameworkPanel from "@/components/FrameworkPanel";
 import OrgHealthOrb from "@/components/OrgHealthOrb";
-import { ScoreBadge, SignalDot } from "@/components/ScoreBadge";
-import { AlertTriangle, Rocket, Users, TrendingUp, Clock, DollarSign, Shield, BarChart3, ArrowUp, Target, FileText, CheckCircle, ChevronRight, Building2 } from "lucide-react";
+import { ScoreBadge } from "@/components/ScoreBadge";
+import { AlertTriangle, Rocket, Users, TrendingUp, Clock, DollarSign, Shield, BarChart3, ArrowUp, Target, FileText, CheckCircle, ChevronRight, Building2, Sparkles, Zap, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import { loadProfile } from "@/lib/companyStore";
 
 const sortedInsights = [...insights].sort((a, b) => b.executivePriorityScore - a.executivePriorityScore);
 const topDepts = [...departments].sort((a, b) => b.maturityScore - a.maturityScore).slice(0, 6);
+
+// ── Tier definitions ──
+const TIERS = [
+  {
+    id: "free",
+    label: "Free",
+    price: null,
+    tagline: "Quick Wins",
+    color: "hsl(var(--muted-foreground))",
+    bg: "hsl(var(--secondary))",
+    border: "hsl(var(--border))",
+    features: ["Prioritization Matrix", "Tailored Next Steps", "2 file uploads/day", "Diagnostic (no solution)"],
+    cta: "Current Plan",
+    locked: false,
+  },
+  {
+    id: "tier1",
+    label: "Tier 1",
+    price: "$29.99/mo",
+    tagline: "Quick Wins+",
+    color: "hsl(var(--electric-blue))",
+    bg: "hsl(var(--electric-blue) / 0.07)",
+    border: "hsl(var(--electric-blue) / 0.3)",
+    features: ["Impact/Effort/Risk ranking", "Ambiguity → Actionable steps", "Full diagnostic + solutions", "Priority initiative pipeline"],
+    cta: "Upgrade to Tier 1",
+    locked: true,
+  },
+  {
+    id: "tier2",
+    label: "Tier 2",
+    price: "$49.99/mo",
+    tagline: "High-Impact",
+    color: "hsl(var(--teal))",
+    bg: "hsl(var(--teal) / 0.07)",
+    border: "hsl(var(--teal) / 0.3)",
+    features: ["Operational Advisory", "Org Structuring + Design", "Bottleneck Diagnosis", "Executive Voice Development"],
+    cta: "Upgrade to Tier 2",
+    locked: true,
+  },
+  {
+    id: "tier3",
+    label: "Tier 3",
+    price: "$129.99/mo",
+    tagline: "Automation & Data",
+    color: "hsl(var(--navy))",
+    bg: "hsl(var(--navy) / 0.07)",
+    border: "hsl(var(--navy) / 0.3)",
+    features: ["Workflow + KPI automation", "Consolidated reporting", "PMO best practices embedded", "Full strategy execution layer"],
+    cta: "Upgrade to Tier 3",
+    locked: true,
+  },
+];
+
+// ── Generate advisory blurb from profile data ──
+function getAdvisoryBlurb(currentState: string, futureState: string, orgName: string): string {
+  if (!currentState && !futureState) return `Martin PMO brings years of consulting expertise to help ${orgName || "your organization"} convert unstructured ambition into governed execution.`;
+  if (futureState) {
+    const lower = futureState.toLowerCase();
+    if (lower.includes("restructur") || lower.includes("reorganiz")) return `Let's map the restructure of ${orgName || "your organization"} — we'll diagnose current bottlenecks, design your future-state org structure, and build a sequenced execution plan with clear ownership at every layer.`;
+    if (lower.includes("scale") || lower.includes("grow") || lower.includes("expand")) return `Scaling ${orgName || "your organization"} requires more than headcount — we'll build the operational infrastructure, governance frameworks, and decision architecture needed to grow without chaos.`;
+    if (lower.includes("revenue") || lower.includes("sales") || lower.includes("pipeline")) return `Let's accelerate revenue for ${orgName || "your organization"} — we'll align your pipeline strategy, remove execution drag, and build the operational playbook that converts vision into consistent growth.`;
+    if (lower.includes("process") || lower.includes("efficienc") || lower.includes("streamlin")) return `We'll systematically eliminate the friction inside ${orgName || "your organization"} — mapping your processes, closing SOP gaps, and embedding governance that frees your team to execute at full capacity.`;
+    if (lower.includes("team") || lower.includes("talent") || lower.includes("hire") || lower.includes("culture")) return `Building a high-performance team inside ${orgName || "your organization"} starts with clarity — we'll define roles, authority matrices, and the operating rhythm that turns good people into great execution.`;
+  }
+  if (currentState) {
+    return `Based on where ${orgName || "your organization"} stands today, Martin PMO will turn your current state into a structured roadmap — diagnosing gaps, sequencing priorities, and ensuring every initiative has a clear owner and measurable outcome.`;
+  }
+  return `Martin PMO brings years of consulting expertise to help ${orgName || "your organization"} convert ambition into governed, measurable execution.`;
+}
 
 // ── Section wrapper with clear segmentation ──
 function Section({ title, action, actionTo, children }: {
@@ -58,6 +128,7 @@ function MetricTile({ label, value, sub, icon: Icon, signal }: {
 }
 
 export default function Dashboard() {
+  const profile = loadProfile();
   const criticalCount = insights.filter((i) => i.signal === "red").length;
   const budgetPct = Math.round((orgMetrics.totalBudgetUsed / orgMetrics.totalBudgetAllocated) * 100);
   const budgetSignal = getScoreSignal(budgetPct > 80 ? 30 : budgetPct > 60 ? 55 : 80);
@@ -69,26 +140,69 @@ export default function Dashboard() {
   const goodCount = insights.filter(i => i.signal === "green" || i.signal === "blue").length;
   const warnCount = insights.filter(i => i.signal === "yellow").length;
 
+  const advisoryBlurb = getAdvisoryBlurb(profile.currentState, profile.futureState, profile.orgName);
+  const firstName = profile.userName?.split(" ")[0] || "";
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
   return (
     <div className="p-6 space-y-5 max-w-none">
 
-      {/* ── Page header ── */}
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-0.5">
-            <h1 className="text-xl font-bold text-foreground">Command Center</h1>
-            <span className="text-xs px-2 py-0.5 rounded font-semibold"
-              style={{ background: "hsl(var(--electric-blue) / 0.12)", color: "hsl(var(--electric-blue))", border: "1px solid hsl(var(--electric-blue) / 0.3)" }}>
-              LIVE
-            </span>
+      {/* ── Personalized Welcome Header ── */}
+      <div className="rounded-2xl border-2 overflow-hidden"
+        style={{ borderColor: "hsl(var(--electric-blue) / 0.2)", background: "linear-gradient(135deg, hsl(var(--electric-blue) / 0.06) 0%, hsl(var(--teal) / 0.04) 50%, hsl(var(--secondary)) 100%)" }}>
+        <div className="px-6 py-5 flex flex-col md:flex-row md:items-start gap-4 justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider"
+                style={{ background: "hsl(var(--electric-blue) / 0.12)", color: "hsl(var(--electric-blue))", border: "1px solid hsl(var(--electric-blue) / 0.25)" }}>
+                LIVE
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+              </span>
+            </div>
+            <h1 className="text-2xl font-bold text-foreground leading-tight">
+              {greeting}{firstName ? `, ${firstName}` : ""}.
+            </h1>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-muted-foreground">
+              {profile.orgName && <span className="font-semibold text-foreground">{profile.orgName}</span>}
+              {profile.orgName && (profile.industry || profile.orgType) && <span className="opacity-30">·</span>}
+              {profile.industry && <span>{profile.industry}</span>}
+              {profile.industry && profile.orgType && <span className="opacity-30">·</span>}
+              {profile.orgType && (
+                <span className="text-xs px-1.5 py-0.5 rounded font-medium"
+                  style={{ background: "hsl(var(--teal) / 0.1)", color: "hsl(var(--teal))", border: "1px solid hsl(var(--teal) / 0.25)" }}>
+                  {profile.orgType}
+                </span>
+              )}
+            </div>
+            {profile.currentState && (
+              <p className="mt-2 text-xs text-muted-foreground leading-relaxed max-w-lg line-clamp-2">
+                <span className="font-semibold text-foreground/70">Current state: </span>{profile.currentState}
+              </p>
+            )}
+            {profile.futureState && (
+              <p className="mt-0.5 text-xs leading-relaxed max-w-lg line-clamp-2"
+                style={{ color: "hsl(var(--electric-blue) / 0.8)" }}>
+                <span className="font-semibold">Vision: </span>{profile.futureState}
+              </p>
+            )}
           </div>
-          <p className="text-sm text-muted-foreground">
-            {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-          </p>
+          <div className="flex-shrink-0 text-right">
+            <div className="text-xs text-muted-foreground mb-0.5">Overall Maturity</div>
+            <ScoreBadge score={orgMetrics.overallMaturityScore} signal={getScoreSignal(orgMetrics.overallMaturityScore)} size="lg" showLabel />
+          </div>
         </div>
-        <div className="text-right">
-          <div className="text-xs text-muted-foreground mb-0.5">Overall Maturity</div>
-          <ScoreBadge score={orgMetrics.overallMaturityScore} signal={getScoreSignal(orgMetrics.overallMaturityScore)} size="lg" showLabel />
+
+        {/* Advisory blurb strip */}
+        <div className="px-6 py-3 border-t flex items-start gap-3"
+          style={{ borderColor: "hsl(var(--electric-blue) / 0.15)", background: "hsl(var(--electric-blue) / 0.04)" }}>
+          <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "hsl(var(--electric-blue))" }} />
+          <p className="text-xs leading-relaxed text-foreground/75">
+            <span className="font-semibold text-foreground">Martin PMO — </span>
+            {advisoryBlurb}
+          </p>
         </div>
       </div>
 
@@ -298,6 +412,62 @@ export default function Dashboard() {
           ))}
         </div>
       </Section>
+
+      {/* ── Tier / Membership Cards ── */}
+      <div className="rounded-2xl border-2 overflow-hidden"
+        style={{ borderColor: "hsl(var(--navy) / 0.15)", background: "linear-gradient(135deg, hsl(var(--navy) / 0.06) 0%, hsl(var(--secondary)) 100%)" }}>
+        <div className="px-6 py-4 border-b-2 flex items-center justify-between"
+          style={{ borderColor: "hsl(var(--navy) / 0.12)" }}>
+          <div className="flex items-center gap-2">
+            <Zap className="w-4 h-4" style={{ color: "hsl(var(--electric-blue))" }} />
+            <span className="text-sm font-bold text-foreground uppercase tracking-wide">Unlock More with Martin PMO</span>
+          </div>
+          <span className="text-xs text-muted-foreground">Years of consulting expertise, built into every tier</span>
+        </div>
+        <div className="p-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {TIERS.map((tier) => (
+            <div key={tier.id} className="rounded-xl border-2 p-4 flex flex-col gap-3 relative"
+              style={{ borderColor: tier.border, background: tier.bg }}>
+              {tier.locked && (
+                <div className="absolute top-3 right-3">
+                  <Lock className="w-3.5 h-3.5 text-muted-foreground opacity-50" />
+                </div>
+              )}
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-xs font-bold uppercase tracking-wider" style={{ color: tier.color }}>{tier.label}</span>
+                  {tier.price && (
+                    <span className="text-xs font-mono font-semibold text-foreground">{tier.price}</span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">{tier.tagline}</p>
+              </div>
+              <ul className="space-y-1.5 flex-1">
+                {tier.features.map((f) => (
+                  <li key={f} className="flex items-start gap-1.5 text-xs text-foreground/75">
+                    <CheckCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: tier.color }} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <button
+                disabled={!tier.locked}
+                className="w-full text-xs font-semibold py-2 px-3 rounded-lg border transition-all"
+                style={{
+                  borderColor: tier.locked ? tier.color : "hsl(var(--border))",
+                  color: tier.locked ? tier.color : "hsl(var(--muted-foreground))",
+                  background: tier.locked ? `${tier.bg}` : "transparent",
+                  opacity: tier.locked ? 1 : 0.7,
+                  cursor: tier.locked ? "pointer" : "default",
+                }}
+              >
+                {tier.cta}
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
+
