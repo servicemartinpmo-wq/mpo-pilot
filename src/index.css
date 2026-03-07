@@ -125,6 +125,8 @@
   .bg-signal-green\/8   { background-color: hsl(var(--signal-green) / 0.08); }
   .bg-signal-green\/10  { background-color: hsl(var(--signal-green) / 0.10); }
   .bg-signal-blue\/10   { background-color: hsl(var(--signal-blue) / 0.10); }
+  .bg-electric-blue\/8  { background-color: hsl(var(--electric-blue) / 0.08); }
+  .border-electric-blue\/30 { border-color: hsl(var(--electric-blue) / 0.30); }
   .bg-signal-orange\/6  { background-color: hsl(var(--signal-orange) / 0.06); }
   .bg-signal-orange\/8  { background-color: hsl(var(--signal-orange) / 0.08); }
   .bg-signal-orange\/10 { background-color: hsl(var(--signal-orange) / 0.10); }
