@@ -232,6 +232,67 @@ export default function Advisory() {
         ))}
       </div>
 
+      {/* ── Engine Recommendations Panel ── */}
+      {(immediateRecs.length > 0 || weekRecs.length > 0) && (
+        <div className="rounded-2xl border-2 overflow-hidden" style={{
+          borderColor: immediateRecs.length > 0 ? "hsl(var(--signal-red) / 0.3)" : "hsl(var(--signal-yellow) / 0.3)",
+          background: immediateRecs.length > 0 ? "hsl(var(--signal-red) / 0.04)" : "hsl(var(--signal-yellow) / 0.04)"
+        }}>
+          <button
+            className="w-full px-6 py-4 flex items-center justify-between gap-3 text-left"
+            onClick={() => setShowRecs(v => !v)}>
+            <div className="flex items-center gap-3">
+              {immediateRecs.length > 0 && (
+                <AlertTriangle className="w-4 h-4 text-signal-red animate-pulse flex-shrink-0" />
+              )}
+              <div>
+                <span className="text-sm font-black text-foreground">
+                  Apphia Engine · {engine.recommendations.length} Live Recommendations
+                </span>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {immediateRecs.length > 0 && <span className="text-signal-red font-semibold">{immediateRecs.length} Immediate · </span>}
+                  {weekRecs.length} This Week · {monthRecs.length} This Month
+                </p>
+              </div>
+            </div>
+            <ChevronRight className={cn("w-4 h-4 text-muted-foreground transition-transform flex-shrink-0", showRecs && "rotate-90")} />
+          </button>
+
+          {showRecs && (
+            <div className="border-t border-border">
+              {[
+                { label: "Immediate Action Required", recs: immediateRecs, color: "text-signal-red", bg: "bg-signal-red/5", dot: "bg-signal-red" },
+                { label: "This Week", recs: weekRecs, color: "text-signal-yellow", bg: "bg-signal-yellow/5", dot: "bg-signal-yellow" },
+                { label: "This Month", recs: monthRecs, color: "text-teal", bg: "bg-teal/5", dot: "bg-teal" },
+              ].filter(g => g.recs.length > 0).map(({ label, recs, color, bg, dot }) => (
+                <div key={label} className="px-6 py-4 border-b border-border last:border-0">
+                  <div className={cn("text-[10px] font-black uppercase tracking-widest mb-3 flex items-center gap-1.5", color)}>
+                    <span className={cn("w-1.5 h-1.5 rounded-full", dot)} />
+                    {label}
+                  </div>
+                  <div className="space-y-3">
+                    {recs.slice(0, 3).map(rec => (
+                      <div key={rec.id} className={cn("rounded-xl p-4 border", bg)}
+                        style={{ borderColor: dot === "bg-signal-red" ? "hsl(var(--signal-red) / 0.2)" : dot === "bg-signal-yellow" ? "hsl(var(--signal-yellow) / 0.2)" : "hsl(var(--teal) / 0.2)" }}>
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <span className="text-sm font-bold text-foreground">{rec.title}</span>
+                          <span className="text-[10px] text-muted-foreground font-mono bg-secondary px-1.5 py-0.5 rounded flex-shrink-0">{rec.timeToImpact}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground leading-relaxed mb-2">{rec.action}</p>
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="text-muted-foreground">Owner: <span className="font-semibold text-foreground">{rec.owner}</span></span>
+                          <span className="text-muted-foreground">{rec.category}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Core Advisors ── */}
       <div>
         <div className="flex items-center gap-2 mb-4">
