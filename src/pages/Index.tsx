@@ -144,7 +144,7 @@ export default function Dashboard() {
     return () => clearTimeout(t);
   }, []);
 
-  const criticalCount = insights.filter(i => i.signal === "red").length;
+  const criticalCount = liveSignals.filter(s => s.severity === "Critical").length || insights.filter(i => i.signal === "red").length;
   const budgetPct = Math.round((orgMetrics.totalBudgetUsed / orgMetrics.totalBudgetAllocated) * 100);
   const pendingActions = actionItems.filter(a => a.status !== "Completed").length;
   const escalatedGov = governanceLogs.filter(g => g.status === "Escalated").length;
@@ -152,6 +152,14 @@ export default function Dashboard() {
   const onTrackCount = initiatives.filter(i => i.status === "On Track").length;
   const atRiskCount = initiatives.filter(i => i.status === "At Risk" || i.status === "Delayed" || i.status === "Blocked").length;
   const aboveBoard = insights.filter(i => i.signal === "blue").length + onTrackCount;
+
+  // Live engine scores
+  const liveOverallHealth = liveHealth?.overall ?? orgMetrics.overallMaturityScore;
+  const liveExecutionHealth = liveHealth?.executionHealth ?? orgMetrics.avgExecutionHealth;
+  const liveStrategicClarity = liveHealth?.strategicClarity ?? orgMetrics.avgStrategicAlignment;
+  const liveRiskPosture = liveHealth?.riskPosture ?? 60;
+  const liveActiveChains = engine.activeChains.length;
+  const liveCriticalRecs = liveRecs.filter(r => r.priority === "Immediate").length;
 
   const firstName = profile.userName?.split(" ")[0] || "";
   const hour = new Date().getHours();
