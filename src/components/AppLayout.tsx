@@ -15,6 +15,7 @@ const navItems = [
   { to: "/initiatives", label: "Initiatives", icon: Rocket, group: "main" },
   { to: "/action-items", label: "Action Items", icon: CheckSquare, group: "main" },
   { to: "/departments", label: "Departments", icon: Building2, group: "main" },
+  { to: "/team", label: "Team", icon: Users, group: "main" },
   { to: "/diagnostics", label: "Diagnostics", icon: Activity, group: "main" },
   { to: "/reports", label: "Reports", icon: FileText, group: "tools" },
   { to: "/knowledge", label: "Resource Hub", icon: BookOpen, group: "tools" },

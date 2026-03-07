@@ -19,12 +19,10 @@ const authorityColors = {
 
 function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: () => void }) {
   const deptInsights = insights.filter(i => i.department === dept.name);
-
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-end">
       <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-xl h-screen bg-card border-l shadow-elevated overflow-y-auto animate-slide-in-left">
-        {/* Header */}
         <div className="sticky top-0 bg-card border-b px-5 py-4 z-10">
           <div className="flex items-start gap-3">
             <div className="flex-1 min-w-0">
@@ -43,7 +41,6 @@ function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: (
         </div>
 
         <div className="p-5 space-y-5">
-          {/* Head + headcount */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-secondary rounded-lg p-3">
               <div className="text-xs text-muted-foreground mb-1">Department Head</div>
@@ -57,7 +54,6 @@ function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: (
             </div>
           </div>
 
-          {/* Score overview */}
           <div className="bg-card border rounded-lg p-4 space-y-3">
             <div className="text-xs font-semibold text-foreground uppercase tracking-wide">Performance Scores</div>
             <ScoreBar value={dept.maturityScore} signal={getScoreSignal(dept.maturityScore)} label="Operational Maturity" />
@@ -67,7 +63,6 @@ function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: (
             <ScoreBar value={dept.sopAdherence} signal={getScoreSignal(dept.sopAdherence)} label="SOP Adherence" />
           </div>
 
-          {/* Core responsibilities */}
           <div>
             <div className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
               <Target className="w-3.5 h-3.5 text-electric-blue" /> Core Responsibilities
@@ -82,7 +77,6 @@ function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: (
             </div>
           </div>
 
-          {/* Key functions */}
           <div>
             <div className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5 text-teal" /> Key Functions
@@ -97,7 +91,6 @@ function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: (
             </div>
           </div>
 
-          {/* Decision rights */}
           <div>
             <div className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
               <Shield className="w-3.5 h-3.5 text-signal-green" /> Decision Rights & Authority
@@ -112,7 +105,6 @@ function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: (
             </div>
           </div>
 
-          {/* Applied frameworks */}
           <div>
             <div className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Applied Frameworks</div>
             <div className="flex flex-wrap gap-1.5">
@@ -122,7 +114,6 @@ function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: (
             </div>
           </div>
 
-          {/* KPIs */}
           <div>
             <div className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2">Key Performance Indicators</div>
             <div className="divide-y border rounded-lg overflow-hidden">
@@ -137,7 +128,6 @@ function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: (
             </div>
           </div>
 
-          {/* Active initiatives summary */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-secondary rounded-lg p-3 text-center">
               <div className="text-2xl font-bold font-mono text-foreground">{dept.activeInitiatives}</div>
@@ -153,18 +143,16 @@ function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: (
             </div>
           </div>
 
-          {/* Active insights for this department */}
           {deptInsights.length > 0 && (
             <div>
               <div className="text-xs font-semibold text-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-signal-yellow" /> Active Insights ({deptInsights.length})
+                <AlertTriangle className="w-3.5 h-3.5 text-signal-yellow" /> Active Signals ({deptInsights.length})
               </div>
               <div className="space-y-2">
                 {deptInsights.map(ins => (
                   <div key={ins.id} className={cn("rounded-lg border p-3",
                     ins.signal === "red" ? "bg-signal-red/5 border-signal-red/20" :
-                    ins.signal === "yellow" ? "bg-signal-yellow/5 border-signal-yellow/20" :
-                    "bg-secondary border-border"
+                    ins.signal === "yellow" ? "bg-signal-yellow/5 border-signal-yellow/20" : "bg-secondary border-border"
                   )}>
                     <div className="text-xs font-medium text-foreground mb-0.5">{ins.type}</div>
                     <div className="text-xs text-muted-foreground leading-snug line-clamp-2">{ins.situation}</div>
@@ -190,19 +178,16 @@ export default function Departments() {
   const [selectedDept, setSelectedDept] = useState<Department | null>(null);
 
   const tierCounts = tiers.reduce((acc, tier) => {
-    acc[tier] = departments.filter((d) => d.maturityTier === tier).length;
+    acc[tier] = departments.filter(d => d.maturityTier === tier).length;
     return acc;
   }, {} as Record<MaturityTier, number>);
 
   const filtered = [...departments]
-    .filter((d) => filter === "All" || d.maturityTier === filter)
+    .filter(d => filter === "All" || d.maturityTier === filter)
     .sort((a, b) => {
       const diff = a[sortKey] - b[sortKey];
       return sortDir === "desc" ? -diff : diff;
     });
-
-  const avgMaturity = Math.round(departments.reduce((s, d) => s + d.maturityScore, 0) / departments.length);
-  const avgSopAdherence = Math.round(departments.reduce((s, d) => s + d.sopAdherence, 0) / departments.length);
 
   return (
     <div className="p-6 space-y-6">
@@ -213,42 +198,27 @@ export default function Departments() {
             {departments.length} departments · Operational Maturity Scoring · Click any department for full detail
           </p>
         </div>
-        <div className="text-right space-y-1">
-          <div>
-            <div className="text-xs text-muted-foreground mb-0.5">Org Avg Maturity</div>
-            <ScoreBadge score={avgMaturity} signal={getScoreSignal(avgMaturity)} size="lg" showLabel />
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground mb-0.5">SOP Adherence Avg</div>
-            <ScoreBadge score={avgSopAdherence} signal={getScoreSignal(avgSopAdherence)} size="sm" />
-          </div>
-        </div>
       </div>
 
       {/* Maturity distribution */}
       <div className="bg-card rounded-lg border shadow-card p-4">
         <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-4">Maturity Distribution</h2>
         <div className="grid grid-cols-5 gap-3">
-          {tiers.map((tier) => {
+          {tiers.map(tier => {
             const count = tierCounts[tier];
             const styles: Record<MaturityTier, { bar: string; text: string; bg: string }> = {
-              Foundational: { bar: "bg-signal-red", text: "text-signal-red", bg: "bg-signal-red/10" },
-              Developing: { bar: "bg-signal-yellow", text: "text-signal-yellow", bg: "bg-signal-yellow/10" },
-              Structured: { bar: "bg-teal", text: "text-teal", bg: "bg-teal/10" },
-              Managed: { bar: "bg-electric-blue", text: "text-electric-blue", bg: "bg-electric-blue/10" },
-              Optimized: { bar: "bg-signal-green", text: "text-signal-green", bg: "bg-signal-green/10" },
+              Foundational: { bar: "bg-signal-red",    text: "text-signal-red",    bg: "bg-signal-red/10" },
+              Developing:   { bar: "bg-signal-yellow", text: "text-signal-yellow", bg: "bg-signal-yellow/10" },
+              Structured:   { bar: "bg-teal",          text: "text-teal",          bg: "bg-teal/10" },
+              Managed:      { bar: "bg-electric-blue", text: "text-electric-blue", bg: "bg-electric-blue/10" },
+              Optimized:    { bar: "bg-signal-green",  text: "text-signal-green",  bg: "bg-signal-green/10" },
             };
             const s = styles[tier];
             return (
-              <button
-                key={tier}
-                onClick={() => setFilter(tier)}
-                className={cn(
-                  "rounded-lg border p-3 text-center transition-all",
-                  s.bg,
+              <button key={tier} onClick={() => setFilter(tier)}
+                className={cn("rounded-lg border p-3 text-center transition-all", s.bg,
                   filter === tier ? "ring-2 ring-offset-1 ring-current" : "opacity-80 hover:opacity-100"
-                )}
-              >
+                )}>
                 <div className={cn("text-2xl font-bold font-mono mb-0.5", s.text)}>{count}</div>
                 <div className="text-xs text-muted-foreground font-medium">{tier}</div>
                 <div className={cn("h-1 rounded-full mt-2", s.bar)} style={{ opacity: count > 0 ? 1 : 0.2 }} />
@@ -267,13 +237,11 @@ export default function Departments() {
               className={cn("text-xs px-2.5 py-1 rounded-full border transition-all",
                 filter === "All" ? "bg-electric-blue/10 text-electric-blue border-electric-blue/40 font-medium" : "bg-background text-muted-foreground border-border"
               )}>All</button>
-            {tiers.map((t) => (
+            {tiers.map(t => (
               <button key={t} onClick={() => setFilter(t)}
                 className={cn("text-xs px-2.5 py-1 rounded-full border transition-all",
                   filter === t ? "bg-electric-blue/10 text-electric-blue border-electric-blue/40 font-medium" : "bg-background text-muted-foreground border-border"
-                )}>
-                {t}
-              </button>
+                )}>{t}</button>
             ))}
           </div>
         </div>
@@ -294,9 +262,7 @@ export default function Departments() {
               <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide cursor-pointer hover:text-foreground hidden lg:table-cell" onClick={() => setSortKey("riskScore")}>
                 Risk {sortKey === "riskScore" ? "↓" : ""}
               </th>
-              <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden xl:table-cell">
-                SOP Adherence
-              </th>
+              <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden xl:table-cell">SOP</th>
               <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Head</th>
             </tr>
           </thead>
@@ -315,20 +281,14 @@ export default function Departments() {
                   <ScoreBar value={dept.executionHealth} signal={getScoreSignal(dept.executionHealth)} />
                 </td>
                 <td className="px-3 py-3 text-center hidden lg:table-cell">
-                  <span className={cn(
-                    "text-xs font-mono font-semibold",
+                  <span className={cn("text-xs font-mono font-semibold",
                     dept.capacityUsed > 90 ? "text-signal-red" : dept.capacityUsed > 75 ? "text-signal-yellow" : "text-signal-green"
-                  )}>
-                    {dept.capacityUsed}%
-                  </span>
+                  )}>{dept.capacityUsed}%</span>
                 </td>
                 <td className="px-3 py-3 text-center hidden lg:table-cell">
-                  <span className={cn(
-                    "text-xs font-mono font-semibold",
+                  <span className={cn("text-xs font-mono font-semibold",
                     dept.riskScore > 70 ? "text-signal-red" : dept.riskScore > 50 ? "text-signal-yellow" : "text-signal-green"
-                  )}>
-                    {dept.riskScore}
-                  </span>
+                  )}>{dept.riskScore}</span>
                 </td>
                 <td className="px-3 py-3 text-center hidden xl:table-cell">
                   <span className={cn("text-xs font-mono font-semibold",
@@ -344,9 +304,9 @@ export default function Departments() {
 
       {/* Cards grid */}
       <div>
-        <h2 className="text-sm font-semibold text-foreground mb-3">Department Engine Cards</h2>
+        <h2 className="text-sm font-semibold text-foreground mb-3">Department Cards</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((dept) => (
+          {filtered.map(dept => (
             <div key={dept.id} className="cursor-pointer" onClick={() => setSelectedDept(dept)}>
               <DepartmentCard dept={dept} />
             </div>
@@ -354,10 +314,7 @@ export default function Departments() {
         </div>
       </div>
 
-      {/* Detail Panel */}
-      {selectedDept && (
-        <DepartmentDetailPanel dept={selectedDept} onClose={() => setSelectedDept(null)} />
-      )}
+      {selectedDept && <DepartmentDetailPanel dept={selectedDept} onClose={() => setSelectedDept(null)} />}
     </div>
   );
 }
