@@ -820,7 +820,7 @@ export default function Initiatives() {
           <div className="flex items-center gap-1">
             <ArrowUpDown className="w-3.5 h-3.5" />
             <span>Sort:</span>
-            {([["priorityScore","Priority"], ["strategicAlignment","Alignment"], ["completionPct","Progress"], ["targetDate","Due Date"]] as [SortKey,string][]).map(([k, l]) => (
+            {([["impactScore","Impact"], ["dependencyRisk","Risk"], ["completionPct","Progress"], ["targetDate","Due Date"]] as [SortKey,string][]).map(([k, l]) => (
               <button key={k} onClick={() => toggleSort(k)}
                 className={cn("px-2 py-0.5 rounded font-semibold transition-all",
                   sortKey === k ? "text-electric-blue" : "text-muted-foreground hover:text-foreground"
