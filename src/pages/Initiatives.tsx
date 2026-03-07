@@ -68,7 +68,12 @@ const raciToMocha: Record<string, { key: string; label: string }> = {
   Informed:    { key: "H", label: "Helper / FYI" },
 };
 
-type SortKey = "priorityScore" | "strategicAlignment" | "dependencyRisk" | "completionPct" | "targetDate";
+type SortKey = "impactScore" | "dependencyRisk" | "completionPct" | "targetDate";
+
+// Impact Score = weighted average of priorityScore (60%) + strategicAlignment (40%)
+function getImpactScore(ini: Initiative): number {
+  return Math.round(ini.priorityScore * 0.6 + ini.strategicAlignment * 0.4);
+}
 
 // ────────────────────────────────────────────────
 // DETAIL MODAL
@@ -171,12 +176,12 @@ function InitiativeModal({ ini, onClose }: { ini: Initiative; onClose: () => voi
               {/* Score tiles */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="bg-secondary rounded-xl p-3 text-center">
-                  <div className="text-xs text-muted-foreground mb-1">Priority Score</div>
-                  <ScoreBadge score={ini.priorityScore} signal={getScoreSignal(ini.priorityScore)} size="lg" showLabel />
+                  <div className="text-xs text-muted-foreground mb-1">Impact Score</div>
+                  <ScoreBadge score={getImpactScore(ini)} signal={getScoreSignal(getImpactScore(ini))} size="lg" showLabel />
                 </div>
                 <div className="bg-secondary rounded-xl p-3 text-center">
-                  <div className="text-xs text-muted-foreground mb-1">Strategic Alignment</div>
-                  <ScoreBadge score={ini.strategicAlignment} signal={getScoreSignal(ini.strategicAlignment)} size="lg" showLabel />
+                  <div className="text-xs text-muted-foreground mb-1">Priority</div>
+                  <ScoreBadge score={ini.priorityScore} signal={getScoreSignal(ini.priorityScore)} size="lg" showLabel />
                 </div>
                 <div className="bg-secondary rounded-xl p-3 text-center">
                   <div className="text-xs text-muted-foreground mb-1">Dependency Risk</div>
@@ -546,13 +551,10 @@ function InitiativeCard({ ini, onClick }: { ini: Initiative; onClick: () => void
         {/* Score chips */}
         <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Priority</span>
-            <span className="text-xs font-mono font-bold text-foreground">{ini.priorityScore}</span>
-          </div>
-          <div className="w-px h-3 bg-border" />
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Alignment</span>
-            <span className="text-xs font-mono font-bold text-foreground">{ini.strategicAlignment}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Impact</span>
+            <span className={cn("text-xs font-mono font-bold",
+              getImpactScore(ini) >= 70 ? "text-signal-green" : getImpactScore(ini) >= 45 ? "text-signal-yellow" : "text-signal-orange"
+            )}>{getImpactScore(ini)}</span>
           </div>
           <div className="w-px h-3 bg-border" />
           <div className="flex items-center gap-1.5">
@@ -590,7 +592,7 @@ export default function Initiatives() {
   const [statusFilter, setStatusFilter]   = useState<InitiativeStatus | "All">("All");
   const [ownerFilter, setOwnerFilter]     = useState<string>("All");
   const [deptFilter, setDeptFilter]       = useState<string>("All");
-  const [sortKey, setSortKey]             = useState<SortKey>("priorityScore");
+  const [sortKey, setSortKey]             = useState<SortKey>("impactScore");
   const [sortDir, setSortDir]             = useState<"asc" | "desc">("desc");
   const [search, setSearch]               = useState("");
   const [selectedIni, setSelectedIni]     = useState<Initiative | null>(null);
@@ -619,6 +621,9 @@ export default function Initiatives() {
         const av = new Date(a.targetDate).getTime();
         const bv = new Date(b.targetDate).getTime();
         return sortDir === "asc" ? av - bv : bv - av;
+      }
+      if (sortKey === "impactScore") {
+        return sortDir === "asc" ? getImpactScore(a) - getImpactScore(b) : getImpactScore(b) - getImpactScore(a);
       }
       return sortDir === "asc" ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey];
     });
@@ -776,11 +781,10 @@ export default function Initiatives() {
             <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">Sort By</div>
             <div className="flex flex-wrap gap-1.5">
               {([
-                ["priorityScore",    "Priority"],
-                ["strategicAlignment","Alignment"],
-                ["dependencyRisk",   "Dep. Risk"],
-                ["completionPct",    "Progress"],
-                ["targetDate",       "Due Date"],
+                ["impactScore",    "Impact Score"],
+                ["dependencyRisk", "Dep. Risk"],
+                ["completionPct",  "Progress"],
+                ["targetDate",     "Due Date"],
               ] as [SortKey, string][]).map(([key, label]) => (
                 <button key={key} onClick={() => toggleSort(key)}
                   className={cn("flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border font-semibold transition-all",
@@ -816,7 +820,7 @@ export default function Initiatives() {
           <div className="flex items-center gap-1">
             <ArrowUpDown className="w-3.5 h-3.5" />
             <span>Sort:</span>
-            {([["priorityScore","Priority"], ["strategicAlignment","Alignment"], ["completionPct","Progress"], ["targetDate","Due Date"]] as [SortKey,string][]).map(([k, l]) => (
+            {([["impactScore","Impact"], ["dependencyRisk","Risk"], ["completionPct","Progress"], ["targetDate","Due Date"]] as [SortKey,string][]).map(([k, l]) => (
               <button key={k} onClick={() => toggleSort(k)}
                 className={cn("px-2 py-0.5 rounded font-semibold transition-all",
                   sortKey === k ? "text-electric-blue" : "text-muted-foreground hover:text-foreground"
