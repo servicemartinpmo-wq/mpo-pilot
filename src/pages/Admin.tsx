@@ -509,6 +509,11 @@ export default function Admin() {
               style={{ background: `hsl(${companyProfile.accentHue} 90% 45%)` }}>
               Save Changes
             </button>
+            <button
+              onClick={() => { resetOnboarding(); window.location.reload(); }}
+              className="px-4 py-2 rounded-lg text-sm font-semibold border transition-all hover:bg-signal-red/10 text-signal-red border-signal-red/30">
+              Reset Onboarding
+            </button>
           </div>
         </AdminSection>
       )}
