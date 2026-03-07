@@ -16,18 +16,19 @@ import collageImage from "@/assets/onboard-collage.jpg";
 /* ── input style helper ── */
 function inputStyle(filled: boolean): React.CSSProperties {
   return {
-    background: filled ? "hsl(220 20% 14%)" : "hsl(220 20% 11%)",
+    background: filled ? "hsl(220 30% 98%)" : "hsl(220 20% 97%)",
     border: filled
-      ? "1.5px solid hsl(220 60% 55% / 0.55)"
-      : "1.5px solid hsl(220 15% 25%)",
-    boxShadow: filled ? "0 0 0 3px hsl(220 60% 55% / 0.08)" : "none",
+      ? "1.5px solid hsl(233 65% 62% / 0.6)"
+      : "1.5px solid hsl(220 18% 84%)",
+    boxShadow: filled ? "0 0 0 3px hsl(233 65% 62% / 0.08)" : "none",
+    color: "hsl(225 45% 14%)",
   };
 }
 
 const BASE_INPUT =
-  "w-full rounded-lg px-4 py-3 text-sm text-white placeholder-white/30 outline-none transition-all duration-200 font-medium";
+  "w-full rounded-lg px-4 py-3 text-sm placeholder-[hsl(220_12%_58%)] outline-none transition-all duration-200 font-medium";
 const BASE_TEXTAREA =
-  "w-full rounded-lg px-4 py-3 text-sm text-white placeholder-white/30 outline-none resize-none transition-all duration-200 font-light";
+  "w-full rounded-lg px-4 py-3 text-sm placeholder-[hsl(220_12%_58%)] outline-none resize-none transition-all duration-200 font-light";
 
 const ORG_TYPES = ["For-Profit", "Non-Profit"];
 
