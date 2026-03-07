@@ -13,7 +13,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { loadProfile } from "@/lib/companyStore";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { getEngineState } from "@/lib/engine";
 
 const sortedInsights = [...insights].sort((a, b) => b.executivePriorityScore - a.executivePriorityScore);
 
