@@ -482,11 +482,11 @@ export default function Admin() {
           <div className="space-y-5 max-w-lg">
             <div>
               <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-1.5">Organization Name</label>
-              <input className="w-full border rounded-lg px-3 py-2.5 text-sm bg-background text-foreground focus:outline-none focus:ring-2" value={companyProfile.name} onChange={e => setCompanyProfile(p => ({ ...p, name: e.target.value }))} />
+              <input className="w-full border rounded-lg px-3 py-2.5 text-sm bg-background text-foreground focus:outline-none focus:ring-2" value={companyProfile.orgName} onChange={e => setCompanyProfile(p => ({ ...p, orgName: e.target.value }))} />
             </div>
             <div>
-              <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-1.5">Mission Statement</label>
-              <textarea className="w-full border rounded-lg px-3 py-2.5 text-sm bg-background text-foreground focus:outline-none focus:ring-2 resize-none" rows={2} value={companyProfile.mission} onChange={e => setCompanyProfile(p => ({ ...p, mission: e.target.value }))} />
+              <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-1.5">Your Name</label>
+              <input className="w-full border rounded-lg px-3 py-2.5 text-sm bg-background text-foreground focus:outline-none focus:ring-2" value={companyProfile.userName} onChange={e => setCompanyProfile(p => ({ ...p, userName: e.target.value }))} />
             </div>
             <div>
               <label className="text-xs font-semibold text-foreground uppercase tracking-wide block mb-1.5">Logo</label>
