@@ -8,7 +8,8 @@ import {
   AlertTriangle, Users, TrendingUp, Clock, DollarSign, Shield,
   BarChart3, Target, FileText, CheckCircle, ChevronRight,
   Zap, Lock, Star, ArrowUpRight, Activity, X, Bell,
-  Mail, CalendarDays, UserCheck, Brain, Layers, GitBranch, ChevronDown
+  Mail, CalendarDays, UserCheck, Brain, Layers, GitBranch, ChevronDown,
+  Coffee, Sun, Moon, Sunrise, Sparkles, Award, TrendingDown, Smile
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -17,6 +18,15 @@ import { useState, useEffect, useMemo } from "react";
 import { getEngineState } from "@/lib/engine";
 
 const sortedInsights = [...insights].sort((a, b) => b.executivePriorityScore - a.executivePriorityScore);
+
+// ── Helpers ──────────────────────────────────────
+function getDayType(): "monday" | "friday" | "weekday" | "weekend" {
+  const d = new Date().getDay();
+  if (d === 1) return "monday";
+  if (d === 5) return "friday";
+  if (d === 0 || d === 6) return "weekend";
+  return "weekday";
+}
 
 // ── Status popup type ──────────────────────────────────────
 interface StatusPopup {
@@ -32,6 +42,13 @@ const STATUS_POPUPS: StatusPopup[] = [
   { id: "p1", title: "3 Critical Signals", body: "Program Delivery at 94% capacity. Immediate attention required.", signal: "red", link: "/diagnostics", linkLabel: "View Diagnostics" },
   { id: "p2", title: "INI-002 Still Blocked", body: "Customer Portal v2 blocked 19 days. API docs escalation pending.", signal: "yellow", link: "/initiatives", linkLabel: "View Initiative" },
   { id: "p3", title: "4 Meetings Today", body: "2 meetings missing agenda. Prep checklist incomplete for Board Strategy Update.", signal: "blue", link: "/action-items", linkLabel: "View Meetings" },
+];
+
+// ── Win items with emoji reactions ──────────────────────────────────────
+const WIN_ITEMS = [
+  { id: "w1", text: "Customer Portal v2 design phase completed ahead of schedule", owner: "Elena Vasquez", emoji: "🎉", reactions: { "🎉": 4, "🔥": 2 } },
+  { id: "w2", text: "Q4 budget variance reduced from 12% to 3% through operational adjustments", owner: "David Kim", emoji: "✅", reactions: { "✅": 3, "💪": 5 } },
+  { id: "w3", text: "New SOP coverage reached 78% — highest ever recorded", owner: "Ryan Torres", emoji: "🚀", reactions: { "🚀": 6, "👏": 3 } },
 ];
 
 // ── Metric Tile ──────────────────────────────────────
@@ -123,6 +140,247 @@ function ScoreDimension({ label, score, weight }: { label: string; score: number
   );
 }
 
+// ── Daily Briefing ──────────────────────────────────────
+function DailyBriefing({ firstName, pendingActions, atRiskCount, criticalCount, onTrackCount }: {
+  firstName: string;
+  pendingActions: number;
+  atRiskCount: number;
+  criticalCount: number;
+  onTrackCount: number;
+}) {
+  const [winReactions, setWinReactions] = useState<Record<string, Record<string, number>>>(
+    Object.fromEntries(WIN_ITEMS.map(w => [w.id, { ...w.reactions }]))
+  );
+  const [reactedTo, setReactedTo] = useState<Record<string, string>>({});
+
+  const dayType = getDayType();
+  const hour = new Date().getHours();
+
+  function addReaction(winId: string, emoji: string) {
+    if (reactedTo[winId]) return; // already reacted
+    setWinReactions(prev => ({
+      ...prev,
+      [winId]: { ...prev[winId], [emoji]: (prev[winId][emoji] || 0) + 1 }
+    }));
+    setReactedTo(prev => ({ ...prev, [winId]: emoji }));
+  }
+
+  const briefingData = {
+    monday: {
+      icon: Sunrise,
+      color: "text-electric-blue",
+      bgColor: "bg-electric-blue/5",
+      borderColor: "border-electric-blue/20",
+      headline: "Weekly Forecast",
+      tagline: "Here's what the week ahead looks like",
+      bullets: [
+        `${atRiskCount} initiatives need attention this week — escalation windows closing`,
+        `${pendingActions} open actions across your team — 3 High-priority items due by Wednesday`,
+        `Board Strategy Update prep due Thursday — 2 agenda items still unassigned`,
+        `Q4 budget review window opens Friday — Finance needs 24hr notice to prepare`,
+        `${onTrackCount} initiatives running clean — good momentum, protect their capacity`,
+      ],
+      tip: { icon: Coffee, text: "Start your week with a 10-min leadership team standup to align on blockers before they compound." }
+    },
+    friday: {
+      icon: Award,
+      color: "text-signal-green",
+      bgColor: "bg-signal-green/5",
+      borderColor: "border-signal-green/20",
+      headline: "Weekly Wrap-Up",
+      tagline: "Here's how the week performed",
+      bullets: [
+        `${onTrackCount} initiatives closed the week on track — solid execution`,
+        `${actionItems.filter(a => a.status === "Completed").length} action items resolved this week`,
+        `SOP coverage improved by 2.1% — Program Delivery team led the charge`,
+        `${criticalCount > 0 ? `${criticalCount} critical signals remain open — carry into next week` : "No critical signals carried over — clean close"}`,
+        `Executive load averaged 87% — watch capacity compression heading into next cycle`,
+      ],
+      tip: { icon: Sun, text: `${firstName ? `${firstName}, you've` : "You've"} been in high-focus mode all week. Delegate the 3 non-critical action items and protect your weekend.` }
+    },
+    weekday: {
+      icon: Activity,
+      color: "text-signal-yellow",
+      bgColor: "bg-signal-yellow/5",
+      borderColor: "border-signal-yellow/20",
+      headline: "Today's Briefing",
+      tagline: hour < 12 ? "Morning intelligence summary" : hour < 17 ? "Midday status check" : "End-of-day overview",
+      bullets: [
+        `${pendingActions} actions still open — ${pendingActions > 10 ? "consider delegating 3–4 low-value items" : "manageable load today"}`,
+        `${atRiskCount > 0 ? `${atRiskCount} at-risk initiatives require a check-in today` : "All initiatives are running clean"}`,
+        `Ryan Torres is at 91% capacity — flag for delegation review before EOD`,
+        `2 governance items escalated 7+ days — assign resolution owners today`,
+        hour >= 14 ? `It's past 2pm — if you've been heads-down since morning, a 15-min break will sharpen your next 2 hours` : `Morning window: ideal time for complex decisions before context-switching peaks`,
+      ],
+      tip: {
+        icon: hour >= 15 ? Moon : Sparkles,
+        text: hour >= 15
+          ? `You've been working since this morning. Consider delegating items #${Math.ceil(Math.random() * 3)} and #${Math.ceil(Math.random() * 3) + 3} from your action list — they have qualified owners.`
+          : `Protect a 90-min deep work block before noon. Your highest-leverage decisions happen in undivided focus.`
+      }
+    },
+    weekend: {
+      icon: Sun,
+      color: "text-teal",
+      bgColor: "bg-teal/5",
+      borderColor: "border-teal/20",
+      headline: "Weekend Mode",
+      tagline: "You're in rest mode — Apphia is watching",
+      bullets: [
+        `${criticalCount > 0 ? `${criticalCount} critical signals are being monitored — you'll be alerted if escalation is needed` : "No critical alerts — all systems stable"}`,
+        `${onTrackCount} initiatives on track heading into the week`,
+        "All automated governance checks are running in background mode",
+        "Delegation queue is clear — your team has what they need",
+        "Scheduled weekly forecast ready for Monday morning",
+      ],
+      tip: { icon: Coffee, text: "Full rest is a performance strategy. The engine keeps running — you don't have to." }
+    }
+  }[dayType];
+
+  const BriefIcon = briefingData.icon;
+  const TipIcon = briefingData.tip.icon;
+
+  return (
+    <div className={cn("rounded-xl border p-5 space-y-4", briefingData.bgColor, briefingData.borderColor)}>
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <BriefIcon className={cn("w-4 h-4", briefingData.color)} />
+          <span className={cn("text-sm font-bold", briefingData.color)}>{briefingData.headline}</span>
+          <span className="text-xs text-muted-foreground">— {briefingData.tagline}</span>
+        </div>
+        <span className="text-[10px] text-muted-foreground">
+          {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+        </span>
+      </div>
+
+      {/* Bullets */}
+      <ul className="space-y-2">
+        {briefingData.bullets.map((b, i) => (
+          <li key={i} className="flex items-start gap-2.5 text-sm text-foreground/80">
+            <span className={cn("w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0", briefingData.color.replace("text-", "bg-"))} />
+            {b}
+          </li>
+        ))}
+      </ul>
+
+      {/* Wins section */}
+      <div className="pt-2 border-t border-border/40">
+        <div className="flex items-center gap-1.5 mb-3">
+          <Smile className="w-3.5 h-3.5 text-signal-yellow" />
+          <span className="text-xs font-bold text-foreground">Team Wins</span>
+        </div>
+        <div className="space-y-2.5">
+          {WIN_ITEMS.map(win => (
+            <div key={win.id} className="flex items-start gap-3 p-3 rounded-lg bg-card/60 border border-border/50">
+              <span className="text-base flex-shrink-0">{win.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-foreground leading-snug mb-1">{win.text}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] text-muted-foreground">— {win.owner}</span>
+                  <div className="flex items-center gap-1 ml-auto">
+                    {Object.entries(winReactions[win.id]).map(([emoji, count]) => (
+                      <button
+                        key={emoji}
+                        onClick={() => addReaction(win.id, emoji)}
+                        className={cn(
+                          "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] border transition-all",
+                          reactedTo[win.id] === emoji
+                            ? "bg-electric-blue/15 border-electric-blue/30 text-electric-blue"
+                            : "bg-secondary/60 border-border hover:bg-secondary text-muted-foreground"
+                        )}
+                      >
+                        {emoji}<span className="font-mono">{count}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Optimization tip */}
+      <div className="flex items-start gap-3 p-3 rounded-lg bg-card/50 border border-border/50">
+        <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+          style={{ background: "hsl(var(--electric-blue) / 0.12)" }}>
+          <TipIcon className="w-3.5 h-3.5 text-electric-blue" />
+        </div>
+        <div>
+          <div className="text-[10px] font-bold text-electric-blue uppercase tracking-wider mb-0.5">Apphia Recommends</div>
+          <p className="text-xs text-muted-foreground leading-relaxed">{briefingData.tip.text}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Page Banner ──────────────────────────────────────
+function PageBanner({ bannerTheme }: { bannerTheme: string }) {
+  const themes: Record<string, { gradient: string; overlay: string; pattern?: string }> = {
+    "deep-space": {
+      gradient: "linear-gradient(135deg, hsl(225 52% 9%) 0%, hsl(240 60% 15%) 40%, hsl(220 45% 8%) 100%)",
+      overlay: "radial-gradient(ellipse 80% 60% at 20% 50%, hsl(233 65% 50% / 0.25) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 30%, hsl(183 55% 35% / 0.15) 0%, transparent 60%)",
+      pattern: "radial-gradient(circle at 1px 1px, hsl(0 0% 100% / 0.04) 1px, transparent 0)"
+    },
+    "aurora": {
+      gradient: "linear-gradient(135deg, hsl(160 60% 8%) 0%, hsl(200 55% 12%) 50%, hsl(230 50% 15%) 100%)",
+      overlay: "radial-gradient(ellipse 100% 80% at 30% 50%, hsl(160 70% 40% / 0.2) 0%, transparent 50%), radial-gradient(ellipse 70% 90% at 70% 40%, hsl(200 80% 50% / 0.15) 0%, transparent 55%)",
+    },
+    "warm-executive": {
+      gradient: "linear-gradient(135deg, hsl(25 35% 12%) 0%, hsl(30 40% 16%) 50%, hsl(20 30% 10%) 100%)",
+      overlay: "radial-gradient(ellipse 90% 70% at 15% 60%, hsl(35 80% 55% / 0.15) 0%, transparent 55%), radial-gradient(ellipse 60% 80% at 85% 30%, hsl(25 60% 40% / 0.12) 0%, transparent 60%)",
+    },
+    "ocean-deep": {
+      gradient: "linear-gradient(135deg, hsl(200 70% 8%) 0%, hsl(195 65% 12%) 50%, hsl(210 55% 10%) 100%)",
+      overlay: "radial-gradient(ellipse 80% 60% at 20% 40%, hsl(195 80% 45% / 0.2) 0%, transparent 55%), radial-gradient(ellipse 70% 70% at 80% 60%, hsl(210 70% 50% / 0.12) 0%, transparent 60%)",
+    },
+    "forest-dusk": {
+      gradient: "linear-gradient(135deg, hsl(140 30% 8%) 0%, hsl(150 35% 12%) 50%, hsl(130 25% 9%) 100%)",
+      overlay: "radial-gradient(ellipse 80% 70% at 25% 50%, hsl(140 60% 40% / 0.18) 0%, transparent 55%), radial-gradient(ellipse 60% 80% at 75% 35%, hsl(150 50% 35% / 0.12) 0%, transparent 60%)",
+    },
+  };
+
+  const theme = themes[bannerTheme] || themes["deep-space"];
+
+  return (
+    <div className="relative h-24 rounded-2xl overflow-hidden mb-6 border border-white/5">
+      {/* Base gradient */}
+      <div className="absolute inset-0" style={{ background: theme.gradient }} />
+      {/* Overlay glows */}
+      <div className="absolute inset-0" style={{ background: theme.overlay }} />
+      {/* Subtle dot pattern */}
+      {theme.pattern && (
+        <div className="absolute inset-0 opacity-100" style={{
+          backgroundImage: theme.pattern,
+          backgroundSize: "24px 24px"
+        }} />
+      )}
+      {/* Particle dots */}
+      {[...Array(18)].map((_, i) => (
+        <div key={i} className="absolute rounded-full"
+          style={{
+            width: Math.random() * 3 + 1 + "px",
+            height: Math.random() * 3 + 1 + "px",
+            left: (i * 5.8 + Math.sin(i) * 4) % 100 + "%",
+            top: (i * 13 + Math.cos(i * 2) * 20) % 100 + "%",
+            background: `hsl(${220 + i * 7} 80% 75% / ${0.1 + (i % 4) * 0.07})`,
+          }}
+        />
+      ))}
+      {/* Faint label */}
+      <div className="absolute bottom-3 right-4 text-[9px] text-white/15 uppercase tracking-widest font-bold">
+        {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+      </div>
+      {/* Thin glowing line at bottom */}
+      <div className="absolute bottom-0 inset-x-0 h-px" style={{
+        background: "linear-gradient(90deg, transparent 0%, hsl(233 65% 65% / 0.5) 30%, hsl(183 55% 55% / 0.4) 70%, transparent 100%)"
+      }} />
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const profile = loadProfile();
   const [upsellDismissed, setUpsellDismissed] = useState(false);
@@ -130,6 +388,7 @@ export default function Dashboard() {
   const [dismissedPopups, setDismissedPopups] = useState<Set<string>>(new Set());
   const [popupsVisible, setPopupsVisible] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
+  const bannerTheme = (typeof window !== "undefined" && localStorage.getItem("apphia_banner_theme")) || "deep-space";
 
   // Run engine once (memoized)
   const engine = useMemo(() => getEngineState(), []);
@@ -224,8 +483,11 @@ export default function Dashboard() {
 
       <div className="flex-1 p-7 space-y-6 max-w-[1600px] mx-auto w-full">
 
+        {/* ── Banner Strip ── */}
+        <PageBanner bannerTheme={bannerTheme} />
+
         {/* ── LAYER 1: Page Header — General Overview ── */}
-        <div className="flex items-start justify-between gap-6">
+        <div className="flex items-start justify-between gap-6 -mt-2">
           <div>
             <div className="flex items-center gap-2.5 mb-2.5">
               <span className="relative flex h-2 w-2 flex-shrink-0">
@@ -295,6 +557,15 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+
+        {/* ── Daily Briefing Card ── */}
+        <DailyBriefing
+          firstName={firstName}
+          pendingActions={pendingActions}
+          atRiskCount={atRiskCount}
+          criticalCount={criticalCount}
+          onTrackCount={onTrackCount}
+        />
 
         {/* ── Critical Alert Banner ── */}
         {criticalCount > 0 && (
