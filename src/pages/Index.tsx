@@ -128,6 +128,7 @@ function MetricTile({ label, value, sub, icon: Icon, signal }: {
 }
 
 export default function Dashboard() {
+  const profile = loadProfile();
   const criticalCount = insights.filter((i) => i.signal === "red").length;
   const budgetPct = Math.round((orgMetrics.totalBudgetUsed / orgMetrics.totalBudgetAllocated) * 100);
   const budgetSignal = getScoreSignal(budgetPct > 80 ? 30 : budgetPct > 60 ? 55 : 80);
@@ -139,26 +140,69 @@ export default function Dashboard() {
   const goodCount = insights.filter(i => i.signal === "green" || i.signal === "blue").length;
   const warnCount = insights.filter(i => i.signal === "yellow").length;
 
+  const advisoryBlurb = getAdvisoryBlurb(profile.currentState, profile.futureState, profile.orgName);
+  const firstName = profile.userName?.split(" ")[0] || "";
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
   return (
     <div className="p-6 space-y-5 max-w-none">
 
-      {/* ── Page header ── */}
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-0.5">
-            <h1 className="text-xl font-bold text-foreground">Command Center</h1>
-            <span className="text-xs px-2 py-0.5 rounded font-semibold"
-              style={{ background: "hsl(var(--electric-blue) / 0.12)", color: "hsl(var(--electric-blue))", border: "1px solid hsl(var(--electric-blue) / 0.3)" }}>
-              LIVE
-            </span>
+      {/* ── Personalized Welcome Header ── */}
+      <div className="rounded-2xl border-2 overflow-hidden"
+        style={{ borderColor: "hsl(var(--electric-blue) / 0.2)", background: "linear-gradient(135deg, hsl(var(--electric-blue) / 0.06) 0%, hsl(var(--teal) / 0.04) 50%, hsl(var(--secondary)) 100%)" }}>
+        <div className="px-6 py-5 flex flex-col md:flex-row md:items-start gap-4 justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider"
+                style={{ background: "hsl(var(--electric-blue) / 0.12)", color: "hsl(var(--electric-blue))", border: "1px solid hsl(var(--electric-blue) / 0.25)" }}>
+                LIVE
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+              </span>
+            </div>
+            <h1 className="text-2xl font-bold text-foreground leading-tight">
+              {greeting}{firstName ? `, ${firstName}` : ""}.
+            </h1>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-muted-foreground">
+              {profile.orgName && <span className="font-semibold text-foreground">{profile.orgName}</span>}
+              {profile.orgName && (profile.industry || profile.orgType) && <span className="opacity-30">·</span>}
+              {profile.industry && <span>{profile.industry}</span>}
+              {profile.industry && profile.orgType && <span className="opacity-30">·</span>}
+              {profile.orgType && (
+                <span className="text-xs px-1.5 py-0.5 rounded font-medium"
+                  style={{ background: "hsl(var(--teal) / 0.1)", color: "hsl(var(--teal))", border: "1px solid hsl(var(--teal) / 0.25)" }}>
+                  {profile.orgType}
+                </span>
+              )}
+            </div>
+            {profile.currentState && (
+              <p className="mt-2 text-xs text-muted-foreground leading-relaxed max-w-lg line-clamp-2">
+                <span className="font-semibold text-foreground/70">Current state: </span>{profile.currentState}
+              </p>
+            )}
+            {profile.futureState && (
+              <p className="mt-0.5 text-xs leading-relaxed max-w-lg line-clamp-2"
+                style={{ color: "hsl(var(--electric-blue) / 0.8)" }}>
+                <span className="font-semibold">Vision: </span>{profile.futureState}
+              </p>
+            )}
           </div>
-          <p className="text-sm text-muted-foreground">
-            {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-          </p>
+          <div className="flex-shrink-0 text-right">
+            <div className="text-xs text-muted-foreground mb-0.5">Overall Maturity</div>
+            <ScoreBadge score={orgMetrics.overallMaturityScore} signal={getScoreSignal(orgMetrics.overallMaturityScore)} size="lg" showLabel />
+          </div>
         </div>
-        <div className="text-right">
-          <div className="text-xs text-muted-foreground mb-0.5">Overall Maturity</div>
-          <ScoreBadge score={orgMetrics.overallMaturityScore} signal={getScoreSignal(orgMetrics.overallMaturityScore)} size="lg" showLabel />
+
+        {/* Advisory blurb strip */}
+        <div className="px-6 py-3 border-t flex items-start gap-3"
+          style={{ borderColor: "hsl(var(--electric-blue) / 0.15)", background: "hsl(var(--electric-blue) / 0.04)" }}>
+          <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "hsl(var(--electric-blue))" }} />
+          <p className="text-xs leading-relaxed text-foreground/75">
+            <span className="font-semibold text-foreground">Martin PMO — </span>
+            {advisoryBlurb}
+          </p>
         </div>
       </div>
 
