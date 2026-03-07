@@ -560,7 +560,9 @@ export default function Initiatives() {
                           {hasDeadlines && <Clock className="w-3 h-3 text-signal-orange flex-shrink-0" />}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-xs text-muted-foreground">{ini.department}</span>
+                          <span className={cn("text-xs font-medium px-1.5 py-0.5 rounded border", categoryStyles[ini.category].cls)}>
+                            {categoryStyles[ini.category].label}
+                          </span>
                           <span className="text-xs text-muted-foreground flex items-center gap-0.5">
                             <User className="w-3 h-3" />
                             {ini.owner.split(" ")[0]}
