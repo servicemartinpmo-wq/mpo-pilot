@@ -1,4 +1,6 @@
 import { frameworks, departments, orgMetrics, orgProfile, authorityMatrix, sopRecords, actionItems, governanceLogs } from "@/lib/pmoData";
+import { loadProfile, saveProfile, applyAccentColor, applyFont } from "@/lib/companyStore";
+import type { CompanyProfile } from "@/lib/companyStore";
 import { cn } from "@/lib/utils";
 import {
   Settings, Database, Cpu, Users, FileText, Shield, Building2,
