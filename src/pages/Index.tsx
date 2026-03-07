@@ -410,7 +410,7 @@ export default function Dashboard() {
       <div className="flex-1 p-7 space-y-6 max-w-[1600px] mx-auto w-full">
 
         {/* ── Banner Strip ── */}
-        <PageBanner bannerTheme={bannerTheme} />
+        <PageBanner />
 
         {/* ── LAYER 1: Page Header — General Overview ── */}
         <div className="flex items-start justify-between gap-6 -mt-2">
