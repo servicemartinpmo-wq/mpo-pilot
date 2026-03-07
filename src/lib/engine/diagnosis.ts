@@ -75,15 +75,26 @@ const SIGNAL_TO_FRAMEWORKS: Record<SignalCategory, string[]> = {
 };
 
 const ROOT_CAUSE_MAP: Record<SignalCategory, RootCauseCategory> = {
-  "Capacity Constraint":     "Resource Constraint",
-  "Strategic Misalignment":  "Strategic Misalignment",
-  "Dependency Bottleneck":   "Dependency Conflict",
-  "Performance Anomaly":     "Process Bottleneck",
-  "Execution Delay":         "Process Bottleneck",
-  "Risk Escalation":         "Governance Failure",
-  "Resource Overload":       "Leadership Span Overload",
-  "KPI Underperformance":    "Capability Gap",
-  "Deadline Variance":       "Process Bottleneck",
+  "Capacity Constraint":          "Resource Constraint",
+  "Strategic Misalignment":       "Strategic Misalignment",
+  "Dependency Bottleneck":        "Dependency Conflict",
+  "Performance Anomaly":          "Process Bottleneck",
+  "Execution Delay":              "Process Bottleneck",
+  "Risk Escalation":              "Governance Failure",
+  "Resource Overload":            "Leadership Span Overload",
+  "KPI Underperformance":         "Capability Gap",
+  "Deadline Variance":            "Process Bottleneck",
+  // Extended signal categories (Systems 11-25)
+  "Decision Bottleneck":          "Leadership Span Overload",
+  "Leadership Bandwidth":         "Leadership Span Overload",
+  "Cross-Department Conflict":    "System Complexity",
+  "Innovation Gap":               "Capability Gap",
+  "Execution Velocity Decline":   "Process Bottleneck",
+  "Portfolio Imbalance":          "Strategic Misalignment",
+  "Change Resistance":            "System Complexity",
+  "Knowledge Gap":                "Capability Gap",
+  "Benchmarking Gap":             "Capability Gap",
+  "Strategic Opportunity":        "Market Signal",
 };
 
 // Root cause descriptions generated from canonical framework logic
