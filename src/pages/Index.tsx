@@ -313,134 +313,63 @@ function DailyBriefing({ firstName, pendingActions, atRiskCount, criticalCount, 
   );
 }
 
-// ── Page Banner ──────────────────────────────────────
-function PageBanner({ bannerTheme }: { bannerTheme: string }) {
-  const themes: Record<string, { gradient: string; overlay: string; pattern?: string }> = {
-    "deep-space": {
-      gradient: "linear-gradient(135deg, hsl(225 52% 9%) 0%, hsl(240 60% 15%) 40%, hsl(220 45% 8%) 100%)",
-      overlay: "radial-gradient(ellipse 80% 60% at 20% 50%, hsl(233 65% 50% / 0.25) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 30%, hsl(183 55% 35% / 0.15) 0%, transparent 60%)",
-      pattern: "radial-gradient(circle at 1px 1px, hsl(0 0% 100% / 0.04) 1px, transparent 0)"
-    },
-    "aurora": {
-      gradient: "linear-gradient(135deg, hsl(160 60% 8%) 0%, hsl(200 55% 12%) 50%, hsl(230 50% 15%) 100%)",
-      overlay: "radial-gradient(ellipse 100% 80% at 30% 50%, hsl(160 70% 40% / 0.2) 0%, transparent 50%), radial-gradient(ellipse 70% 90% at 70% 40%, hsl(200 80% 50% / 0.15) 0%, transparent 55%)",
-    },
-    "warm-executive": {
-      gradient: "linear-gradient(135deg, hsl(25 35% 12%) 0%, hsl(30 40% 16%) 50%, hsl(20 30% 10%) 100%)",
-      overlay: "radial-gradient(ellipse 90% 70% at 15% 60%, hsl(35 80% 55% / 0.15) 0%, transparent 55%), radial-gradient(ellipse 60% 80% at 85% 30%, hsl(25 60% 40% / 0.12) 0%, transparent 60%)",
-    },
-    "ocean-deep": {
-      gradient: "linear-gradient(135deg, hsl(200 70% 8%) 0%, hsl(195 65% 12%) 50%, hsl(210 55% 10%) 100%)",
-      overlay: "radial-gradient(ellipse 80% 60% at 20% 40%, hsl(195 80% 45% / 0.2) 0%, transparent 55%), radial-gradient(ellipse 70% 70% at 80% 60%, hsl(210 70% 50% / 0.12) 0%, transparent 60%)",
-    },
-    "forest-dusk": {
-      gradient: "linear-gradient(135deg, hsl(140 30% 8%) 0%, hsl(150 35% 12%) 50%, hsl(130 25% 9%) 100%)",
-      overlay: "radial-gradient(ellipse 80% 70% at 25% 50%, hsl(140 60% 40% / 0.18) 0%, transparent 55%), radial-gradient(ellipse 60% 80% at 75% 35%, hsl(150 50% 35% / 0.12) 0%, transparent 60%)",
-    },
-  };
-
-  const theme = themes[bannerTheme] || themes["deep-space"];
-
-  return (
-    <div className="relative h-24 rounded-2xl overflow-hidden mb-6 border border-white/5">
-      {/* Base gradient */}
-      <div className="absolute inset-0" style={{ background: theme.gradient }} />
-      {/* Overlay glows */}
-      <div className="absolute inset-0" style={{ background: theme.overlay }} />
-      {/* Subtle dot pattern */}
-      {theme.pattern && (
-        <div className="absolute inset-0 opacity-100" style={{
-          backgroundImage: theme.pattern,
-          backgroundSize: "24px 24px"
-        }} />
-      )}
-      {/* Particle dots */}
-      {[...Array(18)].map((_, i) => (
-        <div key={i} className="absolute rounded-full"
-          style={{
-            width: Math.random() * 3 + 1 + "px",
-            height: Math.random() * 3 + 1 + "px",
-            left: (i * 5.8 + Math.sin(i) * 4) % 100 + "%",
-            top: (i * 13 + Math.cos(i * 2) * 20) % 100 + "%",
-            background: `hsl(${220 + i * 7} 80% 75% / ${0.1 + (i % 4) * 0.07})`,
-          }}
-        />
-      ))}
-      {/* Faint label */}
-      <div className="absolute bottom-3 right-4 text-[9px] text-white/15 uppercase tracking-widest font-bold">
-        {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-      </div>
-      {/* Thin glowing line at bottom */}
-      <div className="absolute bottom-0 inset-x-0 h-px" style={{
-        background: "linear-gradient(90deg, transparent 0%, hsl(233 65% 65% / 0.5) 30%, hsl(183 55% 55% / 0.4) 70%, transparent 100%)"
-      }} />
-    </div>
-  );
-}
-
 export default function Dashboard() {
-  const profile = loadProfile();
+  const data = useAppData();
+  const { kpis, engine, orgHealth: liveOverallHealth, executionHealth: liveExecutionHealth,
+    strategicClarity: liveStrategicClarity, riskPosture: liveRiskPosture,
+    activeChains: liveActiveChains, criticalRecs: liveCriticalRecs,
+    scoreBreakdown, healthTrend, greeting, firstName } = data;
+
+  const liveHealth = engine.orgHealth;
+  const sortedInsights = [...data.insights].sort((a, b) => b.executivePriorityScore - a.executivePriorityScore);
+
   const [upsellDismissed, setUpsellDismissed] = useState(false);
   const [selectedTask, setSelectedTask] = useState<string | null>(null);
   const [dismissedPopups, setDismissedPopups] = useState<Set<string>>(new Set());
   const [popupsVisible, setPopupsVisible] = useState(false);
   const [showInsights, setShowInsights] = useState(false);
-  const bannerTheme = (typeof window !== "undefined" && localStorage.getItem("apphia_banner_theme")) || "deep-space";
 
-  // Run engine once (memoized)
-  const engine = useMemo(() => getEngineState(), []);
+  // Dynamic popups from live signals
+  const livePopups: StatusPopup[] = [
+    ...(kpis.criticalSignals > 0 ? [{
+      id: "p1", title: `${kpis.criticalSignals} Critical Signal${kpis.criticalSignals > 1 ? "s" : ""}`,
+      body: `${kpis.criticalSignals} department${kpis.criticalSignals > 1 ? "s" : ""} require immediate attention.`,
+      signal: "red" as const, link: "/diagnostics", linkLabel: "View Diagnostics"
+    }] : []),
+    ...(kpis.blocked > 0 ? [{
+      id: "p2", title: `${kpis.blocked} Blocked Initiative${kpis.blocked > 1 ? "s" : ""}`,
+      body: `${kpis.blocked} initiative${kpis.blocked > 1 ? "s are" : " is"} blocked and need escalation.`,
+      signal: "yellow" as const, link: "/initiatives", linkLabel: "View Initiatives"
+    }] : []),
+    ...(kpis.overdueActions > 0 ? [{
+      id: "p3", title: `${kpis.overdueActions} Overdue Action${kpis.overdueActions > 1 ? "s" : ""}`,
+      body: `${kpis.overdueActions} action item${kpis.overdueActions > 1 ? "s are" : " is"} past due date.`,
+      signal: "blue" as const, link: "/action-items", linkLabel: "View Actions"
+    }] : []),
+  ];
 
-  // Live engine values
-  const liveHealth = engine.orgHealth;
-  const liveSignals = engine.signals;
-  const liveRecs = engine.recommendations;
+  const execLoadData = data.departments.slice(0, 4).map(d => ({
+    name: d.head, role: d.name.split(" ")[0],
+    load: d.capacityUsed,
+    delegated: Math.floor(d.blockedTasks / 2),
+    blocked: d.blockedTasks,
+  }));
 
-  // Show popups after a brief delay on mount
   useEffect(() => {
     const t = setTimeout(() => setPopupsVisible(true), 800);
     return () => clearTimeout(t);
   }, []);
 
-  const criticalCount = liveSignals.filter(s => s.severity === "Critical").length || insights.filter(i => i.signal === "red").length;
-  const budgetPct = Math.round((orgMetrics.totalBudgetUsed / orgMetrics.totalBudgetAllocated) * 100);
-  const pendingActions = actionItems.filter(a => a.status !== "Completed").length;
-  const escalatedGov = governanceLogs.filter(g => g.status === "Escalated").length;
-  const blockedInitiatives = initiatives.filter(i => i.status === "Blocked").length;
-  const onTrackCount = initiatives.filter(i => i.status === "On Track").length;
-  const atRiskCount = initiatives.filter(i => i.status === "At Risk" || i.status === "Delayed" || i.status === "Blocked").length;
-  const aboveBoard = insights.filter(i => i.signal === "blue").length + onTrackCount;
-  const completedCount = initiatives.filter(i => i.status === "Completed").length;
-
-  // Live engine scores
-  const liveOverallHealth = liveHealth?.overall ?? orgMetrics.overallMaturityScore;
-  const liveExecutionHealth = liveHealth?.executionHealth ?? orgMetrics.avgExecutionHealth;
-  const liveStrategicClarity = liveHealth?.strategicClarity ?? orgMetrics.avgStrategicAlignment;
-  const liveRiskPosture = liveHealth?.riskPosture ?? 60;
-  const liveActiveChains = engine.activeChains.length;
-  const liveCriticalRecs = liveRecs.filter(r => r.priority === "Immediate").length;
-  const scoreBreakdown = liveHealth?.scoreBreakdown ?? [];
-
-  const firstName = profile.userName?.split(" ")[0] || "";
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-
-  const todayItems = actionItems
+  const todayItems = data.actionItems
     .filter(a => a.status !== "Completed")
     .sort((a, b) => (a.priority === "High" ? -1 : 1))
     .slice(0, 6);
 
-  const atRiskInitiatives = initiatives
+  const atRiskInitiatives = data.initiatives
     .filter(i => i.status === "Blocked" || i.status === "At Risk" || i.status === "Delayed")
     .slice(0, 5);
 
-  const execLoadData = [
-    { name: "Sarah Chen",     role: "CEO", load: 94, delegated: 3, blocked: 1 },
-    { name: "David Kim",      role: "CFO", load: 78, delegated: 5, blocked: 0 },
-    { name: "Elena Vasquez",  role: "CMO", load: 86, delegated: 2, blocked: 2 },
-    { name: "Ryan Torres",    role: "CTO", load: 91, delegated: 4, blocked: 1 },
-  ];
-
-  const visiblePopups = STATUS_POPUPS.filter(p => !dismissedPopups.has(p.id));
+  const visiblePopups = livePopups.filter(p => !dismissedPopups.has(p.id));
 
   function dismissPopup(id: string) {
     setDismissedPopups(prev => new Set([...prev, id]));
