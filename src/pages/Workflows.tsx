@@ -39,7 +39,7 @@ interface Bundle {
   workflows: string[];
   updates: string[];
   status: "active" | "idle" | "partial";
-  tier: "t1" | "t2" | "t3";
+  tier: "free" | "t1" | "t2" | "t3";
   bundleType: BundleView;
 }
 
