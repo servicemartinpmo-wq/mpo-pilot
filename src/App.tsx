@@ -13,6 +13,7 @@ import Reports from "./pages/Reports";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import OnboardingWizard from "./components/OnboardingWizard";
+import ActionItems from "./pages/ActionItems";
 import { loadProfile, applyAccentColor, applyFont } from "./lib/companyStore";
 import type { CompanyProfile } from "./lib/companyStore";
 
@@ -57,6 +58,7 @@ const App = () => {
               <Route path="/diagnostics" element={<Diagnostics />} />
               <Route path="/departments" element={<Departments />} />
               <Route path="/reports" element={<Reports />} />
+              <Route path="/action-items" element={<ActionItems />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

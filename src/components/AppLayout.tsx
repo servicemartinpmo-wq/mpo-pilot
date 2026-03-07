@@ -1,18 +1,19 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import { useState } from "react";
 import {
   LayoutDashboard, Rocket, Activity, Building2,
-  Settings, Zap, ChevronRight, FileText, ToggleLeft, ToggleRight
+  Settings, Zap, ChevronRight, FileText, ToggleLeft, ToggleRight, CheckSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 import type { CompanyProfile } from "@/lib/companyStore";
-import { saveProfile, applyAccentColor } from "@/lib/companyStore";
+import { saveProfile } from "@/lib/companyStore";
 import { orgMetrics } from "@/lib/pmoData";
 
 const navItems = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
   { to: "/initiatives", label: "Initiatives", icon: Rocket },
   { to: "/diagnostics", label: "Diagnostics", icon: Activity },
+  { to: "/action-items", label: "Action Items", icon: CheckSquare },
   { to: "/departments", label: "Departments", icon: Building2 },
   { to: "/reports", label: "Reports", icon: FileText },
   { to: "/admin", label: "Admin", icon: Settings },
