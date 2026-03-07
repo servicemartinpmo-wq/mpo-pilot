@@ -703,8 +703,8 @@ export default function Dashboard() {
             </div>
             <div className="p-5 space-y-4">
               {[
-                { label: "Total Initiatives", value: initiatives.length, note: `${onTrackCount} on track`, color: "text-foreground" },
-                { label: "Budget Utilization", value: `${budgetPct}%`, note: `$${(orgMetrics.totalBudgetUsed / 1e6).toFixed(1)}M of $${(orgMetrics.totalBudgetAllocated / 1e6).toFixed(1)}M`, color: budgetPct > 90 ? "text-signal-red" : budgetPct > 75 ? "text-signal-yellow" : "text-signal-green" },
+                { label: "Total Initiatives", value: data.initiatives.length, note: `${onTrackCount} on track`, color: "text-foreground" },
+                { label: "Budget Utilization", value: `${budgetPct}%`, note: `$${(data.orgMetrics.totalBudgetUsed / 1e6).toFixed(1)}M of $${(data.orgMetrics.totalBudgetAllocated / 1e6).toFixed(1)}M`, color: budgetPct > 90 ? "text-signal-red" : budgetPct > 75 ? "text-signal-yellow" : "text-signal-green" },
                 { label: "Pending Actions", value: pendingActions, note: "Action items open", color: pendingActions > 15 ? "text-signal-red" : "text-signal-yellow" },
                 { label: "Escalated Governance", value: escalatedGov, note: "Gov items escalated", color: escalatedGov > 3 ? "text-signal-red" : "text-muted-foreground" },
               ].map(({ label, value, note, color }) => (
