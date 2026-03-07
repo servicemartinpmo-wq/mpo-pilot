@@ -35,6 +35,10 @@ export function saveProfile(p: CompanyProfile): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
 }
 
+export function resetOnboarding(): void {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
 export function applyAccentColor(hue: number) {
   const root = document.documentElement;
   root.style.setProperty("--electric-blue", `${hue} 100% 50%`);
