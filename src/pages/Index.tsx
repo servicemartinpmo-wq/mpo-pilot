@@ -320,6 +320,15 @@ export default function Dashboard() {
     activeChains: liveActiveChains, criticalRecs: liveCriticalRecs,
     scoreBreakdown, healthTrend, greeting, firstName } = data;
 
+  // Aliases for backward compat with existing JSX
+  const criticalCount   = kpis.criticalSignals;
+  const pendingActions  = kpis.pendingActions;
+  const atRiskCount     = kpis.atRisk + kpis.blocked;
+  const onTrackCount    = kpis.onTrack;
+  const completedCount  = kpis.completed;
+  const budgetPct       = kpis.budgetPct;
+  const escalatedGov    = kpis.escalatedGov;
+
   const liveHealth = engine.orgHealth;
   const sortedInsights = [...data.insights].sort((a, b) => b.executivePriorityScore - a.executivePriorityScore);
 
