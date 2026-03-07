@@ -256,16 +256,20 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="flex-shrink-0 text-right space-y-3">
-            <div>
-              <div className="section-label mb-1">Avg: Maturity</div>
-              <ScoreBadge score={orgMetrics.overallMaturityScore} signal={getScoreSignal(orgMetrics.overallMaturityScore)} size="lg" showLabel />
+              <div className="flex-shrink-0 text-right space-y-3">
+              <div>
+                <div className="section-label mb-1">Org Health Score</div>
+                <ScoreBadge score={liveOverallHealth} signal={getScoreSignal(liveOverallHealth)} size="lg" showLabel />
+              </div>
+              <div>
+                <div className="section-label mb-1">Execution Health</div>
+                <ScoreBadge score={liveExecutionHealth} signal={getScoreSignal(liveExecutionHealth)} size="sm" />
+              </div>
+              <div className="flex items-center gap-1.5 justify-end">
+                <span className="w-1.5 h-1.5 rounded-full bg-signal-green animate-pulse" />
+                <span className="text-[10px] text-muted-foreground">{liveActiveChains} AI chains active</span>
+              </div>
             </div>
-            <div>
-              <div className="section-label mb-1">Avg: SOP Adherence</div>
-              <ScoreBadge score={orgMetrics.avgSopAdherence} signal={getScoreSignal(orgMetrics.avgSopAdherence)} size="sm" />
-            </div>
-          </div>
         </div>
 
         {/* ── Status strip ── */}
