@@ -7,7 +7,16 @@ import {
   GitBranch, Target, Shield, FileText, X, Users, AlertTriangle, Flag
 } from "lucide-react";
 import { useState } from "react";
-import type { InitiativeStatus, Initiative } from "@/lib/pmoData";
+import type { InitiativeStatus, InitiativeCategory, Initiative } from "@/lib/pmoData";
+
+// ── Initiative Category badge styles ──
+const categoryStyles: Record<InitiativeCategory, { cls: string; label: string }> = {
+  Directive:    { label: "Directive",    cls: "text-electric-blue bg-electric-blue/10 border-electric-blue/30" },
+  Supportive:   { label: "Supportive",   cls: "text-teal bg-teal/10 border-teal/30" },
+  Controlling:  { label: "Controlling",  cls: "text-signal-yellow bg-signal-yellow/10 border-signal-yellow/30" },
+  Diagnostic:   { label: "Diagnostic",   cls: "text-signal-orange bg-signal-orange/10 border-signal-orange/30" },
+  Strategic:    { label: "Strategic",    cls: "text-signal-green bg-signal-green/10 border-signal-green/30" },
+};
 
 // ── Status styles — updated color coding per user spec ──
 // On Track = blue, Completed = green, Delayed = orange, Blocked → "Needs Attention" = distinct purple/amber
