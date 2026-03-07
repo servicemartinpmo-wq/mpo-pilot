@@ -293,39 +293,55 @@ export default function OnboardingWizard({ onComplete }: Props) {
         <div className="relative z-10 flex flex-col h-full overflow-y-auto">
           <div className="flex-1 flex flex-col justify-center p-6 sm:p-8 lg:p-10 xl:p-12 min-h-0">
 
-            {/* Breadcrumb */}
-            <div className="flex items-center gap-1 mb-8 flex-wrap">
-              {STEPS.map((s, i) => {
-                const Icon = s.icon;
-                return (
-                  <div key={i} className="flex items-center gap-1">
-                    <button
-                      onClick={() => i < step && goTo(i)}
-                      disabled={i > step}
-                      className={cn(
-                        "flex items-center gap-2 text-xs font-semibold transition-all duration-200 rounded-lg px-2.5 py-1.5",
-                        i === step ? "cursor-default text-foreground"
-                          : i < step ? "cursor-pointer hover:bg-muted text-muted-foreground"
-                          : "cursor-default text-muted-foreground/50"
-                      )}>
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                        style={{
-                          background: i < step ? "hsl(var(--signal-green))"
-                            : i === step ? ACCENT
-                            : "hsl(var(--muted))",
-                          boxShadow: i === step ? `0 0 12px ${ACCENT_GLOW}` : "none",
-                        }}>
-                        {i < step
-                          ? <Check className="w-3 h-3 text-white" />
-                          : <Icon className="w-3 h-3 text-white" />
-                        }
-                      </div>
-                      <span className="hidden sm:inline">{s.label}</span>
-                    </button>
-                    {i < STEPS.length - 1 && <ChevronRight className="w-3 h-3 flex-shrink-0 text-muted-foreground/40" />}
-                  </div>
-                );
-              })}
+            {/* Step indicator + progress bar */}
+            <div className="mb-8">
+              <div className="flex items-center gap-1 mb-3 flex-wrap">
+                {STEPS.map((s, i) => {
+                  const Icon = s.icon;
+                  return (
+                    <div key={i} className="flex items-center gap-1">
+                      <button
+                        onClick={() => i < step && goTo(i)}
+                        disabled={i > step}
+                        className={cn(
+                          "flex items-center gap-2 text-xs font-semibold transition-all duration-200 rounded-lg px-2.5 py-1.5",
+                          i === step ? "cursor-default text-foreground"
+                            : i < step ? "cursor-pointer hover:bg-muted text-muted-foreground"
+                            : "cursor-default text-muted-foreground/40"
+                        )}>
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                          style={{
+                            background: i < step ? "hsl(var(--signal-green))"
+                              : i === step ? ACCENT
+                              : "hsl(var(--muted))",
+                            boxShadow: i === step ? `0 0 12px ${ACCENT_GLOW}` : "none",
+                          }}>
+                          {i < step
+                            ? <Check className="w-3 h-3 text-white" />
+                            : <Icon className="w-3 h-3 text-white" />
+                          }
+                        </div>
+                        <span className="hidden sm:inline">{s.label}</span>
+                      </button>
+                      {i < STEPS.length - 1 && <ChevronRight className="w-3 h-3 flex-shrink-0 text-muted-foreground/30" />}
+                    </div>
+                  );
+                })}
+                <span className="ml-auto text-xs text-muted-foreground/60 font-mono tabular-nums">
+                  {step + 1} / {STEPS.length}
+                </span>
+              </div>
+              {/* Thin progress bar */}
+              <div className="h-0.5 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500 ease-out"
+                  style={{
+                    width: `${((step + 1) / STEPS.length) * 100}%`,
+                    background: ACCENT,
+                    boxShadow: `0 0 8px ${ACCENT_GLOW}`,
+                  }}
+                />
+              </div>
             </div>
 
             {/* Animated form */}
@@ -341,10 +357,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
               {/* ── STEP 0: Identity ── */}
               {step === 0 && (
                 <div className="space-y-5">
-                  <div>
-                    <h2 className="text-2xl xl:text-3xl font-black mb-1.5 tracking-tight text-foreground">{current.headline}</h2>
-                    <p className="text-sm font-light text-muted-foreground">{current.sub}</p>
-                  </div>
+                  <p className="text-sm text-muted-foreground">{current.sub}</p>
 
                   {/* Your Name */}
                   <div>
@@ -407,10 +420,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
               {/* ── STEP 1: Scale & Direction ── */}
               {step === 1 && (
                 <div className="space-y-5">
-                  <div>
-                    <h2 className="text-2xl xl:text-3xl font-black mb-1.5 tracking-tight text-foreground">{current.headline}</h2>
-                    <p className="text-sm font-light text-muted-foreground">{current.sub}</p>
-                  </div>
+                  <p className="text-sm text-muted-foreground">{current.sub}</p>
 
                   {/* Team Size */}
                   <div>
@@ -459,10 +469,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
               {/* ── STEP 2: Structure ── */}
               {step === 2 && (
                 <div className="space-y-5">
-                  <div>
-                    <h2 className="text-2xl xl:text-3xl font-black mb-1.5 tracking-tight text-foreground">{current.headline}</h2>
-                    <p className="text-sm font-light text-muted-foreground">{current.sub}</p>
-                  </div>
+                  <p className="text-sm text-muted-foreground">{current.sub}</p>
 
                   {/* Departments */}
                   <div>
