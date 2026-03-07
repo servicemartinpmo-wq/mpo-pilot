@@ -192,9 +192,10 @@ export default function OnboardingWizard({ onComplete }: Props) {
     : true;
 
   const current = STEPS[step];
-  const PANEL_BG = "hsl(220 18% 9%)";
-  const ACCENT = "hsl(215 80% 58%)";
-  const ACCENT_GLOW = "hsl(215 80% 58% / 0.22)";
+  const PANEL_BG = "hsl(38 20% 97%)";        /* warm off-white */
+  const ACCENT     = "hsl(233 65% 58%)";       /* periwinkle */
+  const ACCENT_GLOW = "hsl(233 65% 58% / 0.20)";
+  const NAVY       = "hsl(225 48% 13%)";       /* deep navy for left panel overlays */
 
   return (
     <div className="fixed inset-0 z-50 flex overflow-hidden">
