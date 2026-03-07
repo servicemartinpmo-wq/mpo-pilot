@@ -61,6 +61,7 @@ export default function Admin() {
     { key: "sops", label: "SOP Library" },
     { key: "access", label: "Access & Roles" },
     { key: "customize", label: "Customize" },
+    { key: "banner", label: "Banner & Theme" },
   ] as const;
 
   const signalMetrics = [
