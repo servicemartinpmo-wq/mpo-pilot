@@ -16,6 +16,7 @@ import OnboardingWizard from "./components/OnboardingWizard";
 import ActionItems from "./pages/ActionItems";
 import Knowledge from "./pages/Knowledge";
 import Integrations from "./pages/Integrations";
+import Advisory from "./pages/Advisory";
 import { loadProfile, applyAccentColor, applyFont, resetOnboarding } from "./lib/companyStore";
 import type { CompanyProfile } from "./lib/companyStore";
 
