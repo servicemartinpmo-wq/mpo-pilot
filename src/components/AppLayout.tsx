@@ -134,7 +134,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
       </aside>
 
       {/* Main content */}
-      <main className="min-h-screen overflow-auto">
+      <main className="min-h-screen overflow-auto bg-background">
         {children}
       </main>
     </div>
