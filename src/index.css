@@ -76,6 +76,9 @@
     --tier-managed:      233 65% 62%;
     --tier-optimized:    148 52% 38%;
 
+    /* ── Navy token ── */
+    --navy: 225 48% 18%;
+
     /* ── Gradients & shadows ── */
     --gradient-navy:    linear-gradient(135deg, hsl(225 48% 13%), hsl(225 48% 22%));
     --gradient-electric: linear-gradient(135deg, hsl(233 65% 58%), hsl(183 55% 36%));
