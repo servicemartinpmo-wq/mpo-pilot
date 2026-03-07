@@ -666,6 +666,7 @@ export const initiatives: Initiative[] = [
     id: "ini-001",
     name: "Enterprise GTM Acceleration",
     department: "Sales & Development",
+    category: "Strategic",
     owner: "Omar Patel",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Revenue Acceleration",
