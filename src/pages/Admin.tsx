@@ -26,14 +26,6 @@ function AdminSection({ title, icon: Icon, children, badge }: { title: string; i
 export default function Admin() {
   const [activeTab, setActiveTab] = useState<"system" | "org" | "frameworks" | "authority" | "sops" | "access" | "customize">("system");
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile>(loadProfile());
-  const fileRef = useRef<HTMLInputElement | null>(null);
-  function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) => setCompanyProfile(p => ({ ...p, logo: ev.target?.result as string }));
-    reader.readAsDataURL(file);
-  }
   function saveCustomize() {
     saveProfile(companyProfile);
     applyAccentColor(companyProfile.accentHue);
