@@ -14,6 +14,8 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import OnboardingWizard from "./components/OnboardingWizard";
 import ActionItems from "./pages/ActionItems";
+import Knowledge from "./pages/Knowledge";
+import Integrations from "./pages/Integrations";
 import { loadProfile, applyAccentColor, applyFont, resetOnboarding } from "./lib/companyStore";
 import type { CompanyProfile } from "./lib/companyStore";
 
