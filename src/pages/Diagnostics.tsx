@@ -52,6 +52,41 @@ const severityDot = (s: DetectedSignal["severity"]) =>
   s === "High" ? "bg-signal-yellow" :
   s === "Medium" ? "bg-electric-blue" : "bg-signal-green";
 
+type AuditType = "internal" | "external";
+type AuditStatus = "idle" | "selecting" | "running" | "complete";
+
+interface AuditFinding {
+  area: string;
+  status: "pass" | "warn" | "fail";
+  finding: string;
+  recommendation: string;
+  source: string;
+}
+
+const EXTERNAL_AUDIT_AREAS: AuditFinding[] = [
+  { area: "Financial Controls", status: "warn", finding: "Budget approval thresholds exceed single-signatory limits on 3 initiatives", recommendation: "Implement dual-control approval for expenditures >$50K", source: "SOX Section 302/404" },
+  { area: "Risk Register Compliance", status: "pass", finding: "7/10 initiatives have documented, active risk registers", recommendation: "Extend to all initiatives — INI-001, INI-002, INI-003 remain undocumented", source: "ISO 31000:2018" },
+  { area: "Governance Documentation", status: "warn", finding: "3 initiatives lack board-level approval thresholds", recommendation: "Define escalation thresholds for all capital commitments", source: "COSO ERM Framework" },
+  { area: "Policy Adherence", status: "pass", finding: "Operational policies reviewed and current across 8/9 departments", recommendation: "Refresh Technology policy — last reviewed 14 months ago", source: "ISO 9001:2015" },
+  { area: "Audit Trail Integrity", status: "pass", finding: "Governance log entries present for all major decisions", recommendation: "Introduce automated timestamping for decision log entries", source: "SOX Audit Trail Requirements" },
+  { area: "Segregation of Duties", status: "fail", finding: "2 departments lack segregation between approver and executor roles", recommendation: "Immediate role separation required for Program Delivery and Finance", source: "COSO Internal Control Framework" },
+  { area: "Regulatory Alignment", status: "warn", finding: "GDPR data handling review overdue by 60 days", recommendation: "Schedule immediate data privacy audit with DPO", source: "GDPR Article 35" },
+  { area: "Compliance Reporting", status: "pass", finding: "Board reports issued quarterly with no missed cycles", recommendation: "Add risk register summary to board pack for completeness", source: "OECD Corporate Governance Principles" },
+];
+
+const INTERNAL_AUDIT_AREAS: AuditFinding[] = [
+  { area: "Strategic Alignment", status: "warn", finding: "Marketing Q2 OKRs misaligned with pipeline targets (68% brand vs 45% demand-gen)", recommendation: "Realign Marketing OKRs in next sprint planning cycle", source: "Balanced Scorecard (Kaplan & Norton)" },
+  { area: "Initiative Health", status: "warn", finding: "INI-007 at 94% capacity load with no deferral plan in place", recommendation: "Pause or rescope INI-007 until Program Delivery capacity drops below 80%", source: "PMBOK Resource Management" },
+  { area: "Execution Discipline", status: "fail", finding: "Average action item close rate: 61% — target is 80%", recommendation: "Introduce weekly action item review cadence with department leads", source: "Lean Execution (Womack & Jones)" },
+  { area: "Capacity Utilization", status: "warn", finding: "Program Delivery at 94%, Technology at 87% — above sustainable threshold", recommendation: "Reallocate 2 FTEs from underutilized Customer Success (62%) to delivery", source: "Lean Workload Analysis" },
+  { area: "Dependency Mapping", status: "pass", finding: "Critical dependencies mapped for 8/10 active initiatives", recommendation: "Complete dependency mapping for INI-004 and INI-009", source: "Critical Chain (Goldratt)" },
+  { area: "Process Adherence", status: "pass", finding: "Core operational processes documented and followed in 7/9 departments", recommendation: "Update Sales process SOPs to reflect new CRM workflow", source: "PDCA Cycle (Deming)" },
+  { area: "Leadership Bandwidth", status: "warn", finding: "COO approval required for 14 items currently pending — creating bottleneck", recommendation: "Delegate Tier 3 decisions to department heads via updated authority matrix", source: "Span of Control Analysis (Galbraith)" },
+  { area: "Knowledge Capture", status: "fail", finding: "No lessons-learned documentation in last 2 completed initiatives", recommendation: "Implement post-project retrospective template — mandatory for all closures", source: "Agile Retrospectives (Derby & Larsen)" },
+  { area: "Communication Flows", status: "pass", finding: "Weekly status reports issued for all active Tier 1 initiatives", recommendation: "Extend to Tier 2 — currently only 40% have standing updates", source: "PMBOK Communications Management" },
+  { area: "Maturity Progression", status: "warn", finding: "2 departments stuck at CMMI Level 2 for 3+ consecutive quarters", recommendation: "Assign improvement sponsor and 90-day maturity improvement plan", source: "CMMI Maturity Model" },
+];
+
 export default function Diagnostics() {
   const [typeFilter, setTypeFilter] = useState<FilterType>("All");
   const [govTab, setGovTab] = useState<"all" | "Risk" | "Decision" | "Change">("all");
@@ -59,9 +94,36 @@ export default function Diagnostics() {
   const [selectedCheck, setSelectedCheck] = useState<{ label: string; detail: string; status: string } | null>(null);
   const [engineTab, setEngineTab] = useState<"signals" | "diagnosis" | "frameworks" | "chains">("signals");
   const [expandedDiag, setExpandedDiag] = useState<string | null>(null);
+  const [auditStatus, setAuditStatus] = useState<AuditStatus>("idle");
+  const [auditType, setAuditType] = useState<AuditType | null>(null);
+  const [auditProgress, setAuditProgress] = useState(0);
+  const [auditFindings, setAuditFindings] = useState<AuditFinding[]>([]);
 
   // Run engine once (memoized)
   const engine = useMemo(() => getEngineState(), []);
+
+  function startAudit(type: AuditType) {
+    setAuditType(type);
+    setAuditStatus("running");
+    setAuditProgress(0);
+    setAuditFindings([]);
+    const findings = type === "external" ? EXTERNAL_AUDIT_AREAS : INTERNAL_AUDIT_AREAS;
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.floor(Math.random() * 12) + 8;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        setAuditFindings(findings);
+        setAuditStatus("complete");
+      }
+      setAuditProgress(Math.min(progress, 100));
+    }, 220);
+  }
+
+  const auditPass = auditFindings.filter(f => f.status === "pass").length;
+  const auditWarn = auditFindings.filter(f => f.status === "warn").length;
+  const auditFail = auditFindings.filter(f => f.status === "fail").length;
 
   const insightTypes = [...new Set(insights.map(i => i.type))];
   const filtered = [...insights]
