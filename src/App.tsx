@@ -19,6 +19,7 @@ import Workflows from "./pages/Workflows";
 import Integrations from "./pages/Integrations";
 import Advisory from "./pages/Advisory";
 import Team from "./pages/Team";
+import CreatorLab from "./pages/CreatorLab";
 import { loadProfile, applyAccentColor, applyFont, resetOnboarding } from "./lib/companyStore";
 import type { CompanyProfile } from "./lib/companyStore";
 

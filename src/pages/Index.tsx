@@ -1,21 +1,18 @@
 import {
-  insights, departments, frameworks, orgMetrics, getScoreSignal, formatCurrency,
-  actionItems, governanceLogs, initiatives
+  insights, orgMetrics, actionItems, governanceLogs, initiatives
 } from "@/lib/pmoData";
 import InsightCard from "@/components/InsightCard";
-import { ScoreBadge } from "@/components/ScoreBadge";
 import {
-  AlertTriangle, Users, TrendingUp, Clock, DollarSign, Shield,
-  BarChart3, Target, FileText, CheckCircle, ChevronRight,
-  Zap, Lock, Star, ArrowUpRight, Activity, X, Bell,
-  Mail, CalendarDays, UserCheck, Brain, Layers, GitBranch, ChevronDown,
-  Coffee, Sun, Moon, Sunrise, Sparkles, Award, TrendingDown, Smile
+  AlertTriangle, Users, Clock, Target, CheckCircle, ChevronRight,
+  Zap, Star, Activity, X,
+  CalendarDays, UserCheck, Brain, ChevronDown,
+  Coffee, Sun, Moon, Sunrise, Sparkles, Award, Smile
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { loadProfile } from "@/lib/companyStore";
-import { useState, useEffect, useMemo } from "react";
-import { getEngineState } from "@/lib/engine";
+import { useState, useEffect } from "react";
+import { useAppData } from "@/hooks/useAppData";
+import PageBanner from "@/components/PageBanner";
 
 const sortedInsights = [...insights].sort((a, b) => b.executivePriorityScore - a.executivePriorityScore);
 
