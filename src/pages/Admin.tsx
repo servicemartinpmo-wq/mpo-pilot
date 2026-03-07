@@ -40,7 +40,10 @@ function Block({ title, icon: Icon, children, badge, accent }: {
 }
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState<"system" | "org" | "frameworks" | "authority" | "sops" | "access" | "customize">("system");
+  const [activeTab, setActiveTab] = useState<"system" | "org" | "frameworks" | "authority" | "sops" | "access" | "customize" | "banner">("system");
+  const [bannerTheme, setBannerTheme] = useState(
+    typeof window !== "undefined" ? (localStorage.getItem("apphia_banner_theme") || "deep-space") : "deep-space"
+  );
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile>(loadProfile());
   const [expandedRole, setExpandedRole] = useState<string | null>(null);
 
