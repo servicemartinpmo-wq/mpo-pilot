@@ -1,299 +1,505 @@
+/**
+ * Advisory — 5 core + 4 optional advisors with request modals, tier gating, and AI recommendation
+ */
 import { useState } from "react";
-import {
-  Plug, CheckCircle, AlertTriangle, Lock, ExternalLink,
-  MessageSquare, HardDrive, ClipboardList, DollarSign, Users,
-  ArrowRight, Zap, RefreshCw, Settings
-} from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Brain, Cog, Rocket, Shield, GitBranch, DollarSign, BarChart3,
+  Cpu, Headphones, Target, ChevronRight, X, Upload, MessageSquare,
+  Mail, Star, Lock, Zap, CheckCircle, Clock, ArrowUpRight, User,
+  Sparkles, FileText
+} from "lucide-react";
 
-type IntegrationStatus = "connected" | "available" | "coming_soon";
-type IntegrationTier = "t1" | "t2" | "t3";
+type AdvisorCategory = "core" | "optional";
+type RequestStatus = "idle" | "submitting" | "submitted";
 
-interface Integration {
+interface Advisor {
   id: string;
   name: string;
-  category: string;
+  shortName: string;
+  category: AdvisorCategory;
+  expertise: string;
   description: string;
-  longDesc: string;
   icon: React.ElementType;
   color: string;
   bg: string;
-  status: IntegrationStatus;
-  tier: IntegrationTier;
-  features: string[];
-  badge?: string;
+  tier: "free" | "t1" | "t2" | "t3";
+  responseTime: string;
+  activeRequests: number;
+  tags: string[];
 }
 
-const INTEGRATIONS: Integration[] = [
+const ADVISORS: Advisor[] = [
+  // ── Core Advisors ──
   {
-    id: "slack",
-    name: "Slack",
-    category: "Communication",
-    description: "Send alerts, escalations, and initiative updates directly to Slack channels.",
-    longDesc: "Route critical signals, governance escalations, and initiative status updates to the right Slack channels automatically. Connect your Command Center to your team's communication layer.",
-    icon: MessageSquare,
-    color: "hsl(262 52% 47%)",
-    bg: "hsl(262 52% 47% / 0.08)",
-    status: "available",
-    tier: "t1",
-    badge: "Ready to Connect",
-    features: [
-      "Send critical alerts to #ops-alerts",
-      "Post initiative status updates weekly",
-      "Escalate governance flags to leadership channels",
-      "Daily digest of blocked tasks and pending actions",
-    ],
+    id: "strategy", name: "Strategy Advisory", shortName: "Strategy",
+    category: "core", tier: "free",
+    expertise: "Vision · Competitive Analysis · Strategic Prioritization · OKR Architecture",
+    description: "Translates ambition into structured strategy. Diagnoses misalignment between vision and execution, recommends sequencing of initiatives, and builds the strategic logic that governs prioritization.",
+    icon: Brain, color: "hsl(var(--electric-blue))", bg: "hsl(var(--electric-blue) / 0.08)",
+    responseTime: "24–48 hrs", activeRequests: 2,
+    tags: ["Rumelt", "BSC", "OKR", "Porter"],
   },
   {
-    id: "gdrive",
-    name: "Google Drive",
-    category: "File Management",
-    description: "Store SOPs, templates, and reports directly in your Drive — auto-organized by department.",
-    longDesc: "Sync your Knowledge Repository with Google Drive so documents are automatically organized, versioned, and accessible to your team without leaving their existing workflow.",
-    icon: HardDrive,
-    color: "hsl(20 82% 48%)",
-    bg: "hsl(20 82% 48% / 0.08)",
-    status: "available",
-    tier: "t2",
-    badge: "7-Day Free Trial",
-    features: [
-      "Auto-save generated templates to Drive",
-      "Organize SOPs by department folder",
-      "Version control on uploaded documents",
-      "Share reports directly from Command Center",
-    ],
+    id: "operations", name: "Operations Advisory", shortName: "Operations",
+    category: "core", tier: "free",
+    expertise: "Process Design · Workflow Optimization · Capacity Planning · Lean/Six Sigma",
+    description: "Eliminates operational friction, maps value streams, and builds execution systems. Identifies bottlenecks, quantifies waste, and designs the operating model that enables consistent delivery.",
+    icon: Cog, color: "hsl(var(--teal))", bg: "hsl(var(--teal) / 0.08)",
+    responseTime: "24–48 hrs", activeRequests: 1,
+    tags: ["Lean", "Six Sigma", "TOC", "Value Chain"],
   },
   {
-    id: "asana",
-    name: "Asana",
-    category: "Project Management",
-    description: "Sync initiatives, action items, and workflows bidirectionally with Asana projects.",
-    longDesc: "Push initiatives and action items from the Command Center into Asana and pull status updates back — keeping your PMO data and project management tool in sync without double entry.",
-    icon: ClipboardList,
-    color: "hsl(12 72% 54%)",
-    bg: "hsl(12 72% 54% / 0.08)",
-    status: "coming_soon",
-    tier: "t2",
-    features: [
-      "Sync initiatives as Asana projects",
-      "Map action items to Asana tasks with owners",
-      "Pull status updates back to Command Center",
-      "Map RACI roles to Asana task assignments",
-    ],
+    id: "pmo", name: "Project & Program Management", shortName: "PMO",
+    category: "core", tier: "free",
+    expertise: "Initiative Governance · RACI · MOCHA · Delivery Frameworks · Risk Management",
+    description: "Governs the full initiative lifecycle from intake to close. Establishes accountability frameworks, manages dependencies, and ensures every project has a clear owner, timeline, and decision gate.",
+    icon: Rocket, color: "hsl(var(--signal-purple))", bg: "hsl(var(--signal-purple) / 0.08)",
+    responseTime: "24 hrs", activeRequests: 3,
+    tags: ["MOCHA", "RACI", "PMO", "Governance"],
   },
   {
-    id: "quickbooks",
-    name: "QuickBooks",
-    category: "Finance",
-    description: "Pull budget actuals, P&L summaries, and variance data into financial dashboards.",
-    longDesc: "Connect your QuickBooks account to automatically surface budget actuals, variance data, and financial health signals directly in the Command Center — no manual reporting needed.",
-    icon: DollarSign,
-    color: "hsl(148 60% 38%)",
-    bg: "hsl(148 60% 38% / 0.08)",
-    status: "coming_soon",
-    tier: "t3",
-    features: [
-      "Pull budget actuals vs. plan automatically",
-      "Surface P&L and cash flow signals",
-      "Map financial data to departmental KPIs",
-      "Trigger variance alerts when thresholds breached",
-    ],
+    id: "admin-systems", name: "Administrative Systems", shortName: "Admin Systems",
+    category: "core", tier: "free",
+    expertise: "SOP Design · Authority Matrix · Policy Architecture · Compliance Frameworks",
+    description: "Builds the administrative infrastructure that prevents chaos. Designs SOPs, authority matrices, and governance frameworks that create clarity without bureaucracy.",
+    icon: Shield, color: "hsl(var(--signal-green))", bg: "hsl(var(--signal-green) / 0.08)",
+    responseTime: "48 hrs", activeRequests: 0,
+    tags: ["SOPs", "Authority", "Policy", "Compliance"],
   },
   {
-    id: "hris",
-    name: "HRIS",
-    category: "Human Resources",
-    description: "Sync headcount, org chart, and talent pipeline data from Workday, BambooHR, or Rippling.",
-    longDesc: "Connect your HRIS platform (Workday, BambooHR, Rippling, or ADP) to keep department headcount, roles, and talent pipeline data current in the Command Center without manual updates.",
-    icon: Users,
-    color: "hsl(233 65% 62%)",
-    bg: "hsl(233 65% 62% / 0.08)",
-    status: "coming_soon",
-    tier: "t3",
-    features: [
-      "Sync headcount and org chart live",
-      "Surface open role and time-to-fill data",
-      "Track talent pipeline per department",
-      "Trigger alerts for critical role vacancies",
-    ],
+    id: "process", name: "Process & Operational Improvement", shortName: "Process Improvement",
+    category: "core", tier: "free",
+    expertise: "Continuous Improvement · Root Cause Analysis · KPI Design · Performance Systems",
+    description: "Systematically improves performance through structured diagnostics. Identifies root causes, designs KPI frameworks, and implements performance management systems that drive sustained improvement.",
+    icon: GitBranch, color: "hsl(var(--signal-yellow))", bg: "hsl(var(--signal-yellow) / 0.08)",
+    responseTime: "48 hrs", activeRequests: 1,
+    tags: ["DMAIC", "Kaizen", "KPIs", "Improvement"],
+  },
+  // ── Optional Advisors ──
+  {
+    id: "finance", name: "Finance Advisory", shortName: "Finance",
+    category: "optional", tier: "t1",
+    expertise: "Financial Modeling · Budget Planning · Cash Flow · CFO Advisory",
+    description: "Provides financial governance and strategic modeling support. Assists with budget architecture, financial close processes, variance analysis, and CFO-level decision frameworks.",
+    icon: DollarSign, color: "hsl(var(--signal-green))", bg: "hsl(var(--signal-green) / 0.08)",
+    responseTime: "48–72 hrs", activeRequests: 0,
+    tags: ["CFO", "Budget", "P&L", "Forecasting"],
+  },
+  {
+    id: "marketing", name: "Marketing Advisory", shortName: "Marketing",
+    category: "optional", tier: "t1",
+    expertise: "Go-to-Market · Demand Generation · Brand · Pipeline Strategy",
+    description: "Aligns marketing execution with revenue goals. Audits GTM strategy, demand generation effectiveness, and brand positioning to ensure marketing investment produces measurable pipeline.",
+    icon: Target, color: "hsl(var(--signal-orange))", bg: "hsl(var(--signal-orange) / 0.08)",
+    responseTime: "48–72 hrs", activeRequests: 0,
+    tags: ["GTM", "Pipeline", "Brand", "Demand Gen"],
+  },
+  {
+    id: "technology", name: "Technology & IT Advisory", shortName: "Technology",
+    category: "optional", tier: "t2",
+    expertise: "IT Architecture · Digital Transformation · Tech Stack · Infrastructure",
+    description: "Provides technology governance and architecture guidance. Assesses IT maturity, recommends infrastructure investments, and governs digital transformation initiatives.",
+    icon: Cpu, color: "hsl(var(--electric-blue))", bg: "hsl(var(--electric-blue) / 0.08)",
+    responseTime: "72 hrs", activeRequests: 0,
+    tags: ["Architecture", "Cloud", "ITIL", "Digital"],
+  },
+  {
+    id: "data", name: "Data & Analytics Advisory", shortName: "Data Analytics",
+    category: "optional", tier: "t2",
+    expertise: "Data Architecture · BI · Analytics Strategy · KPI Frameworks",
+    description: "Transforms raw data into decision-making intelligence. Designs analytics architecture, establishes data governance, and builds reporting frameworks that surface actionable insights.",
+    icon: BarChart3, color: "hsl(var(--teal))", bg: "hsl(var(--teal) / 0.08)",
+    responseTime: "72 hrs", activeRequests: 0,
+    tags: ["BI", "Data Governance", "KPIs", "Dashboards"],
+  },
+  {
+    id: "cx", name: "Customer Support Advisory", shortName: "Customer Support",
+    category: "optional", tier: "t1",
+    expertise: "CX Design · NPS · Support Systems · Customer Success",
+    description: "Designs customer experience frameworks that drive retention and advocacy. Diagnoses NPS decline, builds support SOPs, and creates Customer Success playbooks.",
+    icon: Headphones, color: "hsl(var(--signal-purple))", bg: "hsl(var(--signal-purple) / 0.08)",
+    responseTime: "48 hrs", activeRequests: 0,
+    tags: ["NPS", "CX", "Customer Success", "Retention"],
   },
 ];
 
-const TIER_LABELS: Record<IntegrationTier, string> = { t1: "Tier 1", t2: "Tier 2", t3: "Tier 3" };
-const TIER_PRICE: Record<IntegrationTier, string> = { t1: "$29.99/mo", t2: "7-Day Free Trial", t3: "$129.99/mo" };
-const TIER_COLOR: Record<IntegrationTier, string> = {
-  t1: "hsl(var(--electric-blue))", t2: "hsl(var(--teal))", t3: "hsl(var(--navy))"
+const TIER_LABELS: Record<string, string> = { free: "Free", t1: "Tier 1", t2: "Tier 2", t3: "Tier 3" };
+const TIER_COLORS: Record<string, string> = {
+  free: "hsl(var(--signal-green))", t1: "hsl(var(--electric-blue))",
+  t2: "hsl(var(--teal))", t3: "hsl(var(--signal-purple))"
 };
 
-const STATUS_CONFIG = {
-  connected: { label: "Connected", icon: CheckCircle, color: "text-signal-green", bg: "bg-signal-green/10" },
-  available: { label: "Available", icon: Plug, color: "text-electric-blue", bg: "bg-electric-blue/10" },
-  coming_soon: { label: "Coming Soon", icon: Lock, color: "text-muted-foreground", bg: "bg-secondary" },
-};
+interface RequestModal {
+  advisor: Advisor;
+  requestType: string;
+  message: string;
+  priority: "High" | "Medium" | "Low";
+  files: string[];
+}
 
-export default function Integrations() {
-  const [expanded, setExpanded] = useState<string | null>("slack");
+export default function Advisory() {
+  const [selectedAdvisor, setSelectedAdvisor] = useState<Advisor | null>(null);
+  const [requestModal, setRequestModal] = useState<RequestModal | null>(null);
+  const [requestStatus, setRequestStatus] = useState<RequestStatus>("idle");
+  const [hoveredAdvisor, setHoveredAdvisor] = useState<string | null>(null);
+  const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
 
-  const connected = INTEGRATIONS.filter(i => i.status === "connected");
-  const available = INTEGRATIONS.filter(i => i.status === "available");
-  const comingSoon = INTEGRATIONS.filter(i => i.status === "coming_soon");
+  const coreAdvisors = ADVISORS.filter(a => a.category === "core");
+  const optionalAdvisors = ADVISORS.filter(a => a.category === "optional");
+
+  function openRequest(advisor: Advisor) {
+    setRequestModal({
+      advisor,
+      requestType: "General Advisory",
+      message: "",
+      priority: "Medium",
+      files: [],
+    });
+    setRequestStatus("idle");
+  }
+
+  function handleSubmit() {
+    setRequestStatus("submitting");
+    setTimeout(() => setRequestStatus("submitted"), 1200);
+  }
+
+  function getAiRecommendation() {
+    const recs = [
+      "Based on your current state, the Operations Advisory should be your first contact — 3 active bottlenecks match their diagnostic scope.",
+      "Your Strategic Misalignment signal (Score: 89) is best addressed through the Strategy Advisory. They specialize in OKR realignment.",
+      "The PMO Advisory is the highest-priority contact given 5 blocked initiatives and 3 dependency escalations in your system.",
+    ];
+    setAiSuggestion(recs[Math.floor(Math.random() * recs.length)]);
+  }
 
   return (
     <div className="p-6 space-y-6 max-w-none">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-0.5">
-          <h1 className="text-xl font-bold text-foreground">Integrations</h1>
-          <span className="text-xs px-2 py-0.5 rounded font-semibold"
-            style={{ background: "hsl(var(--electric-blue) / 0.12)", color: "hsl(var(--electric-blue))", border: "1px solid hsl(var(--electric-blue) / 0.3)" }}>
-            BETA
-          </span>
+
+      {/* ── Header ── */}
+      <div className="rounded-2xl border-2 overflow-hidden"
+        style={{ borderColor: "hsl(var(--electric-blue) / 0.2)", background: "linear-gradient(135deg, hsl(var(--electric-blue) / 0.06) 0%, hsl(var(--teal) / 0.03) 60%, hsl(var(--background)) 100%)" }}>
+        <div className="px-7 py-6 flex flex-col md:flex-row md:items-center gap-5 justify-between">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Martin PMO-Ops</span>
+            </div>
+            <h1 className="text-3xl font-black text-foreground tracking-tight mb-2">Advisory</h1>
+            <p className="text-sm text-muted-foreground font-medium max-w-xl">
+              Expert advisors for every domain — submit a request, upload documents or messages, and receive structured guidance aligned to your organization's priorities.
+            </p>
+          </div>
+          <div className="flex-shrink-0">
+            <button onClick={getAiRecommendation}
+              className="flex items-center gap-2 text-sm font-bold px-4 py-2.5 rounded-xl border-2 border-electric-blue text-electric-blue hover:bg-electric-blue/10 transition-colors">
+              <Sparkles className="w-4 h-4" /> Get AI Recommendation
+            </button>
+          </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Connect the Command Center to the tools your team already uses — Slack, Google Drive, Asana, QuickBooks, and HRIS.
-        </p>
+
+        {aiSuggestion && (
+          <div className="mx-7 mb-6 flex items-start gap-3 px-5 py-3.5 rounded-xl"
+            style={{ background: "hsl(var(--electric-blue) / 0.07)", border: "1px solid hsl(var(--electric-blue) / 0.2)" }}>
+            <Sparkles className="w-4 h-4 text-electric-blue flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-foreground/85 flex-1">{aiSuggestion}</p>
+            <button onClick={() => setAiSuggestion(null)} className="text-muted-foreground hover:text-foreground flex-shrink-0">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Status summary */}
+      {/* ── Stats ── */}
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Connected", value: connected.length, color: "text-signal-green", bg: "bg-signal-green/8 border-signal-green/25" },
-          { label: "Available Now", value: available.length, color: "text-electric-blue", bg: "bg-electric-blue/8 border-electric-blue/20" },
-          { label: "Coming Soon", value: comingSoon.length, color: "text-muted-foreground", bg: "bg-secondary border-border" },
-        ].map(s => (
-          <div key={s.label} className={cn("rounded-xl border-2 p-4 text-center", s.bg)}>
-            <div className={cn("text-2xl font-bold font-mono", s.color)}>{s.value}</div>
-            <div className="text-xs text-muted-foreground mt-0.5">{s.label}</div>
+          { label: "Core Advisors", value: coreAdvisors.length, color: "text-electric-blue", bg: "bg-electric-blue/8 border-electric-blue/25" },
+          { label: "Optional Advisors", value: optionalAdvisors.length, color: "text-teal", bg: "bg-teal/8 border-teal/25" },
+          { label: "Active Requests", value: ADVISORS.reduce((s, a) => s + a.activeRequests, 0), color: "text-signal-yellow", bg: "bg-signal-yellow/8 border-signal-yellow/25" },
+        ].map(({ label, value, color, bg }) => (
+          <div key={label} className={cn("rounded-xl border-2 p-4 text-center", bg)}>
+            <div className={cn("text-3xl font-black font-mono", color)}>{value}</div>
+            <div className="text-xs text-muted-foreground mt-0.5 font-medium">{label}</div>
           </div>
         ))}
       </div>
 
-      {/* Cloud prerequisite banner */}
-      <div className="rounded-xl border-2 px-5 py-4 flex items-start gap-3"
-        style={{ borderColor: "hsl(var(--signal-yellow) / 0.35)", background: "hsl(var(--signal-yellow) / 0.06)" }}>
-        <AlertTriangle className="w-4 h-4 text-signal-yellow flex-shrink-0 mt-0.5" />
-        <div className="flex-1">
-          <p className="text-sm font-semibold text-foreground mb-0.5">Backend required for live integrations</p>
-          <p className="text-xs text-muted-foreground">Integrations use edge functions and secure secret storage. Enable Lovable Cloud to activate real-time data sync.</p>
+      {/* ── Core Advisors ── */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1 h-5 rounded-full" style={{ background: "hsl(var(--electric-blue))" }} />
+          <h2 className="text-base font-bold text-foreground uppercase tracking-wide">Core Advisors</h2>
+          <span className="text-xs text-muted-foreground font-medium">Included on all tiers</span>
         </div>
-        <button className="flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border-2 transition-all"
-          style={{ borderColor: "hsl(var(--electric-blue) / 0.4)", color: "hsl(var(--electric-blue))", background: "hsl(var(--electric-blue) / 0.08)" }}>
-          Enable Cloud
-        </button>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {coreAdvisors.map(advisor => (
+            <AdvisorCard key={advisor.id} advisor={advisor}
+              isHovered={hoveredAdvisor === advisor.id}
+              onHover={setHoveredAdvisor}
+              onSelect={setSelectedAdvisor}
+              onRequest={openRequest}
+              selected={selectedAdvisor?.id === advisor.id} />
+          ))}
+        </div>
       </div>
 
-      {/* Integration cards */}
-      <div className="space-y-3">
-        {INTEGRATIONS.map(intg => {
-          const status = STATUS_CONFIG[intg.status];
-          const StatusIcon = status.icon;
-          const IntgIcon = intg.icon;
-          const isOpen = expanded === intg.id;
-          const isComingSoon = intg.status === "coming_soon";
+      {/* ── Optional Advisors ── */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1 h-5 rounded-full" style={{ background: "hsl(var(--teal))" }} />
+          <h2 className="text-base font-bold text-foreground uppercase tracking-wide">Optional Advisors</h2>
+          <span className="text-xs text-muted-foreground font-medium">Tier 1+ required</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {optionalAdvisors.map(advisor => (
+            <AdvisorCard key={advisor.id} advisor={advisor}
+              isHovered={hoveredAdvisor === advisor.id}
+              onHover={setHoveredAdvisor}
+              onSelect={setSelectedAdvisor}
+              onRequest={openRequest}
+              selected={selectedAdvisor?.id === advisor.id}
+              locked={advisor.tier !== "free"} />
+          ))}
+        </div>
+      </div>
 
-          return (
-            <div key={intg.id}
-              className="bg-card rounded-xl border-2 border-border shadow-card overflow-hidden"
-              style={{ opacity: isComingSoon ? 0.7 : 1 }}>
-              <button
-                className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-secondary/20 transition-colors"
-                onClick={() => setExpanded(isOpen ? null : intg.id)}>
-                {/* Icon */}
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border-2"
-                  style={{ background: intg.bg, borderColor: intg.color + "40" }}>
-                  <IntgIcon className="w-5 h-5" style={{ color: intg.color }} />
-                </div>
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                    <span className="text-sm font-semibold text-foreground">{intg.name}</span>
-                    <span className="text-xs text-muted-foreground bg-secondary px-1.5 py-0.5 rounded border border-border">{intg.category}</span>
-                    {intg.badge && (
-                      <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-                        style={{ background: `${TIER_COLOR[intg.tier]}18`, color: TIER_COLOR[intg.tier], border: `1px solid ${TIER_COLOR[intg.tier]}40` }}>
-                        {intg.badge}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground truncate">{intg.description}</p>
-                </div>
-                {/* Status + tier */}
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <div className={cn("flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-lg", status.bg, status.color)}>
-                    <StatusIcon className="w-3 h-3" />
-                    {status.label}
-                  </div>
-                  <span className="text-xs font-semibold"
-                    style={{ color: TIER_COLOR[intg.tier] }}>
-                    {TIER_LABELS[intg.tier]}
-                  </span>
-                  <ArrowRight className={cn("w-4 h-4 text-muted-foreground transition-transform", isOpen && "rotate-90")} />
-                </div>
+      {/* ── Request Modal ── */}
+      {requestModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={() => setRequestModal(null)} />
+          <div className="relative w-full max-w-xl bg-card rounded-2xl border-2 border-border shadow-elevated overflow-hidden">
+
+            {/* Modal header */}
+            <div className="px-6 py-5 border-b-2 border-border flex items-start gap-4"
+              style={{ background: "hsl(var(--secondary))" }}>
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border-2"
+                style={{ background: requestModal.advisor.bg, borderColor: requestModal.advisor.color + "40" }}>
+                <requestModal.advisor.icon className="w-5 h-5" style={{ color: requestModal.advisor.color }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-black text-foreground">{requestModal.advisor.name}</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">{requestModal.advisor.expertise}</p>
+              </div>
+              <button onClick={() => setRequestModal(null)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <X className="w-5 h-5" />
               </button>
+            </div>
 
-              {isOpen && (
-                <div className="px-5 pb-5 border-t border-border pt-4 space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Description */}
-                    <div>
-                      <p className="text-sm text-foreground/80 leading-relaxed mb-3">{intg.longDesc}</p>
-                      <ul className="space-y-1.5">
-                        {intg.features.map(f => (
-                          <li key={f} className="flex items-start gap-2 text-xs text-muted-foreground">
-                            <Zap className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" style={{ color: intg.color }} />
-                            {f}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    {/* CTA panel */}
-                    <div className="rounded-xl border-2 p-4 flex flex-col gap-3"
-                      style={{ borderColor: intg.color + "35", background: intg.bg }}>
-                      <div>
-                        <span className="text-xs font-bold uppercase tracking-wider" style={{ color: intg.color }}>
-                          {TIER_LABELS[intg.tier]} · {TIER_PRICE[intg.tier]}
-                        </span>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {isComingSoon ? "This integration is under development and will be available soon." :
-                           intg.status === "connected" ? "This integration is active and syncing." :
-                           "Connect this integration to activate real-time data sync."}
-                        </p>
-                      </div>
-                      {!isComingSoon ? (
-                        <div className="flex flex-col gap-2">
-                          <button className="w-full text-xs font-semibold py-2.5 px-3 rounded-lg border-2 transition-all flex items-center justify-center gap-2"
-                            style={{ borderColor: intg.color, color: intg.color, background: `${intg.color.replace(')', ' / 0.1)')}` }}>
-                            {intg.status === "connected" ? <><RefreshCw className="w-3.5 h-3.5" /> Manage Connection</> :
-                             <><Plug className="w-3.5 h-3.5" /> Connect {intg.name}</>}
-                          </button>
-                          {intg.status === "available" && (
-                            <button className="w-full text-xs text-muted-foreground flex items-center justify-center gap-1 hover:text-foreground transition-colors">
-                              <ExternalLink className="w-3 h-3" /> View documentation
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Lock className="w-3.5 h-3.5" />
-                          Join the waitlist for early access
-                        </div>
-                      )}
-                    </div>
+            {requestStatus === "submitted" ? (
+              <div className="px-6 py-12 text-center">
+                <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+                  style={{ background: "hsl(var(--signal-green) / 0.15)" }}>
+                  <CheckCircle className="w-7 h-7 text-signal-green" />
+                </div>
+                <h4 className="text-lg font-black text-foreground mb-2">Request Submitted</h4>
+                <p className="text-sm text-muted-foreground">
+                  The {requestModal.advisor.shortName} Advisor will review your request and respond within {requestModal.advisor.responseTime}.
+                </p>
+                <button onClick={() => setRequestModal(null)}
+                  className="mt-6 text-sm font-bold px-5 py-2.5 rounded-xl border-2 border-electric-blue text-electric-blue hover:bg-electric-blue/10 transition-colors">
+                  Close
+                </button>
+              </div>
+            ) : (
+              <div className="p-6 space-y-4">
+                {/* Request type */}
+                <div>
+                  <label className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 block">Request Type</label>
+                  <div className="flex flex-wrap gap-2">
+                    {["General Advisory", "Document Review", "Diagnostic Request", "Strategy Review", "SOP Design"].map(type => (
+                      <button key={type}
+                        onClick={() => setRequestModal({ ...requestModal, requestType: type })}
+                        className={cn("text-xs px-3 py-1.5 rounded-full border font-semibold transition-all",
+                          requestModal.requestType === type
+                            ? "bg-electric-blue/10 text-electric-blue border-electric-blue/40"
+                            : "bg-secondary text-muted-foreground border-border hover:text-foreground"
+                        )}>
+                        {type}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
 
-      {/* Footer note */}
-      <div className="rounded-xl border-2 border-dashed p-5 text-center"
-        style={{ borderColor: "hsl(var(--border))" }}>
-        <Settings className="w-5 h-5 mx-auto mb-2 text-muted-foreground opacity-40" />
-        <p className="text-sm font-semibold text-foreground mb-1">More integrations coming</p>
-        <p className="text-xs text-muted-foreground">Microsoft 365, Notion, Jira, HubSpot, Salesforce, and more — built on your feedback.</p>
-      </div>
+                {/* Priority */}
+                <div>
+                  <label className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 block">Priority</label>
+                  <div className="flex gap-2">
+                    {(["High", "Medium", "Low"] as const).map(p => {
+                      const cfg = { High: "bg-signal-red/10 text-signal-red border-signal-red/30", Medium: "bg-signal-yellow/10 text-signal-yellow border-signal-yellow/30", Low: "bg-signal-green/10 text-signal-green border-signal-green/30" }[p];
+                      return (
+                        <button key={p}
+                          onClick={() => setRequestModal({ ...requestModal, priority: p })}
+                          className={cn("text-xs px-3 py-1.5 rounded-full border font-bold transition-all",
+                            requestModal.priority === p ? cfg : "bg-secondary text-muted-foreground border-border"
+                          )}>
+                          {p}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Message */}
+                <div>
+                  <label className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 block">
+                    Describe your request
+                  </label>
+                  <textarea
+                    value={requestModal.message}
+                    onChange={e => setRequestModal({ ...requestModal, message: e.target.value })}
+                    placeholder="Include relevant context, blockers, desired outcomes, or attach supporting documents..."
+                    rows={4}
+                    className="w-full px-3 py-2.5 text-sm rounded-xl border-2 bg-card text-foreground placeholder:text-muted-foreground focus:outline-none resize-none transition-all"
+                    style={{ borderColor: "hsl(var(--border))" }} />
+                </div>
+
+                {/* Attachments */}
+                <div>
+                  <label className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 block">
+                    Attachments
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: "Document", icon: FileText },
+                      { label: "Screenshot", icon: Upload },
+                      { label: "Email snapshot", icon: Mail },
+                      { label: "WhatsApp", icon: MessageSquare },
+                    ].map(({ label, icon: Icon }) => (
+                      <button key={label}
+                        className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
+                        <Icon className="w-3.5 h-3.5" /> {label}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1.5">Max 200 pages per batch upload</p>
+                </div>
+
+                {/* Submit */}
+                <div className="flex gap-3 pt-2">
+                  <button onClick={() => setRequestModal(null)}
+                    className="text-sm px-4 py-2.5 rounded-xl border-2 border-border text-muted-foreground font-semibold hover:text-foreground hover:border-foreground/30 transition-colors">
+                    Cancel
+                  </button>
+                  <button onClick={handleSubmit}
+                    disabled={!requestModal.message.trim() || requestStatus === "submitting"}
+                    className="flex-1 text-sm font-bold py-2.5 px-4 rounded-xl border-2 border-electric-blue text-electric-blue hover:bg-electric-blue/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    {requestStatus === "submitting" ? (
+                      <><RefreshCw className="w-4 h-4 animate-spin" /> Submitting...</>
+                    ) : (
+                      <>Submit Request · {requestModal.advisor.responseTime}</>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+function AdvisorCard({ advisor, isHovered, onHover, onSelect, onRequest, selected, locked }: {
+  advisor: Advisor;
+  isHovered: boolean;
+  onHover: (id: string | null) => void;
+  onSelect: (a: Advisor | null) => void;
+  onRequest: (a: Advisor) => void;
+  selected: boolean;
+  locked?: boolean;
+}) {
+  const tierColor = TIER_COLORS[advisor.tier];
+  const Icon = advisor.icon;
+  const isExpanded = selected;
+
+  return (
+    <div
+      className={cn("bg-card rounded-2xl border-2 shadow-card overflow-hidden transition-all duration-200 cursor-pointer",
+        selected ? "shadow-elevated" : "hover:shadow-elevated",
+        locked ? "opacity-75" : ""
+      )}
+      style={{ borderColor: selected ? advisor.color + "50" : "hsl(var(--border))" }}
+      onMouseEnter={() => onHover(advisor.id)}
+      onMouseLeave={() => onHover(null)}>
+
+      <button className="w-full px-5 py-5 text-left" onClick={() => onSelect(selected ? null : advisor)}>
+        <div className="flex items-start gap-3.5 mb-3">
+          <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border-2"
+            style={{ background: advisor.bg, borderColor: advisor.color + "40" }}>
+            <Icon className="w-5 h-5" style={{ color: advisor.color }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-0.5">
+              <span className="text-sm font-black text-foreground">{advisor.shortName}</span>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                style={{ background: `${tierColor}18`, color: tierColor, border: `1px solid ${tierColor}35` }}>
+                {TIER_LABELS[advisor.tier]}
+              </span>
+              {locked && <Lock className="w-3 h-3 text-muted-foreground flex-shrink-0" />}
+            </div>
+            <p className="text-xs text-muted-foreground font-medium leading-relaxed line-clamp-2">{advisor.expertise}</p>
+          </div>
+          <ChevronRight className={cn("w-4 h-4 text-muted-foreground flex-shrink-0 transition-transform mt-1", isExpanded && "rotate-90")} />
+        </div>
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          {advisor.tags.map(tag => (
+            <span key={tag} className="text-xs bg-secondary text-muted-foreground px-2 py-0.5 rounded-lg border border-border font-medium">
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border pt-3">
+          <span className="flex items-center gap-1.5">
+            <Clock className="w-3 h-3" /> {advisor.responseTime}
+          </span>
+          {advisor.activeRequests > 0 && (
+            <span className="text-signal-yellow font-bold">{advisor.activeRequests} active</span>
+          )}
+        </div>
+      </button>
+
+      {/* Expanded detail */}
+      {isExpanded && (
+        <div className="border-t-2 border-border px-5 py-4 space-y-3"
+          style={{ background: "hsl(var(--secondary) / 0.5)" }}>
+          <p className="text-sm text-foreground/80 leading-relaxed">{advisor.description}</p>
+          <div className="flex gap-2 pt-1">
+            {locked ? (
+              <button className="flex-1 text-xs font-bold py-2.5 px-4 rounded-xl border-2 border-border text-muted-foreground flex items-center justify-center gap-2">
+                <Lock className="w-3.5 h-3.5" /> Upgrade to {TIER_LABELS[advisor.tier]}
+              </button>
+            ) : (
+              <button
+                onClick={e => { e.stopPropagation(); onRequest(advisor); }}
+                className="flex-1 text-sm font-bold py-2.5 px-4 rounded-xl border-2 transition-colors flex items-center justify-center gap-2"
+                style={{ borderColor: advisor.color, color: advisor.color, background: `${advisor.color.replace(")", " / 0.07)")}` }}>
+                Submit Request →
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Forward declare RefreshCw icon since it's not imported at the top of AdvisorCard
+function RefreshCw({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" />
+    </svg>
+  );
+}
+
+function Upload({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
+    </svg>
   );
 }
