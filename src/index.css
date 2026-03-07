@@ -56,6 +56,8 @@
     --signal-yellow: 42 95% 52%;
     --signal-green: 145 55% 42%;
     --signal-blue: 210 100% 50%;
+    --signal-orange: 25 95% 53%;
+    --signal-purple: 270 65% 55%;
 
     /* Sidebar */
     --sidebar-background: 225 55% 14%;
@@ -103,21 +105,29 @@
   .text-signal-yellow { color: hsl(var(--signal-yellow)); }
   .text-signal-green { color: hsl(var(--signal-green)); }
   .text-signal-blue { color: hsl(var(--signal-blue)); }
+  .text-signal-orange { color: hsl(var(--signal-orange)); }
+  .text-signal-purple { color: hsl(var(--signal-purple)); }
 
   .bg-signal-red { background-color: hsl(var(--signal-red)); }
   .bg-signal-yellow { background-color: hsl(var(--signal-yellow)); }
   .bg-signal-green { background-color: hsl(var(--signal-green)); }
   .bg-signal-blue { background-color: hsl(var(--signal-blue)); }
+  .bg-signal-orange { background-color: hsl(var(--signal-orange)); }
+  .bg-signal-purple { background-color: hsl(var(--signal-purple)); }
 
   .bg-signal-red\/10 { background-color: hsl(var(--signal-red) / 0.10); }
   .bg-signal-yellow\/10 { background-color: hsl(var(--signal-yellow) / 0.10); }
   .bg-signal-green\/10 { background-color: hsl(var(--signal-green) / 0.10); }
   .bg-signal-blue\/10 { background-color: hsl(var(--signal-blue) / 0.10); }
+  .bg-signal-orange\/10 { background-color: hsl(var(--signal-orange) / 0.10); }
+  .bg-signal-purple\/10 { background-color: hsl(var(--signal-purple) / 0.10); }
 
   .border-signal-red { border-color: hsl(var(--signal-red)); }
   .border-signal-yellow { border-color: hsl(var(--signal-yellow)); }
   .border-signal-green { border-color: hsl(var(--signal-green)); }
   .border-signal-blue { border-color: hsl(var(--signal-blue)); }
+  .border-signal-orange { border-color: hsl(var(--signal-orange)); }
+  .border-signal-purple { border-color: hsl(var(--signal-purple)); }
 
   .bg-teal { background-color: hsl(var(--teal)); }
   .text-teal { color: hsl(var(--teal)); }
