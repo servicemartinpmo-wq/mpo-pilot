@@ -872,9 +872,10 @@ export default function Initiatives() {
         </div>
       )}
 
-      <p className="text-xs text-muted-foreground text-center">
-        Click any initiative card to view full detail, MOCHA ownership, governance logs, decision deadlines, and action items.
-      </p>
+        <p className="text-xs text-muted-foreground text-center">
+          Click any initiative card to view full detail, MOCHA ownership, governance logs, decision deadlines, and action items.
+        </p>
+      </div>
 
       {selectedIni && <InitiativeModal ini={selectedIni} onClose={() => setSelectedIni(null)} />}
     </div>
