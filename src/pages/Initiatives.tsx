@@ -551,13 +551,10 @@ function InitiativeCard({ ini, onClick }: { ini: Initiative; onClick: () => void
         {/* Score chips */}
         <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Priority</span>
-            <span className="text-xs font-mono font-bold text-foreground">{ini.priorityScore}</span>
-          </div>
-          <div className="w-px h-3 bg-border" />
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Alignment</span>
-            <span className="text-xs font-mono font-bold text-foreground">{ini.strategicAlignment}</span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Impact</span>
+            <span className={cn("text-xs font-mono font-bold",
+              getImpactScore(ini) >= 70 ? "text-signal-green" : getImpactScore(ini) >= 45 ? "text-signal-yellow" : "text-signal-orange"
+            )}>{getImpactScore(ini)}</span>
           </div>
           <div className="w-px h-3 bg-border" />
           <div className="flex items-center gap-1.5">
