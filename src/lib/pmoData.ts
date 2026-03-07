@@ -952,6 +952,7 @@ export const initiatives: Initiative[] = [
     id: "ini-009",
     name: "Financial Systems Optimization",
     department: "Finance",
+    category: "Controlling",
     owner: "Elena Vasquez",
     executiveOwner: "Sarah Chen",
     strategicPillar: "Operational Excellence",
