@@ -781,11 +781,10 @@ export default function Initiatives() {
             <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">Sort By</div>
             <div className="flex flex-wrap gap-1.5">
               {([
-                ["priorityScore",    "Priority"],
-                ["strategicAlignment","Alignment"],
-                ["dependencyRisk",   "Dep. Risk"],
-                ["completionPct",    "Progress"],
-                ["targetDate",       "Due Date"],
+                ["impactScore",    "Impact Score"],
+                ["dependencyRisk", "Dep. Risk"],
+                ["completionPct",  "Progress"],
+                ["targetDate",     "Due Date"],
               ] as [SortKey, string][]).map(([key, label]) => (
                 <button key={key} onClick={() => toggleSort(key)}
                   className={cn("flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border font-semibold transition-all",
