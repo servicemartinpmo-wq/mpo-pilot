@@ -2,6 +2,7 @@ import { frameworks, departments, orgMetrics, orgProfile, authorityMatrix, sopRe
 import { loadProfile, saveProfile, applyAccentColor, applyFont } from "@/lib/companyStore";
 import type { CompanyProfile } from "@/lib/companyStore";
 import { cn } from "@/lib/utils";
+import { useState, useRef } from "react";
 import {
   Settings, Database, Cpu, Users, FileText, Shield, Building2,
   AlertTriangle, CheckCircle, Clock, Target, GitBranch, BookOpen,
