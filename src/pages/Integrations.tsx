@@ -272,18 +272,36 @@ function IntegrationRow({ intg, isConnected, onConnect, onDisconnect }: {
                 <p className="text-xs text-muted-foreground">
                   {isLocked
                     ? "Under development — available soon."
-                    : intg.status === "connected"
+                    : isConnected
                       ? "Active and syncing in real time."
                       : "Connect to activate data sync."}
                 </p>
               </div>
               {!isLocked ? (
-                <button className="w-full text-xs font-semibold py-2.5 px-3 rounded-lg border transition-all flex items-center justify-center gap-2"
-                  style={{ borderColor: intg.iconColor, color: intg.iconColor, background: intg.iconColor.replace(')', ' / 0.1)') }}>
-                  {intg.status === "connected"
-                    ? <><RefreshCw className="w-3.5 h-3.5" /> Manage Connection</>
-                    : <><Plug className="w-3.5 h-3.5" /> Connect {intg.name}</>}
-                </button>
+                isConnected ? (
+                  <div className="flex gap-2">
+                    <div className="flex-1 text-xs font-semibold py-2.5 px-3 rounded-lg border flex items-center justify-center gap-2 text-signal-green border-signal-green/30 bg-signal-green/5">
+                      <CheckCircle className="w-3.5 h-3.5" /> Connected
+                    </div>
+                    <button
+                      onClick={() => onDisconnect(intg.id)}
+                      className="text-xs py-2.5 px-3 rounded-lg border border-signal-red/30 text-signal-red hover:bg-signal-red/5 transition-all flex items-center gap-1.5"
+                    >
+                      <X className="w-3.5 h-3.5" /> Disconnect
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleConnectClick}
+                    disabled={connecting}
+                    className="w-full text-xs font-semibold py-2.5 px-3 rounded-lg border transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                    style={{ borderColor: intg.iconColor, color: intg.iconColor, background: intg.iconColor.replace(')', ' / 0.1)') }}
+                  >
+                    {connecting
+                      ? <><div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" /> Connecting…</>
+                      : <><Plug className="w-3.5 h-3.5" /> Connect {intg.name}</>}
+                  </button>
+                )
               ) : (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Lock className="w-3 h-3" /> Join waitlist for early access
