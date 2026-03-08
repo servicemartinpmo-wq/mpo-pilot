@@ -195,14 +195,16 @@ export async function getIntegrationConnections(profileId: string): Promise<DbIn
 }
 
 export async function upsertIntegration(profileId: string, integrationId: string, status: string, config?: Record<string, unknown>) {
-  return supabase
+  // Use insert with onConflict do update pattern to avoid array overload TS ambiguity
+  const { data, error } = await supabase
     .from("integration_connections")
     .upsert(
-      { profile_id: profileId, integration_id: integrationId, status, config: config ?? {} },
+      [{ profile_id: profileId, integration_id: integrationId, status, config: (config ?? {}) as import("@/integrations/supabase/types").Json }],
       { onConflict: "profile_id,integration_id" }
     )
     .select()
-    .single();
+    .maybeSingle();
+  return { data, error };
 }
 
 export async function removeIntegration(profileId: string, integrationId: string) {
