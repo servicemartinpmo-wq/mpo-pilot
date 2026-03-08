@@ -3,9 +3,10 @@ import {
   CheckCircle, Lock, ExternalLink, Mail, MessageSquare,
   Calendar, FileText, BarChart2, Video, ArrowRight, Zap,
   RefreshCw, Settings, AlertTriangle, HardDrive, DollarSign,
-  Users, Star, ChevronDown, ChevronUp, Plug, Cpu, Inbox
+  Users, Star, ChevronDown, ChevronUp, Plug, Cpu, Inbox, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIntegrationConnections, useUpsertIntegration, useRemoveIntegration } from "@/hooks/useLiveData";
 
 type IntegrationStatus = "connected" | "available" | "coming_soon";
 type IntegrationTier = "free" | "t1" | "t2" | "t3";
