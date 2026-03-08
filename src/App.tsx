@@ -23,23 +23,21 @@ import CreatorLab from "./pages/CreatorLab";
 import AuthPage from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
-import { applyAccentColor, applyFont } from "./lib/companyStore";
+import { applyAccentColor, applyFont, saveProfile } from "./lib/companyStore";
 import { seedUserData } from "./lib/supabaseDataService";
+import type { CompanyProfile } from "./lib/companyStore";
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: {
-      staleTime: 30_000,
-      retry: 1,
-    },
+    queries: { staleTime: 30_000, retry: 1 },
   },
 });
 
-function AppInner() {
-  const { user, profile, loading } = useAuth();
+function AppRoutes() {
+  const { user, profile, loading, updateProfile } = useAuth();
   const [seeded, setSeeded] = useState(false);
 
-  // Apply theme from DB profile
+  // Apply theme from DB profile whenever it changes
   useEffect(() => {
     if (profile) {
       applyAccentColor(profile.accentHue ?? 210);
@@ -47,7 +45,7 @@ function AppInner() {
     }
   }, [profile]);
 
-  // Seed initial data for new users after onboarding completes
+  // Seed initial pmoData for new users after onboarding
   useEffect(() => {
     if (user && profile?.onboardingComplete && !seeded) {
       setSeeded(true);
@@ -66,7 +64,7 @@ function AppInner() {
     );
   }
 
-  // Not logged in → show auth
+  // Not logged in
   if (!user) {
     return (
       <Routes>
@@ -77,22 +75,33 @@ function AppInner() {
     );
   }
 
-  // Logged in but onboarding not complete → show onboarding
+  // Onboarding not complete
   if (profile && !profile.onboardingComplete) {
-    return (
-      <OnboardingWizard
-        onComplete={async (p) => {
-          const { updateProfile } = await import("./hooks/useAuth").then(m => {
-            // The profile will update via useAuth subscription
-            return { updateProfile: null };
-          });
-          // The useAuth hook will re-render with updated profile
-        }}
-      />
-    );
+    const handleOnboardingComplete = async (p: CompanyProfile) => {
+      // Save to companyStore (legacy)
+      saveProfile(p);
+      // Also save to DB
+      await updateProfile({
+        userName: p.userName,
+        orgName: p.orgName,
+        orgType: p.orgType,
+        industry: p.industry,
+        teamSize: p.teamSize,
+        revenueRange: p.revenueRange,
+        currentState: p.currentState,
+        futureState: p.futureState,
+        departments: p.departments,
+        hasSops: p.hasSops,
+        accentHue: p.accentHue,
+        font: p.font,
+        density: p.density,
+        onboardingComplete: true,
+      });
+    };
+    return <OnboardingWizard onComplete={handleOnboardingComplete} />;
   }
 
-  // Profile still loading (just signed in)
+  // Profile still loading
   if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -101,61 +110,69 @@ function AppInner() {
     );
   }
 
+  const legacyProfile: CompanyProfile = {
+    userName:          profile.userName ?? "",
+    orgName:           profile.orgName ?? "",
+    orgType:           profile.orgType ?? "",
+    industry:          profile.industry ?? "",
+    teamSize:          profile.teamSize ?? "",
+    revenueRange:      profile.revenueRange ?? "",
+    currentState:      profile.currentState ?? "",
+    futureState:       profile.futureState ?? "",
+    departments:       profile.departments ?? [],
+    hasSops:           profile.hasSops ?? false,
+    accentHue:         profile.accentHue ?? 210,
+    font:              (profile.font as "inter" | "mono" | "rounded") ?? "inter",
+    density:           (profile.density as "compact" | "comfortable" | "spacious") ?? "comfortable",
+    analyticsEnabled:  true,
+    onboardingComplete: profile.onboardingComplete ?? false,
+  };
+
   return (
-    <BrowserRouter>
-      <AppLayout
-        profile={{
-          userName: profile.userName ?? "",
-          orgName: profile.orgName ?? "",
-          orgType: profile.orgType ?? "",
-          industry: profile.industry ?? "",
-          teamSize: profile.teamSize ?? "",
-          revenueRange: profile.revenueRange ?? "",
-          currentState: profile.currentState ?? "",
-          futureState: profile.futureState ?? "",
-          departments: profile.departments ?? [],
-          hasSops: profile.hasSops ?? false,
-          accentHue: profile.accentHue ?? 210,
-          font: (profile.font as "inter" | "mono" | "rounded") ?? "inter",
-          density: (profile.density as "compact" | "comfortable" | "spacious") ?? "comfortable",
-          analyticsEnabled: true,
-          onboardingComplete: profile.onboardingComplete ?? false,
-        }}
-        onProfileUpdate={() => {}}
-      >
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/initiatives" element={<Initiatives />} />
-          <Route path="/diagnostics" element={<Diagnostics />} />
-          <Route path="/departments" element={<Departments />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/action-items" element={<ActionItems />} />
-          <Route path="/knowledge" element={<Knowledge />} />
-          <Route path="/workflows" element={<Workflows />} />
-          <Route path="/integrations" element={<Integrations />} />
-          <Route path="/advisory" element={<Advisory />} />
-          <Route path="/team" element={<Team />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/creator-lab" element={<CreatorLab />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </AppLayout>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/auth" element={<Navigate to="/" replace />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/*" element={
+        <AppLayout profile={legacyProfile} onProfileUpdate={async (p) => {
+          saveProfile(p);
+          await updateProfile({
+            accentHue: p.accentHue,
+            font: p.font,
+            density: p.density,
+          });
+        }}>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/initiatives" element={<Initiatives />} />
+            <Route path="/diagnostics" element={<Diagnostics />} />
+            <Route path="/departments" element={<Departments />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/action-items" element={<ActionItems />} />
+            <Route path="/knowledge" element={<Knowledge />} />
+            <Route path="/workflows" element={<Workflows />} />
+            <Route path="/integrations" element={<Integrations />} />
+            <Route path="/advisory" element={<Advisory />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/creator-lab" element={<CreatorLab />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AppLayout>
+      } />
+    </Routes>
   );
 }
 
-const App = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppInner />
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  );
-};
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
