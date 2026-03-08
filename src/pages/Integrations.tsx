@@ -3,9 +3,10 @@ import {
   CheckCircle, Lock, ExternalLink, Mail, MessageSquare,
   Calendar, FileText, BarChart2, Video, ArrowRight, Zap,
   RefreshCw, Settings, AlertTriangle, HardDrive, DollarSign,
-  Users, Star, ChevronDown, ChevronUp, Plug, Cpu, Inbox
+  Users, Star, ChevronDown, ChevronUp, Plug, Cpu, Inbox, X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIntegrationConnections, useUpsertIntegration, useRemoveIntegration } from "@/hooks/useLiveData";
 
 type IntegrationStatus = "connected" | "available" | "coming_soon";
 type IntegrationTier = "free" | "t1" | "t2" | "t3";
@@ -171,11 +172,26 @@ const STATUS_CFG = {
   coming_soon:  { label: "Coming Soon",  dot: "bg-muted",         text: "text-muted-foreground" },
 };
 
-function IntegrationRow({ intg }: { intg: Integration }) {
+function IntegrationRow({ intg, isConnected, onConnect, onDisconnect }: {
+  intg: Integration;
+  isConnected: boolean;
+  onConnect: (id: string) => void;
+  onDisconnect: (id: string) => void;
+}) {
   const [open, setOpen] = useState(false);
-  const status = STATUS_CFG[intg.status];
+  const [connecting, setConnecting] = useState(false);
+  const liveStatus: IntegrationStatus = isConnected ? "connected" : intg.status;
+  const status = STATUS_CFG[liveStatus];
   const Icon = intg.icon;
-  const isLocked = intg.status === "coming_soon";
+  const isLocked = liveStatus === "coming_soon";
+
+  async function handleConnectClick() {
+    if (isConnected) return; // manage modal future
+    setConnecting(true);
+    await new Promise(r => setTimeout(r, 900)); // simulate OAuth handshake
+    onConnect(intg.id);
+    setConnecting(false);
+  }
 
   return (
     <div className={cn(
@@ -256,18 +272,36 @@ function IntegrationRow({ intg }: { intg: Integration }) {
                 <p className="text-xs text-muted-foreground">
                   {isLocked
                     ? "Under development — available soon."
-                    : intg.status === "connected"
+                    : isConnected
                       ? "Active and syncing in real time."
                       : "Connect to activate data sync."}
                 </p>
               </div>
               {!isLocked ? (
-                <button className="w-full text-xs font-semibold py-2.5 px-3 rounded-lg border transition-all flex items-center justify-center gap-2"
-                  style={{ borderColor: intg.iconColor, color: intg.iconColor, background: intg.iconColor.replace(')', ' / 0.1)') }}>
-                  {intg.status === "connected"
-                    ? <><RefreshCw className="w-3.5 h-3.5" /> Manage Connection</>
-                    : <><Plug className="w-3.5 h-3.5" /> Connect {intg.name}</>}
-                </button>
+                isConnected ? (
+                  <div className="flex gap-2">
+                    <div className="flex-1 text-xs font-semibold py-2.5 px-3 rounded-lg border flex items-center justify-center gap-2 text-signal-green border-signal-green/30 bg-signal-green/5">
+                      <CheckCircle className="w-3.5 h-3.5" /> Connected
+                    </div>
+                    <button
+                      onClick={() => onDisconnect(intg.id)}
+                      className="text-xs py-2.5 px-3 rounded-lg border border-signal-red/30 text-signal-red hover:bg-signal-red/5 transition-all flex items-center gap-1.5"
+                    >
+                      <X className="w-3.5 h-3.5" /> Disconnect
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleConnectClick}
+                    disabled={connecting}
+                    className="w-full text-xs font-semibold py-2.5 px-3 rounded-lg border transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                    style={{ borderColor: intg.iconColor, color: intg.iconColor, background: intg.iconColor.replace(')', ' / 0.1)') }}
+                  >
+                    {connecting
+                      ? <><div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" /> Connecting…</>
+                      : <><Plug className="w-3.5 h-3.5" /> Connect {intg.name}</>}
+                  </button>
+                )
               ) : (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Lock className="w-3 h-3" /> Join waitlist for early access
@@ -282,10 +316,23 @@ function IntegrationRow({ intg }: { intg: Integration }) {
 }
 
 export default function Integrations() {
+  const { data: connections = [] } = useIntegrationConnections();
+  const { mutate: upsertIntegration } = useUpsertIntegration();
+  const { mutate: removeIntegration } = useRemoveIntegration();
+
+  const connectedIds = new Set(connections.map(c => c.integration_id));
   const allIntegrations = ALL_GROUPS.flatMap(g => g.items);
-  const connectedCount  = allIntegrations.filter(i => i.status === "connected").length;
-  const availableCount  = allIntegrations.filter(i => i.status === "available").length;
+  const connectedCount  = connections.length;
+  const availableCount  = allIntegrations.filter(i => i.status === "available" && !connectedIds.has(i.id)).length;
   const comingSoonCount = allIntegrations.filter(i => i.status === "coming_soon").length;
+
+  function handleConnect(integrationId: string) {
+    upsertIntegration({ integrationId, status: "connected" });
+  }
+
+  function handleDisconnect(integrationId: string) {
+    removeIntegration(integrationId);
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -342,17 +389,15 @@ export default function Integrations() {
           </div>
         </div>
 
-        {/* ── Backend notice ── */}
-        <div className="flex items-start gap-3 px-5 py-4 rounded-xl border border-border"
-          style={{ background: "hsl(var(--secondary))" }}>
-          <AlertTriangle className="w-4 h-4 text-signal-yellow flex-shrink-0 mt-0.5" />
+        {/* ── Backend notice — Cloud is now active ── */}
+        <div className="flex items-start gap-3 px-5 py-4 rounded-xl border border-signal-green/20"
+          style={{ background: "hsl(var(--signal-green) / 0.04)" }}>
+          <CheckCircle className="w-4 h-4 text-signal-green flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-foreground">Backend required for live integrations</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Enable Lovable Cloud to activate real-time data sync across all connected services.</p>
+            <p className="text-sm font-semibold text-foreground">Lovable Cloud is active</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Your integration connections are persisted in real-time. Connect any service below to activate data sync.</p>
           </div>
-          <button className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg transition-all text-electric-blue border border-electric-blue/30 hover:bg-electric-blue/8">
-            Enable Cloud
-          </button>
+          <span className="flex-shrink-0 text-xs font-bold px-2 py-1 rounded text-signal-green border border-signal-green/30">Live</span>
         </div>
 
         {/* ── Integration groups ── */}
@@ -365,7 +410,13 @@ export default function Integrations() {
             </div>
             <div className="divide-y divide-border/50 rounded-xl border border-border overflow-hidden">
               {group.items.map(intg => (
-                <IntegrationRow key={intg.id} intg={intg} />
+                <IntegrationRow
+                  key={intg.id}
+                  intg={intg}
+                  isConnected={connectedIds.has(intg.id)}
+                  onConnect={handleConnect}
+                  onDisconnect={handleDisconnect}
+                />
               ))}
             </div>
           </div>

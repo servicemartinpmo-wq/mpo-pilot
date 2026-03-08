@@ -7,6 +7,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { loadProfile, saveProfile, applyAccentColor, applyFont } from "@/lib/companyStore";
+import { logCreatorPrompt, getCreatorPrompts } from "@/lib/supabaseDataService";
+import { supabase } from "@/integrations/supabase/client";
 import { BANNER_THEMES } from "@/components/PageBanner";
 import { cn } from "@/lib/utils";
 import {
@@ -131,7 +133,7 @@ export default function CreatorLab() {
     setTimeout(() => setSaved(false), 2000);
   }
 
-  function submitPrompt() {
+  async function submitPrompt() {
     if (!prompt.trim()) return;
     setPromptLog(prev => [{ text: prompt, ts: new Date().toLocaleTimeString() }, ...prev.slice(0, 19)]);
     setPrompt("");

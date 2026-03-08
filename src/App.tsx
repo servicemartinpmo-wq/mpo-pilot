@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AppLayout from "./components/AppLayout";
 import Index from "./pages/Index";
@@ -20,68 +20,159 @@ import Integrations from "./pages/Integrations";
 import Advisory from "./pages/Advisory";
 import Team from "./pages/Team";
 import CreatorLab from "./pages/CreatorLab";
-import { loadProfile, applyAccentColor, applyFont, resetOnboarding } from "./lib/companyStore";
+import AuthPage from "./pages/Auth";
+import ResetPassword from "./pages/ResetPassword";
+import { useAuth } from "./hooks/useAuth";
+import { applyAccentColor, applyFont, saveProfile } from "./lib/companyStore";
+import { seedUserData } from "./lib/supabaseDataService";
 import type { CompanyProfile } from "./lib/companyStore";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { staleTime: 30_000, retry: 1 },
+  },
+});
 
-const App = () => {
-  const [profile, setProfile] = useState<CompanyProfile | null>(null);
-  const [ready, setReady] = useState(false);
+function AppRoutes() {
+  const { user, profile, loading, updateProfile } = useAuth();
+  const [seeded, setSeeded] = useState(false);
 
+  // Apply theme from DB profile whenever it changes
   useEffect(() => {
-    // DEV RESET: uncomment the next line to force onboarding, then recomment it
-    // resetOnboarding();
-    const p = loadProfile();
-    if (p.onboardingComplete) {
-      applyAccentColor(p.accentHue);
-      applyFont(p.font);
-      setProfile(p);
+    if (profile) {
+      applyAccentColor(profile.accentHue ?? 210);
+      applyFont((profile.font as "inter" | "mono" | "rounded") ?? "inter");
     }
-    setReady(true);
-  }, []);
+  }, [profile]);
 
-  if (!ready) return null;
+  // Seed initial pmoData for new users after onboarding
+  useEffect(() => {
+    if (user && profile?.onboardingComplete && !seeded) {
+      setSeeded(true);
+      seedUserData(user.id).catch(console.error);
+    }
+  }, [user, profile?.onboardingComplete, seeded]);
 
-  if (!profile) {
+  if (loading) {
     return (
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <OnboardingWizard onComplete={(p) => setProfile(p)} />
-        </TooltipProvider>
-      </QueryClientProvider>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-electric-blue/30 border-t-electric-blue rounded-full animate-spin" />
+          <p className="text-xs text-muted-foreground">Loading Apphia…</p>
+        </div>
+      </div>
     );
   }
 
+  // Not logged in
+  if (!user) {
+    return (
+      <Routes>
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="*" element={<Navigate to="/auth" replace />} />
+      </Routes>
+    );
+  }
+
+  // Onboarding not complete
+  if (profile && !profile.onboardingComplete) {
+    const handleOnboardingComplete = async (p: CompanyProfile) => {
+      // Save to companyStore (legacy)
+      saveProfile(p);
+      // Also save to DB
+      await updateProfile({
+        userName: p.userName,
+        orgName: p.orgName,
+        orgType: p.orgType,
+        industry: p.industry,
+        teamSize: p.teamSize,
+        revenueRange: p.revenueRange,
+        currentState: p.currentState,
+        futureState: p.futureState,
+        departments: p.departments,
+        hasSops: p.hasSops,
+        accentHue: p.accentHue,
+        font: p.font,
+        density: p.density,
+        onboardingComplete: true,
+      });
+    };
+    return <OnboardingWizard onComplete={handleOnboardingComplete} />;
+  }
+
+  // Profile still loading
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-2 border-electric-blue/30 border-t-electric-blue rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const legacyProfile: CompanyProfile = {
+    userName:          profile.userName ?? "",
+    orgName:           profile.orgName ?? "",
+    orgType:           profile.orgType ?? "",
+    industry:          profile.industry ?? "",
+    teamSize:          profile.teamSize ?? "",
+    revenueRange:      profile.revenueRange ?? "",
+    currentState:      profile.currentState ?? "",
+    futureState:       profile.futureState ?? "",
+    departments:       profile.departments ?? [],
+    hasSops:           profile.hasSops ?? false,
+    accentHue:         profile.accentHue ?? 210,
+    font:              (profile.font as "inter" | "mono" | "rounded") ?? "inter",
+    density:           (profile.density as "compact" | "comfortable" | "spacious") ?? "comfortable",
+    analyticsEnabled:  true,
+    onboardingComplete: profile.onboardingComplete ?? false,
+  };
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppLayout profile={profile} onProfileUpdate={setProfile}>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/initiatives" element={<Initiatives />} />
-              <Route path="/diagnostics" element={<Diagnostics />} />
-              <Route path="/departments" element={<Departments />} />
-              <Route path="/reports" element={<Reports />} />
-              <Route path="/action-items" element={<ActionItems />} />
-              <Route path="/knowledge" element={<Knowledge />} />
-              <Route path="/workflows" element={<Workflows />} />
-              <Route path="/integrations" element={<Integrations />} />
-              <Route path="/advisory" element={<Advisory />} />
-              <Route path="/team" element={<Team />} />
-              
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/creator-lab" element={<CreatorLab />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AppLayout>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <Routes>
+      <Route path="/auth" element={<Navigate to="/" replace />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/*" element={
+        <AppLayout profile={legacyProfile} onProfileUpdate={async (p) => {
+          saveProfile(p);
+          await updateProfile({
+            accentHue: p.accentHue,
+            font: p.font,
+            density: p.density,
+          });
+        }}>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/initiatives" element={<Initiatives />} />
+            <Route path="/diagnostics" element={<Diagnostics />} />
+            <Route path="/departments" element={<Departments />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/action-items" element={<ActionItems />} />
+            <Route path="/knowledge" element={<Knowledge />} />
+            <Route path="/workflows" element={<Workflows />} />
+            <Route path="/integrations" element={<Integrations />} />
+            <Route path="/advisory" element={<Advisory />} />
+            <Route path="/team" element={<Team />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/creator-lab" element={<CreatorLab />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AppLayout>
+      } />
+    </Routes>
   );
-};
+}
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
