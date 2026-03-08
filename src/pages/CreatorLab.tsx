@@ -133,7 +133,7 @@ export default function CreatorLab() {
     setTimeout(() => setSaved(false), 2000);
   }
 
-  function submitPrompt() {
+  async function submitPrompt() {
     if (!prompt.trim()) return;
     setPromptLog(prev => [{ text: prompt, ts: new Date().toLocaleTimeString() }, ...prev.slice(0, 19)]);
     setPrompt("");
