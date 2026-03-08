@@ -298,10 +298,23 @@ function IntegrationRow({ intg, isConnected, onConnect, onDisconnect }: {
 }
 
 export default function Integrations() {
+  const { data: connections = [] } = useIntegrationConnections();
+  const { mutate: upsertIntegration } = useUpsertIntegration();
+  const { mutate: removeIntegration } = useRemoveIntegration();
+
+  const connectedIds = new Set(connections.map(c => c.integration_id));
   const allIntegrations = ALL_GROUPS.flatMap(g => g.items);
-  const connectedCount  = allIntegrations.filter(i => i.status === "connected").length;
-  const availableCount  = allIntegrations.filter(i => i.status === "available").length;
+  const connectedCount  = connections.length;
+  const availableCount  = allIntegrations.filter(i => i.status === "available" && !connectedIds.has(i.id)).length;
   const comingSoonCount = allIntegrations.filter(i => i.status === "coming_soon").length;
+
+  function handleConnect(integrationId: string) {
+    upsertIntegration({ integrationId, status: "connected" });
+  }
+
+  function handleDisconnect(integrationId: string) {
+    removeIntegration(integrationId);
+  }
 
   return (
     <div className="min-h-screen bg-background">
