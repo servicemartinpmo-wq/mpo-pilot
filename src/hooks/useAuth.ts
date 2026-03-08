@@ -4,7 +4,6 @@
  */
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import type { User, Session } from "@supabase/supabase-js";
 import { upsertProfile, getProfile } from "@/lib/supabaseDataService";
 
@@ -57,14 +56,12 @@ export function useAuth() {
   const [profile, setProfile]     = useState<AuthProfile | null>(null);
   const [loading, setLoading]     = useState(true);
 
-  // Load profile from DB when user is available
   const loadProfile = useCallback(async (userId: string) => {
     const raw = await getProfile(userId);
     setProfile(mapProfile(raw));
   }, []);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
         setSession(newSession);
@@ -78,7 +75,6 @@ export function useAuth() {
       }
     );
 
-    // Then get existing session
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
       setUser(s?.user ?? null);
@@ -92,7 +88,6 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, [loadProfile]);
 
-  // ── Auth actions ──────────────────────────────────────────────
   const signUp = useCallback(async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -108,15 +103,17 @@ export function useAuth() {
   }, []);
 
   const signInWithGoogle = useCallback(async () => {
-    const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
     });
     return { error };
   }, []);
 
   const signInWithApple = useCallback(async () => {
-    const { error } = await lovable.auth.signInWithOAuth("apple", {
-      redirect_uri: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "apple",
+      options: { redirectTo: window.location.origin },
     });
     return { error };
   }, []);
