@@ -172,11 +172,26 @@ const STATUS_CFG = {
   coming_soon:  { label: "Coming Soon",  dot: "bg-muted",         text: "text-muted-foreground" },
 };
 
-function IntegrationRow({ intg }: { intg: Integration }) {
+function IntegrationRow({ intg, isConnected, onConnect, onDisconnect }: {
+  intg: Integration;
+  isConnected: boolean;
+  onConnect: (id: string) => void;
+  onDisconnect: (id: string) => void;
+}) {
   const [open, setOpen] = useState(false);
-  const status = STATUS_CFG[intg.status];
+  const [connecting, setConnecting] = useState(false);
+  const liveStatus: IntegrationStatus = isConnected ? "connected" : intg.status;
+  const status = STATUS_CFG[liveStatus];
   const Icon = intg.icon;
-  const isLocked = intg.status === "coming_soon";
+  const isLocked = liveStatus === "coming_soon";
+
+  async function handleConnectClick() {
+    if (isConnected) return; // manage modal future
+    setConnecting(true);
+    await new Promise(r => setTimeout(r, 900)); // simulate OAuth handshake
+    onConnect(intg.id);
+    setConnecting(false);
+  }
 
   return (
     <div className={cn(
