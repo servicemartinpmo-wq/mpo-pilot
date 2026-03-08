@@ -371,17 +371,15 @@ export default function Integrations() {
           </div>
         </div>
 
-        {/* ── Backend notice ── */}
-        <div className="flex items-start gap-3 px-5 py-4 rounded-xl border border-border"
-          style={{ background: "hsl(var(--secondary))" }}>
-          <AlertTriangle className="w-4 h-4 text-signal-yellow flex-shrink-0 mt-0.5" />
+        {/* ── Backend notice — Cloud is now active ── */}
+        <div className="flex items-start gap-3 px-5 py-4 rounded-xl border border-signal-green/20"
+          style={{ background: "hsl(var(--signal-green) / 0.04)" }}>
+          <CheckCircle className="w-4 h-4 text-signal-green flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-sm font-semibold text-foreground">Backend required for live integrations</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Enable Lovable Cloud to activate real-time data sync across all connected services.</p>
+            <p className="text-sm font-semibold text-foreground">Lovable Cloud is active</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Your integration connections are persisted in real-time. Connect any service below to activate data sync.</p>
           </div>
-          <button className="flex-shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg transition-all text-electric-blue border border-electric-blue/30 hover:bg-electric-blue/8">
-            Enable Cloud
-          </button>
+          <span className="flex-shrink-0 text-xs font-bold px-2 py-1 rounded text-signal-green border border-signal-green/30">Live</span>
         </div>
 
         {/* ── Integration groups ── */}
@@ -394,7 +392,13 @@ export default function Integrations() {
             </div>
             <div className="divide-y divide-border/50 rounded-xl border border-border overflow-hidden">
               {group.items.map(intg => (
-                <IntegrationRow key={intg.id} intg={intg} />
+                <IntegrationRow
+                  key={intg.id}
+                  intg={intg}
+                  isConnected={connectedIds.has(intg.id)}
+                  onConnect={handleConnect}
+                  onDisconnect={handleDisconnect}
+                />
               ))}
             </div>
           </div>
