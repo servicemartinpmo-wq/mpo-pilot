@@ -71,3 +71,7 @@ Supabase schema is in `supabase/migrations/`. Tables:
 - Removed `@lovable.dev/cloud-auth-js` and `lovable-tagger` — replaced with standard Supabase OAuth
 - CSS `@import` moved before `@tailwind` directives to fix build warning
 - UI/UX upgrade applied March 2026 per planning document
+- Onboarding: cinematic WelcomeScreen added before 4-step intake; industry selector replaced with searchable dropdown; "MARTIN" branding corrected to "Apphia"
+- Auth page: Google/Apple OAuth removed (providers not configured in Supabase); improved inline error messages
+- Backend (Supabase): added missing deleteInsight, deleteSopRecord, deleteGovernanceLog operations; added team_members table (schema, types, CRUD); added real-time Supabase channel subscriptions via useRealtimeSync() hook mounted in App.tsx root
+- Migration file: supabase/migrations/20260309000001_team_members.sql — must be applied via Supabase dashboard SQL editor

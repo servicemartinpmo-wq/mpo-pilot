@@ -25,6 +25,7 @@ import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
 import { applyAccentColor, applyFont, saveProfile } from "./lib/companyStore";
 import { seedUserData } from "./lib/supabaseDataService";
+import { useRealtimeSync } from "./hooks/useLiveData";
 import type { CompanyProfile } from "./lib/companyStore";
 
 const queryClient = new QueryClient({
@@ -36,6 +37,9 @@ const queryClient = new QueryClient({
 function AppRoutes() {
   const { user, profile, loading, updateProfile } = useAuth();
   const [seeded, setSeeded] = useState(false);
+
+  // Keep all live data in sync via Supabase realtime channels
+  useRealtimeSync(user?.id);
 
   // Apply theme from DB profile whenever it changes
   useEffect(() => {

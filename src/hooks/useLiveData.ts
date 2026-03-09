@@ -3,6 +3,7 @@
  * All pages should import from here instead of static pmoData.
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   getDepartments, getInitiatives, getActionItems, getInsights,
@@ -11,6 +12,9 @@ import {
   upsertDepartment, upsertInitiative, upsertActionItem, upsertInsight,
   upsertGovernanceLog, deleteActionItem, deleteInitiative, deleteDepartment,
   upsertIntegration, removeIntegration,
+  deleteInsight, deleteSopRecord, deleteGovernanceLog,
+  getTeamMembers, upsertTeamMember, deleteTeamMember,
+  type DbTeamMember,
 } from "@/lib/supabaseDataService";
 
 // ── Get current user ID ──────────────────────────────────────────────
@@ -225,6 +229,85 @@ export function useRemoveIntegration() {
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["integration_connections"] }),
   });
+}
+
+// ── Insights delete ───────────────────────────────────────────────────
+export function useDeleteInsight() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteInsight(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["insights"] }),
+  });
+}
+
+// ── SOP Records delete ────────────────────────────────────────────────
+export function useDeleteSopRecord() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteSopRecord(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["sop_records"] }),
+  });
+}
+
+// ── Governance Logs delete ────────────────────────────────────────────
+export function useDeleteGovernanceLog() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteGovernanceLog(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["governance_logs"] }),
+  });
+}
+
+// ── Team Members ──────────────────────────────────────────────────────
+export function useTeamMembers() {
+  return useQuery({
+    queryKey: ["team_members"],
+    queryFn: async () => {
+      const uid = await getCurrentUserId();
+      if (!uid) return [];
+      return getTeamMembers(uid);
+    },
+  });
+}
+
+export function useUpsertTeamMember() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (member: Parameters<typeof upsertTeamMember>[0]) => upsertTeamMember(member),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["team_members"] }),
+  });
+}
+
+export function useDeleteTeamMember() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteTeamMember(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["team_members"] }),
+  });
+}
+
+// ── Real-time Supabase channel subscriptions ─────────────────────────
+// Mount this hook once at the app root (AppLayout) to keep all data live.
+export function useRealtimeSync(userId: string | null | undefined) {
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel(`realtime:${userId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "departments",     filter: `profile_id=eq.${userId}` }, () => qc.invalidateQueries({ queryKey: ["departments"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "initiatives",     filter: `profile_id=eq.${userId}` }, () => qc.invalidateQueries({ queryKey: ["initiatives"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "action_items",    filter: `profile_id=eq.${userId}` }, () => qc.invalidateQueries({ queryKey: ["action_items"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "insights",        filter: `profile_id=eq.${userId}` }, () => qc.invalidateQueries({ queryKey: ["insights"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "governance_logs", filter: `profile_id=eq.${userId}` }, () => qc.invalidateQueries({ queryKey: ["governance_logs"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "sop_records",     filter: `profile_id=eq.${userId}` }, () => qc.invalidateQueries({ queryKey: ["sop_records"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "org_metrics",     filter: `profile_id=eq.${userId}` }, () => qc.invalidateQueries({ queryKey: ["org_metrics"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "team_members",    filter: `profile_id=eq.${userId}` }, () => qc.invalidateQueries({ queryKey: ["team_members"] }))
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, qc]);
 }
 
 // ── Live KPIs computed from DB data ──────────────────────────────────

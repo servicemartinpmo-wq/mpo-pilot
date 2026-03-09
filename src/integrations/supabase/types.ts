@@ -682,6 +682,62 @@ export type Database = {
           },
         ]
       }
+      team_members: {
+        Row: {
+          id: string
+          profile_id: string
+          name: string
+          role: string
+          department: string | null
+          email: string | null
+          avatar_url: string | null
+          load_pct: number
+          delegated: number
+          blocked: number
+          mocha_assignments: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          profile_id: string
+          name: string
+          role: string
+          department?: string | null
+          email?: string | null
+          avatar_url?: string | null
+          load_pct?: number
+          delegated?: number
+          blocked?: number
+          mocha_assignments?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          name?: string
+          role?: string
+          department?: string | null
+          email?: string | null
+          avatar_url?: string | null
+          load_pct?: number
+          delegated?: number
+          blocked?: number
+          mocha_assignments?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

@@ -216,6 +216,44 @@ export async function removeIntegration(profileId: string, integrationId: string
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// MISSING DELETE OPERATIONS
+// ─────────────────────────────────────────────────────────────────────
+export async function deleteInsight(id: string) {
+  return supabase.from("insights").delete().eq("id", id);
+}
+
+export async function deleteSopRecord(id: string) {
+  return supabase.from("sop_records").delete().eq("id", id);
+}
+
+export async function deleteGovernanceLog(id: string) {
+  return supabase.from("governance_logs").delete().eq("id", id);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// TEAM MEMBERS
+// ─────────────────────────────────────────────────────────────────────
+export type DbTeamMember = Database["public"]["Tables"]["team_members"]["Row"];
+type DbTeamMemberInsert = Database["public"]["Tables"]["team_members"]["Insert"];
+
+export async function getTeamMembers(profileId: string): Promise<DbTeamMember[]> {
+  const { data } = await supabase
+    .from("team_members")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("name");
+  return data ?? [];
+}
+
+export async function upsertTeamMember(member: DbTeamMemberInsert) {
+  return supabase.from("team_members").upsert(member, { onConflict: "id" }).select().single();
+}
+
+export async function deleteTeamMember(id: string) {
+  return supabase.from("team_members").delete().eq("id", id);
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // CREATOR PROMPTS
 // ─────────────────────────────────────────────────────────────────────
 export async function logCreatorPrompt(profileId: string, promptText: string, category?: string) {
