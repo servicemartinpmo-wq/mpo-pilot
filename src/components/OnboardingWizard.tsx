@@ -9,7 +9,8 @@ import {
   ChevronRight, Plus, X, Sparkles, Activity, TrendingUp,
   AlertTriangle, CheckCircle, Lock, FileText, Layers,
   Upload, ChevronLeft, BarChart2, Shield, Cpu, Globe,
-  Brain, BookOpen, ArrowLeft, Award, Lightbulb,
+  Brain, BookOpen, ArrowLeft, Award, Lightbulb, Search,
+  BarChart3, Network, Eye,
 } from "lucide-react";
 import type { CompanyProfile } from "@/lib/companyStore";
 import { saveProfile } from "@/lib/companyStore";
@@ -857,6 +858,226 @@ function Slide6Roadmap({ scores, form, onPrev, onLaunch }: { scores: ReturnType<
   );
 }
 
+/* ── WELCOME SCREEN ─────────────────────────────────────────────────────────── */
+function WelcomeScreen({ onStart }: { onStart: () => void }) {
+  const ACCENT = "hsl(var(--electric-blue))";
+  const TEAL = "hsl(var(--teal))";
+
+  const pillars = [
+    {
+      icon: Activity,
+      title: "Real-Time Org Health",
+      desc: "7 diagnostic dimensions continuously monitored — execution, strategy, risk, governance, capacity, maturity, and alignment.",
+      color: "hsl(233 72% 65%)",
+      bg: "hsl(233 72% 58% / 0.10)",
+      border: "hsl(233 72% 58% / 0.25)",
+    },
+    {
+      icon: Network,
+      title: "Framework-Driven Analysis",
+      desc: "Porter, OKRs, Lean, Balanced Scorecard, Six Sigma, Theory of Constraints, and Rumelt — all working together, automatically.",
+      color: "hsl(183 62% 50%)",
+      bg: "hsl(183 62% 30% / 0.12)",
+      border: "hsl(183 62% 30% / 0.28)",
+    },
+    {
+      icon: Eye,
+      title: "Intelligent Signal Detection",
+      desc: "Blocked initiatives, capacity overflow, OKR misalignment, dependency risks — surfaced and prioritized before they escalate.",
+      color: "hsl(148 52% 50%)",
+      bg: "hsl(148 52% 36% / 0.10)",
+      border: "hsl(148 52% 36% / 0.25)",
+    },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col overflow-hidden"
+      style={{ background: "linear-gradient(160deg, hsl(225 52% 7%) 0%, hsl(226 46% 10%) 50%, hsl(228 42% 12%) 100%)" }}>
+
+      {/* Background grid */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        backgroundImage: `linear-gradient(hsl(233 72% 58% / 0.04) 1px, transparent 1px), linear-gradient(90deg, hsl(233 72% 58% / 0.04) 1px, transparent 1px)`,
+        backgroundSize: "48px 48px",
+      }} />
+
+      {/* Top radial glow */}
+      <div className="absolute top-0 inset-x-0 h-80 pointer-events-none" style={{
+        background: "radial-gradient(ellipse 80% 80% at 50% -10%, hsl(233 65% 58% / 0.18) 0%, transparent 70%)",
+      }} />
+
+      {/* Bottom teal glow */}
+      <div className="absolute bottom-0 inset-x-0 h-72 pointer-events-none" style={{
+        background: "radial-gradient(ellipse 70% 70% at 50% 110%, hsl(183 55% 35% / 0.14) 0%, transparent 70%)",
+      }} />
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-6 py-16 text-center max-w-4xl mx-auto w-full">
+
+        {/* Logo mark */}
+        <div className="mb-8 flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
+            style={{ background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})`, boxShadow: `0 0 40px hsl(var(--electric-blue) / 0.35)` }}>
+            <Zap className="w-8 h-8 text-white" />
+          </div>
+          <div>
+            <div className="text-xs font-black uppercase tracking-[0.3em] text-white/50 mb-0.5">Apphia</div>
+            <div className="text-xl font-black uppercase tracking-[0.22em] text-white">Command Center</div>
+          </div>
+        </div>
+
+        {/* Hero headline */}
+        <div className="mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold mb-5"
+            style={{ background: "hsl(var(--electric-blue) / 0.12)", border: "1px solid hsl(var(--electric-blue) / 0.28)", color: "hsl(var(--electric-blue))" }}>
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: ACCENT }} />
+            Powered by 25 AI systems · 100+ management frameworks
+          </div>
+          <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black text-white leading-[1.1] tracking-[-0.02em] mb-5">
+            Your organization,<br />
+            <span style={{ background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              fully understood.
+            </span>
+          </h1>
+          <p className="text-base lg:text-lg font-medium max-w-2xl mx-auto leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
+            Apphia Command Center gives executives and operators a live intelligence layer — surfacing risks, diagnosing execution gaps, and driving strategic alignment across every department.
+          </p>
+        </div>
+
+        {/* 3 value pillars */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-10 mt-8">
+          {pillars.map(({ icon: Icon, title, desc, color, bg, border }) => (
+            <div key={title} className="rounded-2xl p-5 text-left"
+              style={{ background: bg, border: `1px solid ${border}`, backdropFilter: "blur(12px)" }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 flex-shrink-0"
+                style={{ background: `${color}18`, border: `1px solid ${color}30` }}>
+                <Icon className="w-4.5 h-4.5" style={{ color }} />
+              </div>
+              <div className="text-sm font-bold text-white mb-1.5">{title}</div>
+              <p className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.55)" }}>{desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div className="flex flex-col items-center gap-3">
+          <button
+            onClick={onStart}
+            className="flex items-center gap-3 px-10 py-4 rounded-2xl text-base font-black text-white transition-all duration-200"
+            style={{
+              background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})`,
+              boxShadow: `0 8px 32px hsl(var(--electric-blue) / 0.38)`,
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 12px 40px hsl(var(--electric-blue) / 0.45)`; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = ""; (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 8px 32px hsl(var(--electric-blue) / 0.38)`; }}>
+            Set Up My Command Center
+            <ArrowRight className="w-5 h-5" />
+          </button>
+          <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+            Takes 3–5 minutes · No credit card required
+          </p>
+        </div>
+      </div>
+
+      {/* Bottom stats bar */}
+      <div className="relative z-10 border-t flex-shrink-0" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
+        <div className="flex items-center justify-center gap-8 px-6 py-4 flex-wrap">
+          {[
+            { label: "Diagnostic Dimensions", value: "7" },
+            { label: "Management Frameworks", value: "100+" },
+            { label: "Signal Types Detected", value: "25+" },
+            { label: "Setup Time", value: "< 5 min" },
+          ].map(({ label, value }) => (
+            <div key={label} className="text-center">
+              <div className="text-sm font-black font-mono" style={{ color: ACCENT }}>{value}</div>
+              <div className="text-[10px] font-medium" style={{ color: "hsl(0 0% 100% / 0.35)" }}>{label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+/* ── SEARCHABLE INDUSTRY PICKER ─────────────────────────────────────────── */
+function IndustryPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const [search, setSearch] = useState("");
+
+  const filtered = INDUSTRIES.filter(ind =>
+    ind.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const ACCENT = "hsl(var(--electric-blue))";
+
+  return (
+    <div>
+      {/* Search input */}
+      <div className="relative mb-2">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
+        <input
+          className="w-full rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none font-medium"
+          style={{
+            background: "hsl(0 0% 100%)",
+            border: `1.5px solid hsl(var(--border))`,
+            color: "hsl(var(--foreground))",
+          }}
+          placeholder="Search industry..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          onFocus={e => {
+            e.currentTarget.style.border = `1.5px solid ${ACCENT}`;
+            e.currentTarget.style.boxShadow = `0 0 0 3px hsl(var(--electric-blue) / 0.10)`;
+          }}
+          onBlur={e => {
+            e.currentTarget.style.border = `1.5px solid hsl(var(--border))`;
+            e.currentTarget.style.boxShadow = "none";
+          }}
+        />
+      </div>
+
+      {/* Scrollable list */}
+      <div className="rounded-xl border overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
+        <div className="max-h-48 overflow-y-auto divide-y"
+          style={{ scrollbarWidth: "thin", scrollbarColor: "hsl(var(--border)) transparent", borderColor: "hsl(var(--border) / 0.5)" }}>
+          {filtered.length === 0 ? (
+            <div className="px-4 py-3 text-xs text-muted-foreground text-center">No industries match</div>
+          ) : filtered.map(ind => (
+            <button
+              key={ind}
+              type="button"
+              onClick={() => { onChange(ind); setSearch(""); }}
+              className="w-full px-4 py-2.5 text-left text-sm font-medium transition-all flex items-center justify-between gap-2"
+              style={{
+                background: value === ind ? "hsl(var(--electric-blue) / 0.08)" : "hsl(0 0% 100%)",
+                color: value === ind ? "hsl(var(--electric-blue))" : "hsl(var(--foreground) / 0.75)",
+              }}
+              onMouseEnter={e => { if (value !== ind) (e.currentTarget as HTMLButtonElement).style.background = "hsl(var(--secondary))"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = value === ind ? "hsl(var(--electric-blue) / 0.08)" : "hsl(0 0% 100%)"; }}
+            >
+              <span>{ind}</span>
+              {value === ind && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "hsl(var(--electric-blue))" }} />}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Selected display */}
+      {value && (
+        <div className="mt-2 flex items-center gap-2 text-xs">
+          <span style={{ color: "hsl(var(--muted-foreground))" }}>Selected:</span>
+          <span className="flex items-center gap-1.5 px-2 py-1 rounded-full font-semibold"
+            style={{ background: "hsl(var(--electric-blue) / 0.10)", border: "1px solid hsl(var(--electric-blue) / 0.3)", color: "hsl(var(--electric-blue))" }}>
+            {value}
+            <button type="button" onClick={() => onChange("")} className="hover:opacity-70">
+              <X className="w-3 h-3" />
+            </button>
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── DIAGNOSTIC DECK ORCHESTRATOR ─────────────────────────────────────────── */
 function DiagnosticDeck({
   form,
@@ -887,6 +1108,7 @@ interface Props {
 }
 
 export default function OnboardingWizard({ onComplete }: Props) {
+  const [showWelcome, setShowWelcome] = useState(true);
   const [step, setStep] = useState(0);
   const [animDir, setAnimDir] = useState<"forward" | "back">("forward");
   const [transitioning, setTransitioning] = useState(false);
@@ -973,6 +1195,10 @@ export default function OnboardingWizard({ onComplete }: Props) {
   const ACCENT_GLOW = "hsl(var(--electric-blue) / 0.22)";
   const TEAL = "hsl(var(--teal))";
 
+  if (showWelcome) {
+    return <WelcomeScreen onStart={() => setShowWelcome(false)} />;
+  }
+
   if (showDiagnostic) {
     return <DiagnosticDeck form={form as Record<string, unknown>} onLaunch={launch} />;
   }
@@ -996,8 +1222,8 @@ export default function OnboardingWizard({ onComplete }: Props) {
               <Zap className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-white font-black tracking-[0.22em] text-sm uppercase leading-none">MARTIN</div>
-              <div className="text-xs tracking-widest uppercase mt-0.5 font-medium" style={{ color: "hsl(233 70% 82%)" }}>PMO-Ops Command Center</div>
+              <div className="text-white font-black tracking-[0.22em] text-sm uppercase leading-none">Apphia</div>
+              <div className="text-xs tracking-widest uppercase mt-0.5 font-medium" style={{ color: "hsl(233 70% 82%)" }}>Command Center</div>
             </div>
           </div>
         </div>
@@ -1047,7 +1273,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
               style={{ background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})` }}>
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-black tracking-widest text-sm uppercase text-foreground">MARTIN</span>
+            <span className="font-black tracking-widest text-sm uppercase text-foreground">Apphia</span>
           </div>
           <span className="text-xs font-bold px-3 py-1.5 rounded-full"
             style={{ background: "hsl(var(--electric-blue) / 0.10)", color: "hsl(var(--electric-blue))", border: "1px solid hsl(var(--electric-blue) / 0.25)" }}>
@@ -1131,9 +1357,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                   </div>
                   <div>
                     <FieldLabel>Industry</FieldLabel>
-                    <div className="grid grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1" style={{ scrollbarWidth: "thin", scrollbarColor: "hsl(var(--border)) transparent" }}>
-                      {INDUSTRIES.map(ind => <SelectPill key={ind} label={ind} selected={form.industry === ind} onClick={() => setForm(f => ({ ...f, industry: ind }))} />)}
-                    </div>
+                    <IndustryPicker value={form.industry} onChange={ind => setForm(f => ({ ...f, industry: ind }))} />
                   </div>
                 </div>
               )}
