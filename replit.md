@@ -57,8 +57,17 @@ Supabase schema is in `supabase/migrations/`. Tables:
 - `org_metrics`, `integration_connections`, `creator_prompts`
 - `authority_matrix`
 
+## UI/UX Design System
+
+- **Mission-control aesthetic**: White cards on light-gray background, deep navy sidebar, electric blue + teal accents
+- **DepartmentCard**: 4 explicit numeric metric tiles — Capacity %, Execution Health, Risk Score, SOP Adherence — color-coded Red/Yellow/Green with colored accent top bar
+- **Initiatives page**: Dual view (Table / Cards toggle). Table shows Priority Score, Strategic Alignment, Estimated Impact, Dependency Risk, Progress, Owner, Due Date — all sortable. Cards show full detail.
+- **InsightCard**: Standardized 4-section format — Situation (always visible), Diagnosis, Recommendation, System Remedy (expandable). Scored mini-bar row for Impact/Urgency/Risk/Leverage.
+- **FrameworkPanel**: Grid of labeled framework cards showing full names (Porter's Five Forces, Balanced Scorecard, OKRs, Lean, Six Sigma, TOC, Rumelt) with status chips
+
 ## Notes
 
 - Migrated from Lovable to Replit (March 2026)
 - Removed `@lovable.dev/cloud-auth-js` and `lovable-tagger` — replaced with standard Supabase OAuth
 - CSS `@import` moved before `@tailwind` directives to fix build warning
+- UI/UX upgrade applied March 2026 per planning document

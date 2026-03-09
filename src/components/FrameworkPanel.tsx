@@ -1,22 +1,21 @@
 import type { FrameworkEngine } from "@/lib/pmoData";
 import { cn } from "@/lib/utils";
-import { AlertCircle, Eye, Activity } from "lucide-react";
+import { AlertCircle, Eye, CheckCircle, Cpu } from "lucide-react";
 
-// User-friendly names — no "framework" word visible
-const moduleNames: Record<string, { display: string; domain: string }> = {
-  Porter: { display: "Competitive Position", domain: "Market & strategy" },
-  Rumelt: { display: "Strategic Clarity", domain: "Goal coherence" },
-  BSC: { display: "Balanced Scorecard", domain: "Performance balance" },
-  OKR: { display: "Goals & Key Results", domain: "Objective tracking" },
-  Lean: { display: "Lean Operations", domain: "Waste & flow" },
-  "Six Sigma": { display: "Quality Control", domain: "Defects & consistency" },
-  TOC: { display: "Bottleneck Analysis", domain: "Constraints & throughput" },
+const frameworkMeta: Record<string, { full: string; abbr: string; domain: string; color: string }> = {
+  Porter:       { full: "Porter's Five Forces", abbr: "Porter", domain: "Competitive positioning & market forces", color: "text-electric-blue bg-electric-blue/8 border-electric-blue/25" },
+  Rumelt:       { full: "Rumelt's Strategy",    abbr: "Rumelt", domain: "Strategic clarity & goal coherence",    color: "text-teal bg-teal/8 border-teal/25" },
+  BSC:          { full: "Balanced Scorecard",   abbr: "BSC",    domain: "Performance balance across 4 dimensions", color: "text-signal-green bg-signal-green/8 border-signal-green/25" },
+  OKR:          { full: "OKRs",                 abbr: "OKR",    domain: "Objective & key result tracking",       color: "text-electric-blue bg-electric-blue/8 border-electric-blue/25" },
+  Lean:         { full: "Lean Operations",      abbr: "Lean",   domain: "Waste elimination & flow optimization", color: "text-teal bg-teal/8 border-teal/25" },
+  "Six Sigma":  { full: "Six Sigma",            abbr: "6σ",     domain: "Defect reduction & quality control",    color: "text-signal-yellow bg-signal-yellow/8 border-signal-yellow/25" },
+  TOC:          { full: "Theory of Constraints",abbr: "TOC",    domain: "Bottleneck & throughput analysis",      color: "text-signal-orange bg-signal-orange/8 border-signal-orange/25" },
 };
 
-function StatusIcon({ status }: { status: FrameworkEngine["status"] }) {
-  if (status === "Alerting") return <AlertCircle className="w-3.5 h-3.5 text-signal-red" />;
-  if (status === "Monitoring") return <Eye className="w-3.5 h-3.5 text-signal-yellow" />;
-  return <Activity className="w-3.5 h-3.5 text-signal-green" />;
+function StatusChip({ status }: { status: FrameworkEngine["status"] }) {
+  if (status === "Alerting")   return <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-signal-red/10 text-signal-red border border-signal-red/25"><AlertCircle className="w-2.5 h-2.5" />Alerting</span>;
+  if (status === "Monitoring") return <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-signal-yellow/10 text-signal-yellow border border-signal-yellow/25"><Eye className="w-2.5 h-2.5" />Monitoring</span>;
+  return <span className="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-signal-green/10 text-signal-green border border-signal-green/25"><CheckCircle className="w-2.5 h-2.5" />Active</span>;
 }
 
 interface FrameworkPanelProps {
@@ -24,45 +23,75 @@ interface FrameworkPanelProps {
 }
 
 export default function FrameworkPanel({ frameworks }: FrameworkPanelProps) {
+  const alerting   = frameworks.filter(f => f.status === "Alerting").length;
+  const monitoring = frameworks.filter(f => f.status === "Monitoring").length;
+
   return (
-    <div className="bg-card rounded-xl border-2 border-border shadow-card overflow-hidden">
-      <div className="px-4 py-3 border-b-2 border-border flex items-center gap-2"
-        style={{ background: "hsl(var(--secondary))" }}>
-        <Activity className="w-4 h-4 text-electric-blue" />
-        <h3 className="text-sm font-bold text-foreground uppercase tracking-wide">Analysis Modules</h3>
-        <span className="ml-auto text-xs text-muted-foreground font-mono">{frameworks.length} Active</span>
+    <div className="bg-card rounded-xl border border-border shadow-card overflow-hidden">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-border bg-secondary/40 flex items-center gap-2.5">
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{ background: "hsl(var(--electric-blue) / 0.12)" }}>
+          <Cpu className="w-3.5 h-3.5 text-electric-blue" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-bold text-foreground leading-none">Framework Engine</h3>
+          <p className="text-[10px] text-muted-foreground mt-0.5">
+            Porter · Rumelt · BSC · OKRs · Lean · Six Sigma · TOC
+          </p>
+        </div>
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {alerting > 0 && (
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-signal-red/10 text-signal-red border border-signal-red/20">
+              {alerting} alert
+            </span>
+          )}
+          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border font-mono">
+            {frameworks.length} active
+          </span>
+        </div>
       </div>
-      <div className="divide-y divide-border">
+
+      {/* Framework rows */}
+      <div className="divide-y divide-border/60">
         {frameworks.map((fw) => {
-          const meta = moduleNames[fw.id] || { display: fw.name, domain: fw.expertDomain };
+          const meta = frameworkMeta[fw.id] || {
+            full: fw.name,
+            abbr: fw.id,
+            domain: fw.expertDomain,
+            color: "text-muted-foreground bg-secondary border-border",
+          };
           return (
-            <div key={fw.id} className="px-4 py-3 flex items-start gap-3 hover:bg-secondary/40 transition-colors">
-              <div className="flex-shrink-0 mt-0.5">
-                <StatusIcon status={fw.status} />
+            <div key={fw.id} className="px-4 py-3 flex items-center gap-3 hover:bg-secondary/30 transition-colors group">
+              {/* Abbr badge */}
+              <div className={cn("w-9 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border text-[10px] font-black", meta.color)}>
+                {meta.abbr}
               </div>
+
+              {/* Name + domain */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2 mb-0.5">
-                  <span className="text-xs font-semibold text-foreground">{meta.display}</span>
-                  <span className={cn(
-                    "text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0",
-                    fw.status === "Alerting" ? "bg-signal-red/10 text-signal-red" :
-                    fw.status === "Monitoring" ? "bg-signal-yellow/10 text-signal-yellow" :
-                    "bg-signal-green/10 text-signal-green"
-                  )}>
-                    {fw.status}
-                  </span>
+                <div className="text-xs font-bold text-foreground leading-none mb-0.5">{meta.full}</div>
+                <div className="text-[10px] text-muted-foreground leading-snug">{meta.domain}</div>
+              </div>
+
+              {/* Signal count + status */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="text-right">
+                  <div className="text-sm font-black font-mono text-foreground">{fw.activeInsights}</div>
+                  <div className="text-[10px] text-muted-foreground">signals</div>
                 </div>
-                <p className="text-xs text-muted-foreground leading-snug">{meta.domain}</p>
-                <div className="flex items-center gap-3 mt-1.5">
-                  <span className="text-xs text-muted-foreground">
-                    <span className="font-mono font-semibold text-foreground">{fw.activeInsights}</span> signals
-                  </span>
-                  <span className="text-xs text-muted-foreground">{fw.lastTriggered}</span>
-                </div>
+                <StatusChip status={fw.status} />
               </div>
             </div>
           );
         })}
+      </div>
+
+      {/* Footer note */}
+      <div className="px-4 py-2 bg-secondary/20 border-t border-border/60">
+        <p className="text-[10px] text-muted-foreground">
+          AI-supported interpretation · Framework-driven logic · Real-time signal processing
+        </p>
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import {
   Calendar, DollarSign, User, Filter, ArrowUpDown,
   CheckCircle, Clock, GitBranch, Target, Shield, X, AlertTriangle, Flag,
-  ChevronDown, ChevronUp, Search, ArrowUpRight, Sparkles
+  ChevronDown, ChevronUp, Search, ArrowUpRight, Sparkles, LayoutGrid, Table2
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import type { InitiativeStatus, InitiativeCategory, Initiative } from "@/lib/pmoData";
@@ -68,7 +68,92 @@ const raciToMocha: Record<string, { key: string; label: string }> = {
   Informed:    { key: "H", label: "Helper / FYI" },
 };
 
-type SortKey = "impactScore" | "dependencyRisk" | "completionPct" | "targetDate";
+type SortKey = "impactScore" | "priorityScore" | "strategicAlignment" | "dependencyRisk" | "completionPct" | "targetDate";
+
+// ────────────────────────────────────────────────
+// INITIATIVE TABLE ROW
+// ────────────────────────────────────────────────
+function TableRow({ ini, onClick }: { ini: Initiative; onClick: () => void }) {
+  const statusInfo = statusStyles[ini.status];
+  const impactScore = getImpactScore(ini);
+  return (
+    <tr
+      onClick={onClick}
+      className="border-b border-border/50 hover:bg-secondary/30 cursor-pointer transition-colors group"
+    >
+      {/* Name + dept */}
+      <td className="px-4 py-3 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className={cn("w-2 h-2 rounded-full flex-shrink-0", statusInfo.dot)} />
+          <span className="text-xs font-bold text-foreground truncate max-w-[200px] group-hover:text-electric-blue transition-colors">{ini.name}</span>
+          <ArrowUpRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+        </div>
+        <div className="ml-4 flex items-center gap-1.5 flex-wrap">
+          <span className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded border", categoryStyles[ini.category].cls)}>
+            {categoryStyles[ini.category].label}
+          </span>
+          <span className="text-[10px] text-muted-foreground">{ini.department}</span>
+        </div>
+      </td>
+      {/* Status */}
+      <td className="px-3 py-3 whitespace-nowrap">
+        <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", statusInfo.badge, statusInfo.border, statusInfo.bg)}>
+          {statusInfo.label}
+        </span>
+      </td>
+      {/* Priority Score */}
+      <td className="px-3 py-3 text-center">
+        <span className={cn("text-sm font-black font-mono",
+          ini.priorityScore >= 80 ? "text-signal-green" :
+          ini.priorityScore >= 60 ? "text-electric-blue" :
+          ini.priorityScore >= 40 ? "text-signal-yellow" : "text-signal-red"
+        )}>{ini.priorityScore}</span>
+      </td>
+      {/* Strategic Alignment */}
+      <td className="px-3 py-3 text-center">
+        <span className={cn("text-sm font-black font-mono",
+          ini.strategicAlignment >= 80 ? "text-signal-green" :
+          ini.strategicAlignment >= 60 ? "text-teal" :
+          ini.strategicAlignment >= 40 ? "text-signal-yellow" : "text-signal-red"
+        )}>{ini.strategicAlignment}</span>
+      </td>
+      {/* Estimated Impact */}
+      <td className="px-3 py-3 text-center">
+        <span className={cn("text-sm font-black font-mono",
+          impactScore >= 70 ? "text-signal-green" :
+          impactScore >= 45 ? "text-signal-yellow" : "text-signal-orange"
+        )}>{impactScore}</span>
+      </td>
+      {/* Dep. Risk */}
+      <td className="px-3 py-3 text-center">
+        <span className={cn("text-sm font-black font-mono",
+          ini.dependencyRisk > 65 ? "text-signal-red" :
+          ini.dependencyRisk > 40 ? "text-signal-yellow" : "text-signal-green"
+        )}>{ini.dependencyRisk}</span>
+      </td>
+      {/* Progress */}
+      <td className="px-3 py-3">
+        <div className="flex items-center gap-2 min-w-[80px]">
+          <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div className={cn("h-full rounded-full",
+              ini.completionPct >= 70 ? "bg-signal-green" :
+              ini.completionPct >= 40 ? "bg-electric-blue" : "bg-signal-yellow"
+            )} style={{ width: `${ini.completionPct}%` }} />
+          </div>
+          <span className="text-xs font-mono font-bold text-muted-foreground">{ini.completionPct}%</span>
+        </div>
+      </td>
+      {/* Owner */}
+      <td className="px-3 py-3 whitespace-nowrap">
+        <span className="text-xs text-foreground/70 font-medium">{ini.owner}</span>
+      </td>
+      {/* Due Date */}
+      <td className="px-3 py-3 whitespace-nowrap">
+        <span className="text-xs font-mono text-muted-foreground">{ini.targetDate}</span>
+      </td>
+    </tr>
+  );
+}
 
 // Impact Score = weighted average of priorityScore (60%) + strategicAlignment (40%)
 function getImpactScore(ini: Initiative): number {
@@ -597,6 +682,7 @@ export default function Initiatives() {
   const [search, setSearch]               = useState("");
   const [selectedIni, setSelectedIni]     = useState<Initiative | null>(null);
   const [showFilters, setShowFilters]     = useState(false);
+  const [view, setView]                   = useState<"cards" | "table">("table");
 
   // Unique owners and departments for filter dropdowns
   const owners = useMemo(() => ["All", ...Array.from(new Set(initiatives.map(i => i.owner)))], []);
@@ -624,6 +710,12 @@ export default function Initiatives() {
       }
       if (sortKey === "impactScore") {
         return sortDir === "asc" ? getImpactScore(a) - getImpactScore(b) : getImpactScore(b) - getImpactScore(a);
+      }
+      if (sortKey === "priorityScore") {
+        return sortDir === "asc" ? a.priorityScore - b.priorityScore : b.priorityScore - a.priorityScore;
+      }
+      if (sortKey === "strategicAlignment") {
+        return sortDir === "asc" ? a.strategicAlignment - b.strategicAlignment : b.strategicAlignment - a.strategicAlignment;
       }
       return sortDir === "asc" ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey];
     });
@@ -805,10 +897,12 @@ export default function Initiatives() {
             <div className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-2">Sort By</div>
             <div className="flex flex-wrap gap-1.5">
               {([
-                ["impactScore",    "Impact Score"],
-                ["dependencyRisk", "Dep. Risk"],
-                ["completionPct",  "Progress"],
-                ["targetDate",     "Due Date"],
+                ["impactScore",       "Impact Score"],
+                ["priorityScore",     "Priority"],
+                ["strategicAlignment","Alignment"],
+                ["dependencyRisk",    "Dep. Risk"],
+                ["completionPct",     "Progress"],
+                ["targetDate",        "Due Date"],
               ] as [SortKey, string][]).map(([key, label]) => (
                 <button key={key} onClick={() => toggleSort(key)}
                   className={cn("flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border font-semibold transition-all",
@@ -837,32 +931,92 @@ export default function Initiatives() {
         </div>
       )}
 
-      {/* ── Results count ── */}
+      {/* ── Results count + view toggle ── */}
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>Showing <span className="font-bold text-foreground">{filtered.length}</span> of {initiatives.length} initiatives</span>
-        {!showFilters && (
-          <div className="flex items-center gap-1">
-            <ArrowUpDown className="w-3.5 h-3.5" />
-            <span>Sort:</span>
-            {([["impactScore","Impact"], ["dependencyRisk","Risk"], ["completionPct","Progress"], ["targetDate","Due Date"]] as [SortKey,string][]).map(([k, l]) => (
-              <button key={k} onClick={() => toggleSort(k)}
-                className={cn("px-2 py-0.5 rounded font-semibold transition-all",
-                  sortKey === k ? "text-electric-blue" : "text-muted-foreground hover:text-foreground"
-                )}>
-                {l}{sortKey === k && (sortDir === "desc" ? " ↓" : " ↑")}
-              </button>
-            ))}
+        <div className="flex items-center gap-2">
+          {!showFilters && (
+            <div className="flex items-center gap-1">
+              <ArrowUpDown className="w-3.5 h-3.5" />
+              <span>Sort:</span>
+              {([["impactScore","Impact"], ["priorityScore","Priority"], ["strategicAlignment","Alignment"], ["dependencyRisk","Risk"], ["completionPct","Progress"], ["targetDate","Due"]] as [SortKey,string][]).map(([k, l]) => (
+                <button key={k} onClick={() => toggleSort(k)}
+                  className={cn("px-2 py-0.5 rounded font-semibold transition-all",
+                    sortKey === k ? "text-electric-blue" : "text-muted-foreground hover:text-foreground"
+                  )}>
+                  {l}{sortKey === k && (sortDir === "desc" ? " ↓" : " ↑")}
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="flex items-center gap-1 border border-border rounded-lg overflow-hidden">
+            <button
+              onClick={() => setView("table")}
+              className={cn("flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold transition-all",
+                view === "table" ? "bg-electric-blue/10 text-electric-blue" : "text-muted-foreground hover:text-foreground"
+              )}>
+              <Table2 className="w-3.5 h-3.5" />Table
+            </button>
+            <button
+              onClick={() => setView("cards")}
+              className={cn("flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold transition-all",
+                view === "cards" ? "bg-electric-blue/10 text-electric-blue" : "text-muted-foreground hover:text-foreground"
+              )}>
+              <LayoutGrid className="w-3.5 h-3.5" />Cards
+            </button>
           </div>
-        )}
+        </div>
       </div>
 
-      {/* ── Initiative grid ── */}
+      {/* ── Initiative display: table or cards ── */}
       {filtered.length === 0 ? (
         <div className="text-center py-16 text-muted-foreground">
           <Sparkles className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="text-sm font-medium">No initiatives match the current filters.</p>
           <button onClick={() => { setStatusFilter("All"); setOwnerFilter("All"); setDeptFilter("All"); setSearch(""); }}
             className="text-xs text-electric-blue hover:underline mt-2">Clear filters</button>
+        </div>
+      ) : view === "table" ? (
+        <div className="bg-card rounded-xl border border-border shadow-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b-2 border-border bg-secondary/60">
+                  {([
+                    ["", "Initiative", false],
+                    ["", "Status", false],
+                    ["priorityScore", "Priority Score", true],
+                    ["strategicAlignment", "Strat. Alignment", true],
+                    ["impactScore", "Est. Impact", true],
+                    ["dependencyRisk", "Dep. Risk", true],
+                    ["completionPct", "Progress", true],
+                    ["", "Owner", false],
+                    ["targetDate", "Due Date", true],
+                  ] as [SortKey | "", string, boolean][]).map(([key, label, sortable]) => (
+                    <th key={label}
+                      className={cn("px-3 py-2.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground whitespace-nowrap",
+                        key === "" ? "px-4" : "",
+                        sortable ? "cursor-pointer hover:text-foreground select-none" : ""
+                      )}
+                      onClick={sortable && key ? () => toggleSort(key as SortKey) : undefined}
+                    >
+                      <span className="flex items-center gap-1">
+                        {label}
+                        {sortable && key && sortKey === key && (
+                          sortDir === "desc" ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />
+                        )}
+                      </span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(ini => (
+                  <TableRow key={ini.id} ini={ini} onClick={() => setSelectedIni(ini)} />
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
