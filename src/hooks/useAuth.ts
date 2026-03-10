@@ -78,29 +78,58 @@ export function useAuth() {
     // Check for Replit User
     const checkReplitAuth = async () => {
       try {
+        console.log("[Auth] Checking Replit session...");
         const res = await fetch("/__replauthuser");
         if (res.ok) {
-          const replitUser = await res.json();
-          if (replitUser && !user) {
-            console.log("Replit User detected:", replitUser);
-            // In a real app, you might sync this with your Supabase profiles
-            // or use it to gate access. For now, we just log it.
+          const text = await res.text();
+          if (!text || text === "Not Authenticated") {
+            console.log("[Auth] No Replit session found");
+            return;
+          }
+          const replitUser = JSON.parse(text);
+          if (replitUser && replitUser.id) {
+            console.log("[Auth] Replit User detected:", replitUser);
+            // Create a consistent UUID-like ID from Replit ID for Supabase compatibility
+            // Replit IDs are numeric strings. We'll prefix with 0s to make a "UUID"
+            // or just use a placeholder if we don't care about DB queries yet.
+            const virtualId = "00000000-0000-0000-0000-" + replitUser.id.toString().padStart(12, '0');
+            
+            const virtualUser = {
+              id: virtualId,
+              email: `${replitUser.name}@replit.com`,
+              user_metadata: {
+                full_name: replitUser.name,
+                avatar_url: replitUser.profileImage,
+                replit_user: true,
+                replit_id: replitUser.id
+              },
+              aud: "authenticated",
+              role: "authenticated",
+              created_at: new Date().toISOString(),
+              app_metadata: {},
+            } as any;
+            
+            setUser(virtualUser);
+            await loadProfile(virtualUser.id);
           }
         }
       } catch (err) {
-        // Not in a Replit environment or auth not enabled
+        console.warn("[Auth] Replit Auth check error:", err);
+      } finally {
+        setLoading(false);
       }
     };
     
     checkReplitAuth();
 
     supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setUser(s?.user ?? null);
       if (s?.user) {
+        setSession(s);
+        setUser(s.user);
         loadProfile(s.user.id).finally(() => setLoading(false));
       } else {
-        setLoading(false);
+        // If no Supabase session, check Replit
+        checkReplitAuth();
       }
     });
 

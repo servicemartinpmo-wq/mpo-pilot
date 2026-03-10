@@ -13,7 +13,14 @@ type Mode = "signin" | "signup" | "forgot";
 
 export default function AuthPage() {
   const navigate = useNavigate();
-  const { signIn, signUp, resetPassword, signInWithReplit } = useAuth();
+  const { signIn, signUp, resetPassword } = useAuth();
+  const { signInWithReplit: authSignInWithReplit } = useAuth();
+  
+  // Use the local wrapper for better error handling/logging
+  const handleReplitSignIn = () => {
+    console.log("Replit login button clicked");
+    authSignInWithReplit();
+  };
 
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
@@ -23,6 +30,17 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const signInWithReplit = () => {
+    try {
+      console.log("Initiating Replit Auth...");
+      const domain = window.location.host;
+      window.location.href = `https://replit.com/auth_with_repl_site?domain=${domain}`;
+    } catch (err) {
+      console.error("Replit Auth redirect failed:", err);
+      setError("Could not redirect to Replit Auth. Ensure you are viewing this through a Replit domain.");
+    }
+  };
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -133,7 +151,7 @@ export default function AuthPage() {
             <div className="grid grid-cols-1 gap-3 mb-2">
               <button
                 type="button"
-                onClick={signInWithReplit}
+                onClick={handleReplitSignIn}
                 className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-border bg-background hover:bg-secondary transition-all font-semibold text-sm group"
               >
                 <SiReplit className="w-5 h-5 text-[#F26207] group-hover:scale-110 transition-transform" />
