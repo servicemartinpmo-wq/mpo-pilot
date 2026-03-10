@@ -76,17 +76,23 @@ export function useAuth() {
     );
 
     // Check for Replit User
-    fetch("/__replauthuser")
-      .then(res => res.json())
-      .then(replitUser => {
-        if (replitUser && !user) {
-          // If we have a Replit user but no Supabase user, 
-          // we could potentially auto-sign in or just store Replit info.
-          // For now, let's just log it or handle it if needed.
-          console.log("Replit User:", replitUser);
+    const checkReplitAuth = async () => {
+      try {
+        const res = await fetch("/__replauthuser");
+        if (res.ok) {
+          const replitUser = await res.json();
+          if (replitUser && !user) {
+            console.log("Replit User detected:", replitUser);
+            // In a real app, you might sync this with your Supabase profiles
+            // or use it to gate access. For now, we just log it.
+          }
         }
-      })
-      .catch(() => {});
+      } catch (err) {
+        // Not in a Replit environment or auth not enabled
+      }
+    };
+    
+    checkReplitAuth();
 
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
