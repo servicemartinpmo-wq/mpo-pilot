@@ -49,15 +49,7 @@ function KpiTile({ label, value, sub, color }: { label: string; value: string | 
   );
 }
 
-// ── Static quarterly/annual data ──────────────────────────────
-const QUARTERS = [
-  { q: "Q1", months: "Jan–Mar", revenue: 4.2, burn: 3.1, health: 61, maturity: 54, completed: 3, atRisk: 5, highlight: "Onboarding of new CTO; Infrastructure migration began" },
-  { q: "Q2", months: "Apr–Jun", revenue: 4.9, burn: 3.4, health: 65, maturity: 57, completed: 5, atRisk: 4, highlight: "Customer Portal v1 shipped; SOP coverage +12%" },
-  { q: "Q3", months: "Jul–Sep", revenue: 5.4, burn: 3.8, health: 69, maturity: 61, completed: 6, atRisk: 3, highlight: "Series B close; Headcount grew from 84 to 118" },
-  { q: "Q4", months: "Oct–Dec", revenue: 6.1, burn: 4.1, health: orgMetrics.avgExecutionHealth, maturity: orgMetrics.overallMaturityScore, completed: initiatives.filter(i => i.status === "Completed").length, atRisk: initiatives.filter(i => i.status !== "On Track" && i.status !== "Completed").length, highlight: "AI integration roadmap approved; Full diagnostic capability live" },
-];
-
-const ANNUAL_TREND = [
+const ANNUAL_TREND_BASE = [
   { month: "Jan", health: 58, maturity: 50, revenue: 3.9 },
   { month: "Feb", health: 60, maturity: 51, revenue: 4.1 },
   { month: "Mar", health: 61, maturity: 54, revenue: 4.2 },
@@ -69,13 +61,18 @@ const ANNUAL_TREND = [
   { month: "Sep", health: 69, maturity: 61, revenue: 5.6 },
   { month: "Oct", health: 70, maturity: 62, revenue: 5.8 },
   { month: "Nov", health: 71, maturity: 63, revenue: 6.0 },
-  { month: "Dec", health: orgMetrics.avgExecutionHealth, maturity: orgMetrics.overallMaturityScore, revenue: 6.1 },
 ];
 
-const YTD_INITIATIVES = initiatives.slice(0, 8);
 const currentYear = new Date().getFullYear();
 
 export default function Reports() {
+  const { data: initiatives = [] } = useInitiatives();
+  const { data: actionItems = [] } = useActionItems();
+  const { data: insights = [] } = useInsights();
+  const { data: departments = [] } = useDepartments();
+  const { data: governanceLogs = [] } = useGovernanceLogs();
+  const { data: orgMetrics } = useOrgMetrics();
+
   const [tab, setTab] = useState<ReportTab>("executive");
   const [showAllInsights, setShowAllInsights] = useState(false);
   const [uploadedAssets, setUploadedAssets] = useState<UploadedAsset[]>([]);
@@ -85,14 +82,16 @@ export default function Reports() {
 
   const criticalInsights = insights.filter(i => i.signal === "red");
   const topInsights = insights.slice(0, showAllInsights ? insights.length : 5);
-  const budgetPct = Math.round((orgMetrics.totalBudgetUsed / orgMetrics.totalBudgetAllocated) * 100);
+  const totalBudgetUsed = orgMetrics?.total_budget_used ?? 0;
+  const totalBudgetAllocated = orgMetrics?.total_budget_allocated ?? 1;
+  const budgetPct = Math.round((Number(totalBudgetUsed) / Math.max(Number(totalBudgetAllocated), 1)) * 100);
   const completedInitiatives = initiatives.filter(i => i.status === "Completed").length;
   const onTrackInitiatives = initiatives.filter(i => i.status === "On Track").length;
   const blockedInitiatives = initiatives.filter(i => i.status === "Blocked").length;
   const pendingActions = actionItems.filter(a => a.status !== "Completed");
 
-  const deptChartData = [...departments].sort((a, b) => b.maturityScore - a.maturityScore).slice(0, 8)
-    .map(d => ({ name: d.name.length > 14 ? d.name.slice(0, 13) + "…" : d.name, score: d.maturityScore, health: d.executionHealth }));
+  const deptChartData = [...departments].sort((a, b) => (b.maturity_score ?? 0) - (a.maturity_score ?? 0)).slice(0, 8)
+    .map(d => ({ name: d.name.length > 14 ? d.name.slice(0, 13) + "…" : d.name, score: d.maturity_score ?? 0, health: d.execution_health ?? 0 }));
 
   const statusCounts = ["On Track", "At Risk", "Delayed", "Blocked", "Completed"].map(s => ({
     name: s,
@@ -100,11 +99,26 @@ export default function Reports() {
     color: s === "On Track" ? SIGNAL_COLORS.green : s === "Completed" ? SIGNAL_COLORS.blue : SIGNAL_COLORS.red,
   })).filter(s => s.value > 0);
 
+  const execHealth = orgMetrics?.avg_execution_health ?? 70;
+  const overallMaturity = orgMetrics?.overall_maturity_score ?? 65;
+
   const healthTrend = [
     { month: "Aug", health: 58, maturity: 52 }, { month: "Sep", health: 61, maturity: 54 },
     { month: "Oct", health: 65, maturity: 57 }, { month: "Nov", health: 68, maturity: 60 },
     { month: "Dec", health: 71, maturity: 63 },
-    { month: "Jan", health: orgMetrics.avgExecutionHealth, maturity: orgMetrics.overallMaturityScore },
+    { month: "Jan", health: execHealth, maturity: overallMaturity },
+  ];
+
+  const QUARTERS = [
+    { q: "Q1", months: "Jan–Mar", revenue: 4.2, burn: 3.1, health: 61, maturity: 54, completed: 3, atRisk: 5, highlight: "Onboarding of new CTO; Infrastructure migration began" },
+    { q: "Q2", months: "Apr–Jun", revenue: 4.9, burn: 3.4, health: 65, maturity: 57, completed: 5, atRisk: 4, highlight: "Customer Portal v1 shipped; SOP coverage +12%" },
+    { q: "Q3", months: "Jul–Sep", revenue: 5.4, burn: 3.8, health: 69, maturity: 61, completed: 6, atRisk: 3, highlight: "Series B close; Headcount grew from 84 to 118" },
+    { q: "Q4", months: "Oct–Dec", revenue: 6.1, burn: 4.1, health: execHealth, maturity: overallMaturity, completed: completedInitiatives, atRisk: initiatives.filter(i => i.status !== "On Track" && i.status !== "Completed").length, highlight: "AI integration roadmap approved; Full diagnostic capability live" },
+  ];
+
+  const ANNUAL_TREND = [
+    ...ANNUAL_TREND_BASE,
+    { month: "Dec", health: execHealth, maturity: overallMaturity, revenue: 6.1 },
   ];
 
   const tabs: { id: ReportTab; label: string; icon?: React.ElementType }[] = [
