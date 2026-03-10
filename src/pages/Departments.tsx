@@ -1,19 +1,20 @@
-import { departments, getScoreSignal, insights } from "@/lib/pmoData";
+import { useDepartments, useInsights } from "@/hooks/useLiveData";
 import DepartmentCard from "@/components/DepartmentCard";
 import { ScoreBadge, MaturityBadge, ScoreBar } from "@/components/ScoreBadge";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import type { MaturityTier, Department } from "@/lib/pmoData";
-import { X, Target, Shield, FileText, Users, ChevronRight, AlertTriangle, BarChart3, Activity } from "lucide-react";
+import { X, Target, Shield, FileText, Users, ChevronRight, AlertTriangle, BarChart3, Activity, Loader2 } from "lucide-react";
+import { getScoreSignal } from "@/lib/pmoData";
+import type { MaturityTier } from "@/lib/pmoData";
 
 const tiers: MaturityTier[] = ["Foundational", "Developing", "Structured", "Managed", "Optimized"];
-type SortKey = "maturityScore" | "executionHealth" | "riskScore" | "capacityUsed";
+type SortKey = "maturity_score" | "execution_health" | "risk_score" | "capacity_used";
 
-const authorityColors = {
-  Executive: "text-electric-blue bg-electric-blue/10 border-electric-blue/20",
-  Senior:    "text-signal-green bg-signal-green/10 border-signal-green/20",
-  Manager:   "text-teal bg-teal/10 border-teal/25",
-  Analyst:   "text-signal-yellow bg-signal-yellow/10 border-signal-yellow/20",
+const authorityColors: Record<string, string> = {
+  Executive:   "text-electric-blue bg-electric-blue/10 border-electric-blue/20",
+  Senior:      "text-signal-green bg-signal-green/10 border-signal-green/20",
+  Manager:     "text-teal bg-teal/10 border-teal/25",
+  Analyst:     "text-signal-yellow bg-signal-yellow/10 border-signal-yellow/20",
   Coordinator: "text-muted-foreground bg-secondary border-border",
 };
 
@@ -25,22 +26,30 @@ const tierStyles: Record<MaturityTier, { bar: string; text: string; bg: string; 
   Optimized:    { bar: "bg-signal-green",  text: "text-signal-green",  bg: "bg-signal-green/8",  border: "border-signal-green/25" },
 };
 
-function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: () => void }) {
-  const deptInsights = insights.filter(i => i.department === dept.name);
+type LiveDept = ReturnType<typeof useDepartments>["data"] extends (infer T)[] | undefined ? T : never;
+
+function DepartmentDetailPanel({ dept, deptInsights, onClose }: {
+  dept: NonNullable<LiveDept>;
+  deptInsights: ReturnType<typeof useInsights>["data"] extends (infer T)[] | undefined ? T[] : never[];
+  onClose: () => void;
+}) {
+  const keyKPIs: { label: string; value: string; trend: string }[] = Array.isArray(dept.key_kpis)
+    ? (dept.key_kpis as { label: string; value: string; trend: string }[])
+    : [];
+
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-end">
       <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full max-w-xl h-screen bg-card border-l border-border shadow-deep overflow-y-auto animate-slide-in-left">
-        
-        {/* Panel header */}
+
         <div className="sticky top-0 bg-card border-b border-border px-5 py-4 z-10">
           <div className="flex items-start gap-3">
             <div className="flex-1 min-w-0">
               <h2 className="text-base font-bold text-foreground">{dept.name}</h2>
               <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                <MaturityBadge tier={dept.maturityTier} score={dept.maturityScore} />
-                <span className={cn("text-xs px-2 py-0.5 rounded-full border font-medium", authorityColors[dept.authorityLevel])}>
-                  {dept.authorityLevel}
+                <MaturityBadge tier={(dept.maturity_tier ?? "Foundational") as MaturityTier} score={dept.maturity_score ?? 0} />
+                <span className={cn("text-xs px-2 py-0.5 rounded-full border font-medium", authorityColors[dept.authority_level ?? "Manager"])}>
+                  {dept.authority_level ?? "Manager"}
                 </span>
               </div>
             </div>
@@ -51,124 +60,125 @@ function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: (
         </div>
 
         <div className="p-5 space-y-5">
-
-          {/* Overview grid */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-secondary rounded-xl p-3">
               <div className="section-label mb-1.5">Department Head</div>
               <div className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                <Users className="w-3.5 h-3.5 text-muted-foreground" /> {dept.head}
+                <Users className="w-3.5 h-3.5 text-muted-foreground" /> {dept.head ?? "—"}
               </div>
             </div>
             <div className="bg-secondary rounded-xl p-3">
               <div className="section-label mb-1.5">Team Size</div>
-              <div className="text-sm font-bold font-mono text-foreground">{dept.headcount} <span className="text-xs font-normal text-muted-foreground">FTE</span></div>
+              <div className="text-sm font-bold font-mono text-foreground">{dept.headcount ?? 0} <span className="text-xs font-normal text-muted-foreground">FTE</span></div>
             </div>
             <div className="bg-secondary rounded-xl p-3">
               <div className="section-label mb-1.5">Active Initiatives</div>
-              <div className="text-2xl font-bold font-mono text-foreground">{dept.activeInitiatives}</div>
+              <div className="text-2xl font-bold font-mono text-foreground">{dept.active_initiatives ?? 0}</div>
             </div>
             <div className={cn("rounded-xl p-3",
-              dept.blockedTasks > 5 ? "bg-signal-red/8" : dept.blockedTasks > 0 ? "bg-signal-yellow/8" : "bg-signal-green/8"
+              (dept.blocked_tasks ?? 0) > 5 ? "bg-signal-red/8" : (dept.blocked_tasks ?? 0) > 0 ? "bg-signal-yellow/8" : "bg-signal-green/8"
             )}>
               <div className="section-label mb-1.5">Blocked Tasks</div>
               <div className={cn("text-2xl font-bold font-mono",
-                dept.blockedTasks > 5 ? "text-signal-red" : dept.blockedTasks > 0 ? "text-signal-yellow" : "text-signal-green"
-              )}>{dept.blockedTasks}</div>
+                (dept.blocked_tasks ?? 0) > 5 ? "text-signal-red" : (dept.blocked_tasks ?? 0) > 0 ? "text-signal-yellow" : "text-signal-green"
+              )}>{dept.blocked_tasks ?? 0}</div>
             </div>
           </div>
 
-          {/* Performance Scores */}
           <div className="data-card">
             <div className="px-4 py-3 border-b border-border flex items-center gap-2">
               <BarChart3 className="w-3.5 h-3.5 text-electric-blue" />
               <span className="text-xs font-bold text-foreground uppercase tracking-wide">Performance Dimensions</span>
             </div>
             <div className="p-4 space-y-3">
-              <ScoreBar value={dept.maturityScore} signal={getScoreSignal(dept.maturityScore)} label="Operational Maturity" />
-              <ScoreBar value={dept.executionHealth} signal={getScoreSignal(dept.executionHealth)} label="Execution Health" />
-              <ScoreBar value={dept.capacityUsed} signal={dept.capacityUsed > 90 ? "red" : dept.capacityUsed > 75 ? "yellow" : "green"} label="Capacity Utilization" />
-              <ScoreBar value={100 - dept.riskScore} signal={getScoreSignal(100 - dept.riskScore)} label="Risk Index (inverted)" />
-              <ScoreBar value={dept.sopAdherence} signal={getScoreSignal(dept.sopAdherence)} label="SOP Adherence" />
+              <ScoreBar value={dept.maturity_score ?? 0} signal={getScoreSignal(dept.maturity_score ?? 0)} label="Operational Maturity" />
+              <ScoreBar value={dept.execution_health ?? 0} signal={getScoreSignal(dept.execution_health ?? 0)} label="Execution Health" />
+              <ScoreBar value={dept.capacity_used ?? 0} signal={(dept.capacity_used ?? 0) > 90 ? "red" : (dept.capacity_used ?? 0) > 75 ? "yellow" : "green"} label="Capacity Utilization" />
+              <ScoreBar value={100 - (dept.risk_score ?? 0)} signal={getScoreSignal(100 - (dept.risk_score ?? 0))} label="Risk Index (inverted)" />
+              <ScoreBar value={dept.sop_adherence ?? 0} signal={getScoreSignal(dept.sop_adherence ?? 0)} label="SOP Adherence" />
             </div>
           </div>
 
-          {/* Core Responsibilities */}
-          <div>
-            <div className="flex items-center gap-1.5 mb-2.5">
-              <Target className="w-3.5 h-3.5 text-electric-blue" />
-              <span className="text-xs font-bold text-foreground uppercase tracking-wide">Core Responsibilities</span>
-            </div>
-            <div className="space-y-1.5">
-              {dept.coreResponsibilities.map((r, i) => (
-                <div key={i} className="flex items-start gap-2 text-sm">
-                  <ChevronRight className="w-3.5 h-3.5 text-electric-blue flex-shrink-0 mt-0.5" />
-                  <span className="text-foreground/80">{r}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Key Functions */}
-          <div>
-            <div className="flex items-center gap-1.5 mb-2.5">
-              <FileText className="w-3.5 h-3.5 text-teal" />
-              <span className="text-xs font-bold text-foreground uppercase tracking-wide">Key Functions</span>
-            </div>
-            <div className="space-y-1.5">
-              {dept.keyFunctions.map((f, i) => (
-                <div key={i} className="flex items-start gap-2 text-sm">
-                  <ChevronRight className="w-3.5 h-3.5 text-teal flex-shrink-0 mt-0.5" />
-                  <span className="text-foreground/80">{f}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Decision Rights */}
-          <div>
-            <div className="flex items-center gap-1.5 mb-2.5">
-              <Shield className="w-3.5 h-3.5 text-signal-green" />
-              <span className="text-xs font-bold text-foreground uppercase tracking-wide">Decision Rights & Authority</span>
-            </div>
-            <div className="space-y-1.5">
-              {dept.decisionRights.map((d, i) => (
-                <div key={i} className="flex items-start gap-2 text-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-signal-green flex-shrink-0 mt-1.5" />
-                  <span className="text-foreground/80">{d}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Applied Frameworks */}
-          <div>
-            <div className="text-xs font-bold text-foreground uppercase tracking-wide mb-2.5">Applied Frameworks</div>
-            <div className="flex flex-wrap gap-1.5">
-              {dept.frameworks.map(f => (
-                <span key={f} className="text-xs bg-electric-blue/8 text-electric-blue border border-electric-blue/20 px-2.5 py-0.5 rounded-full font-medium">{f}</span>
-              ))}
-            </div>
-          </div>
-
-          {/* KPIs */}
-          <div>
-            <div className="text-xs font-bold text-foreground uppercase tracking-wide mb-2.5">Key Performance Indicators</div>
-            <div className="data-card overflow-hidden">
-              <div className="divide-y divide-border">
-                {dept.keyKPIs.map(kpi => (
-                  <div key={kpi.label} className="flex items-center justify-between px-4 py-2.5">
-                    <span className="text-xs text-muted-foreground">{kpi.label}</span>
-                    <span className={cn("text-xs font-mono font-semibold",
-                      kpi.trend === "up" ? "text-signal-green" : kpi.trend === "down" ? "text-signal-red" : "text-muted-foreground"
-                    )}>{kpi.value} {kpi.trend === "up" ? "↑" : kpi.trend === "down" ? "↓" : "→"}</span>
+          {(dept.core_responsibilities?.length ?? 0) > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2.5">
+                <Target className="w-3.5 h-3.5 text-electric-blue" />
+                <span className="text-xs font-bold text-foreground uppercase tracking-wide">Core Responsibilities</span>
+              </div>
+              <div className="space-y-1.5">
+                {dept.core_responsibilities!.map((r, i) => (
+                  <div key={i} className="flex items-start gap-2 text-sm">
+                    <ChevronRight className="w-3.5 h-3.5 text-electric-blue flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground/80">{r}</span>
                   </div>
                 ))}
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Active Signals */}
+          {(dept.key_functions?.length ?? 0) > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2.5">
+                <FileText className="w-3.5 h-3.5 text-teal" />
+                <span className="text-xs font-bold text-foreground uppercase tracking-wide">Key Functions</span>
+              </div>
+              <div className="space-y-1.5">
+                {dept.key_functions!.map((f, i) => (
+                  <div key={i} className="flex items-start gap-2 text-sm">
+                    <ChevronRight className="w-3.5 h-3.5 text-teal flex-shrink-0 mt-0.5" />
+                    <span className="text-foreground/80">{f}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(dept.decision_rights?.length ?? 0) > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2.5">
+                <Shield className="w-3.5 h-3.5 text-signal-green" />
+                <span className="text-xs font-bold text-foreground uppercase tracking-wide">Decision Rights & Authority</span>
+              </div>
+              <div className="space-y-1.5">
+                {dept.decision_rights!.map((d, i) => (
+                  <div key={i} className="flex items-start gap-2 text-sm">
+                    <span className="w-1.5 h-1.5 rounded-full bg-signal-green flex-shrink-0 mt-1.5" />
+                    <span className="text-foreground/80">{d}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(dept.frameworks?.length ?? 0) > 0 && (
+            <div>
+              <div className="text-xs font-bold text-foreground uppercase tracking-wide mb-2.5">Applied Frameworks</div>
+              <div className="flex flex-wrap gap-1.5">
+                {dept.frameworks!.map(f => (
+                  <span key={f} className="text-xs bg-electric-blue/8 text-electric-blue border border-electric-blue/20 px-2.5 py-0.5 rounded-full font-medium">{f}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {keyKPIs.length > 0 && (
+            <div>
+              <div className="text-xs font-bold text-foreground uppercase tracking-wide mb-2.5">Key Performance Indicators</div>
+              <div className="data-card overflow-hidden">
+                <div className="divide-y divide-border">
+                  {keyKPIs.map(kpi => (
+                    <div key={kpi.label} className="flex items-center justify-between px-4 py-2.5">
+                      <span className="text-xs text-muted-foreground">{kpi.label}</span>
+                      <span className={cn("text-xs font-mono font-semibold",
+                        kpi.trend === "up" ? "text-signal-green" : kpi.trend === "down" ? "text-signal-red" : "text-muted-foreground"
+                      )}>{kpi.value} {kpi.trend === "up" ? "↑" : kpi.trend === "down" ? "↓" : "→"}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {deptInsights.length > 0 && (
             <div>
               <div className="flex items-center gap-1.5 mb-2.5">
@@ -184,7 +194,7 @@ function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: (
                     <div className="text-xs font-semibold text-foreground mb-1">{ins.type}</div>
                     <div className="text-xs text-muted-foreground leading-snug line-clamp-2">{ins.situation}</div>
                     <div className="flex items-center gap-2 mt-2">
-                      <ScoreBadge score={ins.executivePriorityScore} signal={ins.signal} size="sm" />
+                      <ScoreBadge score={ins.executive_priority_score ?? 0} signal={(ins.signal ?? "blue") as any} size="sm" />
                       <span className="text-xs text-muted-foreground">{ins.framework}</span>
                     </div>
                   </div>
@@ -199,25 +209,33 @@ function DepartmentDetailPanel({ dept, onClose }: { dept: Department; onClose: (
 }
 
 export default function Departments() {
+  const { data: departments = [], isLoading } = useDepartments();
+  const { data: allInsights = [] } = useInsights();
+
   const [filter, setFilter] = useState<MaturityTier | "All">("All");
-  const [sortKey, setSortKey] = useState<SortKey>("maturityScore");
+  const [sortKey, setSortKey] = useState<SortKey>("maturity_score");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-  const [selectedDept, setSelectedDept] = useState<Department | null>(null);
+  const [selectedDept, setSelectedDept] = useState<NonNullable<LiveDept> | null>(null);
 
   const tierCounts = tiers.reduce((acc, tier) => {
-    acc[tier] = departments.filter(d => d.maturityTier === tier).length;
+    acc[tier] = departments.filter(d => d.maturity_tier === tier).length;
     return acc;
   }, {} as Record<MaturityTier, number>);
 
-  const avgMaturity = Math.round(departments.reduce((s, d) => s + d.maturityScore, 0) / departments.length);
-  const avgCapacity = Math.round(departments.reduce((s, d) => s + d.capacityUsed, 0) / departments.length);
-  const overloaded = departments.filter(d => d.capacityUsed > 85).length;
+  const avgMaturity = departments.length
+    ? Math.round(departments.reduce((s, d) => s + (d.maturity_score ?? 0), 0) / departments.length)
+    : 0;
+  const avgCapacity = departments.length
+    ? Math.round(departments.reduce((s, d) => s + (d.capacity_used ?? 0), 0) / departments.length)
+    : 0;
+  const overloaded = departments.filter(d => (d.capacity_used ?? 0) > 85).length;
 
   const filtered = [...departments]
-    .filter(d => filter === "All" || d.maturityTier === filter)
+    .filter(d => filter === "All" || d.maturity_tier === filter)
     .sort((a, b) => {
-      const diff = a[sortKey] - b[sortKey];
-      return sortDir === "desc" ? -diff : diff;
+      const av = (a[sortKey] ?? 0) as number;
+      const bv = (b[sortKey] ?? 0) as number;
+      return sortDir === "desc" ? bv - av : av - bv;
     });
 
   function toggleSort(key: SortKey) {
@@ -225,10 +243,44 @@ export default function Departments() {
     else { setSortKey(key); setSortDir("desc"); }
   }
 
+  const deptInsightsFor = (name: string) => allInsights.filter(i => i.department === name);
+
+  // Adapt DB row to DepartmentCard's expected shape (camelCase)
+  function adaptDept(d: NonNullable<LiveDept>) {
+    return {
+      id: d.id,
+      name: d.name,
+      head: d.head ?? "—",
+      headcount: d.headcount ?? 0,
+      capacityUsed: d.capacity_used ?? 0,
+      riskScore: d.risk_score ?? 0,
+      executionHealth: d.execution_health ?? 0,
+      maturityScore: d.maturity_score ?? 0,
+      maturityTier: (d.maturity_tier ?? "Foundational") as MaturityTier,
+      activeInitiatives: d.active_initiatives ?? 0,
+      blockedTasks: d.blocked_tasks ?? 0,
+      signal: (d.signal ?? "blue") as any,
+      keyKPIs: Array.isArray(d.key_kpis) ? d.key_kpis as any : [],
+      coreResponsibilities: d.core_responsibilities ?? [],
+      keyFunctions: d.key_functions ?? [],
+      authorityLevel: (d.authority_level ?? "Manager") as any,
+      sopAdherence: d.sop_adherence ?? 0,
+      decisionRights: d.decision_rights ?? [],
+      frameworks: d.frameworks ?? [],
+    };
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-6 h-6 animate-spin text-electric-blue" />
+        <span className="ml-3 text-muted-foreground">Loading departments…</span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
-
-      {/* ── LAYER 1: Page Header ── */}
       <div className="page-header bg-card">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -262,8 +314,6 @@ export default function Departments() {
       </div>
 
       <div className="flex-1 p-6 space-y-6">
-
-        {/* ── LAYER 2: Maturity Distribution ── */}
         <div className="data-card">
           <div className="data-card-header">
             <div className="flex items-center gap-2">
@@ -278,7 +328,7 @@ export default function Departments() {
           </div>
           <div className="p-4 grid grid-cols-5 gap-3">
             {tiers.map(tier => {
-              const count = tierCounts[tier];
+              const count = tierCounts[tier] ?? 0;
               const s = tierStyles[tier];
               return (
                 <button key={tier} onClick={() => setFilter(filter === tier ? "All" : tier)}
@@ -294,7 +344,6 @@ export default function Departments() {
           </div>
         </div>
 
-        {/* ── LAYER 3: Rankings Table ── */}
         <div className="data-card overflow-hidden">
           <div className="data-card-header">
             <h2 className="text-sm font-bold text-foreground">Maturity Rankings</h2>
@@ -307,64 +356,67 @@ export default function Departments() {
               ))}
             </div>
           </div>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-secondary/40">
-                <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">#</th>
-                <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Department</th>
-                <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide cursor-pointer hover:text-foreground" onClick={() => toggleSort("maturityScore")}>
-                  Maturity {sortKey === "maturityScore" ? (sortDir === "desc" ? "↓" : "↑") : ""}
-                </th>
-                <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide cursor-pointer hover:text-foreground hidden md:table-cell" onClick={() => toggleSort("executionHealth")}>
-                  Exec Health {sortKey === "executionHealth" ? (sortDir === "desc" ? "↓" : "↑") : ""}
-                </th>
-                <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide cursor-pointer hover:text-foreground hidden lg:table-cell" onClick={() => toggleSort("capacityUsed")}>
-                  Capacity {sortKey === "capacityUsed" ? (sortDir === "desc" ? "↓" : "↑") : ""}
-                </th>
-                <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide cursor-pointer hover:text-foreground hidden lg:table-cell" onClick={() => toggleSort("riskScore")}>
-                  Risk Score {sortKey === "riskScore" ? (sortDir === "desc" ? "↓" : "↑") : ""}
-                </th>
-                <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden xl:table-cell">SOP %</th>
-                <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Head</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filtered.map((dept, idx) => (
-                <tr key={dept.id} className="hover:bg-secondary/30 transition-colors cursor-pointer group" onClick={() => setSelectedDept(dept)}>
-                  <td className="px-4 py-3 text-xs font-mono text-muted-foreground">{idx + 1}</td>
-                  <td className="px-3 py-3">
-                    <div className="font-semibold text-foreground group-hover:text-electric-blue transition-colors">{dept.name}</div>
-                    <MaturityBadge tier={dept.maturityTier} score={dept.maturityScore} />
-                  </td>
-                  <td className="px-3 py-3 text-center">
-                    <ScoreBadge score={dept.maturityScore} signal={getScoreSignal(dept.maturityScore)} size="sm" />
-                  </td>
-                  <td className="px-3 py-3 hidden md:table-cell min-w-[110px]">
-                    <ScoreBar value={dept.executionHealth} signal={getScoreSignal(dept.executionHealth)} />
-                  </td>
-                  <td className="px-3 py-3 text-center hidden lg:table-cell">
-                    <span className={cn("text-xs font-mono font-bold px-2 py-0.5 rounded",
-                      dept.capacityUsed > 90 ? "text-signal-red bg-signal-red/10" : dept.capacityUsed > 75 ? "text-signal-yellow bg-signal-yellow/10" : "text-signal-green bg-signal-green/10"
-                    )}>{dept.capacityUsed}%</span>
-                  </td>
-                  <td className="px-3 py-3 text-center hidden lg:table-cell">
-                    <span className={cn("text-xs font-mono font-bold",
-                      dept.riskScore > 70 ? "text-signal-red" : dept.riskScore > 50 ? "text-signal-yellow" : "text-signal-green"
-                    )}>{dept.riskScore}</span>
-                  </td>
-                  <td className="px-3 py-3 text-center hidden xl:table-cell">
-                    <span className={cn("text-xs font-mono font-bold",
-                      dept.sopAdherence >= 80 ? "text-signal-green" : dept.sopAdherence >= 60 ? "text-signal-yellow" : "text-signal-red"
-                    )}>{dept.sopAdherence}%</span>
-                  </td>
-                  <td className="px-3 py-3 text-xs text-muted-foreground">{dept.head}</td>
+          {departments.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground text-sm">No departments yet. Complete onboarding to generate your org data.</div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b bg-secondary/40">
+                  <th className="text-left px-4 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">#</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Department</th>
+                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide cursor-pointer hover:text-foreground" onClick={() => toggleSort("maturity_score")}>
+                    Maturity {sortKey === "maturity_score" ? (sortDir === "desc" ? "↓" : "↑") : ""}
+                  </th>
+                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide cursor-pointer hover:text-foreground hidden md:table-cell" onClick={() => toggleSort("execution_health")}>
+                    Exec Health {sortKey === "execution_health" ? (sortDir === "desc" ? "↓" : "↑") : ""}
+                  </th>
+                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide cursor-pointer hover:text-foreground hidden lg:table-cell" onClick={() => toggleSort("capacity_used")}>
+                    Capacity {sortKey === "capacity_used" ? (sortDir === "desc" ? "↓" : "↑") : ""}
+                  </th>
+                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide cursor-pointer hover:text-foreground hidden lg:table-cell" onClick={() => toggleSort("risk_score")}>
+                    Risk Score {sortKey === "risk_score" ? (sortDir === "desc" ? "↓" : "↑") : ""}
+                  </th>
+                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden xl:table-cell">SOP %</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Head</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filtered.map((dept, idx) => (
+                  <tr key={dept.id} className="hover:bg-secondary/30 transition-colors cursor-pointer group" onClick={() => setSelectedDept(dept)}>
+                    <td className="px-4 py-3 text-xs font-mono text-muted-foreground">{idx + 1}</td>
+                    <td className="px-3 py-3">
+                      <div className="font-semibold text-foreground group-hover:text-electric-blue transition-colors">{dept.name}</div>
+                      <MaturityBadge tier={(dept.maturity_tier ?? "Foundational") as MaturityTier} score={dept.maturity_score ?? 0} />
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <ScoreBadge score={dept.maturity_score ?? 0} signal={getScoreSignal(dept.maturity_score ?? 0)} size="sm" />
+                    </td>
+                    <td className="px-3 py-3 hidden md:table-cell min-w-[110px]">
+                      <ScoreBar value={dept.execution_health ?? 0} signal={getScoreSignal(dept.execution_health ?? 0)} />
+                    </td>
+                    <td className="px-3 py-3 text-center hidden lg:table-cell">
+                      <span className={cn("text-xs font-mono font-bold px-2 py-0.5 rounded",
+                        (dept.capacity_used ?? 0) > 90 ? "text-signal-red bg-signal-red/10" : (dept.capacity_used ?? 0) > 75 ? "text-signal-yellow bg-signal-yellow/10" : "text-signal-green bg-signal-green/10"
+                      )}>{dept.capacity_used ?? 0}%</span>
+                    </td>
+                    <td className="px-3 py-3 text-center hidden lg:table-cell">
+                      <span className={cn("text-xs font-mono font-bold",
+                        (dept.risk_score ?? 0) > 70 ? "text-signal-red" : (dept.risk_score ?? 0) > 50 ? "text-signal-yellow" : "text-signal-green"
+                      )}>{dept.risk_score ?? 0}</span>
+                    </td>
+                    <td className="px-3 py-3 text-center hidden xl:table-cell">
+                      <span className={cn("text-xs font-mono font-bold",
+                        (dept.sop_adherence ?? 0) >= 80 ? "text-signal-green" : (dept.sop_adherence ?? 0) >= 60 ? "text-signal-yellow" : "text-signal-red"
+                      )}>{dept.sop_adherence ?? 0}%</span>
+                    </td>
+                    <td className="px-3 py-3 text-xs text-muted-foreground">{dept.head ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
-        {/* ── LAYER 4: Department Cards Grid ── */}
         <div>
           <h2 className="section-label mb-3 flex items-center gap-2">
             <span>Department Detail Cards</span>
@@ -374,14 +426,20 @@ export default function Departments() {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filtered.map(dept => (
               <div key={dept.id} className="cursor-pointer" onClick={() => setSelectedDept(dept)}>
-                <DepartmentCard dept={dept} />
+                <DepartmentCard dept={adaptDept(dept)} />
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {selectedDept && <DepartmentDetailPanel dept={selectedDept} onClose={() => setSelectedDept(null)} />}
+      {selectedDept && (
+        <DepartmentDetailPanel
+          dept={selectedDept}
+          deptInsights={deptInsightsFor(selectedDept.name)}
+          onClose={() => setSelectedDept(null)}
+        />
+      )}
     </div>
   );
 }
