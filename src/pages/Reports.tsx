@@ -185,8 +185,8 @@ export default function Reports() {
         <div className="space-y-5 animate-fade-in">
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             {[
-              { label: "Operational Maturity", value: `${orgMetrics.overallMaturityScore}%`, signal: getScoreSignal(orgMetrics.overallMaturityScore), icon: BarChart3 },
-              { label: "Initiatives On Track", value: `${onTrackInitiatives}/${initiatives.length}`, signal: getScoreSignal((onTrackInitiatives / initiatives.length) * 100), icon: CheckCircle },
+              { label: "Operational Maturity", value: `${overallMaturity}%`, signal: getScoreSignal(overallMaturity), icon: BarChart3 },
+              { label: "Initiatives On Track", value: `${onTrackInitiatives}/${initiatives.length}`, signal: getScoreSignal(initiatives.length > 0 ? (onTrackInitiatives / initiatives.length) * 100 : 0), icon: CheckCircle },
               { label: "Budget Deployed", value: `${budgetPct}%`, signal: budgetPct > 80 ? "yellow" as const : "green" as const, icon: TrendingUp },
               { label: "Critical Alerts", value: criticalInsights.length, signal: criticalInsights.length > 3 ? "red" as const : criticalInsights.length > 1 ? "yellow" as const : "green" as const, icon: AlertTriangle },
             ].map(({ label, value, signal, icon: Icon }) => (
@@ -210,10 +210,10 @@ export default function Reports() {
               <ul className="space-y-2.5">
                 {[
                   `${onTrackInitiatives} of ${initiatives.length} initiatives are on track`,
-                  `${orgMetrics.sopCoverage}% SOP coverage across the organization`,
-                  `${departments.filter(d => d.maturityScore >= 70).length} departments at Managed or Optimized tier`,
+                  `${orgMetrics?.sop_coverage ?? 0}% SOP coverage across the organization`,
+                  `${departments.filter(d => (d.maturity_score ?? 0) >= 70).length} departments at Managed or Optimized tier`,
                   `${actionItems.filter(a => a.status === "Completed").length} action items completed this period`,
-                  `Strategic alignment averaging ${orgMetrics.avgStrategicAlignment}% across active initiatives`,
+                  `Strategic alignment averaging ${orgMetrics?.avg_strategic_alignment ?? 0}% across active initiatives`,
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
                     <span className="w-1.5 h-1.5 rounded-full bg-signal-green mt-1.5 flex-shrink-0" />
@@ -232,8 +232,8 @@ export default function Reports() {
                   `${blockedInitiatives} initiative${blockedInitiatives !== 1 ? "s" : ""} currently blocked`,
                   `${governanceLogs.filter(g => g.status === "Escalated").length} governance items escalated`,
                   `${pendingActions.filter(a => a.priority === "High").length} high-priority actions still pending`,
-                  `${departments.filter(d => d.maturityScore < 40).length} departments in Foundational maturity`,
-                  `${orgMetrics.blockedTasks} tasks blocked across the organization`,
+                  `${departments.filter(d => (d.maturity_score ?? 0) < 40).length} departments in Foundational maturity`,
+                  `${orgMetrics?.blocked_tasks ?? 0} tasks blocked across the organization`,
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-foreground/80">
                     <span className="w-1.5 h-1.5 rounded-full bg-signal-red mt-1.5 flex-shrink-0" />
