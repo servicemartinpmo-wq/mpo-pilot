@@ -266,7 +266,7 @@ export default function Departments() {
       authorityLevel: (d.authority_level ?? "Manager") as any,
       sopAdherence: d.sop_adherence ?? 0,
       decisionRights: d.decision_rights ?? [],
-      frameworks: d.frameworks ?? [],
+      frameworks: (d.frameworks ?? []) as any[],
     };
   }
 
