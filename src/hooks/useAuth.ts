@@ -75,6 +75,19 @@ export function useAuth() {
       }
     );
 
+    // Check for Replit User
+    fetch("/__replauthuser")
+      .then(res => res.json())
+      .then(replitUser => {
+        if (replitUser && !user) {
+          // If we have a Replit user but no Supabase user, 
+          // we could potentially auto-sign in or just store Replit info.
+          // For now, let's just log it or handle it if needed.
+          console.log("Replit User:", replitUser);
+        }
+      })
+      .catch(() => {});
+
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
       setUser(s?.user ?? null);
@@ -116,6 +129,11 @@ export function useAuth() {
       options: { redirectTo: window.location.origin },
     });
     return { error };
+  }, []);
+
+  const signInWithReplit = useCallback(() => {
+    const domain = window.location.host;
+    window.location.href = `https://replit.com/auth_with_repl_site?domain=${domain}`;
   }, []);
 
   const signOut = useCallback(async () => {
@@ -165,6 +183,7 @@ export function useAuth() {
     signOut,
     resetPassword,
     updateProfile,
+    signInWithReplit,
     refreshProfile: () => user ? loadProfile(user.id) : Promise.resolve(),
   };
 }
