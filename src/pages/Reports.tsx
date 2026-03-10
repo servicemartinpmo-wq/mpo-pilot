@@ -1,4 +1,5 @@
-import { insights, departments, initiatives, orgMetrics, actionItems, governanceLogs, formatCurrency, getScoreSignal } from "@/lib/pmoData";
+import { useDepartments, useInitiatives, useActionItems, useInsights, useGovernanceLogs, useOrgMetrics } from "@/hooks/useLiveData";
+import { formatCurrency, getScoreSignal } from "@/lib/pmoData";
 import { ScoreBadge } from "@/components/ScoreBadge";
 import { cn } from "@/lib/utils";
 import { useState, useRef } from "react";
