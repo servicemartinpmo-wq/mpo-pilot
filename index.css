@@ -1,0 +1,370 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* MARTIN PMO-Ops Command Center — Design System
+   Cinematic Editorial: deep navy · warm off-white · electric blue · teal
+   Aesthetic: Bloomberg Terminal meets Monocle Magazine
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@layer base {
+  :root {
+    /* ── Core surfaces ── */
+    --background: 220 18% 97%;
+    --foreground: 225 30% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 225 30% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 225 30% 8%;
+
+    /* Navy primary */
+    --primary: 225 50% 14%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Teal accent */
+    --teal: 183 62% 30%;
+    --teal-foreground: 0 0% 100%;
+
+    /* Electric blue */
+    --electric-blue: 233 72% 58%;
+    --electric-blue-foreground: 0 0% 100%;
+
+    /* Secondary: cold light grey */
+    --secondary: 220 15% 94%;
+    --secondary-foreground: 225 30% 14%;
+
+    --muted: 220 12% 92%;
+    --muted-foreground: 225 20% 45%;
+
+    --accent: 220 15% 88%;
+    --accent-foreground: 225 30% 8%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 15% 85%;
+    --input: 220 15% 82%;
+    --ring: 233 72% 58%;
+
+    --radius: 0.5rem;
+
+    /* ── Signal colors ── */
+    --signal-red:    0 72% 50%;
+    --signal-yellow: 42 92% 48%;
+    --signal-green:  148 52% 36%;
+    --signal-blue:   233 65% 60%;
+    --signal-orange: 26 92% 50%;
+    --signal-purple: 268 62% 54%;
+
+    /* ── Sidebar: deep navy ── */
+    --sidebar-background: 225 50% 11%;
+    --sidebar-foreground: 0 0% 92%;
+    --sidebar-primary: 233 65% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 225 45% 18%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 225 40% 20%;
+    --sidebar-ring: 233 65% 65%;
+
+    /* ── Score tiers ── */
+    --tier-foundational: 0 72% 50%;
+    --tier-developing:   42 92% 48%;
+    --tier-structured:   183 55% 34%;
+    --tier-managed:      233 65% 60%;
+    --tier-optimized:    148 52% 36%;
+
+    /* ── Navy token ── */
+    --navy: 225 50% 16%;
+
+    /* ── Gradients & shadows ── */
+    --gradient-navy:    linear-gradient(160deg, hsl(225 50% 11%), hsl(225 52% 19%));
+    --gradient-electric: linear-gradient(135deg, hsl(233 65% 56%), hsl(183 55% 32%));
+    --shadow-card:     0 1px 3px 0 hsl(225 40% 15% / 0.06), 0 1px 2px -1px hsl(225 40% 15% / 0.04);
+    --shadow-elevated: 0 4px 16px -2px hsl(225 40% 15% / 0.10), 0 2px 6px -1px hsl(225 40% 15% / 0.06);
+    --shadow-deep:     0 12px 40px -6px hsl(225 40% 15% / 0.15), 0 4px 12px -2px hsl(225 40% 15% / 0.07);
+    --chart-1: 233 65% 58%;
+    --chart-2: 183 58% 39%;
+    --chart-3: 148 52% 36%;
+    --chart-4: 42 92% 48%;
+    --chart-5: 268 62% 54%;
+  }
+  .dark {
+    --background: 225 30% 6%;
+    --foreground: 220 15% 92%;
+    --card: 225 28% 9%;
+    --card-foreground: 220 15% 92%;
+    --popover: 225 28% 9%;
+    --popover-foreground: 220 15% 92%;
+    --primary: 233 65% 65%;
+    --primary-foreground: 225 50% 8%;
+    --secondary: 225 25% 14%;
+    --secondary-foreground: 220 15% 80%;
+    --muted: 225 22% 16%;
+    --muted-foreground: 220 12% 55%;
+    --accent: 225 22% 18%;
+    --accent-foreground: 220 15% 92%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 225 25% 20%;
+    --input: 225 25% 22%;
+    --ring: 233 65% 65%;
+    --sidebar-background: 225 50% 7%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 233 65% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 225 42% 14%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 225 35% 16%;
+    --sidebar-ring: 233 65% 65%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  code, .mono, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Clean heading defaults */
+  h1 { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.025em; line-height: 1.15; }
+  h2 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; }
+  h3 { font-size: 1rem;    font-weight: 600; letter-spacing: -0.015em; }
+}
+
+/* ─────────────────────────────────────────────
+   SIGNAL COLORS — text
+───────────────────────────────────────────── */
+@layer utilities {
+  .text-signal-red    { color: hsl(var(--signal-red)); }
+  .text-signal-yellow { color: hsl(var(--signal-yellow)); }
+  .text-signal-green  { color: hsl(var(--signal-green)); }
+  .text-signal-blue   { color: hsl(var(--signal-blue)); }
+  .text-signal-orange { color: hsl(var(--signal-orange)); }
+  .text-signal-purple { color: hsl(var(--signal-purple)); }
+
+  /* ── Solid backgrounds ── */
+  .bg-signal-red    { background-color: hsl(var(--signal-red)); }
+  .bg-signal-yellow { background-color: hsl(var(--signal-yellow)); }
+  .bg-signal-green  { background-color: hsl(var(--signal-green)); }
+  .bg-signal-blue   { background-color: hsl(var(--signal-blue)); }
+  .bg-signal-orange { background-color: hsl(var(--signal-orange)); }
+  .bg-signal-purple { background-color: hsl(var(--signal-purple)); }
+
+  /* ── Alpha backgrounds ── */
+  .bg-signal-red\/5    { background-color: hsl(var(--signal-red) / 0.05); }
+  .bg-signal-red\/8    { background-color: hsl(var(--signal-red) / 0.08); }
+  .bg-signal-red\/10   { background-color: hsl(var(--signal-red) / 0.10); }
+  .bg-signal-yellow\/5  { background-color: hsl(var(--signal-yellow) / 0.05); }
+  .bg-signal-yellow\/8  { background-color: hsl(var(--signal-yellow) / 0.08); }
+  .bg-signal-yellow\/10 { background-color: hsl(var(--signal-yellow) / 0.10); }
+  .bg-signal-green\/5   { background-color: hsl(var(--signal-green) / 0.05); }
+  .bg-signal-green\/8   { background-color: hsl(var(--signal-green) / 0.08); }
+  .bg-signal-green\/10  { background-color: hsl(var(--signal-green) / 0.10); }
+  .bg-signal-blue\/10   { background-color: hsl(var(--signal-blue) / 0.10); }
+  .bg-electric-blue\/5  { background-color: hsl(var(--electric-blue) / 0.05); }
+  .bg-electric-blue\/8  { background-color: hsl(var(--electric-blue) / 0.08); }
+  .bg-electric-blue\/10 { background-color: hsl(var(--electric-blue) / 0.10); }
+  .bg-signal-orange\/5  { background-color: hsl(var(--signal-orange) / 0.05); }
+  .bg-signal-orange\/6  { background-color: hsl(var(--signal-orange) / 0.06); }
+  .bg-signal-orange\/8  { background-color: hsl(var(--signal-orange) / 0.08); }
+  .bg-signal-orange\/10 { background-color: hsl(var(--signal-orange) / 0.10); }
+  .bg-signal-purple\/8  { background-color: hsl(var(--signal-purple) / 0.08); }
+  .bg-signal-purple\/10 { background-color: hsl(var(--signal-purple) / 0.10); }
+
+  /* ── Borders ── */
+  .border-signal-red    { border-color: hsl(var(--signal-red)); }
+  .border-signal-yellow { border-color: hsl(var(--signal-yellow)); }
+  .border-signal-green  { border-color: hsl(var(--signal-green)); }
+  .border-signal-blue   { border-color: hsl(var(--signal-blue)); }
+  .border-signal-orange { border-color: hsl(var(--signal-orange)); }
+  .border-signal-purple { border-color: hsl(var(--signal-purple)); }
+
+  .border-signal-red\/20    { border-color: hsl(var(--signal-red) / 0.2); }
+  .border-signal-red\/25    { border-color: hsl(var(--signal-red) / 0.25); }
+  .border-signal-red\/30    { border-color: hsl(var(--signal-red) / 0.3); }
+  .border-signal-yellow\/20 { border-color: hsl(var(--signal-yellow) / 0.2); }
+  .border-signal-yellow\/25 { border-color: hsl(var(--signal-yellow) / 0.25); }
+  .border-signal-yellow\/30 { border-color: hsl(var(--signal-yellow) / 0.3); }
+  .border-signal-green\/20  { border-color: hsl(var(--signal-green) / 0.2); }
+  .border-signal-green\/25  { border-color: hsl(var(--signal-green) / 0.25); }
+  .border-signal-green\/30  { border-color: hsl(var(--signal-green) / 0.3); }
+  .border-signal-green\/40  { border-color: hsl(var(--signal-green) / 0.4); }
+  .border-signal-orange\/20 { border-color: hsl(var(--signal-orange) / 0.2); }
+  .border-signal-orange\/30 { border-color: hsl(var(--signal-orange) / 0.3); }
+  .border-signal-orange\/40 { border-color: hsl(var(--signal-orange) / 0.4); }
+  .border-signal-purple\/30 { border-color: hsl(var(--signal-purple) / 0.3); }
+  .border-signal-purple\/40 { border-color: hsl(var(--signal-purple) / 0.4); }
+
+  /* ── Teal ── */
+  .bg-teal         { background-color: hsl(var(--teal)); }
+  .text-teal       { color: hsl(var(--teal)); }
+  .bg-teal\/8      { background-color: hsl(var(--teal) / 0.08); }
+  .bg-teal\/10     { background-color: hsl(var(--teal) / 0.10); }
+  .bg-teal\/15     { background-color: hsl(var(--teal) / 0.15); }
+  .border-teal\/25 { border-color: hsl(var(--teal) / 0.25); }
+  .border-teal\/30 { border-color: hsl(var(--teal) / 0.30); }
+  .border-teal\/40 { border-color: hsl(var(--teal) / 0.40); }
+
+  /* ── Electric Blue ── */
+  .bg-electric-blue          { background-color: hsl(var(--electric-blue)); }
+  .text-electric-blue        { color: hsl(var(--electric-blue)); }
+  .bg-electric-blue\/10      { background-color: hsl(var(--electric-blue) / 0.10); }
+  .border-electric-blue\/20  { border-color: hsl(var(--electric-blue) / 0.20); }
+  .border-electric-blue\/30  { border-color: hsl(var(--electric-blue) / 0.30); }
+  .border-electric-blue\/40  { border-color: hsl(var(--electric-blue) / 0.40); }
+
+  /* ── Navy ── */
+  .bg-navy   { background-color: hsl(var(--navy)); }
+  .text-navy { color: hsl(var(--navy)); }
+
+  /* ── Shadows ── */
+  .shadow-card     { box-shadow: var(--shadow-card); }
+  .shadow-elevated { box-shadow: var(--shadow-elevated); }
+  .shadow-deep     { box-shadow: var(--shadow-deep); }
+
+  /* ── Gradients ── */
+  .gradient-navy    { background: var(--gradient-navy); }
+  .gradient-electric { background: var(--gradient-electric); }
+
+  /* ── Score bar ── */
+  .score-bar-track {
+    @apply w-full h-1.5 rounded-full bg-muted overflow-hidden;
+  }
+
+  /* ── Layout ── */
+  .pmo-grid {
+    display: grid;
+    grid-template-columns: 230px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── Section label — subtle uppercase tag ── */
+  .section-label {
+    @apply text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground;
+  }
+
+  /* ── Page header utility ── */
+  .page-header {
+    @apply border-b border-border bg-card px-7 py-5 sticky top-0 z-20;
+  }
+
+  /* ── Cinematic divider ── */
+  .cin-divider {
+    @apply border-t border-border/60;
+  }
+
+  /* ── Sophisticated card styles ── */
+  .data-card {
+    @apply bg-card border border-border rounded-xl shadow-card hover:shadow-elevated transition-shadow duration-200;
+  }
+  .data-card-header {
+    @apply px-5 py-4 border-b border-border flex items-center justify-between;
+  }
+  .data-card-body {
+    @apply p-5;
+  }
+
+  /* ── Metric tile ── */
+  .metric-tile {
+    @apply bg-card border border-border rounded-xl p-5 flex flex-col gap-2 relative overflow-hidden;
+    @apply hover:shadow-elevated transition-all duration-200;
+  }
+
+  /* ── Status pill ── */
+  .status-pill {
+    @apply text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full border;
+  }
+
+  /* ── Card with left accent bar ── */
+  .accent-card-green  { border-left: 3px solid hsl(var(--signal-green)); }
+  .accent-card-yellow { border-left: 3px solid hsl(var(--signal-yellow)); }
+  .accent-card-red    { border-left: 3px solid hsl(var(--signal-red)); }
+  .accent-card-orange { border-left: 3px solid hsl(var(--signal-orange)); }
+  .accent-card-purple { border-left: 3px solid hsl(var(--signal-purple)); }
+  .accent-card-blue   { border-left: 3px solid hsl(var(--electric-blue)); }
+  .accent-card-teal   { border-left: 3px solid hsl(var(--teal)); }
+
+  /* ── Signal indicator row ── */
+  .signal-row {
+    @apply flex items-center gap-2 py-3 border-b border-border/50 last:border-0;
+  }
+
+  /* ── Animations ── */
+  .animate-float-slow { animation: float-slow 6s ease-in-out infinite; }
+  .animate-slide-in-left { animation: slide-in-left 0.22s ease-out; }
+  .animate-fade-up { animation: fade-up 0.28s ease-out; }
+  .animate-fade-in { animation: fade-in 0.3s ease-out; }
+}
+
+/* ─────────────────────────────────────────────
+   KEYFRAMES
+───────────────────────────────────────────── */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  33%       { transform: translateY(-10px); }
+  66%       { transform: translateY(-5px); }
+}
+
+@keyframes float-particle {
+  0%   { transform: translate(0, 0) scale(1);          opacity: 0.5; }
+  50%  { transform: translate(4px, -12px) scale(1.2);  opacity: 0.3; }
+  100% { transform: translate(-2px, -24px) scale(0.8); opacity: 0; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; filter: blur(20px); }
+  50%       { opacity: 0.9; filter: blur(28px); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float-orb {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  33%       { transform: translateY(-14px) scale(1.05); }
+  66%       { transform: translateY(-7px) scale(0.97); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%       { opacity: 1; transform: scale(1.6); }
+}
+
+@keyframes scan-line {
+  0%   { top: -5%; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { top: 105%; opacity: 0; }
+}
+
+/* ── Scrollbar styling ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground)); }
