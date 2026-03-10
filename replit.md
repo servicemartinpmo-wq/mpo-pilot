@@ -6,7 +6,7 @@ A PMO/Ops command center SPA built with React, Vite, TypeScript, Tailwind CSS, a
 
 - **Frontend**: React 18 + TypeScript + Vite (port 5000)
 - **UI**: Tailwind CSS + shadcn/ui (Radix primitives)
-- **Auth & Database**: Supabase (project ID: `mifmjhzgtpsbthjwldxx`)
+- **Auth & Database**: Supabase (project ID: `okgpcsfqkshdzbfuigfq`)
 - **Routing**: React Router v6
 - **State**: React Query + local hooks
 - **Charts**: Recharts
