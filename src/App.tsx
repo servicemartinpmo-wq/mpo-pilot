@@ -30,7 +30,7 @@ import GraphView from "./pages/GraphView";
 import AuthPage from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
-import { applyAccentColor, applyFont, saveProfile } from "./lib/companyStore";
+import { applyAccentColor, applyFont, saveProfile, loadProfile } from "./lib/companyStore";
 import { seedUserData } from "./lib/supabaseDataService";
 import { useRealtimeSync } from "./hooks/useLiveData";
 import type { CompanyProfile } from "./lib/companyStore";
@@ -87,8 +87,12 @@ function AppRoutes() {
     );
   }
 
-  // Onboarding not complete or profile row missing in DB
-  if (!onboardingDone && (!profile || !profile.onboardingComplete)) {
+  // Read local profile once — used both to gate onboarding and as a null-safe fallback.
+  const localProfile = loadProfile();
+
+  // Show onboarding only when DB profile is incomplete AND local storage also says not done.
+  // This prevents re-triggering onboarding for existing users when DB is slow.
+  if (!onboardingDone && (!profile || !profile.onboardingComplete) && !localProfile.onboardingComplete) {
     const handleOnboardingComplete = (p: CompanyProfile) => {
       saveProfile(p);
       setOnboardingDone(true); // immediately navigate to the app
@@ -112,22 +116,26 @@ function AppRoutes() {
     return <OnboardingWizard onComplete={handleOnboardingComplete} />;
   }
 
+  // profile may still be null for a moment after onboardingDone fires (async DB write).
+  // Use the locally-saved profile from companyStore as a reliable fallback.
+  const profileSource = profile ?? localProfile;
+
   const legacyProfile: CompanyProfile = {
-    userName:          profile.userName ?? "",
-    orgName:           profile.orgName ?? "",
-    orgType:           profile.orgType ?? "",
-    industry:          profile.industry ?? "",
-    teamSize:          profile.teamSize ?? "",
-    revenueRange:      profile.revenueRange ?? "",
-    currentState:      profile.currentState ?? "",
-    futureState:       profile.futureState ?? "",
-    departments:       profile.departments ?? [],
-    hasSops:           profile.hasSops ?? false,
-    accentHue:         profile.accentHue ?? 210,
-    font:              (profile.font as "inter" | "mono" | "rounded") ?? "inter",
-    density:           (profile.density as "compact" | "comfortable" | "spacious") ?? "comfortable",
+    userName:          profileSource.userName ?? "",
+    orgName:           profileSource.orgName ?? "",
+    orgType:           profileSource.orgType ?? "",
+    industry:          profileSource.industry ?? "",
+    teamSize:          profileSource.teamSize ?? "",
+    revenueRange:      profileSource.revenueRange ?? "",
+    currentState:      profileSource.currentState ?? "",
+    futureState:       profileSource.futureState ?? "",
+    departments:       profileSource.departments ?? [],
+    hasSops:           profileSource.hasSops ?? false,
+    accentHue:         profileSource.accentHue ?? 210,
+    font:              (profileSource.font as "inter" | "mono" | "rounded") ?? "inter",
+    density:           (profileSource.density as "compact" | "comfortable" | "spacious") ?? "comfortable",
     analyticsEnabled:  true,
-    onboardingComplete: profile.onboardingComplete ?? false,
+    onboardingComplete: profileSource.onboardingComplete ?? false,
   };
 
   return (
