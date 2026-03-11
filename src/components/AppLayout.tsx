@@ -278,14 +278,14 @@ const MODE_THEMES: Record<string, ModeTheme> = {
     },
   },
   freelance: {
-    sidebarBg: "linear-gradient(160deg, hsl(20 42% 11%) 0%, hsl(18 38% 8%) 50%, hsl(16 42% 6%) 100%)",
-    topGlow: "hsl(28 90% 58% / 0.12)",
-    bottomGlow: "hsl(15 84% 50% / 0.08)",
-    accent: "hsl(25 88% 52%)", accentBg: "hsl(25 88% 52% / 0.12)",
-    accentShadow: "inset 2px 0 0 hsl(25 88% 52% / 0.7)", accentIcon: "hsl(25 88% 62%)", accentDot: "hsl(25 88% 52%)",
+    sidebarBg: "linear-gradient(160deg, hsl(222 40% 13%) 0%, hsl(220 36% 9%) 50%, hsl(222 42% 7%) 100%)",
+    topGlow: "hsl(222 88% 65% / 0.10)",
+    bottomGlow: "hsl(200 72% 48% / 0.08)",
+    accent: "hsl(200 72% 50%)", accentBg: "hsl(200 72% 50% / 0.12)",
+    accentShadow: "inset 2px 0 0 hsl(200 72% 50% / 0.7)", accentIcon: "hsl(200 72% 64%)", accentDot: "hsl(200 72% 50%)",
     cssVars: {
-      "--primary": "25 88% 52%", "--amber": "25 88% 52%",
-      "--chart-1": "25 88% 52%", "--signal-yellow": "25 88% 52%",
+      "--primary": "200 72% 50%", "--electric-blue": "200 72% 50%",
+      "--chart-1": "200 72% 50%", "--chart-2": "222 88% 62%",
     },
   },
   simple: {

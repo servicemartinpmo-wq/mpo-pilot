@@ -203,9 +203,9 @@ export default function Team() {
 
       {/* ── Wellness Watch ─────────────────────────────────────────────── */}
       {wellnessFlags.length > 0 && (
-        <div className="rounded-xl border-2 overflow-hidden" style={{ borderColor: "hsl(340 70% 45% / 0.4)", background: "hsl(340 50% 12% / 0.35)" }}>
+        <div className="rounded-xl border-2 overflow-hidden" style={{ borderColor: "hsl(var(--signal-red) / 0.30)", background: "hsl(var(--card))" }}>
           {/* Panel header */}
-          <div className="flex items-center gap-3 px-5 py-4 border-b" style={{ borderColor: "hsl(340 70% 45% / 0.25)" }}>
+          <div className="flex items-center gap-3 px-5 py-4 border-b" style={{ borderColor: "hsl(var(--signal-red) / 0.15)" }}>
             <div className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: "hsl(340 70% 45% / 0.18)" }}>
               <Heart className="w-4 h-4" style={{ color: "hsl(340 70% 65%)" }} />
             </div>

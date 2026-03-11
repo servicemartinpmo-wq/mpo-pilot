@@ -497,79 +497,137 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
     { label: "Browse the Resource Hub for frameworks", done: false },
   ];
   const completedSteps = setupSteps.filter(s => s.done).length;
+  const progressPct = Math.round((completedSteps / setupSteps.length) * 100);
+  const initials = firstName ? firstName.slice(0, 2).toUpperCase() : "ME";
+  const accent = "hsl(213 90% 54%)";
+  const accentLight = "hsl(213 90% 97%)";
+  const accentBorder = "hsl(213 90% 88%)";
+
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen" style={{ background: "hsl(210 20% 98%)" }}>
       <UpgradeBanner storageKey="dash_upgrade_banner" />
-      <div className="flex-1 p-6 max-w-3xl mx-auto w-full space-y-6">
-        <div className="rounded-2xl border p-6" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
-          <div className="relative flex items-center justify-center mb-4">
-            <div className="text-center">
-              <h1 className="text-2xl font-black text-foreground mb-1">
-                {firstName ? `Welcome back, ${firstName}.` : "Welcome back."}
-              </h1>
-              <p className="text-sm text-muted-foreground">Here's what needs your attention today.</p>
+
+      {/* ── Top welcome strip ── */}
+      <div className="border-b px-8 py-6 flex items-center gap-5" style={{ background: "white", borderColor: "hsl(213 20% 91%)" }}>
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-lg flex-shrink-0"
+          style={{ background: `linear-gradient(135deg, ${accent} 0%, hsl(238 82% 62%) 100%)` }}>
+          {initials}
+        </div>
+        <div className="flex-1">
+          <h1 className="text-xl font-black text-foreground leading-tight">
+            {firstName ? `Welcome back, ${firstName}.` : "Welcome back."}
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: "hsl(213 15% 52%)" }}>Your personal progress dashboard · Guided Mode</p>
+        </div>
+        <button onClick={() => setMode("executive")}
+          className="hidden sm:flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl border transition-all hover:shadow-sm"
+          style={{ color: accent, borderColor: accentBorder, background: accentLight }}>
+          <Rocket className="w-3.5 h-3.5" /> Full Mode
+        </button>
+      </div>
+
+      <div className="flex-1 p-6 max-w-4xl mx-auto w-full space-y-5">
+
+        {/* ── Progress ring + KPIs row ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Progress ring */}
+          <div className="rounded-2xl border p-6 flex flex-col items-center justify-center gap-3"
+            style={{ background: "white", borderColor: "hsl(213 20% 91%)" }}>
+            <div className="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
+              <div className="absolute inset-0 rounded-full" style={{
+                background: `conic-gradient(${accent} ${progressPct * 3.6}deg, hsl(213 20% 91%) 0deg)`,
+              }} />
+              <div className="absolute inset-2 rounded-full bg-white flex items-center justify-center">
+                <span className="text-xl font-black" style={{ color: accent }}>{progressPct}%</span>
+              </div>
             </div>
-            <div className="absolute right-0 w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--electric-blue) / 0.1)" }}>
-              <Zap className="w-5 h-5 text-electric-blue" />
+            <div className="text-center">
+              <p className="text-xs font-bold text-foreground">Setup Progress</p>
+              <p className="text-[11px] mt-0.5" style={{ color: "hsl(213 15% 52%)" }}>{completedSteps} of {setupSteps.length} steps</p>
             </div>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+
+          {/* KPI cards — 2x2 grid */}
+          <div className="sm:col-span-2 grid grid-cols-2 gap-3">
             {[
-              { label: "On Track", value: kpis.onTrack, color: "text-signal-green", bg: "bg-signal-green/8" },
-              { label: "Needs Attention", value: kpis.atRisk, color: "text-amber", bg: "bg-amber/8" },
-              { label: "Open Actions", value: kpis.pendingActions, color: "text-electric-blue", bg: "bg-electric-blue/8" },
-              { label: "Critical Signals", value: kpis.criticalSignals, color: "text-rose", bg: "bg-rose/8" },
-            ].map(({ label, value, color, bg }) => (
-              <div key={label} className={cn("rounded-xl p-4 text-center border border-border", bg)}>
-                <div className={cn("text-3xl font-black font-mono", color)}>{value}</div>
-                <div className="text-xs text-muted-foreground mt-1">{label}</div>
+              { label: "On Track", value: kpis.onTrack, clr: "hsl(152 60% 40%)", bgClr: "hsl(152 60% 96%)", borderClr: "hsl(152 55% 85%)" },
+              { label: "Needs Attention", value: kpis.atRisk, clr: "hsl(38 92% 44%)", bgClr: "hsl(38 92% 97%)", borderClr: "hsl(38 80% 84%)" },
+              { label: "Open Actions", value: kpis.pendingActions, clr: accent, bgClr: accentLight, borderClr: accentBorder },
+              { label: "Critical", value: kpis.criticalSignals, clr: "hsl(0 72% 48%)", bgClr: "hsl(0 72% 97%)", borderClr: "hsl(0 65% 86%)" },
+            ].map(({ label, value, clr, bgClr, borderClr }) => (
+              <div key={label} className="rounded-2xl border p-4 flex flex-col gap-1"
+                style={{ background: bgClr, borderColor: borderClr }}>
+                <div className="text-3xl font-black font-mono leading-none" style={{ color: clr }}>{value}</div>
+                <div className="text-[11px] font-semibold" style={{ color: "hsl(213 15% 45%)" }}>{label}</div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="rounded-2xl border p-6" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
-          <div className="flex items-center gap-2.5 mb-4">
-            <ListChecks className="w-4 h-4 text-amber" />
+        {/* ── Top priorities ── */}
+        <div className="rounded-2xl border overflow-hidden" style={{ background: "white", borderColor: "hsl(213 20% 91%)" }}>
+          <div className="flex items-center gap-2.5 px-5 py-3.5 border-b" style={{ borderColor: "hsl(213 20% 91%)" }}>
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: accentLight }}>
+              <ListChecks className="w-3.5 h-3.5" style={{ color: accent }} />
+            </div>
             <span className="text-sm font-bold text-foreground">Top priorities right now</span>
+            <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: accentLight, color: accent }}>
+              {nbaItems.length} open
+            </span>
           </div>
           {nbaItems.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No open actions — you're all caught up.</p>
+            <div className="px-5 py-8 text-center">
+              <CheckCircle className="w-8 h-8 mx-auto mb-2 opacity-30" style={{ color: accent }} />
+              <p className="text-sm text-muted-foreground">You're all caught up.</p>
+            </div>
           ) : (
-            <div className="space-y-3">
+            <div className="divide-y" style={{ borderColor: "hsl(213 20% 94%)" }}>
               {nbaItems.slice(0, 5).map((item, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-border bg-secondary/40">
-                  <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-black"
-                    style={{ background: i === 0 ? "hsl(38 92% 52% / 0.15)" : "hsl(var(--muted))", color: i === 0 ? "hsl(38 92% 55%)" : "hsl(var(--muted-foreground))" }}>
+                <div key={i} className="flex items-start gap-3 px-5 py-3.5">
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-[11px] font-black mt-0.5"
+                    style={{ background: i === 0 ? accent : "hsl(213 20% 94%)", color: i === 0 ? "white" : "hsl(213 15% 50%)" }}>
                     {i + 1}
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                    {item.description && <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{item.description}</p>}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-foreground leading-snug">{item.title}</p>
+                    {item.description && <p className="text-xs mt-0.5 leading-relaxed" style={{ color: "hsl(213 15% 52%)" }}>{item.description}</p>}
                   </div>
+                  {item.priority && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 mt-0.5"
+                      style={{
+                        background: item.priority?.toLowerCase() === "high" ? "hsl(0 72% 96%)" : "hsl(213 20% 94%)",
+                        color: item.priority?.toLowerCase() === "high" ? "hsl(0 72% 48%)" : "hsl(213 15% 48%)",
+                      }}>
+                      {item.priority}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        <div className="rounded-2xl border p-6" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
-          <div className="flex items-center gap-2.5 mb-4">
-            <CheckCircle className="w-4 h-4 text-teal" />
-            <span className="text-sm font-bold text-foreground">Getting started</span>
-            <span className="ml-auto text-xs text-muted-foreground font-mono">{completedSteps}/{setupSteps.length}</span>
+        {/* ── Setup checklist ── */}
+        <div className="rounded-2xl border p-5" style={{ background: "white", borderColor: "hsl(213 20% 91%)" }}>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: accent }}>Getting Started</span>
+            <div className="flex-1 h-px" style={{ background: "hsl(213 20% 91%)" }} />
+            <span className="text-[10px] font-mono text-muted-foreground">{completedSteps}/{setupSteps.length}</span>
           </div>
-          <div className="h-2 rounded-full bg-secondary overflow-hidden mb-4">
-            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(completedSteps / setupSteps.length) * 100}%`, background: "hsl(var(--electric-blue))" }} />
+          <div className="h-1.5 rounded-full overflow-hidden mb-4" style={{ background: "hsl(213 20% 91%)" }}>
+            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${progressPct}%`, background: accent }} />
           </div>
           <div className="space-y-2.5">
             {setupSteps.map((step, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className={cn("w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0",
-                  step.done ? "bg-signal-green/15" : "bg-secondary border border-border")}>
-                  {step.done && <CheckCircle className="w-3 h-3 text-signal-green" />}
+                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0"
+                  style={{ background: step.done ? "hsl(152 60% 92%)" : "hsl(213 20% 94%)", border: step.done ? "none" : "1px solid hsl(213 20% 84%)" }}>
+                  {step.done && <CheckCircle className="w-3 h-3" style={{ color: "hsl(152 60% 40%)" }} />}
                 </div>
-                <span className={cn("text-sm", step.done ? "text-muted-foreground line-through" : "text-foreground")}>
+                <span className="text-sm" style={{
+                  color: step.done ? "hsl(213 15% 62%)" : "hsl(213 15% 22%)",
+                  textDecoration: step.done ? "line-through" : "none",
+                }}>
                   {step.label}
                 </span>
               </div>
@@ -577,33 +635,24 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
           </div>
         </div>
 
-        <div className="rounded-2xl border p-5" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
-          <p className="text-xs text-muted-foreground mb-3">Quick links</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            {[
-              { label: "My Work", icon: ListChecks, to: "/action-items", color: "text-electric-blue" },
-              { label: "Projects", icon: Target, to: "/initiatives", color: "text-amber" },
-              { label: "Reports", icon: BarChart3, to: "/reports", color: "text-teal" },
-              { label: "Resources", icon: BookOpen, to: "/knowledge", color: "text-signal-purple" },
-            ].map(({ label, icon: Icon, to, color }) => (
-              <Link key={label} to={to}
-                className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-secondary/40 hover:bg-secondary transition-colors">
-                <Icon className={cn("w-4 h-4", color)} />
-                <span className="text-xs font-semibold text-foreground">{label}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-secondary/30">
-          <div>
-            <p className="text-xs font-semibold text-foreground">Ready for the full command center?</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Switch to Full Mode for advanced analytics and all tools.</p>
-          </div>
-          <button onClick={() => setMode("executive")}
-            className="flex items-center gap-1.5 text-xs font-bold text-electric-blue hover:underline flex-shrink-0 ml-4">
-            <Settings className="w-3.5 h-3.5" /> Switch mode
-          </button>
+        {/* ── Quick links ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: "My Work", icon: ListChecks, to: "/action-items", clr: accent, bgClr: accentLight, borderClr: accentBorder },
+            { label: "Projects", icon: Target, to: "/initiatives", clr: "hsl(38 92% 44%)", bgClr: "hsl(38 92% 97%)", borderClr: "hsl(38 80% 84%)" },
+            { label: "Reports", icon: BarChart3, to: "/reports", clr: "hsl(174 68% 38%)", bgClr: "hsl(174 68% 96%)", borderClr: "hsl(174 55% 84%)" },
+            { label: "Resources", icon: BookOpen, to: "/knowledge", clr: "hsl(272 60% 52%)", bgClr: "hsl(272 60% 97%)", borderClr: "hsl(272 52% 86%)" },
+          ].map(({ label, icon: Icon, to, clr, bgClr, borderClr }) => (
+            <Link key={label} to={to}
+              className="flex flex-col items-center gap-2.5 p-4 rounded-2xl border transition-all hover:shadow-sm"
+              style={{ background: bgClr, borderColor: borderClr }}>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                style={{ background: "white", boxShadow: `0 1px 4px ${clr}22` }}>
+                <Icon className="w-4 h-4" style={{ color: clr }} />
+              </div>
+              <span className="text-xs font-bold" style={{ color: clr }}>{label}</span>
+            </Link>
+          ))}
         </div>
       </div>
     </div>
@@ -612,10 +661,10 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
 
 // ── Creative Dashboard ────────────────────────────────────────────────────────
 const CREATIVE_PROJECTS = [
-  { id: "cp1", title: "Brand Refresh", client: "Meridian Co.", status: "Active", img: "/banner-tiger.png" },
-  { id: "cp2", title: "Campaign Strategy", client: "Apex Studios", status: "Review", img: "/banner-mountain.jpg" },
-  { id: "cp3", title: "Editorial Design", client: "Novo Press", status: "Active", img: "/banner-city.jpg" },
-  { id: "cp4", title: "Social Content", client: "Solaris Health", status: "Draft", img: "/banner-forest.png" },
+  { id: "cp1", title: "Brand Refresh", client: "Meridian Co.", status: "Active", img: "/banner-tiger.png", tileColor: "hsl(340 72% 52%)" },
+  { id: "cp2", title: "Campaign Strategy", client: "Apex Studios", status: "Review", img: "/banner-mountain.jpg", tileColor: "hsl(212 80% 52%)" },
+  { id: "cp3", title: "Editorial Design", client: "Novo Press", status: "Active", img: "/banner-city.jpg", tileColor: "hsl(174 68% 38%)" },
+  { id: "cp4", title: "Social Content", client: "Solaris Health", status: "Draft", img: "/banner-forest.png", tileColor: "hsl(258 68% 58%)" },
 ];
 
 function CreativeDashboard({ firstName, nbaItems, projects }: {
@@ -623,126 +672,421 @@ function CreativeDashboard({ firstName, nbaItems, projects }: {
   nbaItems: { title: string; description?: string; priority?: string }[];
   projects: { name: string; status: string }[];
 }) {
-  const activeCount  = projects.filter(p => p.status === "In Progress" || p.status === "Active" || p.status === "On Track").length;
+  const activeCount = projects.filter(p => p.status === "In Progress" || p.status === "Active" || p.status === "On Track").length;
+  const draftCount  = projects.filter(p => p.status === "Draft" || p.status === "Planning").length;
+  const doneCount   = projects.filter(p => p.status === "Completed" || p.status === "Done").length;
+
+  const tilePanels = [
+    { bg: "hsl(152 60% 40%)", label: "Active", value: activeCount, icon: Rocket, sub: "projects in flight" },
+    { bg: "hsl(258 68% 58%)", label: "Drafts", value: draftCount,  icon: FileText, sub: "in planning" },
+    { bg: "hsl(38 88% 50%)",  label: "Tasks",  value: nbaItems.length, icon: ListChecks, sub: "open to-dos" },
+    { bg: "hsl(340 72% 52%)", label: "Done",   value: doneCount,   icon: CheckCircle, sub: "completed" },
+  ];
+
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "hsl(36 35% 97%)" }}>
-      {/* ── Hero Banner ── */}
-      <div className="relative overflow-hidden" style={{ height: 300 }}>
-        <img src="/banner-mountain.jpg" className="absolute inset-0 w-full h-full object-cover" alt="Creative studio" />
-        <div className="absolute inset-0" style={{ background: "linear-gradient(120deg, rgba(20,12,8,0.80) 0%, rgba(20,12,8,0.35) 60%, transparent 100%)" }} />
-        <div className="relative z-10 flex flex-col justify-end h-full px-8 pb-8">
-          <p className="text-[10px] font-bold tracking-[0.22em] uppercase mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Creative Studio</p>
-          <h1 className="text-3xl font-black text-white mb-3 leading-tight">
+    <div className="flex flex-col min-h-screen" style={{ background: "hsl(36 25% 97%)" }}>
+
+      {/* ── Top greeting bar ── */}
+      <div className="px-7 py-5 border-b flex items-center gap-4" style={{ background: "white", borderColor: "hsl(30 20% 90%)" }}>
+        <div className="flex-1">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5" style={{ color: "hsl(340 72% 52%)" }}>Creative Studio</p>
+          <h1 className="text-xl font-black" style={{ color: "hsl(20 25% 12%)" }}>
             {firstName ? `Good to see you, ${firstName}.` : "Welcome back."}
           </h1>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 text-sm font-semibold text-white/80">
-              <FolderOpen className="w-4 h-4 text-white/50" />
-              {activeCount} active
-            </div>
-            <div className="flex items-center gap-1.5 text-sm font-semibold text-white/80">
-              <CheckCircle className="w-4 h-4 text-white/50" />
-              {nbaItems.length} open tasks
-            </div>
-          </div>
+        </div>
+        <div className="flex items-center gap-3 text-xs" style={{ color: "hsl(20 15% 45%)" }}>
+          <span className="flex items-center gap-1.5"><FolderOpen className="w-3.5 h-3.5" /> {activeCount} active</span>
+          <span className="w-px h-4 bg-border" />
+          <span className="flex items-center gap-1.5"><ListChecks className="w-3.5 h-3.5" /> {nbaItems.length} tasks</span>
         </div>
       </div>
 
-      {/* ── Content ── */}
-      <div className="flex-1 p-6 max-w-[1400px] mx-auto w-full space-y-6">
+      <div className="flex-1 p-5 max-w-[1440px] mx-auto w-full">
 
-        {/* Project image grid */}
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold" style={{ color: "hsl(20 25% 14%)" }}>Active Projects</h2>
-            <Link to="/projects" className="text-xs font-semibold hover:underline" style={{ color: "hsl(350 52% 48%)" }}>
-              All projects →
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {CREATIVE_PROJECTS.map(p => (
-              <Link key={p.id} to="/projects"
-                className="relative rounded-2xl overflow-hidden group cursor-pointer"
-                style={{ height: 190, display: "block" }}>
-                <img src={p.img} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt={p.title} />
-                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(10,6,4,0.80) 0%, rgba(10,6,4,0.10) 60%, transparent 100%)" }} />
-                <div className="absolute top-3 right-3">
-                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{
-                    background: "rgba(255,255,255,0.15)",
-                    color: "white",
-                    backdropFilter: "blur(6px)",
-                    border: "1px solid rgba(255,255,255,0.20)",
-                  }}>
-                    {p.status}
-                  </span>
+        {/* ── Bento grid ── */}
+        <div className="grid grid-cols-12 gap-4" style={{ gridAutoRows: "minmax(120px, auto)" }}>
+
+          {/* Featured project – large image tile (col 1–7, row 1–2) */}
+          <Link to="/initiatives"
+            className="col-span-12 lg:col-span-7 relative rounded-3xl overflow-hidden group"
+            style={{ minHeight: 260, display: "block" }}>
+            <img src="/banner-mountain.jpg" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Featured" />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(8,6,18,0.82) 0%, rgba(8,6,18,0.22) 70%, transparent 100%)" }} />
+            <div className="absolute inset-0 p-7 flex flex-col justify-between">
+              <div>
+                <span className="text-[9px] font-bold uppercase tracking-[0.24em]" style={{ color: "rgba(255,255,255,0.48)" }}>Featured Project</span>
+                <h2 className="text-2xl font-black text-white mt-1.5 leading-tight">Campaign Strategy</h2>
+                <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.55)" }}>Apex Studios · In review</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="px-3 py-1 rounded-full text-[10px] font-bold" style={{ background: "hsl(212 80% 52% / 0.22)", color: "hsl(212 80% 80%)", border: "1px solid hsl(212 80% 52% / 0.3)" }}>
+                  Review
+                </span>
+                <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.45)" }}>View project →</span>
+              </div>
+            </div>
+          </Link>
+
+          {/* Stat tiles column (col 8–12, stacked) */}
+          <div className="col-span-12 lg:col-span-5 grid grid-cols-2 gap-4">
+            {tilePanels.map(({ bg, label, value, icon: Icon, sub }) => (
+              <div key={label} className="rounded-3xl p-5 flex flex-col justify-between" style={{ background: bg, minHeight: 118 }}>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/70">{label}</span>
+                  <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.16)" }}>
+                    <Icon className="w-3.5 h-3.5 text-white" />
+                  </div>
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 p-4">
-                  <div className="text-white font-bold text-sm leading-snug">{p.title}</div>
-                  <div className="text-white/55 text-[11px] mt-0.5">{p.client}</div>
+                <div>
+                  <div className="text-4xl font-black text-white leading-none">{value}</div>
+                  <div className="text-[11px] mt-1 text-white/60">{sub}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Project cards row */}
+          {CREATIVE_PROJECTS.map((p) => (
+            <Link key={p.id} to="/initiatives"
+              className="col-span-6 lg:col-span-3 relative rounded-3xl overflow-hidden group"
+              style={{ height: 160, display: "block" }}>
+              <img src={p.img} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt={p.title} />
+              <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(6,4,14,0.88) 0%, transparent 65%)" }} />
+              <div className="absolute top-3 right-3">
+                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold"
+                  style={{ background: "rgba(255,255,255,0.14)", color: "white", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.18)" }}>
+                  {p.status}
+                </span>
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-4">
+                <div className="text-white font-bold text-sm leading-snug">{p.title}</div>
+                <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.48)" }}>{p.client}</div>
+              </div>
+              <div className="absolute top-0 left-0 w-1 h-full rounded-l-3xl" style={{ background: p.tileColor }} />
+            </Link>
+          ))}
+
+          {/* Tasks tile */}
+          <div className="col-span-12 lg:col-span-5 rounded-3xl p-5 overflow-hidden" style={{ background: "white", border: "1px solid hsl(30 20% 90%)" }}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-xl flex items-center justify-center" style={{ background: "hsl(340 72% 52% / 0.12)" }}>
+                  <ListChecks className="w-3.5 h-3.5" style={{ color: "hsl(340 72% 52%)" }} />
+                </div>
+                <span className="text-sm font-bold" style={{ color: "hsl(20 25% 12%)" }}>Open Tasks</span>
+              </div>
+              <Link to="/action-items" className="text-[11px] font-semibold hover:underline" style={{ color: "hsl(340 72% 52%)" }}>
+                All →
+              </Link>
+            </div>
+            {nbaItems.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-4 text-center">All tasks are clear.</p>
+            ) : (
+              <div className="space-y-2">
+                {nbaItems.slice(0, 4).map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl" style={{ background: "hsl(36 28% 97%)" }}>
+                    <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: CREATIVE_PROJECTS[i % 4].tileColor }} />
+                    <p className="text-xs font-medium flex-1 min-w-0 truncate" style={{ color: "hsl(20 25% 14%)" }}>{item.title}</p>
+                    {item.priority && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
+                        style={{ background: item.priority?.toLowerCase() === "high" ? "hsl(340 72% 96%)" : "hsl(36 28% 94%)", color: item.priority?.toLowerCase() === "high" ? "hsl(340 72% 48%)" : "hsl(20 15% 48%)" }}>
+                        {item.priority}
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Quick nav tiles */}
+          <div className="col-span-12 lg:col-span-7 grid grid-cols-3 gap-4">
+            {[
+              { to: "/crm",         label: "Portfolio",  sub: "Clients",   bg: "hsl(212 80% 52%)", icon: Users },
+              { to: "/marketing",   label: "Outreach",   sub: "Campaigns", bg: "hsl(174 68% 38%)", icon: TrendingUp },
+              { to: "/action-items",label: "My Work",    sub: "Actions",   bg: "hsl(258 68% 58%)", icon: Zap },
+            ].map(({ to, label, sub, bg, icon: Icon }) => (
+              <Link key={to} to={to}
+                className="rounded-3xl p-5 flex flex-col gap-2 transition-all hover:opacity-90"
+                style={{ background: bg }}>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.18)" }}>
+                  <Icon className="w-4 h-4 text-white" />
+                </div>
+                <div className="mt-auto">
+                  <div className="text-sm font-black text-white">{label}</div>
+                  <div className="text-[11px] text-white/55">{sub}</div>
                 </div>
               </Link>
             ))}
           </div>
-        </div>
 
-        {/* Quick links row */}
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { to: "/crm",         label: "Portfolio",  sub: "Client relationships", icon: Users,      color: "hsl(350 52% 48%)" },
-            { to: "/marketing",   label: "Outreach",   sub: "Campaigns & pipeline", icon: TrendingUp, color: "hsl(174 55% 38%)" },
-            { to: "/action-items",label: `${nbaItems.length} Tasks`, sub: "Open to-dos", icon: CheckCircle, color: "hsl(38 65% 48%)" },
-          ].map(({ to, label, sub, icon: Icon, color }) => (
-            <Link key={to} to={to}
-              className="rounded-2xl border p-5 flex items-center gap-4 transition-all hover:shadow-sm group"
-              style={{ background: "white", borderColor: "hsl(30 22% 88%)" }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: `${color}18` }}>
-                <Icon className="w-5 h-5" style={{ color }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold truncate" style={{ color: "hsl(20 25% 14%)" }}>{label}</div>
-                <div className="text-xs" style={{ color: "hsl(20 15% 48%)" }}>{sub}</div>
-              </div>
-              <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-40 flex-shrink-0 transition-opacity" style={{ color: "hsl(20 15% 40%)" }} />
-            </Link>
-          ))}
         </div>
+      </div>
+    </div>
+  );
+}
 
-        {/* Open tasks */}
-        {nbaItems.length > 0 && (
-          <div className="rounded-2xl border p-5" style={{ background: "white", borderColor: "hsl(30 22% 88%)" }}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4" style={{ color: "hsl(350 52% 52%)" }} />
-                <span className="text-sm font-bold" style={{ color: "hsl(20 25% 14%)" }}>Open Tasks</span>
-              </div>
-              <Link to="/action-items" className="text-xs font-semibold hover:underline" style={{ color: "hsl(350 52% 48%)" }}>
-                All tasks →
-              </Link>
+// ── Executive Dashboard — Dark Analytics Command Center ───────────────────────
+function ExecutiveDashboard({
+  firstName, kpis, orgHealth, executionHealth, strategicClarity, riskPosture,
+  nbaItems, atRiskInis, departments, budgetPct, healthTrend, completedCount,
+}: {
+  firstName: string;
+  kpis: { onTrack: number; atRisk: number; pendingActions: number; criticalSignals: number; blocked: number };
+  orgHealth: number;
+  executionHealth: number;
+  strategicClarity: number;
+  riskPosture: number;
+  nbaItems: { title: string; description?: string; priority?: string }[];
+  atRiskInis: { name: string; status: string; department?: string; completionPct?: number }[];
+  departments: { name: string; capacityUsed: number; health: string }[];
+  budgetPct: number;
+  healthTrend: string;
+  completedCount: number;
+}) {
+  const dark     = "hsl(224 22% 10%)";
+  const card     = "hsl(224 24% 14%)";
+  const cardAlt  = "hsl(224 26% 11%)";
+  const border   = "hsl(224 20% 20%)";
+  const muted    = "hsl(224 14% 48%)";
+  const white    = "rgba(255,255,255,0.88)";
+  const dimText  = "rgba(255,255,255,0.44)";
+
+  const topKpis = [
+    { label: "On Track",       value: kpis.onTrack,        clr: "hsl(152 60% 50%)", unit: "" },
+    { label: "At Risk",        value: kpis.atRisk + kpis.blocked, clr: "hsl(38 90% 56%)", unit: "" },
+    { label: "Org Health",     value: orgHealth,            clr: "hsl(213 90% 62%)", unit: "%" },
+    { label: "Budget Used",    value: budgetPct,            clr: budgetPct > 90 ? "hsl(0 72% 58%)" : "hsl(38 90% 56%)", unit: "%" },
+  ];
+
+  const healthDims = [
+    { label: "Execution",    score: executionHealth },
+    { label: "Strategy",     score: strategicClarity },
+    { label: "Risk Posture", score: riskPosture },
+    { label: "Governance",   score: 65 },
+    { label: "Capacity",     score: departments.length ? Math.round(departments.reduce((s, d) => s + d.capacityUsed, 0) / departments.length) : 72 },
+  ];
+
+  const iniStatusCounts = {
+    onTrack: kpis.onTrack,
+    atRisk:  kpis.atRisk,
+    blocked: kpis.blocked,
+    done:    completedCount,
+  };
+  const iniTotal = iniStatusCounts.onTrack + iniStatusCounts.atRisk + iniStatusCounts.blocked + iniStatusCounts.done || 1;
+
+  return (
+    <div className="flex flex-col min-h-screen" style={{ background: dark }}>
+
+      {/* ── KPI strip ── */}
+      <div className="border-b px-7 py-5 grid grid-cols-2 lg:grid-cols-4 gap-px" style={{ background: cardAlt, borderColor: border }}>
+        {topKpis.map(({ label, value, clr, unit }) => (
+          <div key={label} className="px-6 py-3 flex flex-col gap-1 border-r last:border-0" style={{ borderColor: border }}>
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: dimText }}>{label}</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-4xl font-black font-mono leading-none" style={{ color: clr }}>{value}</span>
+              {unit && <span className="text-xl font-bold font-mono" style={{ color: clr }}>{unit}</span>}
             </div>
-            <div className="space-y-2.5">
-              {nbaItems.slice(0, 5).map((item, i) => (
-                <div key={i} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "hsl(36 28% 95%)" }}>
-                  <div className="w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5" style={{ borderColor: "hsl(30 22% 80%)" }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium leading-snug" style={{ color: "hsl(20 25% 14%)" }}>{item.title}</p>
-                    {item.description && <p className="text-xs mt-0.5" style={{ color: "hsl(20 15% 48%)" }}>{item.description}</p>}
-                  </div>
-                  {item.priority && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
-                      style={{
-                        background: item.priority === "High" || item.priority === "high" ? "hsl(350 52% 55% / 0.12)" : "hsl(30 22% 90%)",
-                        color: item.priority === "High" || item.priority === "high" ? "hsl(350 52% 48%)" : "hsl(20 15% 48%)",
-                      }}>
-                      {item.priority}
-                    </span>
-                  )}
-                </div>
-              ))}
+            <span className="text-[10px]" style={{ color: dimText }}>
+              {label === "Org Health" ? `Trend: ${healthTrend}` :
+               label === "Budget Used" ? "of allocated" :
+               label === "On Track" ? "initiatives healthy" : "need attention"}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Main 3-column grid ── */}
+      <div className="flex-1 p-5 grid grid-cols-1 xl:grid-cols-3 gap-4 max-w-[1560px] mx-auto w-full">
+
+        {/* Col 1 — Org Health ── */}
+        <div className="rounded-2xl overflow-hidden flex flex-col" style={{ background: card, border: `1px solid ${border}` }}>
+          <div className="px-5 py-4 border-b flex items-center gap-3" style={{ borderColor: border }}>
+            <div className="w-2 h-2 rounded-full" style={{ background: "hsl(213 90% 62%)" }} />
+            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: dimText }}>Org Health</span>
+            <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full"
+              style={{ background: healthTrend === "Improving" ? "hsl(152 60% 40% / 0.25)" : healthTrend === "Declining" ? "hsl(0 72% 48% / 0.25)" : "hsl(213 90% 52% / 0.25)",
+                       color: healthTrend === "Improving" ? "hsl(152 60% 60%)" : healthTrend === "Declining" ? "hsl(0 72% 65%)" : "hsl(213 90% 72%)" }}>
+              {healthTrend}
+            </span>
+          </div>
+          {/* Big score */}
+          <div className="px-5 py-5 flex items-center gap-5 border-b" style={{ borderColor: border }}>
+            <div className="relative w-20 h-20 flex-shrink-0">
+              <div className="absolute inset-0 rounded-full" style={{
+                background: `conic-gradient(hsl(213 90% 62%) ${orgHealth * 3.6}deg, hsl(224 20% 22%) 0deg)`,
+              }} />
+              <div className="absolute inset-2 rounded-full flex items-center justify-center" style={{ background: card }}>
+                <span className="text-lg font-black font-mono" style={{ color: "hsl(213 90% 62%)" }}>{orgHealth}</span>
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl font-black" style={{ color: white }}>{orgHealth}%</div>
+              <div className="text-xs mt-0.5" style={{ color: muted }}>Overall organizational health</div>
+              <div className="flex items-center gap-1.5 mt-2">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-1.5 flex-1 rounded-full" style={{ background: i < Math.round(orgHealth / 20) ? "hsl(213 90% 62%)" : "hsl(224 20% 22%)" }} />
+                ))}
+              </div>
             </div>
           </div>
-        )}
+          {/* Dimension bars */}
+          <div className="p-5 space-y-3.5 flex-1">
+            {healthDims.map(({ label, score }) => {
+              const clr = score >= 70 ? "hsl(152 60% 48%)" : score >= 50 ? "hsl(38 90% 54%)" : "hsl(0 72% 55%)";
+              return (
+                <div key={label}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[11px] font-semibold" style={{ color: "rgba(255,255,255,0.65)" }}>{label}</span>
+                    <span className="text-[11px] font-black font-mono" style={{ color: clr }}>{score}%</span>
+                  </div>
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(224 20% 20%)" }}>
+                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${score}%`, background: clr }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Col 2 — Initiative Portfolio ── */}
+        <div className="rounded-2xl overflow-hidden flex flex-col" style={{ background: card, border: `1px solid ${border}` }}>
+          <div className="px-5 py-4 border-b flex items-center gap-3" style={{ borderColor: border }}>
+            <div className="w-2 h-2 rounded-full" style={{ background: "hsl(38 90% 56%)" }} />
+            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: dimText }}>Initiative Portfolio</span>
+            <Link to="/initiatives" className="ml-auto text-[10px] font-semibold hover:underline" style={{ color: "hsl(213 90% 62%)" }}>
+              View all →
+            </Link>
+          </div>
+          {/* Status breakdown */}
+          <div className="p-5 border-b space-y-3" style={{ borderColor: border }}>
+            {[
+              { label: "On Track", count: iniStatusCounts.onTrack, clr: "hsl(152 60% 48%)", bgClr: "hsl(152 60% 40% / 0.20)" },
+              { label: "At Risk",  count: iniStatusCounts.atRisk,  clr: "hsl(38 90% 54%)",  bgClr: "hsl(38 90% 50% / 0.20)" },
+              { label: "Blocked",  count: iniStatusCounts.blocked, clr: "hsl(0 72% 58%)",   bgClr: "hsl(0 72% 50% / 0.20)" },
+              { label: "Done",     count: iniStatusCounts.done,    clr: "hsl(213 90% 62%)", bgClr: "hsl(213 90% 52% / 0.20)" },
+            ].map(({ label, count, clr, bgClr }) => (
+              <div key={label}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: clr }} />
+                    <span className="text-[11px] font-semibold" style={{ color: "rgba(255,255,255,0.65)" }}>{label}</span>
+                  </div>
+                  <span className="text-[11px] font-black font-mono" style={{ color: clr }}>{count}</span>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(224 20% 20%)" }}>
+                  <div className="h-full rounded-full" style={{ width: `${(count / iniTotal) * 100}%`, background: bgClr, border: `1px solid ${clr}60` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Budget */}
+          <div className="px-5 py-4 border-b" style={{ borderColor: border }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-semibold" style={{ color: "rgba(255,255,255,0.55)" }}>Budget Utilization</span>
+              <span className="text-[11px] font-black font-mono" style={{ color: budgetPct > 90 ? "hsl(0 72% 58%)" : "hsl(38 90% 54%)" }}>{budgetPct}%</span>
+            </div>
+            <div className="h-2.5 rounded-full overflow-hidden" style={{ background: "hsl(224 20% 20%)" }}>
+              <div className="h-full rounded-full" style={{ width: `${budgetPct}%`, background: budgetPct > 90 ? "hsl(0 72% 55%)" : budgetPct > 75 ? "hsl(38 90% 54%)" : "hsl(152 60% 48%)" }} />
+            </div>
+          </div>
+          {/* At-risk list */}
+          <div className="flex-1 p-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: dimText }}>Initiatives Needing Attention</p>
+            {atRiskInis.length === 0 ? (
+              <p className="text-xs" style={{ color: muted }}>All initiatives on track.</p>
+            ) : (
+              <div className="space-y-2.5">
+                {atRiskInis.slice(0, 3).map((ini, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl" style={{ background: cardAlt }}>
+                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: ini.status === "Blocked" ? "hsl(0 72% 58%)" : "hsl(38 90% 54%)" }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold truncate" style={{ color: white }}>{ini.name}</p>
+                      <p className="text-[10px] mt-0.5" style={{ color: muted }}>{ini.department ?? "—"}</p>
+                    </div>
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
+                      style={{ background: ini.status === "Blocked" ? "hsl(0 72% 40% / 0.30)" : "hsl(38 90% 44% / 0.30)", color: ini.status === "Blocked" ? "hsl(0 72% 68%)" : "hsl(38 90% 64%)" }}>
+                      {ini.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Col 3 — Signals + Actions ── */}
+        <div className="rounded-2xl overflow-hidden flex flex-col" style={{ background: card, border: `1px solid ${border}` }}>
+          <div className="px-5 py-4 border-b flex items-center gap-3" style={{ borderColor: border }}>
+            <div className="w-2 h-2 rounded-full" style={{ background: "hsl(0 72% 58%)" }} />
+            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: dimText }}>Live Signals</span>
+            {kpis.criticalSignals > 0 && (
+              <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(0 72% 50% / 0.25)", color: "hsl(0 72% 68%)" }}>
+                {kpis.criticalSignals} critical
+              </span>
+            )}
+          </div>
+          <div className="p-5 border-b space-y-2.5" style={{ borderColor: border }}>
+            {[
+              kpis.criticalSignals > 0 && { level: "CRITICAL", msg: `${kpis.criticalSignals} department${kpis.criticalSignals > 1 ? "s" : ""} need immediate attention`, clr: "hsl(0 72% 58%)", bg: "hsl(0 72% 50% / 0.12)" },
+              kpis.blocked > 0 && { level: "BLOCKED",  msg: `${kpis.blocked} initiative${kpis.blocked > 1 ? "s" : ""} blocked — escalation needed`, clr: "hsl(28 90% 58%)", bg: "hsl(28 90% 50% / 0.12)" },
+              kpis.atRisk > 0  && { level: "AT RISK",  msg: `${kpis.atRisk} initiative${kpis.atRisk > 1 ? "s" : ""} at risk — review priority sequencing`, clr: "hsl(38 90% 54%)", bg: "hsl(38 90% 50% / 0.12)" },
+              kpis.onTrack > 0 && { level: "HEALTHY",  msg: `${kpis.onTrack} initiative${kpis.onTrack > 1 ? "s" : ""} running clean`, clr: "hsl(152 60% 50%)", bg: "hsl(152 60% 40% / 0.12)" },
+            ].filter(Boolean).slice(0, 4).map((sig: any, i) => (
+              <div key={i} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: sig.bg }}>
+                <span className="text-[9px] font-black tracking-wider px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5" style={{ background: `${sig.clr}22`, color: sig.clr }}>
+                  {sig.level}
+                </span>
+                <p className="text-[11px] leading-snug" style={{ color: "rgba(255,255,255,0.70)" }}>{sig.msg}</p>
+              </div>
+            ))}
+          </div>
+          {/* Next Best Actions */}
+          <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: border }}>
+            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: dimText }}>Next Best Actions</span>
+            <Link to="/action-items" className="text-[10px] font-semibold hover:underline" style={{ color: "hsl(213 90% 62%)" }}>
+              All →
+            </Link>
+          </div>
+          <div className="flex-1 overflow-y-auto">
+            {nbaItems.slice(0, 5).map((item, i) => (
+              <div key={i} className="flex items-start gap-3 px-5 py-3 border-b last:border-0" style={{ borderColor: border }}>
+                <div className="w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 text-[10px] font-black mt-0.5"
+                  style={{ background: i === 0 ? "hsl(213 90% 52% / 0.25)" : "hsl(224 20% 20%)", color: i === 0 ? "hsl(213 90% 72%)" : muted }}>
+                  {i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold leading-snug" style={{ color: white }}>{item.title}</p>
+                  {item.description && <p className="text-[10px] mt-0.5 leading-relaxed" style={{ color: muted }}>{item.description}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {/* ── Departments capacity strip ── */}
+      {departments.length > 0 && (
+        <div className="border-t px-5 py-4 max-w-[1560px] mx-auto w-full" style={{ borderColor: border }}>
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-3" style={{ color: dimText }}>Department Capacity</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {[...departments].sort((a, b) => b.capacityUsed - a.capacityUsed).slice(0, 6).map(dept => {
+              const clr = dept.capacityUsed >= 90 ? "hsl(0 72% 58%)" : dept.capacityUsed >= 75 ? "hsl(38 90% 54%)" : "hsl(152 60% 50%)";
+              return (
+                <div key={dept.name} className="rounded-xl p-3" style={{ background: cardAlt }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-semibold truncate" style={{ color: "rgba(255,255,255,0.60)" }}>{dept.name}</span>
+                    <span className="text-[10px] font-black font-mono" style={{ color: clr }}>{dept.capacityUsed}%</span>
+                  </div>
+                  <div className="h-1 rounded-full overflow-hidden" style={{ background: "hsl(224 20% 22%)" }}>
+                    <div className="h-full rounded-full" style={{ width: `${dept.capacityUsed}%`, background: clr }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -854,6 +1198,25 @@ export default function Dashboard() {
 
   if (mode === "creative") {
     return <CreativeDashboard firstName={firstName ?? ""} nbaItems={nbaItems} projects={data.initiatives} />;
+  }
+
+  if (mode === "executive") {
+    return (
+      <ExecutiveDashboard
+        firstName={firstName ?? ""}
+        kpis={kpis}
+        orgHealth={liveOverallHealth ?? 0}
+        executionHealth={liveExec ?? 0}
+        strategicClarity={liveStrat ?? 0}
+        riskPosture={liveRisk ?? 0}
+        nbaItems={nbaItems}
+        atRiskInis={atRiskInis}
+        departments={data.departments ?? []}
+        budgetPct={budgetPct ?? 0}
+        healthTrend={healthTrend ?? "Stable"}
+        completedCount={completedCount ?? 0}
+      />
+    );
   }
 
   return (
