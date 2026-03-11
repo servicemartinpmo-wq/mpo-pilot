@@ -14,7 +14,7 @@ import {
   CheckCircle, Clock, GitBranch, Target, Shield, X, AlertTriangle, Flag,
   ChevronDown, ChevronUp, Search, ArrowUpRight, LayoutGrid, Table2, Loader2
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 type InitiativeStatus = "On Track" | "At Risk" | "Delayed" | "Blocked" | "Completed";
 type InitiativeCategory = "Directive" | "Supportive" | "Controlling" | "Diagnostic" | "Strategic";
@@ -161,9 +161,10 @@ function InitiativeModal({
   ] as const;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-end">
+    <div className="fixed inset-0 z-50 flex items-start justify-end sm:flex-row flex-col-reverse">
       <div className="absolute inset-0 bg-foreground/25 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-2xl h-screen bg-card border-l-2 border-border shadow-elevated overflow-y-auto animate-slide-in-left">
+      {/* Mobile: bottom sheet — Desktop: right side panel */}
+      <div className="relative w-full sm:max-w-2xl h-[92dvh] sm:h-screen bg-card sm:border-l-2 border-t-2 border-border shadow-elevated overflow-y-auto animate-slide-in-left rounded-t-2xl sm:rounded-none" style={{ paddingBottom: "env(safe-area-inset-bottom, 16px)" }}>
         <div className="sticky top-0 bg-card border-b-2 border-border z-10">
           <div className="px-5 py-4 flex items-start gap-3">
             <div className={cn("w-3 h-3 rounded-full mt-1.5 flex-shrink-0", statusInfo.dot)} />
@@ -597,7 +598,15 @@ export default function Initiatives() {
   const [search, setSearch]             = useState("");
   const [selectedIni, setSelectedIni]   = useState<NonNullable<DbInitiative> | null>(null);
   const [showFilters, setShowFilters]   = useState(false);
-  const [view, setView]                 = useState<"cards" | "table">("table");
+  const [view, setView]                 = useState<"cards" | "table">(() => window.innerWidth < 768 ? "cards" : "table");
+
+  useEffect(() => {
+    const checkMobile = () => {
+      if (window.innerWidth < 768) setView("cards");
+    };
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const owners = useMemo(() => ["All", ...Array.from(new Set(initiatives.map(i => i.owner ?? "—")))], [initiatives]);
   const depts  = useMemo(() => ["All", ...Array.from(new Set(initiatives.map(i => i.department ?? "—")))], [initiatives]);

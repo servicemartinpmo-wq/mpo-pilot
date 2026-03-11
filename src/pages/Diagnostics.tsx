@@ -262,7 +262,7 @@ export default function Diagnostics() {
         {engineTab === "signals" && (
           <div>
             {/* Stats row */}
-            <div className="grid grid-cols-4 divide-x border-b border-border">
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x border-b border-border">
               {[
                 { label: "Total Signals", value: engine.signals.length, color: "text-foreground" },
                 { label: "Critical", value: engine.signals.filter(s => s.severity === "Critical").length, color: "text-signal-red" },

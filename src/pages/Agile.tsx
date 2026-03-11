@@ -245,11 +245,14 @@ export default function Agile() {
 
       {/* Board View */}
       {tab === "board" && (
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        <div className="flex gap-4 overflow-x-auto pb-4"
+          style={{ scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch" }}>
+          <div className="flex-shrink-0 w-1 sm:hidden" aria-hidden /> {/* scroll indicator gutter */}
           {BOARD_COLUMNS.map(({ status, label }) => {
             const colStories = STORIES.filter(s => s.status === status);
             return (
-              <div key={status} className="w-64 flex-shrink-0">
+              <div key={status} className="w-[calc(100vw-48px)] sm:w-64 flex-shrink-0"
+                style={{ scrollSnapAlign: "start" }}>
                 <div className="flex items-center justify-between mb-3 px-1">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full" style={{ background: STATUS_COLORS[status] }} />
