@@ -457,88 +457,135 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
 
   const sidebarWidth = collapsed ? 58 : 234;
 
+  const CREATIVE_GOLD   = "hsl(38 88% 60%)";
+  const CREATIVE_GOLD_DIM = "hsl(38 88% 60% / 0.12)";
+  const CREATIVE_TEAL   = "hsl(174 58% 52%)";
+  const CREATIVE_CRIMSON = "hsl(350 68% 62%)";
+  const CREATIVE_NAV_BG  = "hsl(24 14% 8%)";
+  const CREATIVE_NAV_BORDER = "hsl(24 12% 16%)";
+
   if (mode === "creative") {
     return (
       <div
+        data-pmo-creative="true"
         className="min-h-screen flex flex-col"
         style={{
           paddingTop: 28,
           ...Object.fromEntries(Object.entries({
-            "--background": "36 35% 97%", "--foreground": "20 25% 14%",
-            "--card": "0 0% 100%", "--card-foreground": "20 25% 14%",
-            "--popover": "0 0% 100%", "--popover-foreground": "20 25% 14%",
-            "--primary": "350 52% 55%", "--primary-foreground": "0 0% 100%",
-            "--muted": "33 28% 92%", "--muted-foreground": "20 15% 48%",
-            "--secondary": "33 22% 90%", "--secondary-foreground": "20 20% 20%",
-            "--accent": "350 38% 88%", "--accent-foreground": "350 52% 38%",
-            "--border": "30 22% 86%", "--input": "30 20% 82%",
-            "--amber": "30 65% 58%", "--teal": "174 55% 38%",
-            "--signal-green": "160 52% 38%", "--signal-red": "350 65% 52%",
-            "--signal-yellow": "30 65% 52%", "--signal-purple": "268 52% 55%",
-            "--chart-1": "350 52% 55%", "--chart-2": "174 55% 38%",
-            "--chart-3": "30 65% 58%", "--chart-4": "268 52% 55%",
+            "--background":          "24 12% 9%",
+            "--foreground":          "35 18% 92%",
+            "--card":                "24 12% 12%",
+            "--card-foreground":     "35 18% 92%",
+            "--popover":             "24 12% 12%",
+            "--popover-foreground":  "35 18% 92%",
+            "--primary":             "38 88% 60%",
+            "--primary-foreground":  "24 12% 9%",
+            "--muted":               "24 10% 17%",
+            "--muted-foreground":    "30 12% 58%",
+            "--secondary":           "24 10% 15%",
+            "--secondary-foreground":"35 15% 85%",
+            "--accent":              "38 55% 22%",
+            "--accent-foreground":   "38 88% 72%",
+            "--border":              "24 12% 20%",
+            "--input":               "24 12% 18%",
+            "--amber":               "38 88% 60%",
+            "--teal":                "174 58% 50%",
+            "--signal-green":        "160 52% 48%",
+            "--signal-red":          "350 68% 58%",
+            "--signal-yellow":       "38 85% 58%",
+            "--signal-purple":       "268 58% 65%",
+            "--electric-blue":       "38 88% 60%",
+            "--chart-1":             "38 88% 60%",
+            "--chart-2":             "174 58% 50%",
+            "--chart-3":             "350 68% 58%",
+            "--chart-4":             "268 58% 65%",
+            "--chart-5":             "200 72% 58%",
           })) as React.CSSProperties,
-          background: "hsl(36 35% 97%)",
+          background: CREATIVE_NAV_BG,
         }}
       >
         {/* ── Creative top bar ── */}
-        <header className="sticky top-0 z-50 flex-shrink-0" style={{ boxShadow: "0 1px 0 hsl(30 22% 84%)" }}>
-          {/* Thin announcement bar */}
-          <div className="flex items-center justify-center py-1 text-[9px] font-bold tracking-[0.25em] uppercase"
-            style={{ background: "hsl(30 55% 80%)", color: "hsl(20 30% 38%)" }}>
-            PMO-Ops Command Center &nbsp;·&nbsp; Creative Studio
+        <header className="sticky top-0 z-50 flex-shrink-0 overflow-hidden"
+          style={{ boxShadow: `0 1px 0 ${CREATIVE_NAV_BORDER}` }}>
+
+          {/* Background art texture bleeds into header */}
+          <div className="absolute inset-0 pointer-events-none z-0"
+            style={{ backgroundImage: "url('/banner-art.png')", backgroundSize: "cover", backgroundPosition: "center 30%", opacity: 0.07, mixBlendMode: "luminosity" }} />
+
+          {/* Thin signature bar */}
+          <div className="relative z-10 flex items-center justify-center py-1 text-[9px] font-bold tracking-[0.3em] uppercase"
+            style={{ background: "hsl(24 14% 7%)", color: CREATIVE_GOLD, borderBottom: `1px solid ${CREATIVE_NAV_BORDER}` }}>
+            PMO-Ops &nbsp;·&nbsp; Creative Studio
           </div>
 
           {/* Main nav row */}
-          <div className="flex items-center gap-0 px-6 bg-white border-b" style={{ borderColor: "hsl(30 22% 88%)", height: 52 }}>
+          <div className="relative z-10 flex items-center gap-0 px-6 border-b"
+            style={{ borderColor: CREATIVE_NAV_BORDER, height: 52, background: "hsl(24 14% 9% / 0.96)", backdropFilter: "blur(8px)" }}>
+
             {/* Brand */}
             <div className="flex items-center gap-2.5 mr-6 flex-shrink-0">
               <div className="w-7 h-7 rounded-xl flex items-center justify-center"
-                style={{ background: "linear-gradient(135deg, hsl(350 52% 58%), hsl(15 65% 55%))" }}>
+                style={{ background: `linear-gradient(135deg, ${CREATIVE_GOLD}, hsl(28 82% 50%))` }}>
                 <Tag className="w-3.5 h-3.5 text-white" />
               </div>
-              <span className="text-[15px] font-black tracking-tight italic" style={{ color: "hsl(20 25% 14%)" }}>
-                Martin PMO
+              <span className="text-[15px] font-black tracking-tight italic" style={{ color: "hsl(35 18% 92%)" }}>
+                {profile.orgName || "Martin PMO"}
               </span>
             </div>
 
             {/* Horizontal nav links */}
-            <nav className="flex items-center flex-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            <nav className="flex items-center flex-1 overflow-x-auto" style={{ scrollbarWidth: "none" as const }}>
               {commandNav.map(({ to, label, icon: Icon }) => (
                 <NavLink key={to} to={to} end={to === "/"}
                   className="flex items-center gap-1.5 px-3 h-[52px] text-[12px] font-medium whitespace-nowrap transition-colors border-b-2 flex-shrink-0"
                   style={({ isActive }) => ({
-                    color: isActive ? "hsl(350 52% 48%)" : "hsl(20 15% 44%)",
-                    borderBottomColor: isActive ? "hsl(350 52% 55%)" : "transparent",
-                    background: isActive ? "hsl(350 52% 55% / 0.05)" : "transparent",
+                    color: isActive ? CREATIVE_GOLD : "hsl(35 12% 58%)",
+                    borderBottomColor: isActive ? CREATIVE_GOLD : "transparent",
+                    background: isActive ? CREATIVE_GOLD_DIM : "transparent",
                   })}>
                   {({ isActive }) => <><Icon className="w-3.5 h-3.5 flex-shrink-0 mr-1.5" />{label}</>}
                 </NavLink>
               ))}
-              <div className="w-px h-5 mx-1 flex-shrink-0" style={{ background: "hsl(30 22% 86%)" }} />
+              <div className="w-px h-5 mx-1 flex-shrink-0" style={{ background: CREATIVE_NAV_BORDER }} />
               {workItems.map(({ to, label, icon: Icon }) => (
                 <NavLink key={to} to={to}
                   className="flex items-center gap-1.5 px-3 h-[52px] text-[12px] font-medium whitespace-nowrap transition-colors border-b-2 flex-shrink-0"
                   style={({ isActive }) => ({
-                    color: isActive ? "hsl(350 52% 48%)" : "hsl(20 15% 44%)",
-                    borderBottomColor: isActive ? "hsl(350 52% 55%)" : "transparent",
-                    background: isActive ? "hsl(350 52% 55% / 0.05)" : "transparent",
+                    color: isActive ? CREATIVE_GOLD : "hsl(35 12% 58%)",
+                    borderBottomColor: isActive ? CREATIVE_GOLD : "transparent",
+                    background: isActive ? CREATIVE_GOLD_DIM : "transparent",
                   })}>
                   {({ isActive }) => <><Icon className="w-3.5 h-3.5 flex-shrink-0 mr-1.5" />{label}</>}
                 </NavLink>
               ))}
-              <div className="w-px h-5 mx-1 flex-shrink-0" style={{ background: "hsl(30 22% 86%)" }} />
+              <div className="w-px h-5 mx-1 flex-shrink-0" style={{ background: CREATIVE_NAV_BORDER }} />
               {growthNav.map(({ to, label, icon: Icon }) => (
                 <NavLink key={to} to={to}
                   className="flex items-center gap-1.5 px-3 h-[52px] text-[12px] font-medium whitespace-nowrap transition-colors border-b-2 flex-shrink-0"
                   style={({ isActive }) => ({
-                    color: isActive ? "hsl(174 52% 38%)" : "hsl(20 15% 44%)",
-                    borderBottomColor: isActive ? "hsl(174 52% 42%)" : "transparent",
-                    background: isActive ? "hsl(174 52% 42% / 0.05)" : "transparent",
+                    color: isActive ? CREATIVE_TEAL : "hsl(35 12% 58%)",
+                    borderBottomColor: isActive ? CREATIVE_TEAL : "transparent",
+                    background: isActive ? `hsl(174 58% 50% / 0.10)` : "transparent",
                   })}>
                   {({ isActive }) => <><Icon className="w-3.5 h-3.5 flex-shrink-0 mr-1.5" />{label}</>}
                 </NavLink>
               ))}
+              {toolsNav && toolsNav.length > 0 && (
+                <>
+                  <div className="w-px h-5 mx-1 flex-shrink-0" style={{ background: CREATIVE_NAV_BORDER }} />
+                  {toolsNav.map(({ to, label, icon: Icon }) => (
+                    <NavLink key={to} to={to}
+                      className="flex items-center gap-1.5 px-3 h-[52px] text-[12px] font-medium whitespace-nowrap transition-colors border-b-2 flex-shrink-0"
+                      style={({ isActive }) => ({
+                        color: isActive ? CREATIVE_GOLD : "hsl(35 12% 58%)",
+                        borderBottomColor: isActive ? CREATIVE_GOLD : "transparent",
+                        background: isActive ? CREATIVE_GOLD_DIM : "transparent",
+                      })}>
+                      {({ isActive }) => <><Icon className="w-3.5 h-3.5 flex-shrink-0 mr-1.5" />{label}</>}
+                    </NavLink>
+                  ))}
+                </>
+              )}
             </nav>
 
             {/* Right controls */}
@@ -546,34 +593,39 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
               <div className="relative">
                 <button onClick={() => setModeMenuOpen(o => !o)}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
-                  style={{ background: "hsl(350 40% 92%)", color: "hsl(350 52% 44%)" }}>
+                  style={{ background: CREATIVE_GOLD_DIM, color: CREATIVE_GOLD, border: `1px solid hsl(38 88% 60% / 0.25)` }}>
                   <UserCircle className="w-3.5 h-3.5" />
                   Creative
                 </button>
                 {modeMenuOpen && (
-                  <div className="absolute top-full mt-1 right-0 rounded-xl border overflow-hidden shadow-lg z-50 min-w-[160px]"
-                    style={{ background: "white", borderColor: "hsl(30 22% 86%)" }}>
+                  <div className="absolute top-full mt-1 right-0 rounded-xl border overflow-hidden shadow-2xl z-50 min-w-[160px]"
+                    style={{ background: "hsl(24 14% 11%)", borderColor: CREATIVE_NAV_BORDER }}>
                     {allModes.map(({ key, label }) => (
                       <button key={key} onClick={() => { setMode(key); setModeMenuOpen(false); }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[12px] transition-all hover:bg-gray-50"
-                        style={{ color: mode === key ? "hsl(350 52% 48%)" : "hsl(20 15% 35%)" }}>
-                        <UserCircle className="w-3.5 h-3.5 flex-shrink-0" style={{ color: mode === key ? "hsl(350 52% 48%)" : "hsl(20 15% 55%)" }} />
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[12px] transition-all"
+                        style={{
+                          color: mode === key ? CREATIVE_GOLD : "hsl(35 12% 65%)",
+                          background: mode === key ? CREATIVE_GOLD_DIM : "transparent",
+                        }}>
+                        <UserCircle className="w-3.5 h-3.5 flex-shrink-0" style={{ color: mode === key ? CREATIVE_GOLD : "hsl(35 12% 45%)" }} />
                         {label}
-                        {mode === key && <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ background: "hsl(350 52% 55%)" }} />}
+                        {mode === key && <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ background: CREATIVE_GOLD }} />}
                       </button>
                     ))}
                   </div>
                 )}
               </div>
-              <button onClick={() => setNotifOpen(true)} className="relative p-2 rounded-lg transition-colors hover:bg-black/5"
-                style={{ color: "hsl(20 15% 40%)" }}>
+              <button onClick={() => setNotifOpen(true)} className="relative p-2 rounded-lg transition-colors"
+                style={{ color: "hsl(35 12% 58%)" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "hsl(0 0% 100% / 0.06)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
                 <Bell className="w-4 h-4" />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: "hsl(350 65% 52%)" }} />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: CREATIVE_CRIMSON }} />
                 )}
               </button>
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold"
-                style={{ background: "hsl(33 28% 92%)", color: scoreColor }}>
+                style={{ background: "hsl(24 12% 16%)", color: scoreColor, border: `1px solid hsl(24 12% 22%)` }}>
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: scoreColor }} />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: scoreColor }} />
@@ -584,8 +636,20 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto" style={{ background: "hsl(36 35% 97%)" }}>
-          {children}
+        {/* Main canvas — dark background + art texture */}
+        <main className="flex-1 overflow-auto relative" style={{ background: "hsl(24 12% 9%)" }}>
+          {/* Full-canvas art texture — very subtle */}
+          <div className="fixed inset-0 pointer-events-none z-0"
+            style={{ backgroundImage: "url('/banner-art.png')", backgroundSize: "cover", backgroundPosition: "center", opacity: 0.04, mixBlendMode: "luminosity" }} />
+          {/* Radial glow — top gold */}
+          <div className="fixed pointer-events-none z-0"
+            style={{ top: -200, left: "10%", right: "10%", height: 500, background: `radial-gradient(ellipse 80% 60% at 50% 0%, hsl(38 88% 55% / 0.06) 0%, transparent 70%)` }} />
+          {/* Radial glow — bottom teal */}
+          <div className="fixed pointer-events-none z-0"
+            style={{ bottom: -200, left: "20%", right: "20%", height: 400, background: `radial-gradient(ellipse 80% 60% at 50% 100%, hsl(174 58% 50% / 0.04) 0%, transparent 70%)` }} />
+          <div className="relative z-10">
+            {children}
+          </div>
         </main>
 
         {user?.id && (

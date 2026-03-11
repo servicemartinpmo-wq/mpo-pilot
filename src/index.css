@@ -548,3 +548,86 @@
   border: 1px solid currentColor;
   animation: pulse-ring 2.5s cubic-bezier(0.4,0,0.6,1) infinite;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Creative Mode — Dark gallery aesthetic
+   Applies when [data-pmo-creative="true"] wraps the app
+───────────────────────────────────────────────────────────────────────── */
+
+/* Cards: subtle art-texture bleed + richer shadow depth */
+[data-pmo-creative] .bg-card,
+[data-pmo-creative] [class*="shadow-card"] {
+  background-image: url('/banner-art.png') !important;
+  background-size: 900px auto !important;
+  background-position: center !important;
+  background-blend-mode: soft-light !important;
+}
+
+/* Stronger, dark-mode-appropriate card shadows */
+[data-pmo-creative] .shadow-card {
+  box-shadow:
+    0 1px 3px hsl(0 0% 0% / 0.35),
+    0 4px 16px hsl(0 0% 0% / 0.25),
+    inset 0 1px 0 hsl(0 0% 100% / 0.04) !important;
+}
+
+/* Elevated hover — more dramatic on dark */
+[data-pmo-creative] .card-hover:hover {
+  transform: translateY(-3px) !important;
+  box-shadow:
+    0 2px 6px hsl(0 0% 0% / 0.5),
+    0 12px 40px hsl(0 0% 0% / 0.40),
+    0 0 0 1px hsl(38 88% 60% / 0.12) !important;
+}
+
+/* Page section hero banners in creative mode */
+[data-pmo-creative] .creative-section-hero {
+  position: relative;
+  overflow: hidden;
+}
+[data-pmo-creative] .creative-section-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url('/banner-fields.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.12;
+  mix-blend-mode: luminosity;
+  pointer-events: none;
+  z-index: 0;
+}
+[data-pmo-creative] .creative-section-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Tab / pill active state — gold highlight */
+[data-pmo-creative] .border-electric-blue {
+  border-color: hsl(38 88% 60%) !important;
+  color: hsl(38 88% 60%) !important;
+}
+
+/* Input fields — warm dark */
+[data-pmo-creative] input,
+[data-pmo-creative] textarea,
+[data-pmo-creative] select {
+  background-color: hsl(24 12% 14%) !important;
+  border-color: hsl(24 12% 22%) !important;
+  color: hsl(35 18% 92%) !important;
+}
+[data-pmo-creative] input::placeholder,
+[data-pmo-creative] textarea::placeholder {
+  color: hsl(30 12% 46%) !important;
+}
+
+/* Stat/KPI number blocks pop with gold */
+[data-pmo-creative] .font-black.text-foreground,
+[data-pmo-creative] .text-3xl.font-black {
+  color: hsl(38 88% 70%) !important;
+}
+
+/* Progress bars — gold gradient */
+[data-pmo-creative] [style*="background: hsl(var(--electric-blue))"] {
+  background: linear-gradient(90deg, hsl(38 88% 58%), hsl(28 82% 52%)) !important;
+}
