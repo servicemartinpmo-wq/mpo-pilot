@@ -231,30 +231,26 @@ export async function deleteGovernanceLog(id: string) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// TEAM MEMBERS (stored as authority_matrix until team_members table exists)
+// TEAM MEMBERS
 // ─────────────────────────────────────────────────────────────────────
-export type DbTeamMember = {
-  id: string;
-  profile_id: string;
-  name: string | null;
-  role: string | null;
-  department: string | null;
-  email: string | null;
-  created_at: string;
-  updated_at: string;
-};
+type DbTeamMemberRow = Database["public"]["Tables"]["team_members"]["Row"];
+export type DbTeamMember = DbTeamMemberRow;
 
 export async function getTeamMembers(profileId: string): Promise<DbTeamMember[]> {
-  // team_members table not in schema yet — return empty until migrated
-  return [];
+  const { data } = await supabase
+    .from("team_members")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("name");
+  return data ?? [];
 }
 
-export async function upsertTeamMember(member: Partial<DbTeamMember>) {
-  return { data: null, error: new Error("team_members table not yet created") };
+export async function upsertTeamMember(member: Partial<DbTeamMember> & { id: string; profile_id: string; name: string; role: string }) {
+  return supabase.from("team_members").upsert(member, { onConflict: "id" }).select().single();
 }
 
 export async function deleteTeamMember(id: string) {
-  return { data: null, error: new Error("team_members table not yet created") };
+  return supabase.from("team_members").delete().eq("id", id);
 }
 
 // ─────────────────────────────────────────────────────────────────────
