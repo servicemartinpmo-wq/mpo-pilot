@@ -27,7 +27,8 @@ Executives and founders face structural overwhelm due to:
 | Approach | Gap |
 |---|---|
 | Consulting | Episodic, expensive, non-embedded |
-| AI assistants (ChatGPT, etc.) | No persistent executive memory or operational authority |
+| AI assistants (ChatGPT, etc.) | No persistent executive memory or 
+authority |
 | Project tools (Asana, Monday, Notion) | Execution tracking only — no diagnostic intelligence |
 
 ### What This Product Provides

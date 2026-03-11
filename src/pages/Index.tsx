@@ -312,12 +312,17 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
   return (
     <div className="relative overflow-hidden rounded-2xl" style={{ height: 280 }}>
 
-      {/* Full-bleed landscape photo — fades between photos */}
-      {BANNER_PHOTOS.map((p, i) => (
-        <img key={p.src} src={p.src} alt={p.label}
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-700"
-          style={{ opacity: i === photo ? 1 : 0 }} />
-      ))}
+      {/* Full-bleed landscape photo — Ken Burns lock-screen animation + crossfade */}
+      {BANNER_PHOTOS.map((p, i) => {
+        const kbClass = i % 3 === 0 ? "animate-kb-a" : i % 3 === 1 ? "animate-kb-b" : "animate-kb-c";
+        return (
+          <div key={p.src} className="absolute inset-0 overflow-hidden photo-crossfade pointer-events-none"
+            style={{ opacity: i === photo ? 1 : 0 }}>
+            <img src={p.src} alt={p.label}
+              className={`absolute inset-0 w-full h-full object-cover ${kbClass}`} />
+          </div>
+        );
+      })}
 
       {/* Dark overlay for text readability (left stronger, right lighter for photo breathing) */}
       <div className="absolute inset-0 pointer-events-none"

@@ -30,6 +30,7 @@ interface Contact {
   title?: string;
   company?: string;
   industry?: string;
+  photo?: string;
   relevanceScore: number;
   interestScore: number;
   engagementRank: number;
@@ -71,10 +72,10 @@ const SAMPLE_COMPANIES: Company[] = [
 ];
 
 const SAMPLE_CONTACTS: Contact[] = [
-  { id: "p1", firstName: "Marcus", lastName: "Rodriguez", email: "m.rodriguez@nexusanalytics.com", phone: "+1 512 555 0192", title: "VP of Operations", company: "Nexus Analytics", industry: "Information Technology", relevanceScore: 92, interestScore: 85, engagementRank: 88 },
-  { id: "p2", firstName: "Jennifer", lastName: "Walsh", email: "j.walsh@bridgepoint.com", phone: "+1 212 555 0341", title: "Chief Strategy Officer", company: "BridgePoint Capital", industry: "Financial Services", relevanceScore: 88, interestScore: 72, engagementRank: 79 },
-  { id: "p3", firstName: "Dr. Sandra", lastName: "Okafor", email: "s.okafor@verdanthealth.org", phone: "+1 312 555 0876", title: "COO", company: "Verdant Health Systems", industry: "Healthcare Services", relevanceScore: 95, interestScore: 60, engagementRank: 71 },
-  { id: "p4", firstName: "Liam", lastName: "Park", email: "liam@atlascreative.co", phone: "+1 310 555 0223", title: "Creative Director", company: "Atlas Creative Studio", industry: "Arts, Entertainment & Recreation", relevanceScore: 65, interestScore: 88, engagementRank: 75 },
+  { id: "p1", firstName: "Marcus", lastName: "Rodriguez", email: "m.rodriguez@nexusanalytics.com", phone: "+1 512 555 0192", title: "VP of Operations", company: "Nexus Analytics", industry: "Information Technology", photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=face&q=85", relevanceScore: 92, interestScore: 85, engagementRank: 88 },
+  { id: "p2", firstName: "Jennifer", lastName: "Walsh", email: "j.walsh@bridgepoint.com", phone: "+1 212 555 0341", title: "Chief Strategy Officer", company: "BridgePoint Capital", industry: "Financial Services", photo: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=200&fit=crop&crop=face&q=85", relevanceScore: 88, interestScore: 72, engagementRank: 79 },
+  { id: "p3", firstName: "Dr. Sandra", lastName: "Okafor", email: "s.okafor@verdanthealth.org", phone: "+1 312 555 0876", title: "COO", company: "Verdant Health Systems", industry: "Healthcare Services", photo: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=200&h=200&fit=crop&crop=face&q=85", relevanceScore: 95, interestScore: 60, engagementRank: 71 },
+  { id: "p4", firstName: "Liam", lastName: "Park", email: "liam@atlascreative.co", phone: "+1 310 555 0223", title: "Creative Director", company: "Atlas Creative Studio", industry: "Arts, Entertainment & Recreation", photo: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=face&q=85", relevanceScore: 65, interestScore: 88, engagementRank: 75 },
 ];
 
 const SAMPLE_OPPORTUNITIES: Opportunity[] = [
@@ -240,53 +241,96 @@ export default function CRM() {
       {/* Contacts Tab */}
       {tab === "contacts" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {SAMPLE_CONTACTS.filter(c => `${c.firstName} ${c.lastName}`.toLowerCase().includes(search.toLowerCase())).map((contact) => (
-            <div key={contact.id} className="rounded-xl border p-5 hover:bg-white/[0.02] transition-all cursor-pointer"
+          {SAMPLE_CONTACTS.filter(c => `${c.firstName} ${c.lastName}`.toLowerCase().includes(search.toLowerCase())).map((contact, idx) => {
+            const kbClass = idx % 3 === 0 ? "animate-kb-a" : idx % 3 === 1 ? "animate-kb-b" : "animate-kb-c";
+            return (
+            <div key={contact.id} className="rounded-2xl border overflow-hidden hover:border-white/[0.14] transition-all cursor-pointer group"
               style={{ background: "hsl(224 20% 11%)", borderColor: "hsl(0 0% 100% / 0.07)" }}>
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-black"
-                    style={{ background: "hsl(268 68% 62% / 0.12)", color: "hsl(268 68% 72%)" }}>
-                    {contact.firstName[0]}{contact.lastName[0]}
-                  </div>
-                  <div>
-                    <div className="font-semibold text-sm" style={{ color: "hsl(38 15% 94%)" }}>
-                      {contact.firstName} {contact.lastName}
-                    </div>
-                    <div className="text-xs" style={{ color: "hsl(0 0% 100% / 0.4)" }}>
-                      {contact.title} · {contact.company}
-                    </div>
-                  </div>
-                </div>
-                <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-white/[0.06]">
-                  <MoreHorizontal className="w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
+
+              {/* ── Cover photo strip with Ken Burns ── */}
+              <div className="relative overflow-hidden" style={{ height: 90 }}>
+                {contact.photo ? (
+                  <img src={contact.photo} alt=""
+                    className={`absolute inset-0 w-full h-full object-cover ${kbClass} scale-150 blur-sm brightness-50`}
+                    style={{ animationDuration: "35s" }} />
+                ) : (
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, hsl(268 68% 18%), hsl(222 88% 14%))" }} />
+                )}
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.55) 100%)" }} />
+                {/* More button floated top-right */}
+                <button className="absolute top-2.5 right-2.5 w-7 h-7 rounded-lg flex items-center justify-center"
+                  style={{ background: "rgba(0,0,0,0.30)", backdropFilter: "blur(4px)" }}>
+                  <MoreHorizontal className="w-4 h-4 text-white/60" />
                 </button>
               </div>
 
-              <div className="flex gap-3 mb-4">
-                {contact.email && (
-                  <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 text-xs hover:opacity-80 transition-opacity"
-                    style={{ color: "hsl(222 88% 65%)" }}>
-                    <Mail className="w-3 h-3" />{contact.email}
-                  </a>
-                )}
-              </div>
+              {/* ── Avatar + name row — overlaps cover ── */}
+              <div className="px-5 pb-4" style={{ marginTop: -28 }}>
+                <div className="flex items-end justify-between mb-3">
+                  {/* Avatar */}
+                  <div className="w-14 h-14 rounded-2xl overflow-hidden ring-2 flex-shrink-0"
+                    style={{ ringColor: "hsl(224 22% 11%)", border: "3px solid hsl(224 22% 11%)" }}>
+                    {contact.photo ? (
+                      <img src={contact.photo} alt={`${contact.firstName} ${contact.lastName}`}
+                        className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-lg font-black"
+                        style={{ background: "hsl(268 68% 62% / 0.18)", color: "hsl(268 68% 72%)" }}>
+                        {contact.firstName[0]}{contact.lastName[0]}
+                      </div>
+                    )}
+                  </div>
+                  {/* Engagement badge */}
+                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full mb-1"
+                    style={{
+                      background: contact.engagementRank >= 80 ? "hsl(160 56% 42% / 0.15)" : "hsl(38 92% 52% / 0.12)",
+                      color: contact.engagementRank >= 80 ? "hsl(160 56% 62%)" : "hsl(38 92% 65%)",
+                    }}>
+                    {contact.engagementRank >= 80 ? "● High Engagement" : "● Warm Lead"}
+                  </span>
+                </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(0 0% 100% / 0.25)" }}>Scores</span>
+                {/* Name + title */}
+                <div className="mb-3">
+                  <div className="font-black text-base leading-tight" style={{ color: "hsl(38 15% 94%)" }}>
+                    {contact.firstName} {contact.lastName}
+                  </div>
+                  <div className="text-xs mt-0.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+                    {contact.title}
+                    {contact.company && <> · <span style={{ color: "hsl(222 88% 68%)" }}>{contact.company}</span></>}
+                  </div>
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-[10px]" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
-                  <span>Relevance</span><span>Interest</span><span>Engagement</span>
+
+                {/* Contact links */}
+                <div className="flex flex-wrap gap-x-4 gap-y-1 mb-4">
+                  {contact.email && (
+                    <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 text-xs hover:opacity-80 transition-opacity"
+                      style={{ color: "hsl(222 88% 65%)" }}>
+                      <Mail className="w-3 h-3 flex-shrink-0" />{contact.email}
+                    </a>
+                  )}
+                  {contact.phone && (
+                    <span className="flex items-center gap-1.5 text-xs" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                      <Phone className="w-3 h-3 flex-shrink-0" />{contact.phone}
+                    </span>
+                  )}
                 </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <ScoreBar value={contact.relevanceScore} color="hsl(38 92% 52%)" />
-                  <ScoreBar value={contact.interestScore} color="hsl(222 88% 65%)" />
-                  <ScoreBar value={contact.engagementRank} color="hsl(268 68% 62%)" />
+
+                {/* Score bars */}
+                <div className="pt-3 border-t" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
+                  <div className="grid grid-cols-3 gap-2 text-[10px] mb-1.5" style={{ color: "hsl(0 0% 100% / 0.30)" }}>
+                    <span>Relevance</span><span>Interest</span><span>Engagement</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <ScoreBar value={contact.relevanceScore} color="hsl(38 92% 52%)" />
+                    <ScoreBar value={contact.interestScore} color="hsl(222 88% 65%)" />
+                    <ScoreBar value={contact.engagementRank} color="hsl(268 68% 62%)" />
+                  </div>
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

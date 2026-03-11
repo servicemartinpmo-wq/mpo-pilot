@@ -3,7 +3,7 @@ import KpiTrendChart from "@/components/KpiTrendChart";
 import { formatCurrency, getScoreSignal } from "@/lib/pmoData";
 import { ScoreBadge } from "@/components/ScoreBadge";
 import { cn } from "@/lib/utils";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import DeltaPill from "@/components/DeltaPill";
 import ActivityHeatmap from "@/components/ActivityHeatmap";
 import { Paperclip } from "lucide-react";
@@ -243,19 +243,82 @@ export default function Reports() {
     setTextInput("");
   }
 
+  const REPORT_PHOTOS = [
+    { src: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&h=480&fit=crop&q=90", label: "Executive office" },
+    { src: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1600&h=480&fit=crop&q=90", label: "Data analytics" },
+    { src: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1600&h=480&fit=crop&q=90", label: "Strategy session" },
+    { src: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1600&h=480&fit=crop&q=90", label: "City skyline night" },
+  ];
+  const [heroPhoto, setHeroPhoto] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setHeroPhoto(p => (p + 1) % REPORT_PHOTOS.length), 8000);
+    return () => clearInterval(t);
+  }, []);
+  const dateStr = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="relative flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-xl font-bold text-foreground mb-0.5">Reports</h1>
-          <p className="text-sm text-muted-foreground">Organizational reports — executive, operational, quarterly, and annual</p>
-        </div>
-        <div className="absolute right-0">
-          <button className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border border-border bg-card hover:bg-secondary transition-colors font-medium text-foreground">
-            <Download className="w-3.5 h-3.5" /> Export PDF
-          </button>
+    <div className="space-y-6">
+
+      {/* ── Cinematic animated hero ── */}
+      <div className="relative overflow-hidden" style={{ height: 200 }}>
+        {REPORT_PHOTOS.map((p, i) => {
+          const kbClass = i % 3 === 0 ? "animate-kb-a" : i % 3 === 1 ? "animate-kb-b" : "animate-kb-c";
+          return (
+            <div key={p.src} className="absolute inset-0 overflow-hidden photo-crossfade pointer-events-none"
+              style={{ opacity: i === heroPhoto ? 1 : 0 }}>
+              <img src={p.src} alt={p.label} className={`absolute inset-0 w-full h-full object-cover ${kbClass}`} />
+            </div>
+          );
+        })}
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ background: "linear-gradient(105deg, rgba(6,10,22,0.80) 0%, rgba(6,10,22,0.55) 50%, rgba(6,10,22,0.30) 100%)" }} />
+        {/* Content */}
+        <div className="relative z-10 h-full flex flex-col justify-between px-8 py-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-1" style={{ color: "rgba(255,255,255,0.45)" }}>{dateStr}</p>
+              <h1 className="text-3xl font-black text-white leading-tight tracking-tight" style={{ textShadow: "0 2px 20px rgba(0,0,0,0.5)" }}>
+                Reports & Analytics
+              </h1>
+              <p className="text-xs mt-1 font-medium" style={{ color: "rgba(255,255,255,0.55)" }}>
+                Executive · Operational · Quarterly · Annual
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button className="flex items-center gap-2 text-xs px-3.5 py-2 rounded-xl font-semibold transition-all hover:brightness-110"
+                style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.18)", color: "white" }}>
+                <Download className="w-3.5 h-3.5" /> Export PDF
+              </button>
+            </div>
+          </div>
+          {/* Bottom row: quick KPIs + photo dots */}
+          <div className="flex items-end justify-between">
+            <div className="flex items-center gap-5">
+              {[
+                { label: "Initiatives", value: initiatives.length },
+                { label: "On Track", value: initiatives.filter(i => i.status === "On Track" || i.status === "Active").length },
+                { label: "Critical Alerts", value: insights.filter(i => (i as any).signal === "red" || (i as any).priority === "Critical").length },
+              ].map(({ label, value }) => (
+                <div key={label}>
+                  <div className="text-2xl font-black font-mono text-white leading-none" style={{ textShadow: "0 1px 8px rgba(0,0,0,0.4)" }}>{value}</div>
+                  <div className="text-[10px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>{label}</div>
+                </div>
+              ))}
+            </div>
+            {/* Photo dots */}
+            <div className="flex items-center gap-1.5">
+              {REPORT_PHOTOS.map((_, i) => (
+                <button key={i} onClick={() => setHeroPhoto(i)}
+                  className="rounded-full transition-all duration-300"
+                  style={{ width: i === heroPhoto ? 18 : 5, height: 5, background: i === heroPhoto ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.30)" }} />
+              ))}
+            </div>
+          </div>
         </div>
       </div>
+
+      <div className="px-6 space-y-6">
 
       {/* Tab bar — wraps on smaller screens */}
       <div className="flex flex-wrap gap-1 p-1 bg-secondary rounded-xl border border-border">
@@ -1213,6 +1276,7 @@ export default function Reports() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }
