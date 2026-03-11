@@ -285,8 +285,8 @@ export default function Departments() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="section-label mb-1.5">Organization</div>
-            <h1 className="text-2xl font-black text-foreground tracking-tight mb-1">Department Engine</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-2xl font-black text-foreground tracking-tight mb-1 text-center">Department Engine</h1>
+            <p className="text-sm text-muted-foreground text-center">
               {departments.length} departments · Operational Maturity Scoring · CMMI-based assessment
             </p>
           </div>

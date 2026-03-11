@@ -179,8 +179,8 @@ export default function CreatorLab() {
               <Lock className="w-6 h-6 text-electric-blue" />
             </div>
             <div>
-              <h1 className="text-xl font-black text-foreground mb-1">Creator Lab</h1>
-              <p className="text-sm text-muted-foreground">Private access — app creator only</p>
+              <h1 className="text-xl font-black text-foreground mb-1 text-center">Creator Lab</h1>
+              <p className="text-sm text-muted-foreground text-center">Private access — app creator only</p>
             </div>
             <div className="space-y-3">
               <div className="relative">
@@ -236,8 +236,8 @@ export default function CreatorLab() {
             <Unlock className="w-4 h-4 text-signal-green" />
             <span className="text-xs font-bold text-signal-green uppercase tracking-wider">Creator Access · Private</span>
           </div>
-          <h1 className="text-3xl font-black text-foreground tracking-tight">Creator Lab</h1>
-          <p className="text-sm text-muted-foreground mt-1">Customize, configure, and control every aspect of the app.</p>
+          <h1 className="text-3xl font-black text-foreground tracking-tight text-center">Creator Lab</h1>
+          <p className="text-sm text-muted-foreground mt-1 text-center">Customize, configure, and control every aspect of the app.</p>
         </div>
         <div className="flex items-center gap-3">
           <button

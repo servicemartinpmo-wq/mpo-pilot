@@ -149,8 +149,8 @@ export default function Diagnostics() {
       {/* ── Header ── */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-foreground mb-0.5">Diagnostics</h1>
-          <p className="text-sm text-muted-foreground">Signal detection · Root cause analysis · Governance oversight</p>
+          <h1 className="text-xl font-bold text-foreground mb-0.5 text-center">Diagnostics</h1>
+          <p className="text-sm text-muted-foreground text-center">Signal detection · Root cause analysis · Governance oversight</p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={() => setShowSummary(v => !v)}

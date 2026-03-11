@@ -196,9 +196,9 @@ export default function Projects() {
               style={{ background: "hsl(222 88% 65% / 0.12)", border: "1px solid hsl(222 88% 65% / 0.2)" }}>
               <Rocket className="w-4.5 h-4.5 text-electric-blue" />
             </div>
-            <h1 className="text-2xl font-black text-foreground tracking-tight">Projects</h1>
+            <h1 className="text-2xl font-black text-foreground tracking-tight text-center">Projects</h1>
           </div>
-          <p className="text-sm text-muted-foreground">Track, manage, and ship your projects.</p>
+          <p className="text-sm text-muted-foreground text-center">Track, manage, and ship your projects.</p>
         </div>
         <button
           onClick={() => setShowModal(true)}

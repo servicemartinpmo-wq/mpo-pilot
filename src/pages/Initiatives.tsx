@@ -665,8 +665,8 @@ export default function Initiatives() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="section-label mb-1.5">Portfolio</div>
-            <h1 className="text-2xl font-black text-foreground tracking-tight mb-1">Initiatives</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-2xl font-black text-foreground tracking-tight mb-1 text-center">Initiatives</h1>
+            <p className="text-sm text-muted-foreground text-center">
               {initiatives.length} initiatives · Impact scored · OKR & strategic pillar alignment
             </p>
           </div>

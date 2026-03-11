@@ -753,13 +753,13 @@ export default function Knowledge() {
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2 mb-0.5">
-            <h1 className="text-xl font-bold text-foreground">Resource Hub</h1>
+            <h1 className="text-xl font-bold text-foreground text-center">Resource Hub</h1>
             <span className="text-[10px] px-2 py-0.5 rounded font-semibold"
               style={{ background: "hsl(var(--teal) / 0.12)", color: "hsl(var(--teal))", border: "1px solid hsl(var(--teal) / 0.3)" }}>
               LIVING
             </span>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground text-center">
             Templates, SOPs, saved documents, and lessons — dynamically surfaced based on diagnostics and active challenges.
           </p>
         </div>

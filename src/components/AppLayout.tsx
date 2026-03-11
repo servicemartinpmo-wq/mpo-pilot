@@ -21,7 +21,6 @@ import { playAlertSound, playSuccessSound, playPingSound } from "@/lib/notificat
 
 const navItems = [
   { to: "/",             label: "Dashboard",    icon: LayoutDashboard, group: "command" },
-  { to: "/initiatives",  label: "Initiatives",  icon: Rocket,          group: "command" },
   { to: "/decisions",    label: "Decisions",    icon: Scale,           group: "command" },
   { to: "/departments",  label: "Departments",  icon: Building2,       group: "command" },
   { to: "/team",         label: "Team",         icon: Users,           group: "command" },
@@ -39,6 +38,7 @@ const navItems = [
 ];
 
 const workMgmtItems = [
+  { to: "/initiatives",  label: "Initiatives",  icon: Rocket       },
   { to: "/projects",     label: "Projects",     icon: FolderOpen   },
   { to: "/action-items", label: "Action Items", icon: CheckSquare  },
   { to: "/agile",        label: "Agile Board",  icon: Layers       },

@@ -134,10 +134,10 @@ export default function GraphView() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black mb-1" style={{ color: "hsl(38 15% 94%)" }}>
+        <h1 className="text-2xl font-black mb-1 text-center" style={{ color: "hsl(38 15% 94%)" }}>
           Graph Intelligence
         </h1>
-        <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+        <p className="text-sm text-center" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
           Visualize relationships between business elements, teams, and decisions
         </p>
       </div>

@@ -226,8 +226,8 @@ export default function Advisory() {
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Martin PMO-Ops</span>
             </div>
-            <h1 className="text-3xl font-black text-foreground tracking-tight mb-2">Advisory</h1>
-            <p className="text-sm text-muted-foreground font-medium max-w-xl">
+            <h1 className="text-3xl font-black text-foreground tracking-tight mb-2 text-center">Advisory</h1>
+            <p className="text-sm text-muted-foreground font-medium max-w-xl text-center">
               Expert advisors for every domain — submit a request, upload documents or messages, and receive structured guidance aligned to your organization's priorities.
             </p>
           </div>

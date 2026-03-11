@@ -342,8 +342,8 @@ export default function Integrations() {
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="section-label mb-2">Command Center</p>
-            <h1 className="text-3xl font-black text-foreground tracking-tight">Integrations</h1>
-            <p className="text-sm text-muted-foreground mt-1.5 max-w-lg">
+            <h1 className="text-3xl font-black text-foreground tracking-tight text-center">Integrations</h1>
+            <p className="text-sm text-muted-foreground mt-1.5 max-w-lg text-center">
               Connect your inbox, calendar, documents, and messaging — AI reads everything and surfaces what matters.
             </p>
           </div>

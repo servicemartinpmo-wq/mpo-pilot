@@ -128,8 +128,8 @@ export default function Team() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-foreground mb-0.5">Team</h1>
-          <p className="text-sm text-muted-foreground">MOCHA accountability by project · delegated work · capacity</p>
+          <h1 className="text-xl font-bold text-foreground mb-0.5 text-center">Team</h1>
+          <p className="text-sm text-muted-foreground text-center">MOCHA accountability by project · delegated work · capacity</p>
         </div>
         <div className="flex items-center gap-1.5 bg-secondary rounded-xl p-1 border border-border">
           {TEAM_SIZES.map(size => (

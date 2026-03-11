@@ -185,8 +185,8 @@ export default function ActionItems() {
       {/* ── Header ── */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-black text-foreground mb-1 tracking-tight">Action Items & Events</h1>
-          <p className="text-sm text-muted-foreground font-medium">Structured · Concise · Actionable</p>
+          <h1 className="text-2xl font-black text-foreground mb-1 tracking-tight text-center">Action Items & Events</h1>
+          <p className="text-sm text-muted-foreground font-medium text-center">Structured · Concise · Actionable</p>
         </div>
         <button className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border-2 border-electric-blue/40 text-electric-blue font-semibold hover:bg-electric-blue/8 transition-colors">
           <Plus className="w-3.5 h-3.5" /> New Item

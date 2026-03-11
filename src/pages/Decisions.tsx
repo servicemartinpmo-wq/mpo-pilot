@@ -221,9 +221,9 @@ export default function Decisions() {
               style={{ background: "hsl(38 92% 52% / 0.12)", border: "1px solid hsl(38 92% 52% / 0.2)" }}>
               <Scale className="w-4.5 h-4.5 text-amber" />
             </div>
-            <h1 className="text-2xl font-black text-foreground tracking-tight">Decision Log</h1>
+            <h1 className="text-2xl font-black text-foreground tracking-tight text-center">Decision Log</h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground text-center">
             Build your organization's decision memory. Track reasoning, outcomes, and accuracy.
           </p>
         </div>
