@@ -162,34 +162,58 @@ function KpiTile({
   );
 }
 
-// ── Next Best Action Item ──────────────────────────────────────
-function NbaItem({ title, description, priority, category, idx }: {
-  title: string; description?: string; priority?: string; category?: string; idx: number;
+// ── Next Best Action Item — waterfall/hierarchy flow ───────────
+const PRIORITY_WEIGHT = (p?: string) =>
+  p === "critical" ? 0 : p === "high" ? 1 : p === "medium" ? 2 : 3;
+
+function NbaItem({ title, description, priority, category, idx, isLast }: {
+  title: string; description?: string; priority?: string; category?: string; idx: number; isLast?: boolean;
 }) {
-  const isHigh = priority === "high" || priority === "critical";
+  const isCritical = priority === "critical";
+  const isHigh     = priority === "high";
+  const level      = Math.min(idx, 3);
+
+  const badgeColor  = isCritical ? "hsl(350 72% 46%)" : isHigh ? "hsl(38 82% 42%)" : idx === 0 ? "hsl(222 70% 46%)" : "hsl(var(--muted-foreground))";
+  const badgeBg     = isCritical ? "hsl(350 72% 46% / 0.10)" : isHigh ? "hsl(38 82% 44% / 0.12)" : idx === 0 ? "hsl(222 70% 46% / 0.10)" : "hsl(var(--secondary))";
+  const titleSize   = idx === 0 ? "text-sm" : idx === 1 ? "text-[13px]" : "text-xs";
+  const titleWeight = idx === 0 ? "font-bold" : "font-semibold";
+  const indent      = level * 12;
+
   return (
-    <div className="flex items-start gap-3.5 py-3 border-b last:border-0" style={{ borderColor: "hsl(var(--border))" }}>
-      <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 text-[11px] font-black"
-        style={{
-          background: idx === 0 ? "hsl(38 92% 52% / 0.15)" : "hsl(var(--secondary))",
-          color: idx === 0 ? "hsl(38 82% 42%)" : "hsl(var(--muted-foreground))"
-        }}>
-        {idx + 1}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-semibold text-foreground">{title}</span>
-          {isHigh && (
-            <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded text-rose bg-rose/10">
-              {priority}
-            </span>
-          )}
+    <div className="flex items-stretch" style={{ paddingLeft: indent }}>
+      {/* Spine + node */}
+      <div className="flex flex-col items-center mr-3 flex-shrink-0" style={{ width: 20 }}>
+        {idx > 0 && <div className="w-px flex-shrink-0" style={{ height: 10, background: "hsl(var(--border))" }} />}
+        <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0"
+          style={{ background: badgeBg, color: badgeColor, border: `1.5px solid ${badgeColor}33` }}>
+          {idx + 1}
         </div>
-        {description && <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed line-clamp-2">{description}</p>}
+        {!isLast && <div className="w-px flex-1 mt-1" style={{ minHeight: 12, background: "hsl(var(--border))" }} />}
       </div>
-      {category && (
-        <span className="text-[10px] text-muted-foreground flex-shrink-0 hidden sm:block">{category}</span>
-      )}
+
+      {/* Content */}
+      <div className="flex-1 min-w-0 pb-3 pt-0.5">
+        <div className="flex items-start gap-2 flex-wrap">
+          <span className={cn(titleSize, titleWeight, "text-foreground leading-snug flex-1 min-w-0")}>{title}</span>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {(isCritical || isHigh) && (
+              <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded"
+                style={{ color: badgeColor, background: badgeBg }}>
+                {priority}
+              </span>
+            )}
+            {category && (
+              <span className="text-[10px] text-muted-foreground hidden sm:block">{category}</span>
+            )}
+          </div>
+        </div>
+        {description && (
+          <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed line-clamp-2"
+            style={{ paddingLeft: 4, borderLeft: "2px solid hsl(var(--border))", marginLeft: 2 }}>
+            {description}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
@@ -231,8 +255,18 @@ interface HeroBannerProps {
   reactedTo: Record<string, string>;
   onReact: (winId: string, emoji: string) => void;
 }
+const BANNER_PHOTOS = [
+  { src: "/banner-lake.png",   label: "Mountain Lake" },
+  { src: "/banner-fields.png", label: "Tuscan Fields" },
+];
+
 function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCount, atRiskCount, criticalCount, pendingActions, nbaItems, winItems, winReactions, reactedTo, onReact }: HeroBannerProps) {
   const [slide, setSlide] = useState(0);
+  const [photo, setPhoto] = useState(0);
+  const [clock, setClock] = useState(() => {
+    const n = new Date();
+    return n.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+  });
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const total = 4;
 
@@ -243,7 +277,11 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
 
   useEffect(() => {
     resetTimer();
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    const clockTick = setInterval(() => {
+      const n = new Date();
+      setClock(n.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }));
+    }, 1000);
+    return () => { if (timerRef.current) clearInterval(timerRef.current); clearInterval(clockTick); };
   }, []);
 
   const goTo = (i: number) => { setSlide(i); resetTimer(); };
@@ -252,27 +290,30 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
   const greeting = tod === "morning" ? "Good morning" : tod === "afternoon" ? "Good afternoon" : "Good evening";
   const dateStr = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
 
-  const healthColor = liveOverallHealth >= 80 ? "hsl(160 56% 46%)" : liveOverallHealth >= 60 ? "hsl(38 92% 52%)" : "hsl(350 72% 52%)";
+  const healthColor = liveOverallHealth >= 80 ? "hsl(160 72% 60%)" : liveOverallHealth >= 60 ? "hsl(38 92% 62%)" : "hsl(350 82% 68%)";
   const healthLabel = liveOverallHealth >= 80 ? "Strong" : liveOverallHealth >= 60 ? "Moderate" : "Needs Attention";
 
   return (
-    <div className="relative overflow-hidden rounded-2xl" style={{ background: "hsl(220 28% 95%)", height: 240 }}>
+    <div className="relative overflow-hidden rounded-2xl" style={{ height: 280 }}>
 
-      {/* Background texture */}
-      <img src={onboardHero} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ opacity: 0.22, mixBlendMode: "luminosity" }} />
-      <img src={onboardNetwork} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ opacity: 0.06, mixBlendMode: "multiply" }} />
+      {/* Full-bleed landscape photo — fades between photos */}
+      {BANNER_PHOTOS.map((p, i) => (
+        <img key={p.src} src={p.src} alt={p.label}
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none transition-opacity duration-700"
+          style={{ opacity: i === photo ? 1 : 0 }} />
+      ))}
 
-      {/* Ambient orb */}
-      <div className="absolute pointer-events-none" style={{ top: "-30%", right: "20%", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, hsl(222 80% 58% / 0.10) 0%, transparent 60%)" }} />
-      <div className="absolute pointer-events-none" style={{ bottom: "-20%", left: "5%", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, hsl(38 88% 55% / 0.07) 0%, transparent 60%)" }} />
+      {/* Dark overlay for text readability (left stronger, right lighter for photo breathing) */}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ background: "linear-gradient(105deg, rgba(10,14,26,0.72) 0%, rgba(10,14,26,0.50) 55%, rgba(10,14,26,0.28) 100%)" }} />
 
-      {/* Content layout — full height, no flex stretching that could cause shifts */}
+      {/* Content layout — full height */}
       <div className="relative z-10 flex h-full">
 
-        {/* Left: slides */}
+        {/* Left: brand + clock + slides */}
         <div className="flex-1 px-7 py-5 flex flex-col">
 
-          {/* Tag icon + company/app name + live dot */}
+          {/* Top row: brand + live dot */}
           <div className="flex items-center gap-3 mb-3 flex-shrink-0">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -280,33 +321,37 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
                 <Tag className="w-3.5 h-3.5 text-white" />
               </div>
               <div>
-                <div className="text-[12px] font-black leading-none tracking-tight" style={{ color: "hsl(224 30% 14%)" }}>Martin PMO</div>
-                <div className="text-[9px] font-medium" style={{ color: "hsl(224 20% 44%)" }}>PMO-Ops Command Center</div>
+                <div className="text-[12px] font-black leading-none tracking-tight text-white">Martin PMO</div>
+                <div className="text-[9px] font-medium" style={{ color: "rgba(255,255,255,0.50)" }}>PMO-Ops Command Center</div>
               </div>
             </div>
             <div className="flex items-center gap-1.5 ml-1">
               <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-70" style={{ background: "hsl(160 56% 46%)" }} />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "hsl(160 56% 46%)" }} />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-70" style={{ background: "hsl(160 56% 50%)" }} />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "hsl(160 56% 50%)" }} />
               </span>
-              <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "hsl(160 56% 46%)" }}>Live</span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "hsl(160 56% 60%)" }}>Live</span>
             </div>
           </div>
 
-          {/* Slide content — fixed height container so banner never shifts */}
+          {/* Live clock — Windows lock screen style */}
+          <div className="flex-shrink-0 mb-2">
+            <div className="text-[3.8rem] font-black text-white leading-none tracking-tight font-mono" style={{ textShadow: "0 2px 16px rgba(0,0,0,0.4)" }}>
+              {clock}
+            </div>
+            <div className="text-[11px] font-medium mt-1" style={{ color: "rgba(255,255,255,0.60)" }}>{dateStr}</div>
+          </div>
+
+          {/* Slide content — fixed height container */}
           <div className="flex-1 overflow-hidden flex flex-col justify-center">
 
             {/* Slide 1 — Welcome briefing */}
             {slide === 0 && (
               <div key="s0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: "hsl(224 16% 50%)" }}>{dateStr}</p>
-                <h2 className="text-[1.9rem] font-black leading-none tracking-tight mb-2.5" style={{ color: "hsl(224 30% 12%)" }}>
-                  {greeting}{firstName ? `, ${firstName}` : ""}.
-                </h2>
-                <p className="text-sm leading-relaxed" style={{ color: "hsl(224 16% 38%)", maxWidth: 440 }}>
-                  {orgName ? `${orgName} — ` : ""}
-                  {criticalCount > 0
-                    ? `${criticalCount} critical signal${criticalCount > 1 ? "s" : ""} require your attention today.`
+                <p className="text-[11px] font-semibold leading-snug line-clamp-1 text-white opacity-80"
+                  style={{ maxWidth: 340 }}>
+                  {orgName ? `${orgName} — ` : ""}{criticalCount > 0
+                    ? `${criticalCount} critical signal${criticalCount > 1 ? "s" : ""} need your attention.`
                     : "No critical issues detected. You're on track."}
                 </p>
               </div>
@@ -315,17 +360,17 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
             {/* Slide 2 — Performance snapshot */}
             {slide === 1 && (
               <div key="s1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-3" style={{ color: "hsl(224 16% 50%)" }}>Performance at a glance</p>
-                <div className="flex gap-6 flex-wrap">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: "rgba(255,255,255,0.52)" }}>Performance at a glance</p>
+                <div className="flex gap-5 flex-wrap">
                   {[
-                    { value: onTrackCount,   label: "On Track",       color: "hsl(160 56% 36%)" },
-                    { value: atRiskCount,    label: "Needs Attention", color: "hsl(38 82% 42%)" },
-                    { value: criticalCount,  label: "Critical",        color: "hsl(350 72% 46%)" },
-                    { value: pendingActions, label: "Open Actions",    color: "hsl(222 70% 46%)" },
+                    { value: onTrackCount,   label: "On Track",        color: "hsl(160 72% 60%)" },
+                    { value: atRiskCount,    label: "Needs Attention",  color: "hsl(38 92% 62%)" },
+                    { value: criticalCount,  label: "Critical",         color: "hsl(350 82% 68%)" },
+                    { value: pendingActions, label: "Open Actions",     color: "hsl(222 88% 72%)" },
                   ].map(({ value, label, color }) => (
                     <div key={label}>
-                      <div className="text-[2.1rem] font-black leading-none font-mono mb-1" style={{ color }}>{value}</div>
-                      <div className="text-[11px] font-medium" style={{ color: "hsl(224 14% 48%)" }}>{label}</div>
+                      <div className="text-[1.8rem] font-black leading-none font-mono mb-0.5" style={{ color }}>{value}</div>
+                      <div className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.52)" }}>{label}</div>
                     </div>
                   ))}
                 </div>
@@ -335,15 +380,15 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
             {/* Slide 3 — Today's priorities */}
             {slide === 2 && (
               <div key="s2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-3" style={{ color: "hsl(224 16% 50%)" }}>Your priorities today</p>
-                <div className="space-y-2">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: "rgba(255,255,255,0.52)" }}>Your priorities today</p>
+                <div className="space-y-1.5">
                   {nbaItems.slice(0, 3).map((item, i) => (
-                    <div key={i} className="flex items-center gap-2.5">
-                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: item.priority === "high" || item.priority === "High" ? "hsl(38 82% 44%)" : "hsl(222 70% 48%)" }} />
-                      <span className="text-sm font-medium leading-snug line-clamp-1" style={{ color: "hsl(224 20% 22%)" }}>{item.title}</span>
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: item.priority === "high" || item.priority === "High" ? "hsl(38 92% 62%)" : "hsl(222 88% 72%)" }} />
+                      <span className="text-xs font-medium leading-snug line-clamp-1 text-white opacity-85">{item.title}</span>
                     </div>
                   ))}
-                  {nbaItems.length === 0 && <p className="text-sm" style={{ color: "hsl(224 14% 52%)" }}>No open actions. Great work.</p>}
+                  {nbaItems.length === 0 && <p className="text-xs text-white opacity-60">No open actions. Great work.</p>}
                 </div>
               </div>
             )}
@@ -351,23 +396,22 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
             {/* Slide 4 — Team Wins */}
             {slide === 3 && (
               <div key="s3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-3" style={{ color: "hsl(224 16% 50%)" }}>Team wins</p>
-                <div className="space-y-2.5">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: "rgba(255,255,255,0.52)" }}>Team wins</p>
+                <div className="space-y-2">
                   {winItems.slice(0, 2).map((win) => (
-                    <div key={win.id} className="flex items-start gap-2.5">
-                      <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: "hsl(160 56% 36%)" }} />
+                    <div key={win.id} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0" style={{ background: "hsl(160 72% 60%)" }} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs leading-snug mb-1.5" style={{ color: "hsl(224 20% 22%)" }}>{win.text}</p>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[10px]" style={{ color: "hsl(224 14% 50%)" }}>{win.owner}</span>
-                          <span style={{ color: "hsl(220 14% 78%)" }}>·</span>
+                        <p className="text-xs text-white opacity-90 leading-snug mb-1 line-clamp-1">{win.text}</p>
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.45)" }}>{win.owner}</span>
                           {Object.entries(winReactions[win.id] ?? win.reactions).map(([emoji, count]) => (
                             <button key={emoji} onClick={() => onReact(win.id, emoji)}
                               className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] border transition-all"
                               style={{
-                                background: reactedTo[win.id] === emoji ? "hsl(222 70% 46% / 0.12)" : "hsl(220 14% 92%)",
-                                borderColor: reactedTo[win.id] === emoji ? "hsl(222 70% 50% / 0.35)" : "hsl(220 14% 85%)",
-                                color: reactedTo[win.id] === emoji ? "hsl(222 70% 42%)" : "hsl(224 14% 48%)",
+                                background: reactedTo[win.id] === emoji ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.08)",
+                                borderColor: reactedTo[win.id] === emoji ? "rgba(255,255,255,0.50)" : "rgba(255,255,255,0.18)",
+                                color: "rgba(255,255,255,0.80)",
                               }}>
                               {emoji}<span className="font-mono">{count}</span>
                             </button>
@@ -381,22 +425,41 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
             )}
           </div>
 
-          {/* Slide nav dots — mt-auto pins to bottom regardless of slide content */}
-          <div className="flex items-center gap-2 mt-auto pt-3 flex-shrink-0">
-            {Array.from({ length: total }).map((_, i) => (
-              <button key={i} onClick={() => goTo(i)}
-                className="rounded-full transition-all duration-300"
-                style={{ width: i === slide ? 20 : 6, height: 6, background: i === slide ? "hsl(222 70% 45%)" : "hsl(220 14% 80%)" }} />
-            ))}
+          {/* Bottom row: slide dots + photo switcher */}
+          <div className="flex items-center justify-between mt-auto pt-3 flex-shrink-0">
+            {/* Slide nav dots */}
+            <div className="flex items-center gap-2">
+              {Array.from({ length: total }).map((_, i) => (
+                <button key={i} onClick={() => goTo(i)}
+                  className="rounded-full transition-all duration-300"
+                  style={{ width: i === slide ? 20 : 6, height: 6, background: i === slide ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.30)" }} />
+              ))}
+            </div>
+
+            {/* Photo switcher thumbnails */}
+            <div className="flex items-center gap-1.5">
+              {BANNER_PHOTOS.map((p, i) => (
+                <button key={i} onClick={() => setPhoto(i)}
+                  className="rounded-lg overflow-hidden transition-all duration-200 flex-shrink-0"
+                  style={{
+                    width: 32, height: 22,
+                    outline: i === photo ? "2px solid rgba(255,255,255,0.85)" : "2px solid rgba(255,255,255,0.25)",
+                    outlineOffset: 1,
+                  }}>
+                  <img src={p.src} alt={p.label} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Right: health score */}
-        <div className="hidden lg:flex flex-col items-center justify-center px-8 border-l" style={{ borderColor: "hsl(var(--border))", minWidth: 160 }}>
-          <div className="text-[3.2rem] font-black font-mono leading-none mb-1" style={{ color: healthColor }}>{liveOverallHealth}</div>
+        {/* Right: health score panel */}
+        <div className="hidden lg:flex flex-col items-center justify-center px-8 border-l flex-shrink-0"
+          style={{ borderColor: "rgba(255,255,255,0.15)", minWidth: 160 }}>
+          <div className="text-[3.2rem] font-black font-mono leading-none mb-1" style={{ color: healthColor, textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>{liveOverallHealth}</div>
           <div className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: healthColor }}>{healthLabel}</div>
-          <div className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Company Health</div>
-          {industry && <div className="mt-3 text-[10px] text-center px-2 py-1 rounded-full" style={{ background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))" }}>{industry}</div>}
+          <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.45)" }}>Company Health</div>
+          {industry && <div className="mt-3 text-[10px] text-center px-2 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.55)" }}>{industry}</div>}
         </div>
       </div>
     </div>
@@ -746,9 +809,9 @@ export default function Dashboard() {
                 All actions <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
-            <div className="px-5 py-1">
-              {nbaItems.map((item, i) => (
-                <NbaItem key={i} idx={i} {...item} />
+            <div className="px-5 pt-4 pb-2">
+              {[...nbaItems].sort((a, b) => PRIORITY_WEIGHT(a.priority) - PRIORITY_WEIGHT(b.priority)).map((item, i, arr) => (
+                <NbaItem key={i} idx={i} {...item} isLast={i === arr.length - 1} />
               ))}
             </div>
           </div>
