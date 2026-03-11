@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import AppLayout from "./components/AppLayout";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import VoiceCommand from "./components/VoiceCommand";
 import Index from "./pages/Index";
 import Initiatives from "./pages/Initiatives";
 import Diagnostics from "./pages/Diagnostics";
@@ -186,7 +188,10 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <AppRoutes />
+        <ErrorBoundary>
+          <AppRoutes />
+          <VoiceCommand />
+        </ErrorBoundary>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

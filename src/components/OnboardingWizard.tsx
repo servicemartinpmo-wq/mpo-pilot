@@ -978,7 +978,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
                 {/* Purpose */}
                 <p className="text-sm lg:text-base leading-relaxed max-w-xl mb-10"
                   style={{ color: "hsl(225 20% 40%)" }}>
-                  The app designed for overwhelmed executives, founders, and operators who need clarity, guidance, and structure across initiatives, tasks, and organizational performance. Built on deep expertise, designed to help you act with confidence.
+                  Operational clarity for executives, founders, and operators who run complex organizations. Built to help you lead with confidence and act on what matters.
                 </p>
 
                 {/* 3 pillars */}

@@ -5,15 +5,20 @@ import { frameworks, departments, orgMetrics, orgProfile, authorityMatrix, sopRe
 import { loadProfile, saveProfile, applyAccentColor, applyFont, resetOnboarding } from "@/lib/companyStore";
 import type { CompanyProfile } from "@/lib/companyStore";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { BANNER_THEMES } from "@/components/PageBanner";
 import { BusinessMode, MODE_KITS } from "@/pages/Knowledge";
 import {
+  RINGTONE_STYLES, previewRingtone, requestNotificationPermission,
+  getNotificationPermission, type RingtoneStyle
+} from "@/lib/notificationSound";
+import {
   Settings, Database, Cpu, Users, FileText, Shield, Building2,
   AlertTriangle, CheckCircle, Clock, Target, GitBranch, BarChart3,
   Activity, TrendingUp, TrendingDown, Minus, ChevronDown, Zap,
-  UserCheck, Lock, ArrowUpRight, RefreshCw, Bell, Layout, Check, FlaskConical
+  UserCheck, Lock, ArrowUpRight, RefreshCw, Bell, Layout, Check, FlaskConical,
+  PlayCircle, Volume2
 } from "lucide-react";
 
 function Block({ title, icon: Icon, children, badge, accent }: {
@@ -72,6 +77,20 @@ export default function Admin() {
     const saved = typeof window !== "undefined" ? localStorage.getItem("apphia_knowledge_mode") : null;
     return (saved as BusinessMode) || null;
   });
+  const [ringtone, setRingtone] = useState<RingtoneStyle>(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem("apphia_ringtone") : null;
+    return (saved as RingtoneStyle) || "default";
+  });
+  const [notifPerm, setNotifPerm] = useState<NotificationPermission>(getNotificationPermission);
+
+  useEffect(() => {
+    localStorage.setItem("apphia_ringtone", ringtone);
+  }, [ringtone]);
+
+  async function enablePushNotifications() {
+    const granted = await requestNotificationPermission();
+    setNotifPerm(granted ? "granted" : "denied");
+  }
 
   function saveCustomize() {
     saveProfile(companyProfile);
@@ -658,6 +677,64 @@ export default function Admin() {
                     </button>
                   );
                 })}
+              </div>
+            </div>
+
+            {/* ── Notification Sound Settings ── */}
+            <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border))" }}>
+              <div className="flex items-center gap-2 mb-3">
+                <Volume2 className="w-3.5 h-3.5 text-muted-foreground" />
+                <p className="text-xs font-bold text-foreground uppercase tracking-wide">Notification Sound</p>
+              </div>
+              <p className="text-[11px] text-muted-foreground mb-3">Choose the ringtone style played for alerts, wins, and pings.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 mb-4">
+                {RINGTONE_STYLES.map(({ value, label, desc }) => {
+                  const active = ringtone === value;
+                  return (
+                    <div key={value}
+                      className="rounded-xl border-2 p-3 cursor-pointer transition-all hover:opacity-90"
+                      style={{ borderColor: active ? "hsl(var(--electric-blue))" : "hsl(var(--border))", background: active ? "hsl(var(--electric-blue) / 0.07)" : "transparent" }}
+                      onClick={() => setRingtone(value)}>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold text-foreground">{label}</span>
+                        {active && <Check className="w-3 h-3 text-electric-blue" />}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground mb-2 leading-snug">{desc}</p>
+                      <button
+                        onClick={e => { e.stopPropagation(); previewRingtone(value); }}
+                        className="flex items-center gap-1 text-[10px] font-semibold transition-opacity hover:opacity-70"
+                        style={{ color: "hsl(var(--electric-blue))" }}>
+                        <PlayCircle className="w-3 h-3" /> Preview
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Push Notification Permission */}
+              <div className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: "hsl(var(--secondary))", border: "1px solid hsl(var(--border))" }}>
+                <div className="flex items-center gap-3">
+                  <Bell className="w-4 h-4 text-muted-foreground" />
+                  <div>
+                    <p className="text-xs font-bold text-foreground">Desktop Push Notifications</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      {notifPerm === "granted" ? "Enabled — you'll receive alerts even when the app is in the background." :
+                       notifPerm === "denied"  ? "Blocked by browser. Reset permissions in your browser site settings." :
+                       "Allow Martin PMO to send desktop alerts for critical items."}
+                    </p>
+                  </div>
+                </div>
+                {notifPerm === "granted" ? (
+                  <span className="text-[10px] font-bold text-signal-green flex items-center gap-1"><CheckCircle className="w-3 h-3" /> On</span>
+                ) : notifPerm === "denied" ? (
+                  <span className="text-[10px] font-semibold text-signal-red">Blocked</span>
+                ) : (
+                  <button onClick={enablePushNotifications}
+                    className="text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+                    style={{ background: "hsl(var(--electric-blue) / 0.12)", color: "hsl(var(--electric-blue))" }}>
+                    Enable
+                  </button>
+                )}
               </div>
             </div>
           </div>
