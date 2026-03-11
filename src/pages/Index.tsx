@@ -2,12 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { insights, actionItems, initiatives } from "@/lib/pmoData";
 import pmoLogoLight from "@/assets/pmo-logo-light.png";
 import onboardNetwork from "@/assets/onboard-network.jpg";
-import onboardHero from "@/assets/onboard-hero.jpg";
-import diagBg1 from "@/assets/diag-slide-bg-1.jpg";
-import diagBg2 from "@/assets/diag-slide-bg-2.jpg";
-import diagBg3 from "@/assets/diag-slide-bg-3.jpg";
-import diagBg4 from "@/assets/diag-slide-bg-4.jpg";
-import diagBg5 from "@/assets/diag-slide-bg-5.jpg";
 import InsightCard from "@/components/InsightCard";
 import CompanyHealthScore from "@/components/CompanyHealthScore";
 import StrategyScoreCard from "@/components/StrategyScoreCard";
@@ -755,63 +749,55 @@ export default function Dashboard() {
         />
 
         {/* ════════════════════════════════════════
-            KPI TILES + DAILY BRIEFING
+            KPI TILES
             ════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-5">
-          {/* 4 KPI tiles */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 content-start">
-            <KpiTile label="On Track" value={onTrackCount} sub="Initiatives healthy" signal="green" icon={CheckCircle}
-              onClick={() => navigate("/initiatives")} />
-            <KpiTile label="Needs Attention" value={atRiskCount} sub="At risk or delayed" signal="yellow" icon={Clock}
-              onClick={() => navigate("/initiatives")} />
-            <KpiTile label="Critical Signals" value={criticalCount} sub="Immediate action" signal="red" icon={AlertTriangle}
-              onClick={() => navigate("/diagnostics")} />
-            <KpiTile label="Open Actions" value={pendingActions} sub="Tasks in progress" signal="blue" icon={Activity}
-              onClick={() => navigate("/action-items")} />
-          </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <KpiTile label="On Track" value={onTrackCount} sub="Initiatives healthy" signal="green" icon={CheckCircle}
+            onClick={() => navigate("/initiatives")} />
+          <KpiTile label="Needs Attention" value={atRiskCount} sub="At risk or delayed" signal="yellow" icon={Clock}
+            onClick={() => navigate("/initiatives")} />
+          <KpiTile label="Critical Signals" value={criticalCount} sub="Immediate action" signal="red" icon={AlertTriangle}
+            onClick={() => navigate("/diagnostics")} />
+          <KpiTile label="Open Actions" value={pendingActions} sub="Tasks in progress" signal="blue" icon={Activity}
+            onClick={() => navigate("/action-items")} />
+        </div>
 
-          {/* Daily Briefing */}
-          <div className="rounded-2xl border overflow-hidden"
-            style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            <div className="px-5 py-3.5 border-b relative overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
-              <img src={diagBg2} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.16, mixBlendMode: "luminosity" }} />
-              <div className="relative z-10 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                    style={{ background: "hsl(222 88% 65% / 0.12)" }}>
-                    <Brain className="w-3.5 h-3.5 text-electric-blue" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-foreground">Daily Briefing</span>
-                    <p className="text-[10px] text-muted-foreground">Command Center Intelligence</p>
-                  </div>
-                </div>
-                <Sparkles className="w-4 h-4 text-electric-blue opacity-40" />
+        {/* ════════════════════════════════════════
+            DAILY BRIEFING (full-width, horizontal)
+            ════════════════════════════════════════ */}
+        <div className="rounded-2xl border overflow-hidden"
+          style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-3 border-b border-l-4"
+            style={{ borderColor: "hsl(var(--border))", borderLeftColor: "hsl(222 88% 62%)" }}>
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                style={{ background: "hsl(222 88% 65% / 0.10)" }}>
+                <Brain className="w-3.5 h-3.5 text-electric-blue" />
+              </div>
+              <div>
+                <span className="text-sm font-bold text-foreground">Daily Briefing</span>
+                <p className="text-[10px] text-muted-foreground">Command Center Intelligence</p>
               </div>
             </div>
-
-            <div className="p-5 space-y-4">
+            <Sparkles className="w-4 h-4 text-electric-blue opacity-30" />
+          </div>
+          {/* Two-column body */}
+          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x"
+            style={{ borderColor: "hsl(var(--border))" }}>
+            {/* Left — intelligence bullets */}
+            <div className="p-5 space-y-3">
               {[
-                criticalCount > 0 && {
-                  icon: AlertTriangle, color: "text-rose",
-                  text: `${criticalCount} critical signal${criticalCount > 1 ? "s" : ""} require your attention today.`
-                },
-                atRiskCount > 0 && {
-                  icon: Clock, color: "text-amber",
-                  text: `${atRiskCount} initiative${atRiskCount > 1 ? "s are" : " is"} at risk — review priority sequencing.`
-                },
-                pendingActions > 10 && {
-                  icon: Activity, color: "text-electric-blue",
-                  text: `${pendingActions} open actions. Consider delegation to reduce leadership load.`
-                },
-                budgetPct > 85 && {
-                  icon: TrendingUp, color: "text-signal-yellow",
-                  text: `Budget utilization at ${budgetPct}%. Flag for review before month-end.`
-                },
-                onTrackCount > 0 && {
-                  icon: CheckCircle, color: "text-signal-green",
-                  text: `${onTrackCount} initiative${onTrackCount > 1 ? "s" : ""} running clean. Execution is solid.`
-                },
+                criticalCount > 0 && { icon: AlertTriangle, color: "text-rose",
+                  text: `${criticalCount} critical signal${criticalCount > 1 ? "s" : ""} require your attention today.` },
+                atRiskCount > 0 && { icon: Clock, color: "text-amber",
+                  text: `${atRiskCount} initiative${atRiskCount > 1 ? "s are" : " is"} at risk — review priority sequencing.` },
+                pendingActions > 10 && { icon: Activity, color: "text-electric-blue",
+                  text: `${pendingActions} open actions. Consider delegation to reduce leadership load.` },
+                budgetPct > 85 && { icon: TrendingUp, color: "text-signal-yellow",
+                  text: `Budget utilization at ${budgetPct}%. Flag for review before month-end.` },
+                onTrackCount > 0 && { icon: CheckCircle, color: "text-signal-green",
+                  text: `${onTrackCount} initiative${onTrackCount > 1 ? "s" : ""} running clean. Execution is solid.` },
               ].filter(Boolean).slice(0, 4).map((item: any, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <div className="w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
@@ -821,39 +807,39 @@ export default function Dashboard() {
                   <p className="text-xs text-muted-foreground leading-relaxed">{item.text}</p>
                 </div>
               ))}
-              <div className="warm-divider" />
-              <div>
-                <p className="section-label mb-3">Team Wins</p>
-                <div className="space-y-2.5">
-                  {WIN_ITEMS.slice(0, 2).map((win) => (
-                    <div key={win.id} className="flex items-start gap-2.5">
-                      <div className="w-1 h-1 rounded-full mt-2 flex-shrink-0" style={{ background: "hsl(160 56% 42%)" }} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-foreground leading-snug mb-1.5">{win.text}</p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-muted-foreground">{win.owner}</span>
-                          <div className="flex items-center gap-1">
-                            {Object.entries(winReactions[win.id]).map(([emoji, count]) => (
-                              <button key={emoji} onClick={() => addReaction(win.id, emoji)}
-                                className={cn(
-                                  "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] border transition-all",
-                                  reactedTo[win.id] === emoji
-                                    ? "bg-electric-blue/15 border-electric-blue/30 text-electric-blue"
-                                    : "border-border hover:bg-white/5 text-muted-foreground"
-                                )}>
-                                {emoji}<span className="font-mono">{count}</span>
-                              </button>
-                            ))}
-                          </div>
+            </div>
+            {/* Right — team wins */}
+            <div className="p-5">
+              <p className="section-label mb-3">Team Wins</p>
+              <div className="space-y-3">
+                {WIN_ITEMS.slice(0, 2).map((win) => (
+                  <div key={win.id} className="flex items-start gap-2.5">
+                    <div className="w-1 h-1 rounded-full mt-2 flex-shrink-0" style={{ background: "hsl(160 56% 42%)" }} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-foreground leading-snug mb-1.5">{win.text}</p>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] text-muted-foreground">{win.owner}</span>
+                        <div className="flex items-center gap-1 flex-wrap">
+                          {Object.entries(winReactions[win.id]).map(([emoji, count]) => (
+                            <button key={emoji} onClick={() => addReaction(win.id, emoji)}
+                              className={cn(
+                                "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] border transition-all",
+                                reactedTo[win.id] === emoji
+                                  ? "bg-electric-blue/15 border-electric-blue/30 text-electric-blue"
+                                  : "border-border hover:bg-muted/60 text-muted-foreground"
+                              )}>
+                              {emoji}<span className="font-mono">{count}</span>
+                            </button>
+                          ))}
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-        </div>{/* end KPI grid */}
+        </div>
 
         {/* ════════════════════════════════════════
             STRATEGY SCORES
@@ -875,11 +861,11 @@ export default function Dashboard() {
             ════════════════════════════════════════ */}
         <div className="rounded-2xl border overflow-hidden"
           style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-          <div className="relative overflow-hidden flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
-            <img src={diagBg1} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.18, mixBlendMode: "luminosity" }} />
-            <div className="relative z-10 flex items-center gap-2.5">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-l-4"
+            style={{ borderColor: "hsl(var(--border))", borderLeftColor: "hsl(38 92% 52%)" }}>
+            <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: "hsl(38 92% 52% / 0.15)" }}>
+                style={{ background: "hsl(38 92% 52% / 0.10)" }}>
                 <Zap className="w-3.5 h-3.5 text-amber" />
               </div>
               <span className="text-sm font-bold text-foreground">Next Best Actions</span>
@@ -887,7 +873,7 @@ export default function Dashboard() {
                 {nbaItems.length} queued
               </span>
             </div>
-            <Link to="/action-items" className="relative z-10 text-xs text-electric-blue hover:underline font-semibold flex items-center gap-0.5">
+            <Link to="/action-items" className="text-xs text-electric-blue hover:underline font-semibold flex items-center gap-0.5">
               All actions <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
@@ -906,14 +892,13 @@ export default function Dashboard() {
           {/* At-Risk Initiatives */}
           <div className="rounded-2xl border overflow-hidden"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            <div className="relative overflow-hidden flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
-              <img src={diagBg3} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.15, mixBlendMode: "luminosity" }} />
-
-              <div className="relative z-10 flex items-center gap-2.5">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-l-4"
+              style={{ borderColor: "hsl(var(--border))", borderLeftColor: "hsl(38 82% 48%)" }}>
+              <div className="flex items-center gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-amber flex-shrink-0" />
                 <span className="text-sm font-bold text-foreground">Initiatives Needing Attention</span>
               </div>
-              <Link to="/initiatives" className="relative z-10 text-[11px] text-electric-blue hover:underline font-semibold flex items-center gap-0.5">
+              <Link to="/initiatives" className="text-[11px] text-electric-blue hover:underline font-semibold flex items-center gap-0.5">
                 All <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
@@ -957,11 +942,10 @@ export default function Dashboard() {
           {/* Portfolio Overview */}
           <div className="rounded-2xl border overflow-hidden"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            <div className="relative overflow-hidden flex items-center gap-2.5 px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
-              <img src={diagBg4} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.15, mixBlendMode: "luminosity" }} />
-
-              <Target className="relative z-10 w-4 h-4 text-teal flex-shrink-0" />
-              <span className="relative z-10 text-sm font-bold text-foreground">Portfolio Overview</span>
+            <div className="flex items-center gap-2.5 px-5 py-3 border-b border-l-4"
+              style={{ borderColor: "hsl(var(--border))", borderLeftColor: "hsl(174 68% 40%)" }}>
+              <Target className="w-4 h-4 text-teal flex-shrink-0" />
+              <span className="text-sm font-bold text-foreground">Portfolio Overview</span>
             </div>
             <div className="p-5 space-y-3">
               {[
@@ -990,9 +974,9 @@ export default function Dashboard() {
             return (
               <div className="rounded-2xl border overflow-hidden"
                 style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-                <div className="relative overflow-hidden flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
-                  <img src={diagBg5} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.15, mixBlendMode: "luminosity" }} />
-                  <div className="relative z-10 flex items-center gap-2.5">
+                <div className="flex items-center justify-between px-5 py-3 border-b border-l-4"
+                  style={{ borderColor: "hsl(var(--border))", borderLeftColor: "hsl(222 88% 62%)" }}>
+                  <div className="flex items-center gap-2.5">
                     <Users className="w-4 h-4 text-electric-blue flex-shrink-0" />
                     <div>
                       <span className="text-sm font-bold text-foreground">Exec Capacity</span>
@@ -1000,7 +984,7 @@ export default function Dashboard() {
                     </div>
                   </div>
                   {overloaded.length > 0 && (
-                    <span className="relative z-10 text-[10px] font-bold px-2 py-0.5 rounded-full text-amber bg-amber/10 flex-shrink-0">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full text-amber bg-amber/10 flex-shrink-0">
                       {overloaded.length} at risk
                     </span>
                   )}
@@ -1039,21 +1023,20 @@ export default function Dashboard() {
         <div className="rounded-2xl border overflow-hidden"
           style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
           <button
-            className="relative overflow-hidden w-full flex items-center justify-between px-5 py-3.5 border-b hover:bg-white/[0.02] transition-colors"
-            style={{ borderColor: "hsl(var(--border))" }}
+            className="w-full flex items-center justify-between px-5 py-3 border-b border-l-4 hover:bg-muted/30 transition-colors"
+            style={{ borderColor: "hsl(var(--border))", borderLeftColor: "hsl(272 60% 52%)" }}
             onClick={() => setShowInsights((v) => !v)}>
-            <img src={onboardHero} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.10, mixBlendMode: "luminosity" }} />
-            <div className="relative z-10 flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: "hsl(222 88% 65% / 0.14)" }}>
-                <Brain className="w-3.5 h-3.5 text-electric-blue" />
+                style={{ background: "hsl(272 60% 52% / 0.10)" }}>
+                <Brain className="w-3.5 h-3.5" style={{ color: "hsl(272 60% 58%)" }} />
               </div>
               <span className="text-sm font-bold text-foreground">Intelligence Signals</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full text-muted-foreground bg-secondary font-semibold">
                 {sortedInsights.length} active · {criticalCount} critical
               </span>
             </div>
-            <div className="relative z-10 flex items-center gap-3">
+            <div className="flex items-center gap-3">
               <Link to="/diagnostics" className="text-xs text-electric-blue font-semibold hover:underline hidden sm:block"
                 onClick={(e) => e.stopPropagation()}>
                 Full diagnostics →
