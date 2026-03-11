@@ -171,8 +171,8 @@ function NbaItem({ title, description, priority, category, idx }: {
     <div className="flex items-start gap-3.5 py-3 border-b last:border-0" style={{ borderColor: "hsl(var(--border))" }}>
       <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 text-[11px] font-black"
         style={{
-          background: idx === 0 ? "hsl(38 92% 52% / 0.15)" : "hsl(224 18% 20%)",
-          color: idx === 0 ? "hsl(38 92% 55%)" : "hsl(224 12% 55%)"
+          background: idx === 0 ? "hsl(38 92% 52% / 0.15)" : "hsl(var(--secondary))",
+          color: idx === 0 ? "hsl(38 82% 42%)" : "hsl(var(--muted-foreground))"
         }}>
         {idx + 1}
       </div>
@@ -226,11 +226,15 @@ interface HeroBannerProps {
   criticalCount: number;
   pendingActions: number;
   nbaItems: { title: string; priority?: string; category?: string }[];
+  winItems: { id: string; text: string; owner: string; reactions: Record<string, number> }[];
+  winReactions: Record<string, Record<string, number>>;
+  reactedTo: Record<string, string>;
+  onReact: (winId: string, emoji: string) => void;
 }
-function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCount, atRiskCount, criticalCount, pendingActions, nbaItems }: HeroBannerProps) {
+function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCount, atRiskCount, criticalCount, pendingActions, nbaItems, winItems, winReactions, reactedTo, onReact }: HeroBannerProps) {
   const [slide, setSlide] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const total = 3;
+  const total = 4;
 
   const resetTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -252,11 +256,11 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
   const healthLabel = liveOverallHealth >= 80 ? "Strong" : liveOverallHealth >= 60 ? "Moderate" : "Needs Attention";
 
   return (
-    <div className="relative overflow-hidden rounded-2xl" style={{ background: "hsl(225 48% 9%)", height: 240 }}>
+    <div className="relative overflow-hidden rounded-2xl" style={{ background: "hsl(220 28% 95%)", height: 240 }}>
 
       {/* Background texture */}
       <img src={onboardHero} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ opacity: 0.22, mixBlendMode: "luminosity" }} />
-      <img src={onboardNetwork} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ opacity: 0.08, mixBlendMode: "screen" }} />
+      <img src={onboardNetwork} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ opacity: 0.06, mixBlendMode: "multiply" }} />
 
       {/* Ambient orb */}
       <div className="absolute pointer-events-none" style={{ top: "-30%", right: "20%", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, hsl(222 80% 58% / 0.10) 0%, transparent 60%)" }} />
@@ -276,8 +280,8 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
                 <Tag className="w-3.5 h-3.5 text-white" />
               </div>
               <div>
-                <div className="text-[12px] font-black text-white leading-none tracking-tight">Martin PMO</div>
-                <div className="text-[9px] font-medium" style={{ color: "hsl(0 0% 100% / 0.38)" }}>PMO-Ops Command Center</div>
+                <div className="text-[12px] font-black leading-none tracking-tight" style={{ color: "hsl(224 30% 14%)" }}>Martin PMO</div>
+                <div className="text-[9px] font-medium" style={{ color: "hsl(224 20% 44%)" }}>PMO-Ops Command Center</div>
               </div>
             </div>
             <div className="flex items-center gap-1.5 ml-1">
@@ -295,11 +299,11 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
             {/* Slide 1 — Welcome briefing */}
             {slide === 0 && (
               <div key="s0">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: "hsl(0 0% 100% / 0.38)" }}>{dateStr}</p>
-                <h2 className="text-[1.9rem] font-black leading-none tracking-tight mb-2.5 text-white">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: "hsl(224 16% 50%)" }}>{dateStr}</p>
+                <h2 className="text-[1.9rem] font-black leading-none tracking-tight mb-2.5" style={{ color: "hsl(224 30% 12%)" }}>
                   {greeting}{firstName ? `, ${firstName}` : ""}.
                 </h2>
-                <p className="text-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.55)", maxWidth: 440 }}>
+                <p className="text-sm leading-relaxed" style={{ color: "hsl(224 16% 38%)", maxWidth: 440 }}>
                   {orgName ? `${orgName} — ` : ""}
                   {criticalCount > 0
                     ? `${criticalCount} critical signal${criticalCount > 1 ? "s" : ""} require your attention today.`
@@ -311,17 +315,17 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
             {/* Slide 2 — Performance snapshot */}
             {slide === 1 && (
               <div key="s1">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-3" style={{ color: "hsl(0 0% 100% / 0.38)" }}>Performance at a glance</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-3" style={{ color: "hsl(224 16% 50%)" }}>Performance at a glance</p>
                 <div className="flex gap-6 flex-wrap">
                   {[
-                    { value: onTrackCount,   label: "On Track",       color: "hsl(160 56% 46%)" },
-                    { value: atRiskCount,    label: "Needs Attention", color: "hsl(38 92% 52%)" },
-                    { value: criticalCount,  label: "Critical",        color: "hsl(350 72% 52%)" },
-                    { value: pendingActions, label: "Open Actions",    color: "hsl(222 80% 65%)" },
+                    { value: onTrackCount,   label: "On Track",       color: "hsl(160 56% 36%)" },
+                    { value: atRiskCount,    label: "Needs Attention", color: "hsl(38 82% 42%)" },
+                    { value: criticalCount,  label: "Critical",        color: "hsl(350 72% 46%)" },
+                    { value: pendingActions, label: "Open Actions",    color: "hsl(222 70% 46%)" },
                   ].map(({ value, label, color }) => (
                     <div key={label}>
                       <div className="text-[2.1rem] font-black leading-none font-mono mb-1" style={{ color }}>{value}</div>
-                      <div className="text-[11px] font-medium" style={{ color: "hsl(0 0% 100% / 0.42)" }}>{label}</div>
+                      <div className="text-[11px] font-medium" style={{ color: "hsl(224 14% 48%)" }}>{label}</div>
                     </div>
                   ))}
                 </div>
@@ -331,15 +335,47 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
             {/* Slide 3 — Today's priorities */}
             {slide === 2 && (
               <div key="s2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-3" style={{ color: "hsl(0 0% 100% / 0.38)" }}>Your priorities today</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-3" style={{ color: "hsl(224 16% 50%)" }}>Your priorities today</p>
                 <div className="space-y-2">
                   {nbaItems.slice(0, 3).map((item, i) => (
                     <div key={i} className="flex items-center gap-2.5">
-                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: item.priority === "high" || item.priority === "High" ? "hsl(38 92% 52%)" : "hsl(222 80% 65%)" }} />
-                      <span className="text-sm font-medium leading-snug line-clamp-1" style={{ color: "hsl(0 0% 100% / 0.78)" }}>{item.title}</span>
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: item.priority === "high" || item.priority === "High" ? "hsl(38 82% 44%)" : "hsl(222 70% 48%)" }} />
+                      <span className="text-sm font-medium leading-snug line-clamp-1" style={{ color: "hsl(224 20% 22%)" }}>{item.title}</span>
                     </div>
                   ))}
-                  {nbaItems.length === 0 && <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.45)" }}>No open actions. Great work.</p>}
+                  {nbaItems.length === 0 && <p className="text-sm" style={{ color: "hsl(224 14% 52%)" }}>No open actions. Great work.</p>}
+                </div>
+              </div>
+            )}
+
+            {/* Slide 4 — Team Wins */}
+            {slide === 3 && (
+              <div key="s3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-3" style={{ color: "hsl(224 16% 50%)" }}>Team wins</p>
+                <div className="space-y-2.5">
+                  {winItems.slice(0, 2).map((win) => (
+                    <div key={win.id} className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: "hsl(160 56% 36%)" }} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs leading-snug mb-1.5" style={{ color: "hsl(224 20% 22%)" }}>{win.text}</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-[10px]" style={{ color: "hsl(224 14% 50%)" }}>{win.owner}</span>
+                          <span style={{ color: "hsl(220 14% 78%)" }}>·</span>
+                          {Object.entries(winReactions[win.id] ?? win.reactions).map(([emoji, count]) => (
+                            <button key={emoji} onClick={() => onReact(win.id, emoji)}
+                              className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] border transition-all"
+                              style={{
+                                background: reactedTo[win.id] === emoji ? "hsl(222 70% 46% / 0.12)" : "hsl(220 14% 92%)",
+                                borderColor: reactedTo[win.id] === emoji ? "hsl(222 70% 50% / 0.35)" : "hsl(220 14% 85%)",
+                                color: reactedTo[win.id] === emoji ? "hsl(222 70% 42%)" : "hsl(224 14% 48%)",
+                              }}>
+                              {emoji}<span className="font-mono">{count}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -350,17 +386,17 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
             {Array.from({ length: total }).map((_, i) => (
               <button key={i} onClick={() => goTo(i)}
                 className="rounded-full transition-all duration-300"
-                style={{ width: i === slide ? 20 : 6, height: 6, background: i === slide ? "hsl(0 0% 100% / 0.85)" : "hsl(0 0% 100% / 0.22)" }} />
+                style={{ width: i === slide ? 20 : 6, height: 6, background: i === slide ? "hsl(222 70% 45%)" : "hsl(220 14% 80%)" }} />
             ))}
           </div>
         </div>
 
         {/* Right: health score */}
-        <div className="hidden lg:flex flex-col items-center justify-center px-8 border-l" style={{ borderColor: "hsl(0 0% 100% / 0.07)", minWidth: 160 }}>
+        <div className="hidden lg:flex flex-col items-center justify-center px-8 border-l" style={{ borderColor: "hsl(var(--border))", minWidth: 160 }}>
           <div className="text-[3.2rem] font-black font-mono leading-none mb-1" style={{ color: healthColor }}>{liveOverallHealth}</div>
           <div className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: healthColor }}>{healthLabel}</div>
-          <div className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Company Health</div>
-          {industry && <div className="mt-3 text-[10px] text-center px-2 py-1 rounded-full" style={{ background: "hsl(0 0% 100% / 0.07)", color: "hsl(0 0% 100% / 0.4)" }}>{industry}</div>}
+          <div className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Company Health</div>
+          {industry && <div className="mt-3 text-[10px] text-center px-2 py-1 rounded-full" style={{ background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))" }}>{industry}</div>}
         </div>
       </div>
     </div>
@@ -626,6 +662,10 @@ export default function Dashboard() {
           criticalCount={criticalCount}
           pendingActions={pendingActions}
           nbaItems={nbaItems}
+          winItems={WIN_ITEMS}
+          winReactions={winReactions}
+          reactedTo={reactedTo}
+          onReact={addReaction}
         />
 
         {/* ════════════════════════════════════════
@@ -649,7 +689,6 @@ export default function Dashboard() {
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-elevated)" }}>
             <div className="relative overflow-hidden w-full flex items-center justify-center px-5 py-3 border-b" style={{ borderColor: "hsl(var(--border))" }}>
               <img src={diagBg2} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.13, mixBlendMode: "luminosity" }} />
-              <div className="absolute inset-0 pointer-events-none" style={{ background: "hsl(224 20% 12% / 0.8)" }} />
               <span className="relative z-10 section-label">Company Health</span>
             </div>
             <div className="p-5 flex flex-col items-center w-full">
@@ -693,7 +732,6 @@ export default function Dashboard() {
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
             <div className="relative overflow-hidden flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
               <img src={diagBg1} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.18, mixBlendMode: "luminosity" }} />
-              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, hsl(224 20% 12% / 0.9) 0%, hsl(224 20% 12% / 0.6) 60%, transparent 100%)" }} />
               <div className="relative z-10 flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center"
                   style={{ background: "hsl(38 92% 52% / 0.15)" }}>
@@ -721,9 +759,6 @@ export default function Dashboard() {
             {/* Header */}
             <div className="px-5 py-3.5 border-b relative overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
               <img src={diagBg2} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.16, mixBlendMode: "luminosity" }} />
-              <div className="absolute inset-0 pointer-events-none" style={{
-                background: "linear-gradient(90deg, hsl(224 20% 12% / 0.92) 0%, hsl(224 20% 12% / 0.7) 50%, transparent 100%)"
-              }} />
               <div className="relative z-10 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center"
@@ -819,7 +854,7 @@ export default function Dashboard() {
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
             <div className="relative overflow-hidden flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
               <img src={diagBg3} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.15, mixBlendMode: "luminosity" }} />
-              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, hsl(224 20% 12% / 0.92) 0%, hsl(224 20% 12% / 0.6) 60%, transparent 100%)" }} />
+
               <div className="relative z-10 flex items-center gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-amber flex-shrink-0" />
                 <span className="text-sm font-bold text-foreground">Initiatives Needing Attention</span>
@@ -870,7 +905,7 @@ export default function Dashboard() {
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
             <div className="relative overflow-hidden flex items-center gap-2.5 px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
               <img src={diagBg4} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.15, mixBlendMode: "luminosity" }} />
-              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, hsl(224 20% 12% / 0.92) 0%, hsl(224 20% 12% / 0.6) 60%, transparent 100%)" }} />
+
               <Target className="relative z-10 w-4 h-4 text-teal flex-shrink-0" />
               <span className="relative z-10 text-sm font-bold text-foreground">Portfolio Overview</span>
             </div>
@@ -893,43 +928,120 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Executive Load */}
-          <div className="rounded-2xl border overflow-hidden"
-            style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            <div className="relative overflow-hidden flex items-center gap-2.5 px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
-              <img src={diagBg5} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.15, mixBlendMode: "luminosity" }} />
-              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, hsl(224 20% 12% / 0.92) 0%, hsl(224 20% 12% / 0.6) 60%, transparent 100%)" }} />
-              <Users className="relative z-10 w-4 h-4 text-electric-blue flex-shrink-0" />
-              <span className="relative z-10 text-sm font-bold text-foreground">Executive Load</span>
-            </div>
-            <div>
-              {data.departments.slice(0, 4).map((d) => {
-                const load = d.capacityUsed;
-                const loadColor = load >= 90 ? "hsl(350 84% 62%)" : load >= 80 ? "hsl(38 92% 52%)" : "hsl(160 56% 42%)";
-                return (
-                  <div key={d.head} className="px-5 py-3.5 border-b last:border-0" style={{ borderColor: "hsl(var(--border))" }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <div className="text-sm font-semibold text-foreground">{d.head}</div>
-                        <div className="text-xs text-muted-foreground">{d.name.split(" ")[0]}</div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {d.blockedTasks > 0 && (
-                          <span className="text-[10px] text-amber bg-amber/10 px-1.5 py-0.5 rounded font-semibold">
-                            {d.blockedTasks} blocked
-                          </span>
-                        )}
-                        <span className="text-sm font-black font-mono" style={{ color: loadColor }}>{load}%</span>
-                      </div>
-                    </div>
-                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted))" }}>
-                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${load}%`, background: loadColor }} />
+          {/* Exec Capacity & Delegation Meter */}
+          {(() => {
+            const depts = [...data.departments].sort((a, b) => b.capacityUsed - a.capacityUsed);
+            const overloaded = depts.filter(d => d.capacityUsed >= 80);
+            const available  = depts.filter(d => d.capacityUsed < 65);
+            const avgLoad    = depts.length ? Math.round(depts.reduce((s, d) => s + d.capacityUsed, 0) / depts.length) : 0;
+
+            const delegationRecs: { action: string; from: string; to: string; toCapacity: number }[] = [];
+            if (overloaded.length > 0 && available.length > 0 && nbaItems.length > 0) {
+              nbaItems.slice(0, 3).forEach((item, i) => {
+                const receiver = available[i % available.length];
+                const sender   = overloaded[i % overloaded.length];
+                if (receiver && sender) {
+                  delegationRecs.push({
+                    action: item.title,
+                    from:   sender.head.split(" ").pop() ?? sender.head,
+                    to:     receiver.head,
+                    toCapacity: 100 - receiver.capacityUsed,
+                  });
+                }
+              });
+            }
+
+            return (
+              <div className="rounded-2xl border overflow-hidden"
+                style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
+                {/* Header */}
+                <div className="relative overflow-hidden flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
+                  <img src={diagBg5} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.15, mixBlendMode: "luminosity" }} />
+                  <div className="relative z-10 flex items-center gap-2.5">
+                    <Users className="w-4 h-4 text-electric-blue flex-shrink-0" />
+                    <div>
+                      <span className="text-sm font-bold text-foreground">Exec Capacity</span>
+                      <span className="text-[10px] text-muted-foreground ml-2">Avg {avgLoad}% loaded</span>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                  {overloaded.length > 0 && (
+                    <span className="relative z-10 text-[10px] font-bold px-2 py-0.5 rounded-full text-amber bg-amber/10 flex-shrink-0">
+                      {overloaded.length} at risk
+                    </span>
+                  )}
+                </div>
+
+                {/* Capacity bars */}
+                <div>
+                  {depts.slice(0, 4).map((d) => {
+                    const load = d.capacityUsed;
+                    const loadColor = load >= 90 ? "hsl(350 72% 46%)" : load >= 80 ? "hsl(38 82% 44%)" : "hsl(160 56% 36%)";
+                    const isOverloaded = load >= 80;
+                    return (
+                      <div key={d.head} className="px-5 py-3 border-b" style={{ borderColor: "hsl(var(--border))" }}>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <div className="text-xs font-semibold text-foreground truncate">{d.head}</div>
+                            <div className="text-[10px] text-muted-foreground hidden sm:block">{d.name.split(" ")[0]}</div>
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            {d.blockedTasks > 0 && (
+                              <span className="text-[10px] text-amber bg-amber/10 px-1.5 py-0.5 rounded font-semibold">
+                                {d.blockedTasks} blocked
+                              </span>
+                            )}
+                            {isOverloaded && (
+                              <span className="text-[10px] font-bold text-rose bg-rose/10 px-1.5 py-0.5 rounded">Overloaded</span>
+                            )}
+                            <span className="text-xs font-black font-mono" style={{ color: loadColor }}>{load}%</span>
+                          </div>
+                        </div>
+                        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted))" }}>
+                          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${load}%`, background: loadColor }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Auto-Recommended Delegations */}
+                {delegationRecs.length > 0 && (
+                  <div className="px-5 py-4">
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <ArrowRight className="w-3 h-3 text-electric-blue" />
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-electric-blue">Auto-Recommended Delegations</span>
+                    </div>
+                    <div className="space-y-2.5">
+                      {delegationRecs.map((rec, i) => (
+                        <div key={i} className="rounded-xl px-3 py-2.5 border flex items-start gap-2.5"
+                          style={{ background: "hsl(222 70% 46% / 0.04)", borderColor: "hsl(222 70% 50% / 0.14)" }}>
+                          <div className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5"
+                            style={{ background: "hsl(222 70% 46% / 0.12)" }}>
+                            <ArrowRight className="w-2.5 h-2.5 text-electric-blue" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-foreground leading-snug line-clamp-1 mb-1">{rec.action}</p>
+                            <div className="flex items-center gap-1 flex-wrap">
+                              <span className="text-[10px] text-muted-foreground">from {rec.from}</span>
+                              <span className="text-[10px] text-muted-foreground">→</span>
+                              <span className="text-[10px] font-semibold text-electric-blue">{rec.to}</span>
+                              <span className="text-[10px] text-muted-foreground">· {rec.toCapacity}% available</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {delegationRecs.length === 0 && (
+                  <div className="px-5 py-4 text-center">
+                    <p className="text-xs text-muted-foreground">All executives within capacity. No delegations needed.</p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* ════════════════════════════════════════
