@@ -613,9 +613,9 @@ export default function Reports() {
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             {[
               { label: "Full-Year Revenue", value: "$20.6M", sub: "+18% YoY", color: "text-signal-green", icon: DollarSign },
-              { label: "Org Health Peak", value: `${orgMetrics.avgExecutionHealth}`, sub: `+${orgMetrics.avgExecutionHealth - 58} pts since Jan`, color: "text-electric-blue", icon: Activity },
+              { label: "Org Health Peak", value: `${orgMetrics?.avg_execution_health ?? 0}`, sub: `+${(orgMetrics?.avg_execution_health ?? 58) - 58} pts since Jan`, color: "text-electric-blue", icon: Activity },
               { label: "Initiatives Closed", value: completedInitiatives + 14, sub: "Across all departments", color: "text-teal", icon: CheckCircle },
-              { label: "SOP Coverage", value: `${orgMetrics.sopCoverage}%`, sub: "+14 pts growth YoY", color: "text-signal-yellow", icon: FileText },
+              { label: "SOP Coverage", value: `${orgMetrics?.sop_coverage ?? 0}%`, sub: "+14 pts growth YoY", color: "text-signal-yellow", icon: FileText },
             ].map(({ label, value, sub, color, icon: Icon }) => (
               <div key={label} className="bg-card rounded-xl border-2 border-border p-4 shadow-card">
                 <div className="flex items-center justify-between mb-2">
