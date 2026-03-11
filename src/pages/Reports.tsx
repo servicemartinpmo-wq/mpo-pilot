@@ -667,10 +667,10 @@ export default function Reports() {
                 <div className="space-y-3">
                   {[
                     { label: "Revenue", current: "$20.6M", prev: "$17.5M", delta: "+18%", positive: true },
-                    { label: "Org Health Score", current: `${orgMetrics.avgExecutionHealth}`, prev: "58", delta: `+${orgMetrics.avgExecutionHealth - 58}`, positive: true },
-                    { label: "Maturity Score", current: `${orgMetrics.overallMaturityScore}`, prev: "50", delta: `+${orgMetrics.overallMaturityScore - 50}`, positive: true },
+                    { label: "Org Health Score", current: `${orgMetrics?.avg_execution_health ?? 0}`, prev: "58", delta: `+${(orgMetrics?.avg_execution_health ?? 58) - 58}`, positive: true },
+                    { label: "Maturity Score", current: `${orgMetrics?.overall_maturity_score ?? 0}`, prev: "50", delta: `+${(orgMetrics?.overall_maturity_score ?? 50) - 50}`, positive: true },
                     { label: "Team Size", current: "118 FTE", prev: "84 FTE", delta: "+40%", positive: true },
-                    { label: "SOP Coverage", current: `${orgMetrics.sopCoverage}%`, prev: "64%", delta: "+14pp", positive: true },
+                    { label: "SOP Coverage", current: `${orgMetrics?.sop_coverage ?? 0}%`, prev: "64%", delta: "+14pp", positive: true },
                   ].map(({ label, current, prev, delta, positive }) => (
                     <div key={label} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
                       <span className="text-xs text-muted-foreground w-32 flex-shrink-0">{label}</span>
