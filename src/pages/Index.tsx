@@ -453,13 +453,31 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
           </div>
         </div>
 
-        {/* Right: health score panel */}
+        {/* Right: org name + industry panel */}
         <div className="hidden lg:flex flex-col items-center justify-center px-8 border-l flex-shrink-0"
-          style={{ borderColor: "rgba(255,255,255,0.15)", minWidth: 160 }}>
-          <div className="text-[3.2rem] font-black font-mono leading-none mb-1" style={{ color: healthColor, textShadow: "0 2px 12px rgba(0,0,0,0.4)" }}>{liveOverallHealth}</div>
-          <div className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: healthColor }}>{healthLabel}</div>
-          <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.45)" }}>Company Health</div>
-          {industry && <div className="mt-3 text-[10px] text-center px-2 py-1 rounded-full" style={{ background: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.55)" }}>{industry}</div>}
+          style={{ borderColor: "rgba(255,255,255,0.15)", minWidth: 180 }}>
+          {orgName ? (
+            <div className="text-center">
+              <div className="text-[1.15rem] font-black text-white leading-tight tracking-tight mb-1"
+                style={{ textShadow: "0 2px 12px rgba(0,0,0,0.5)" }}>
+                {orgName}
+              </div>
+              {industry && (
+                <div className="text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ color: "rgba(255,255,255,0.50)" }}>
+                  {industry}
+                </div>
+              )}
+              <div className="mt-3 flex items-center gap-1.5 justify-center">
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(160 72% 60%)" }} />
+                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.40)" }}>Command Center Active</span>
+              </div>
+            </div>
+          ) : (
+            <div className="text-[11px] text-center" style={{ color: "rgba(255,255,255,0.35)" }}>
+              No org configured
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -732,11 +750,11 @@ export default function Dashboard() {
         />
 
         {/* ════════════════════════════════════════
-            KPI TILES + HEALTH SCORE
+            KPI TILES + DAILY BRIEFING
             ════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-5">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_380px] gap-5">
           {/* 4 KPI tiles */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 content-start">
             <KpiTile label="On Track" value={onTrackCount} sub="Initiatives healthy" signal="green" icon={CheckCircle}
               onClick={() => navigate("/initiatives")} />
             <KpiTile label="Needs Attention" value={atRiskCount} sub="At risk or delayed" signal="yellow" icon={Clock}
@@ -747,79 +765,9 @@ export default function Dashboard() {
               onClick={() => navigate("/action-items")} />
           </div>
 
-          {/* Company Health Score */}
-          <div className="rounded-2xl border overflow-hidden flex flex-col items-center"
-            style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-elevated)" }}>
-            <div className="relative overflow-hidden w-full flex items-center justify-center px-5 py-3 border-b" style={{ borderColor: "hsl(var(--border))" }}>
-              <img src={diagBg2} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.13, mixBlendMode: "luminosity" }} />
-              <span className="relative z-10 section-label">Company Health</span>
-            </div>
-            <div className="p-5 flex flex-col items-center w-full">
-            <CompanyHealthScore
-              score={liveOverallHealth}
-              trend={healthTrend as any ?? "Stable"}
-              dimensions={healthDimensions}
-              size="md"
-              showBreakdown={true}
-            />
-            <div className="mt-4 pt-4 w-full border-t flex items-center justify-center gap-2" style={{ borderColor: "hsl(var(--border))" }}>
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(160 56% 46%)" }} />
-              <span className="text-[10px] text-muted-foreground">{activeChains} operational chains active</span>
-            </div>
-            </div>{/* end p-5 content wrapper */}
-          </div>{/* end health card */}
-        </div>{/* end KPI grid */}
-
-        {/* ════════════════════════════════════════
-            STRATEGY SCORES
-            ════════════════════════════════════════ */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="w-3.5 h-3.5 text-electric-blue opacity-60" />
-            <span className="section-label">Executive Strategy Scores</span>
-          </div>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {strategyScores.map(score => (
-              <StrategyScoreCard key={score.id} score={score} />
-            ))}
-          </div>
-        </div>
-
-        {/* ════════════════════════════════════════
-            LAYER 2: Next Best Actions + Daily Briefing
-            ════════════════════════════════════════ */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_400px] gap-5">
-
-          {/* Next Best Actions */}
-          <div className="rounded-2xl border overflow-hidden"
-            style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            <div className="relative overflow-hidden flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
-              <img src={diagBg1} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.18, mixBlendMode: "luminosity" }} />
-              <div className="relative z-10 flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                  style={{ background: "hsl(38 92% 52% / 0.15)" }}>
-                  <Zap className="w-3.5 h-3.5 text-amber" />
-                </div>
-                <span className="text-sm font-bold text-foreground">Next Best Actions</span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-amber bg-amber/10">
-                  {nbaItems.length} queued
-                </span>
-              </div>
-              <Link to="/action-items" className="relative z-10 text-xs text-electric-blue hover:underline font-semibold flex items-center gap-0.5">
-                All actions <ChevronRight className="w-3 h-3" />
-              </Link>
-            </div>
-            <div className="px-5 pt-4 pb-2">
-              {[...nbaItems].sort((a, b) => PRIORITY_WEIGHT(a.priority) - PRIORITY_WEIGHT(b.priority)).map((item, i, arr) => (
-                <NbaItem key={i} idx={i} {...item} isLast={i === arr.length - 1} />
-              ))}
-            </div>
-          </div>
-
           {/* Daily Briefing */}
           <div className="rounded-2xl border overflow-hidden"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            {/* Header */}
             <div className="px-5 py-3.5 border-b relative overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
               <img src={diagBg2} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.16, mixBlendMode: "luminosity" }} />
               <div className="relative z-10 flex items-center justify-between">
@@ -838,7 +786,6 @@ export default function Dashboard() {
             </div>
 
             <div className="p-5 space-y-4">
-              {/* Key insight rows */}
               {[
                 criticalCount > 0 && {
                   icon: AlertTriangle, color: "text-rose",
@@ -869,11 +816,7 @@ export default function Dashboard() {
                   <p className="text-xs text-muted-foreground leading-relaxed">{item.text}</p>
                 </div>
               ))}
-
-              {/* Divider */}
               <div className="warm-divider" />
-
-              {/* Team Wins */}
               <div>
                 <p className="section-label mb-3">Team Wins</p>
                 <div className="space-y-2.5">
@@ -904,6 +847,49 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>{/* end KPI grid */}
+
+        {/* ════════════════════════════════════════
+            STRATEGY SCORES
+            ════════════════════════════════════════ */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp className="w-3.5 h-3.5 text-electric-blue opacity-60" />
+            <span className="section-label">Executive Strategy Scores</span>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {strategyScores.map(score => (
+              <StrategyScoreCard key={score.id} score={score} />
+            ))}
+          </div>
+        </div>
+
+        {/* ════════════════════════════════════════
+            LAYER 2: Next Best Actions (full-width)
+            ════════════════════════════════════════ */}
+        <div className="rounded-2xl border overflow-hidden"
+          style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
+          <div className="relative overflow-hidden flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
+            <img src={diagBg1} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.18, mixBlendMode: "luminosity" }} />
+            <div className="relative z-10 flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                style={{ background: "hsl(38 92% 52% / 0.15)" }}>
+                <Zap className="w-3.5 h-3.5 text-amber" />
+              </div>
+              <span className="text-sm font-bold text-foreground">Next Best Actions</span>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full text-amber bg-amber/10">
+                {nbaItems.length} queued
+              </span>
+            </div>
+            <Link to="/action-items" className="relative z-10 text-xs text-electric-blue hover:underline font-semibold flex items-center gap-0.5">
+              All actions <ChevronRight className="w-3 h-3" />
+            </Link>
+          </div>
+          <div className="px-5 pt-4 pb-2">
+            {[...nbaItems].sort((a, b) => PRIORITY_WEIGHT(a.priority) - PRIORITY_WEIGHT(b.priority)).map((item, i, arr) => (
+              <NbaItem key={i} idx={i} {...item} isLast={i === arr.length - 1} />
+            ))}
           </div>
         </div>
 
