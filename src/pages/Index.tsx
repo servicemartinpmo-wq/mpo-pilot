@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { insights, actionItems, initiatives } from "@/lib/pmoData";
 import pmoLogoLight from "@/assets/pmo-logo-light.png";
-import onboardNetwork from "@/assets/onboard-network.jpg";
+import onboardNetwork from "@/assets/onboard-network.png";
 import InsightCard from "@/components/InsightCard";
 import CompanyHealthScore from "@/components/CompanyHealthScore";
 import StrategyScoreCard from "@/components/StrategyScoreCard";
@@ -263,8 +263,8 @@ interface HeroBannerProps {
 }
 const BANNER_PHOTOS = [
   { src: "/banner-tiger.png",    label: "Tiger",            category: "Wildlife" },
-  { src: "/banner-mountain.jpg", label: "Mountain Range",   category: "Nature" },
-  { src: "/banner-city.jpg",     label: "City Skyline",     category: "Urban" },
+  { src: "/banner-mountain.png", label: "Mountain Range",   category: "Nature" },
+  { src: "/banner-city.png",     label: "City Skyline",     category: "Urban" },
   { src: "/banner-fields.png",   label: "Tuscan Fields",    category: "Nature" },
   { src: "/banner-hex.png",      label: "Dark Hex Grid",    category: "Abstract" },
   { src: "/banner-art.png",      label: "Bold Brushwork",   category: "Creative" },
@@ -662,8 +662,8 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
 // ── Creative Dashboard ────────────────────────────────────────────────────────
 const CREATIVE_PROJECTS = [
   { id: "cp1", title: "Brand Refresh", client: "Meridian Co.", status: "Active", img: "/banner-tiger.png", tileColor: "hsl(340 72% 52%)" },
-  { id: "cp2", title: "Campaign Strategy", client: "Apex Studios", status: "Review", img: "/banner-mountain.jpg", tileColor: "hsl(212 80% 52%)" },
-  { id: "cp3", title: "Editorial Design", client: "Novo Press", status: "Active", img: "/banner-city.jpg", tileColor: "hsl(174 68% 38%)" },
+  { id: "cp2", title: "Campaign Strategy", client: "Apex Studios", status: "Review", img: "/banner-mountain.png", tileColor: "hsl(212 80% 52%)" },
+  { id: "cp3", title: "Editorial Design", client: "Novo Press", status: "Active", img: "/banner-city.png", tileColor: "hsl(174 68% 38%)" },
   { id: "cp4", title: "Social Content", client: "Solaris Health", status: "Draft", img: "/banner-forest.png", tileColor: "hsl(258 68% 58%)" },
 ];
 
@@ -710,7 +710,7 @@ function CreativeDashboard({ firstName, nbaItems, projects }: {
           <Link to="/initiatives"
             className="col-span-12 lg:col-span-7 relative rounded-3xl overflow-hidden group"
             style={{ minHeight: 260, display: "block" }}>
-            <img src="/banner-mountain.jpg" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Featured" />
+            <img src="/banner-mountain.png" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Featured" />
             <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(8,6,18,0.82) 0%, rgba(8,6,18,0.22) 70%, transparent 100%)" }} />
             <div className="absolute inset-0 p-7 flex flex-col justify-between">
               <div>

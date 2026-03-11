@@ -46,8 +46,8 @@ export default function Admin() {
   )
   const HERO_PHOTOS = [
     { src: "/banner-tiger.png",    label: "Tiger",          category: "Wildlife" },
-    { src: "/banner-mountain.jpg", label: "Mountain Range", category: "Nature" },
-    { src: "/banner-city.jpg",     label: "City Skyline",   category: "Urban" },
+    { src: "/banner-mountain.png", label: "Mountain Range", category: "Nature" },
+    { src: "/banner-city.png",     label: "City Skyline",   category: "Urban" },
     { src: "/banner-fields.png",   label: "Tuscan Fields",  category: "Nature" },
     { src: "/banner-hex.png",      label: "Dark Hex Grid",  category: "Abstract" },
     { src: "/banner-art.png",      label: "Bold Brushwork", category: "Creative" },
