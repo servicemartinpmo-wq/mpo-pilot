@@ -58,7 +58,7 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
     requestAnimationFrame(() => setVisible(true));
     const timer = setTimeout(() => {
       setVisible(false);
-      setTimeout(() => onDismiss(toast.id), 300);
+      setTimeout(() => onDismiss(toast.id), 700);
     }, autoClose);
     return () => clearTimeout(timer);
   }, [toast.id, autoClose, onDismiss]);
@@ -66,8 +66,8 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
   return (
     <div
       className={cn(
-        "flex items-start gap-3 p-4 rounded-2xl border shadow-deep transition-all duration-300",
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+        "flex items-start gap-3 p-4 rounded-2xl border shadow-deep transition-all duration-700",
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       )}
       style={{
         background: `hsl(224 22% 10%)`,
@@ -84,7 +84,7 @@ function ToastItem({ toast, onDismiss }: ToastItemProps) {
         <div className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.55)" }}>{toast.message}</div>
       </div>
       <button
-        onClick={() => { setVisible(false); setTimeout(() => onDismiss(toast.id), 300); }}
+        onClick={() => { setVisible(false); setTimeout(() => onDismiss(toast.id), 700); }}
         className="w-5 h-5 rounded flex items-center justify-center hover:bg-white/[0.08] transition-all flex-shrink-0 mt-0.5">
         <X className="w-3 h-3" style={{ color: "hsl(0 0% 100% / 0.35)" }} />
       </button>

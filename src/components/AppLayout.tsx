@@ -27,13 +27,13 @@ const navItems = [
   { to: "/diagnostics",  label: "Diagnostics",  icon: Activity,        group: "command" },
   { to: "/crm",          label: "CRM",          icon: ShoppingBag,     group: "growth" },
   { to: "/marketing",    label: "Marketing",    icon: TrendingUp,      group: "growth" },
+  { to: "/pricing",      label: "Upgrade",      icon: CreditCard,      group: "tools" },
   { to: "/reports",      label: "Reports",      icon: FileText,        group: "tools" },
   { to: "/knowledge",    label: "Resource Hub", icon: BookOpen,        group: "tools" },
   { to: "/graph",        label: "Graph View",   icon: Network,         group: "tools" },
   { to: "/workflows",    label: "Workflows",    icon: GitBranch,       group: "tools" },
   { to: "/advisory",     label: "Advisory",     icon: Headphones,      group: "tools" },
   { to: "/integrations", label: "Integrations", icon: Plug,            group: "tools" },
-  { to: "/pricing",      label: "Upgrade",      icon: CreditCard,      group: "tools" },
   { to: "/admin",        label: "Systems",      icon: Settings,        group: "tools" },
 ];
 
@@ -408,20 +408,20 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                     )
                   }
                   style={({ isActive }) => ({
-                    background: isActive ? "hsl(222 88% 65% / 0.12)" : undefined,
-                    boxShadow: isActive ? "inset 2px 0 0 hsl(222 88% 65% / 0.6)" : undefined,
+                    background: isActive ? "hsl(272 60% 52% / 0.12)" : undefined,
+                    boxShadow: isActive ? "inset 2px 0 0 hsl(272 60% 52% / 0.65)" : undefined,
                   })}>
                   {({ isActive }) => (
                     <>
                       <Icon className="w-4 h-4 flex-shrink-0"
-                        style={{ color: isActive ? "hsl(222 88% 72%)" : "hsl(0 0% 100% / 0.38)" }} />
+                        style={{ color: isActive ? "hsl(272 60% 68%)" : "hsl(0 0% 100% / 0.38)" }} />
                       {!collapsed && (
                         <>
                           <span className="flex-1 truncate"
                             style={{ color: isActive ? "#fff" : "hsl(0 0% 100% / 0.58)" }}>
                             {label}
                           </span>
-                          {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(222 88% 65%)" }} />}
+                          {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(272 60% 52%)" }} />}
                         </>
                       )}
                     </>
