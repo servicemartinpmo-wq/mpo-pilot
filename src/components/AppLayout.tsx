@@ -446,14 +446,42 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   const TRACE_RED   = "hsl(0 84% 60%)";
 
   function navTrace(to: string): string | null {
+    const acked = viewedRedPaths.has(to);
     if (to === "/" || to === "/diagnostics" || to === "/departments") {
-      return healthScore >= 70 ? TRACE_GREEN : healthScore >= 50 ? TRACE_AMBER : TRACE_RED;
+      const c = healthScore >= 70 ? TRACE_GREEN : healthScore >= 50 ? TRACE_AMBER : TRACE_RED;
+      return (c === TRACE_RED && acked) ? null : c;
     }
-    if (to === "/action-items") return overdueCount > 0 ? TRACE_RED : TRACE_GREEN;
-    if (to === "/initiatives")  return blockedCount > 0 ? TRACE_RED : atRiskCount > 0 ? TRACE_AMBER : TRACE_GREEN;
+    if (to === "/action-items") {
+      const c = overdueCount > 0 ? TRACE_RED : TRACE_GREEN;
+      return (c === TRACE_RED && acked) ? null : c;
+    }
+    if (to === "/initiatives") {
+      const c = blockedCount > 0 ? TRACE_RED : atRiskCount > 0 ? TRACE_AMBER : TRACE_GREEN;
+      return (c === TRACE_RED && acked) ? null : c;
+    }
     if (to === "/decisions")    return healthScore >= 70 ? TRACE_GREEN : TRACE_AMBER;
     return null;
   }
+
+  const ACK_KEY = "apphia_ack_paths";
+  const [viewedRedPaths, setViewedRedPaths] = useState<Set<string>>(() => {
+    try {
+      const raw = sessionStorage.getItem(ACK_KEY);
+      return raw ? new Set(JSON.parse(raw) as string[]) : new Set<string>();
+    } catch { return new Set<string>(); }
+  });
+
+  useEffect(() => {
+    const path = location.pathname;
+    const trace = navTrace(path);
+    if (trace !== TRACE_RED) return;
+    setViewedRedPaths(prev => {
+      if (prev.has(path)) return prev;
+      const next = new Set(prev).add(path);
+      try { sessionStorage.setItem(ACK_KEY, JSON.stringify([...next])); } catch { /* */ }
+      return next;
+    });
+  }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sidebarWidth = collapsed ? 58 : 234;
 
@@ -786,7 +814,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                 })}>
                 {({ isActive }) => {
                   const trace = navTrace(to);
-                  const needsAttention = !isActive && trace === TRACE_RED;
+                  const needsAttention = !isActive && trace === TRACE_RED && !viewedRedPaths.has(to);
                   const isAmber = !isActive && trace === TRACE_AMBER;
                   const iconCol = isActive
                     ? theme.accentIcon
@@ -871,7 +899,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                       })}>
                       {({ isActive }) => {
                         const trace = navTrace(to);
-                        const needsAttention = !isActive && trace === TRACE_RED;
+                        const needsAttention = !isActive && trace === TRACE_RED && !viewedRedPaths.has(to);
                         const isAmber = !isActive && trace === TRACE_AMBER;
                         const iconCol = isActive
                           ? theme.accentIcon
@@ -934,7 +962,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                   })}>
                   {({ isActive }) => {
                     const trace = navTrace(to);
-                    const needsAttention = !isActive && trace === TRACE_RED;
+                    const needsAttention = !isActive && trace === TRACE_RED && !viewedRedPaths.has(to);
                     const isAmber = !isActive && trace === TRACE_AMBER;
                     const iconCol = isActive
                       ? "hsl(160 56% 54%)"
@@ -1001,7 +1029,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                   })}>
                   {({ isActive }) => {
                     const trace = navTrace(to);
-                    const needsAttention = !isActive && trace === TRACE_RED;
+                    const needsAttention = !isActive && trace === TRACE_RED && !viewedRedPaths.has(to);
                     const isAmber = !isActive && trace === TRACE_AMBER;
                     const iconCol = isActive
                       ? "hsl(272 60% 70%)"
