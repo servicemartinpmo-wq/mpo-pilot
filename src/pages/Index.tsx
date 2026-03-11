@@ -249,13 +249,14 @@ interface HeroBannerProps {
   reactedTo: Record<string, string>;
   onReact: (winId: string, emoji: string) => void;
 }
-export const BANNER_PHOTOS = [
-  { src: "/banner-lake2.png",  label: "Alpine Lake",      category: "Nature" },
-  { src: "/banner-lake.png",   label: "Mountain Lake",    category: "Nature" },
-  { src: "/banner-fields.png", label: "Tuscan Fields",    category: "Nature" },
-  { src: "/banner-hex.png",    label: "Dark Hex Grid",    category: "Abstract" },
-  { src: "/banner-art.png",    label: "Bold Brushwork",   category: "Creative" },
-  { src: "/banner-space.png",  label: "Deep Space",       category: "Cosmos" },
+const BANNER_PHOTOS = [
+  { src: "/banner-tiger.png",    label: "Tiger",            category: "Wildlife" },
+  { src: "/banner-mountain.jpg", label: "Mountain Range",   category: "Nature" },
+  { src: "/banner-city.jpg",     label: "City Skyline",     category: "Urban" },
+  { src: "/banner-fields.png",   label: "Tuscan Fields",    category: "Nature" },
+  { src: "/banner-hex.png",      label: "Dark Hex Grid",    category: "Abstract" },
+  { src: "/banner-art.png",      label: "Bold Brushwork",   category: "Creative" },
+  { src: "/banner-space.png",    label: "Deep Space",       category: "Cosmos" },
 ];
 const DEFAULT_HERO_PHOTO = 0;
 
@@ -266,7 +267,7 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
     return isNaN(saved) || saved >= BANNER_PHOTOS.length ? DEFAULT_HERO_PHOTO : saved;
   });
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const total = 4;
+  const total = 3;
 
   const resetTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -356,28 +357,8 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
               </div>
             )}
 
-            {/* Slide 2 — Performance snapshot */}
+            {/* Slide 2 — Today's priorities */}
             {slide === 1 && (
-              <div key="s1">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: "rgba(255,255,255,0.52)" }}>Performance at a glance</p>
-                <div className="flex gap-5 flex-wrap">
-                  {[
-                    { value: onTrackCount,   label: "On Track",        color: "hsl(160 72% 60%)" },
-                    { value: atRiskCount,    label: "Needs Attention",  color: "hsl(38 92% 62%)" },
-                    { value: criticalCount,  label: "Critical",         color: "hsl(350 82% 68%)" },
-                    { value: pendingActions, label: "Open Actions",     color: "hsl(222 88% 72%)" },
-                  ].map(({ value, label, color }) => (
-                    <div key={label}>
-                      <div className="text-[1.8rem] font-black leading-none font-mono mb-0.5" style={{ color }}>{value}</div>
-                      <div className="text-[10px] font-medium" style={{ color: "rgba(255,255,255,0.52)" }}>{label}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Slide 3 — Today's priorities */}
-            {slide === 2 && (
               <div key="s2">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: "rgba(255,255,255,0.52)" }}>Your priorities today</p>
                 <div className="space-y-1.5">
@@ -392,8 +373,8 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
               </div>
             )}
 
-            {/* Slide 4 — Team Wins */}
-            {slide === 3 && (
+            {/* Slide 3 — Team Wins */}
+            {slide === 2 && (
               <div key="s3">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: "rgba(255,255,255,0.52)" }}>Team wins</p>
                 <div className="space-y-2">

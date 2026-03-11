@@ -45,16 +45,17 @@ export default function Admin() {
     typeof window !== "undefined" ? (localStorage.getItem("apphia_banner_theme") || "deep-space") : "deep-space"
   )
   const HERO_PHOTOS = [
-    { src: "/banner-lake2.png",  label: "Alpine Lake",    category: "Nature" },
-    { src: "/banner-lake.png",   label: "Mountain Lake",  category: "Nature" },
-    { src: "/banner-fields.png", label: "Tuscan Fields",  category: "Nature" },
-    { src: "/banner-hex.png",    label: "Dark Hex Grid",  category: "Abstract" },
-    { src: "/banner-art.png",    label: "Bold Brushwork", category: "Creative" },
-    { src: "/banner-space.png",  label: "Deep Space",     category: "Cosmos" },
+    { src: "/banner-tiger.png",    label: "Tiger",          category: "Wildlife" },
+    { src: "/banner-mountain.jpg", label: "Mountain Range", category: "Nature" },
+    { src: "/banner-city.jpg",     label: "City Skyline",   category: "Urban" },
+    { src: "/banner-fields.png",   label: "Tuscan Fields",  category: "Nature" },
+    { src: "/banner-hex.png",      label: "Dark Hex Grid",  category: "Abstract" },
+    { src: "/banner-art.png",      label: "Bold Brushwork", category: "Creative" },
+    { src: "/banner-space.png",    label: "Deep Space",     category: "Cosmos" },
   ];
   const [heroPhoto, setHeroPhoto] = useState(() => {
     const saved = typeof window !== "undefined" ? parseInt(localStorage.getItem("apphia_hero_photo") ?? "") : NaN;
-    return isNaN(saved) || saved >= 6 ? 0 : saved;
+    return isNaN(saved) || saved >= HERO_PHOTOS.length ? 0 : saved;
   });
   const changeHeroPhoto = (i: number) => {
     setHeroPhoto(i);
