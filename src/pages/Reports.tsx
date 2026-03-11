@@ -366,23 +366,23 @@ export default function Reports() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {[...departments].sort((a, b) => b.maturityScore - a.maturityScore).map(d => (
+                  {[...departments].sort((a, b) => (b.maturity_score ?? 0) - (a.maturity_score ?? 0)).map(d => (
                     <tr key={d.id} className="hover:bg-secondary/30 transition-colors">
                       <td className="px-4 py-2.5 font-medium text-foreground">{d.name}</td>
                       <td className="px-4 py-2.5">
                         <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium",
-                          d.maturityTier === "Optimized" ? "bg-signal-green/10 text-signal-green" :
-                          d.maturityTier === "Managed" ? "bg-electric-blue/10 text-electric-blue" :
-                          d.maturityTier === "Structured" ? "bg-teal/10 text-teal" :
-                          d.maturityTier === "Developing" ? "bg-signal-yellow/10 text-signal-yellow" :
+                          d.maturity_tier === "Optimized" ? "bg-signal-green/10 text-signal-green" :
+                          d.maturity_tier === "Managed" ? "bg-electric-blue/10 text-electric-blue" :
+                          d.maturity_tier === "Structured" ? "bg-teal/10 text-teal" :
+                          d.maturity_tier === "Developing" ? "bg-signal-yellow/10 text-signal-yellow" :
                           "bg-signal-red/10 text-signal-red"
-                        )}>{d.maturityTier}</span>
+                        )}>{d.maturity_tier}</span>
                       </td>
-                      <td className="px-4 py-2.5 font-mono font-bold text-foreground">{d.maturityScore}</td>
-                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.executionHealth}</td>
-                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.capacityUsed}%</td>
-                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.riskScore}</td>
-                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.sopAdherence}%</td>
+                      <td className="px-4 py-2.5 font-mono font-bold text-foreground">{d.maturity_score ?? 0}</td>
+                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.execution_health ?? 0}</td>
+                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.capacity_used ?? 0}%</td>
+                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.risk_score ?? 0}</td>
+                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.sop_adherence ?? 0}%</td>
                     </tr>
                   ))}
                 </tbody>
