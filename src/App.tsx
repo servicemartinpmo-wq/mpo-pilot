@@ -86,12 +86,10 @@ function AppRoutes() {
     );
   }
 
-  // Onboarding not complete
-  if (profile && !profile.onboardingComplete) {
+  // Onboarding not complete or profile row missing in DB
+  if (!profile || !profile.onboardingComplete) {
     const handleOnboardingComplete = async (p: CompanyProfile) => {
-      // Save to companyStore (legacy)
       saveProfile(p);
-      // Also save to DB
       await updateProfile({
         userName: p.userName,
         orgName: p.orgName,
@@ -110,15 +108,6 @@ function AppRoutes() {
       });
     };
     return <OnboardingWizard onComplete={handleOnboardingComplete} />;
-  }
-
-  // Profile still loading
-  if (!profile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="w-8 h-8 border-2 border-electric-blue/30 border-t-electric-blue rounded-full animate-spin" />
-      </div>
-    );
   }
 
   const legacyProfile: CompanyProfile = {

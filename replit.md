@@ -52,7 +52,7 @@ A PMO/Ops command center SPA built with React, Vite, TypeScript, Tailwind CSS, a
 - `NotificationsPanel.tsx` — Slide-in notifications panel from DB `notifications` table
 - `InsightCard.tsx` — Intelligence signal cards ranked by priority score
 - `OrgHealthOrb.tsx` — Living 3D-style health orb
-- `OnboardingWizard.tsx` — 4-step onboarding + 6-slide diagnostic deck
+- `OnboardingWizard.tsx` — 4-step onboarding + 6-slide diagnostic deck + 5-slide app walkthrough
 - `PageBanner.tsx` — Contextual page banners
 
 ## Project Structure
@@ -128,6 +128,13 @@ Supabase project: `okgpcsfqkshdzbfuigfq`. Migrations in `supabase/migrations/`.
 - **Initiatives page**: Dual view (Table / Cards toggle). Table shows Priority Score, Strategic Alignment, Estimated Impact, Dependency Risk, Progress, Owner, Due Date — all sortable. Cards show full detail.
 - **InsightCard**: Standardized 4-section format — Situation (always visible), Diagnosis, Recommendation, System Remedy (expandable). Scored mini-bar row for Impact/Urgency/Risk/Leverage.
 - **FrameworkPanel**: Grid of labeled framework cards showing full names (Porter's Five Forces, Balanced Scorecard, OKRs, Lean, Six Sigma, TOC, Rumelt) with status chips
+
+## Features (Recent)
+
+- **App Walkthrough**: 5-slide interactive walkthrough shown after onboarding diagnostic deck (before launch). Covers Dashboard, Work/Strategy, Diagnostics, Reports, and Advisory. Skip button available. Can be triggered again from Help section.
+- **Guided / Simple Mode**: `useUserMode` hook returns `isSimpleMode`. `Dashboard` component shows `SimpleDashboard` when in simple mode — plain-language KPIs, priority list, setup checklist, quick links, mode switch. Mode also shown in onboarding selection screen for small orgs.
+- **Paste-as-Attachment**: In Reports (Custom Report tab) and CreatorLab, pasting text converts it to an attachment card instead of raw text. For paid tiers only (default=paid; free tier set via `localStorage.setItem("apphia_tier","free")`). Short pastes (<5 words) in CreatorLab pass through as normal.
+- **Dashboard hang fix**: App.tsx now treats a null/missing profile as needing onboarding (shows wizard) instead of rendering an infinite loading spinner. All hardcoded dark border values in Dashboard replaced with `hsl(var(--border))` and `hsl(var(--muted))` for light theme compatibility.
 
 ## Notes
 

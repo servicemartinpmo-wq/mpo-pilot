@@ -1101,6 +1101,146 @@ function DiagnosticDeck({
 }
 
 /* ══════════════════════════════════════════════════════════════════════════ */
+/*  APP WALKTHROUGH                                                           */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+const WALKTHROUGH_SLIDES = [
+  {
+    icon: Activity,
+    accent: "hsl(222 88% 65%)",
+    accentBg: "hsl(222 88% 65% / 0.12)",
+    label: "COMMAND CENTER",
+    headline: "Your mission control, always on.",
+    sub: "The Dashboard shows your company health score, live signals, and the most important actions — in one view, at a glance.",
+    bullets: ["Real-time health score across 5 dimensions", "Next Best Actions, prioritized automatically", "Daily briefing with intelligence signals"],
+  },
+  {
+    icon: Target,
+    accent: "hsl(38 92% 52%)",
+    accentBg: "hsl(38 92% 52% / 0.12)",
+    label: "WORK & STRATEGY",
+    headline: "Plan, track, and execute your work.",
+    sub: "Initiatives, Action Items, Projects, and Agile boards all connect. What you start here, your whole team sees.",
+    bullets: ["Initiatives — company-wide priorities and OKRs", "Agile boards — sprints, backlog, and bug tracking", "Action Items — every task, assigned and due-dated"],
+  },
+  {
+    icon: Brain,
+    accent: "hsl(268 62% 65%)",
+    accentBg: "hsl(268 62% 65% / 0.12)",
+    label: "DIAGNOSTICS & INTELLIGENCE",
+    headline: "Know your risks before they become problems.",
+    sub: "Automated diagnostics scan your org 24/7. Signals surface risks, bottlenecks, and opportunities — calibrated to your industry.",
+    bullets: ["Department health scores with trend lines", "Critical signal alerts sent to your dashboard", "CRM, pipeline, and team load diagnostics"],
+  },
+  {
+    icon: BarChart2,
+    accent: "hsl(174 68% 42%)",
+    accentBg: "hsl(174 68% 42% / 0.12)",
+    label: "REPORTS & DATA",
+    headline: "Turn data into decisions, not documents.",
+    sub: "Executive reports, KPI trend charts, and industry benchmarking — all auto-generated from your live org data.",
+    bullets: ["Executive, operations, and department reports", "KPI trend charts vs industry benchmarks", "Custom report builder — paste text, upload files"],
+  },
+  {
+    icon: Sparkles,
+    accent: "hsl(38 92% 52%)",
+    accentBg: "hsl(38 92% 52% / 0.12)",
+    label: "ADVISORY & AUTOMATION",
+    headline: "Your always-on strategic partner.",
+    sub: "Industry advisors, 24 built-in frameworks, and automation rules that run your playbooks while you focus on the business.",
+    bullets: ["Industry-specific advisors for 7 sectors", "24 frameworks: SWOT, OKR, BCG, McKinsey, and more", "Automation rules — set triggers, let the engine run"],
+  },
+];
+
+function AppWalkthrough({ onComplete }: { onComplete: () => void }) {
+  const [slide, setSlide] = useState(0);
+  const isLast = slide === WALKTHROUGH_SLIDES.length - 1;
+  const s = WALKTHROUGH_SLIDES[slide];
+  const Icon = s.icon;
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
+      style={{ background: "hsl(225 48% 6%)", fontFamily: "Inter, sans-serif" }}>
+      <div className="absolute inset-0 pointer-events-none"
+        style={{ backgroundImage: `radial-gradient(circle, hsl(222 88% 65% / 0.06) 0%, transparent 70%)`, backgroundSize: "cover" }} />
+
+      <div className="relative w-full max-w-2xl mx-auto px-6 flex flex-col items-center">
+
+        {/* Progress dots */}
+        <div className="flex items-center gap-2 mb-10">
+          {WALKTHROUGH_SLIDES.map((_, i) => (
+            <div key={i} className="transition-all duration-300 rounded-full cursor-pointer"
+              onClick={() => setSlide(i)}
+              style={{
+                width: i === slide ? 28 : 8, height: 8,
+                background: i === slide ? s.accent : i < slide ? "hsl(0 0% 100% / 0.3)" : "hsl(0 0% 100% / 0.12)",
+              }} />
+          ))}
+        </div>
+
+        {/* Slide content */}
+        <div key={slide} className="w-full text-center animate-fade-in">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6"
+            style={{ background: s.accentBg, border: `1.5px solid ${s.accent}3a` }}>
+            <Icon className="w-8 h-8" style={{ color: s.accent }} />
+          </div>
+
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold mb-4 tracking-wider"
+            style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.12)", color: s.accent }}>
+            {s.label}
+          </div>
+
+          <h2 className="text-3xl font-black text-white mb-3 leading-tight">{s.headline}</h2>
+          <p className="text-sm text-white/55 leading-relaxed max-w-lg mx-auto mb-8">{s.sub}</p>
+
+          <div className="inline-flex flex-col gap-3 text-left mb-10">
+            {s.bullets.map((b, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                  style={{ background: s.accentBg }}>
+                  <Check className="w-3 h-3" style={{ color: s.accent }} />
+                </div>
+                <span className="text-sm text-white/75 leading-snug">{b}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="flex items-center gap-4">
+          {slide > 0 && (
+            <button onClick={() => setSlide(s => s - 1)}
+              className="flex items-center gap-2 text-sm font-semibold text-white/40 hover:text-white/70 transition-colors px-4 py-2.5">
+              <ArrowLeft className="w-4 h-4" /> Back
+            </button>
+          )}
+          <button
+            onClick={() => isLast ? onComplete() : setSlide(s => s + 1)}
+            className="flex items-center gap-2.5 px-8 py-3 rounded-2xl text-sm font-black text-white transition-all hover:scale-105 active:scale-95"
+            style={{ background: `linear-gradient(135deg, ${s.accent}, hsl(183 62% 42%))`, boxShadow: `0 0 32px ${s.accent}44` }}>
+            {isLast ? (
+              <><Zap className="w-4 h-4" /> Enter Your Command Center</>
+            ) : (
+              <>Next <ChevronRight className="w-4 h-4" /></>
+            )}
+          </button>
+          {!isLast && (
+            <button onClick={onComplete}
+              className="text-xs text-white/30 hover:text-white/50 transition-colors px-4 py-2.5">
+              Skip tour
+            </button>
+          )}
+        </div>
+
+        <p className="mt-8 text-[11px] text-white/20">
+          {slide + 1} of {WALKTHROUGH_SLIDES.length} — You can revisit this walkthrough in the Help section anytime
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
 /*  MAIN WIZARD                                                               */
 /* ══════════════════════════════════════════════════════════════════════════ */
 interface Props {
@@ -1115,6 +1255,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
   const [customDept, setCustomDept] = useState("");
   const [showDiagnostic, setShowDiagnostic] = useState(false);
   const [showModeSelect, setShowModeSelect] = useState(false);
+  const [showWalkthrough, setShowWalkthrough] = useState(false);
   const [savedProfile, setSavedProfile] = useState<CompanyProfile | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -1162,6 +1303,11 @@ export default function OnboardingWizard({ onComplete }: Props) {
     try { localStorage.setItem("apphia_user_mode", mode === "guided" ? "simple" : "founder"); } catch {}
     setShowModeSelect(false);
     setShowDiagnostic(true);
+  }
+
+  function goToWalkthrough() {
+    setShowDiagnostic(false);
+    setShowWalkthrough(true);
   }
 
   function launch() {
@@ -1289,8 +1435,12 @@ export default function OnboardingWizard({ onComplete }: Props) {
     );
   }
 
+  if (showWalkthrough) {
+    return <AppWalkthrough onComplete={launch} />;
+  }
+
   if (showDiagnostic) {
-    return <DiagnosticDeck form={form as Record<string, unknown>} onLaunch={launch} />;
+    return <DiagnosticDeck form={form as Record<string, unknown>} onLaunch={goToWalkthrough} />;
   }
 
   return (

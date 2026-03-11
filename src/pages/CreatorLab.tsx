@@ -4,7 +4,7 @@
  * [Apphia.Guard] For app creator only — not linked in navigation
  */
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { loadProfile, saveProfile, applyAccentColor, applyFont } from "@/lib/companyStore";
 import { logCreatorPrompt, getCreatorPrompts } from "@/lib/supabaseDataService";
@@ -14,7 +14,8 @@ import { cn } from "@/lib/utils";
 import {
   Lock, Unlock, Terminal, Palette, Type, Layout, Zap, Eye, EyeOff,
   RefreshCw, Save, ChevronRight, Code2, Database, Shield, Cpu,
-  ToggleLeft, ToggleRight, Star, Layers, Globe, ArrowLeft, Check
+  ToggleLeft, ToggleRight, Star, Layers, Globe, ArrowLeft, Check,
+  Paperclip, X, FileText,
 } from "lucide-react";
 
 const PASSPHRASE = "apphia-creator";
@@ -91,6 +92,28 @@ export default function CreatorLab() {
   // Prompt editor
   const [prompt, setPrompt] = useState("");
   const [promptLog, setPromptLog] = useState<{ text: string; ts: string }[]>([]);
+  const [promptAttachments, setPromptAttachments] = useState<{ id: string; name: string; content: string; words: number }[]>([]);
+  const [pasteBadge, setPasteBadge] = useState<string | null>(null);
+
+  const isPaidTier = (() => {
+    try { return localStorage.getItem("apphia_tier") !== "free"; } catch { return true; }
+  })();
+
+  const handlePromptPaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    if (!isPaidTier) return;
+    const text = e.clipboardData.getData("text");
+    if (!text.trim() || text.trim().split(/\s+/).length < 5) return;
+    e.preventDefault();
+    const words = text.trim().split(/\s+/).length;
+    setPromptAttachments(prev => [...prev, {
+      id: Math.random().toString(36).slice(2),
+      name: text.trim().slice(0, 55) + (text.trim().length > 55 ? "…" : ""),
+      content: text.trim(),
+      words,
+    }]);
+    setPasteBadge(`Attached · ${words} words`);
+    setTimeout(() => setPasteBadge(null), 2500);
+  }, [isPaidTier]);
 
   // Suggestions
   const [suggestions, setSuggestions] = useState<Suggestion[]>(
@@ -243,14 +266,47 @@ export default function CreatorLab() {
             Type instructions to customize the app. These are logged and will be processed by the Apphia configuration engine.
           </p>
           <div className="relative">
+            {pasteBadge && (
+              <div className="absolute -top-8 left-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-electric-blue bg-electric-blue/10 border border-electric-blue/20 z-10">
+                <Paperclip className="w-3 h-3" /> {pasteBadge}
+              </div>
+            )}
             <textarea
               value={prompt}
               onChange={e => setPrompt(e.target.value)}
-              placeholder={`e.g. "Change the brand name to Apphia" or "Add a new KPI called Revenue Health to the dashboard" or "Lock Diagnostics for Free tier users"`}
+              onPaste={handlePromptPaste}
+              placeholder={isPaidTier
+                ? `Paste longer text to attach it, or type a short instruction here…`
+                : `e.g. "Change the brand name to Apphia" or "Add a new KPI called Revenue Health to the dashboard"`}
               rows={4}
               className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-electric-blue/30 resize-none text-foreground placeholder:text-muted-foreground"
             />
           </div>
+          {isPaidTier && (
+            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <Paperclip className="w-3 h-3" /> Paste 5+ words to attach as a document block
+            </div>
+          )}
+          {promptAttachments.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Attached ({promptAttachments.length})</p>
+              {promptAttachments.map(att => (
+                <div key={att.id} className="flex items-start gap-3 p-3 rounded-xl border border-border bg-secondary/50">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "hsl(var(--electric-blue) / 0.1)" }}>
+                    <FileText className="w-3.5 h-3.5 text-electric-blue" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">{att.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{att.words} words</p>
+                  </div>
+                  <button onClick={() => setPromptAttachments(prev => prev.filter(a => a.id !== att.id))}
+                    className="flex-shrink-0 opacity-30 hover:opacity-70 transition-opacity mt-0.5">
+                    <X className="w-3.5 h-3.5 text-muted-foreground" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">{prompt.length}/500 characters</span>
             <button

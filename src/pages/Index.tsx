@@ -8,7 +8,8 @@ import {
   AlertTriangle, Users, Clock, Target, CheckCircle,
   ChevronRight, Zap, Activity, X, CalendarDays, UserCheck,
   Brain, Sparkles, TrendingUp, ArrowRight, Star,
-  Coffee, Sunrise, Sun, Moon, ChevronDown,
+  Coffee, Sunrise, Sun, Moon, ChevronDown, ListChecks,
+  BarChart3, BookOpen, Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,6 +17,7 @@ import { useAppData } from "@/hooks/useAppData";
 import { useAuth } from "@/hooks/useAuth";
 import { getNextBestActions } from "@/lib/supabaseDataService";
 import { useStrategyScores } from "@/hooks/useStrategyScores";
+import { useUserMode } from "@/hooks/useUserMode";
 
 // ── Day / time helpers ──────────────────────────────────
 function getTimeOfDay(): "morning" | "afternoon" | "evening" | "night" {
@@ -153,7 +155,7 @@ function NbaItem({ title, description, priority, category, idx }: {
 }) {
   const isHigh = priority === "high" || priority === "critical";
   return (
-    <div className="flex items-start gap-3.5 py-3 border-b last:border-0" style={{ borderColor: "hsl(224 16% 20%)" }}>
+    <div className="flex items-start gap-3.5 py-3 border-b last:border-0" style={{ borderColor: "hsl(var(--border))" }}>
       <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 text-[11px] font-black"
         style={{
           background: idx === 0 ? "hsl(38 92% 52% / 0.15)" : "hsl(224 18% 20%)",
@@ -192,7 +194,7 @@ function ScoreDim({ label, score }: { label: string; score: number }) {
   return (
     <div className="flex items-center gap-3">
       <span className="text-xs text-muted-foreground w-32 flex-shrink-0 truncate">{label}</span>
-      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(224 16% 20%)" }}>
+      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted))" }}>
         <div className="h-full rounded-full transition-all duration-700" style={{ width: `${score}%`, background: color }} />
       </div>
       <span className="text-[11px] font-mono font-semibold w-7 text-right" style={{ color }}>{score}</span>
@@ -200,9 +202,138 @@ function ScoreDim({ label, score }: { label: string; score: number }) {
   );
 }
 
+// ── Guided / Simple Mode Dashboard ──────────────────────────────────────────
+function SimpleDashboard({ firstName, kpis, nbaItems }: {
+  firstName: string;
+  kpis: { onTrack: number; atRisk: number; pendingActions: number; criticalSignals: number };
+  nbaItems: { title: string; description?: string; priority?: string }[];
+}) {
+  const { setMode } = useUserMode();
+  const setupSteps = [
+    { label: "Completed your intake & diagnostic", done: true },
+    { label: "Review your top priority actions below", done: nbaItems.length > 0 },
+    { label: "Explore your Initiatives page", done: false },
+    { label: "Check your Diagnostics for any risks", done: false },
+    { label: "Browse the Resource Hub for frameworks", done: false },
+  ];
+  const completedSteps = setupSteps.filter(s => s.done).length;
+  return (
+    <div className="flex flex-col min-h-screen bg-background">
+      <UpgradeBanner storageKey="dash_upgrade_banner" />
+      <div className="flex-1 p-6 max-w-3xl mx-auto w-full space-y-6">
+        <div className="rounded-2xl border p-6" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-black text-foreground mb-1">
+                {firstName ? `Welcome back, ${firstName}.` : "Welcome back."}
+              </h1>
+              <p className="text-sm text-muted-foreground">Here's what needs your attention today.</p>
+            </div>
+            <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--electric-blue) / 0.1)" }}>
+              <Zap className="w-5 h-5 text-electric-blue" />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { label: "On Track", value: kpis.onTrack, color: "text-signal-green", bg: "bg-signal-green/8" },
+              { label: "Needs Attention", value: kpis.atRisk, color: "text-amber", bg: "bg-amber/8" },
+              { label: "Open Actions", value: kpis.pendingActions, color: "text-electric-blue", bg: "bg-electric-blue/8" },
+              { label: "Critical Signals", value: kpis.criticalSignals, color: "text-rose", bg: "bg-rose/8" },
+            ].map(({ label, value, color, bg }) => (
+              <div key={label} className={cn("rounded-xl p-4 text-center border border-border", bg)}>
+                <div className={cn("text-3xl font-black font-mono", color)}>{value}</div>
+                <div className="text-xs text-muted-foreground mt-1">{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border p-6" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+          <div className="flex items-center gap-2.5 mb-4">
+            <ListChecks className="w-4 h-4 text-amber" />
+            <span className="text-sm font-bold text-foreground">Top priorities right now</span>
+          </div>
+          {nbaItems.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No open actions — you're all caught up.</p>
+          ) : (
+            <div className="space-y-3">
+              {nbaItems.slice(0, 5).map((item, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-border bg-secondary/40">
+                  <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-black"
+                    style={{ background: i === 0 ? "hsl(38 92% 52% / 0.15)" : "hsl(var(--muted))", color: i === 0 ? "hsl(38 92% 55%)" : "hsl(var(--muted-foreground))" }}>
+                    {i + 1}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                    {item.description && <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{item.description}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="rounded-2xl border p-6" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+          <div className="flex items-center gap-2.5 mb-4">
+            <CheckCircle className="w-4 h-4 text-teal" />
+            <span className="text-sm font-bold text-foreground">Getting started</span>
+            <span className="ml-auto text-xs text-muted-foreground font-mono">{completedSteps}/{setupSteps.length}</span>
+          </div>
+          <div className="h-2 rounded-full bg-secondary overflow-hidden mb-4">
+            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${(completedSteps / setupSteps.length) * 100}%`, background: "hsl(var(--electric-blue))" }} />
+          </div>
+          <div className="space-y-2.5">
+            {setupSteps.map((step, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className={cn("w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0",
+                  step.done ? "bg-signal-green/15" : "bg-secondary border border-border")}>
+                  {step.done && <CheckCircle className="w-3 h-3 text-signal-green" />}
+                </div>
+                <span className={cn("text-sm", step.done ? "text-muted-foreground line-through" : "text-foreground")}>
+                  {step.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border p-5" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+          <p className="text-xs text-muted-foreground mb-3">Quick links</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {[
+              { label: "My Work", icon: ListChecks, to: "/action-items", color: "text-electric-blue" },
+              { label: "Projects", icon: Target, to: "/initiatives", color: "text-amber" },
+              { label: "Reports", icon: BarChart3, to: "/reports", color: "text-teal" },
+              { label: "Resources", icon: BookOpen, to: "/knowledge", color: "text-signal-purple" },
+            ].map(({ label, icon: Icon, to, color }) => (
+              <Link key={label} to={to}
+                className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-secondary/40 hover:bg-secondary transition-colors">
+                <Icon className={cn("w-4 h-4", color)} />
+                <span className="text-xs font-semibold text-foreground">{label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-secondary/30">
+          <div>
+            <p className="text-xs font-semibold text-foreground">Ready for the full command center?</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Switch to Full Mode for advanced analytics and all tools.</p>
+          </div>
+          <button onClick={() => setMode("executive")}
+            className="flex items-center gap-1.5 text-xs font-bold text-electric-blue hover:underline flex-shrink-0 ml-4">
+            <Settings className="w-3.5 h-3.5" /> Switch mode
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const data = useAppData();
   const { user } = useAuth();
+  const { isSimpleMode } = useUserMode();
 
   const {
     kpis, engine, orgHealth: liveOverallHealth,
@@ -297,6 +428,10 @@ export default function Dashboard() {
         { label: "Capacity", score: liveHealth?.capacityHealth ?? 72, weight: 15 },
       ];
 
+  if (isSimpleMode) {
+    return <SimpleDashboard firstName={firstName ?? ""} kpis={kpis} nbaItems={nbaItems} />;
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
 
@@ -377,7 +512,7 @@ export default function Dashboard() {
               size="md"
               showBreakdown={true}
             />
-            <div className="mt-4 pt-4 w-full border-t flex items-center justify-center gap-2" style={{ borderColor: "hsl(224 16% 20%)" }}>
+            <div className="mt-4 pt-4 w-full border-t flex items-center justify-center gap-2" style={{ borderColor: "hsl(var(--border))" }}>
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(160 56% 46%)" }} />
               <span className="text-[10px] text-muted-foreground">{activeChains} operational chains active</span>
             </div>
@@ -407,7 +542,7 @@ export default function Dashboard() {
           {/* Next Best Actions */}
           <div className="rounded-2xl border"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "hsl(224 16% 18%)" }}>
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "hsl(var(--border))" }}>
               <div className="flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center"
                   style={{ background: "hsl(38 92% 52% / 0.12)" }}>
@@ -433,7 +568,7 @@ export default function Dashboard() {
           <div className="rounded-2xl border overflow-hidden"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
             {/* Header */}
-            <div className="px-5 py-4 border-b relative overflow-hidden" style={{ borderColor: "hsl(224 16% 18%)" }}>
+            <div className="px-5 py-4 border-b relative overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
               <div className="absolute inset-0" style={{
                 background: "radial-gradient(ellipse 140% 120% at 0% 50%, hsl(222 88% 65% / 0.07) 0%, transparent 60%)"
               }} />
@@ -478,7 +613,7 @@ export default function Dashboard() {
               ].filter(Boolean).slice(0, 4).map((item: any, i) => (
                 <div key={i} className="flex items-start gap-3">
                   <div className="w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                    style={{ background: "hsl(224 18% 18%)" }}>
+                    style={{ background: "hsl(var(--muted))" }}>
                     <item.icon className={cn("w-3 h-3", item.color)} />
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">{item.text}</p>
@@ -530,7 +665,7 @@ export default function Dashboard() {
           {/* At-Risk Initiatives */}
           <div className="rounded-2xl border"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "hsl(224 16% 18%)" }}>
+            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "hsl(var(--border))" }}>
               <div className="flex items-center gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-amber flex-shrink-0" />
                 <span className="text-sm font-bold text-foreground">Initiatives Needing Attention</span>
@@ -548,7 +683,7 @@ export default function Dashboard() {
               ) : (
                 atRiskInis.map((ini) => (
                   <div key={ini.id} className="px-5 py-3.5 border-b last:border-0 hover:bg-white/[0.02] transition-colors"
-                    style={{ borderColor: "hsl(224 16% 18%)" }}>
+                    style={{ borderColor: "hsl(var(--border))" }}>
                     <div className="flex items-start gap-3">
                       <div className={cn("w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
                         ini.status === "Blocked" ? "bg-rose" :
@@ -579,7 +714,7 @@ export default function Dashboard() {
           {/* Portfolio Overview */}
           <div className="rounded-2xl border"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "hsl(224 16% 18%)" }}>
+            <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "hsl(var(--border))" }}>
               <Target className="w-4 h-4 text-teal flex-shrink-0" />
               <span className="text-sm font-bold text-foreground">Portfolio Overview</span>
             </div>
@@ -591,7 +726,7 @@ export default function Dashboard() {
                 { label: "Completed", value: completedCount, note: "This cycle", color: "text-signal-green" },
               ].map(({ label, value, note, color }) => (
                 <div key={label} className="flex items-center justify-between py-2 border-b last:border-0"
-                  style={{ borderColor: "hsl(224 16% 18%)" }}>
+                  style={{ borderColor: "hsl(var(--border))" }}>
                   <div>
                     <div className="text-xs font-semibold text-foreground">{label}</div>
                     <div className="text-[10px] text-muted-foreground">{note}</div>
@@ -605,7 +740,7 @@ export default function Dashboard() {
           {/* Executive Load */}
           <div className="rounded-2xl border"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "hsl(224 16% 18%)" }}>
+            <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "hsl(var(--border))" }}>
               <Users className="w-4 h-4 text-electric-blue flex-shrink-0" />
               <span className="text-sm font-bold text-foreground">Executive Load</span>
             </div>
@@ -614,7 +749,7 @@ export default function Dashboard() {
                 const load = d.capacityUsed;
                 const loadColor = load >= 90 ? "hsl(350 84% 62%)" : load >= 80 ? "hsl(38 92% 52%)" : "hsl(160 56% 42%)";
                 return (
-                  <div key={d.head} className="px-5 py-3.5 border-b last:border-0" style={{ borderColor: "hsl(224 16% 18%)" }}>
+                  <div key={d.head} className="px-5 py-3.5 border-b last:border-0" style={{ borderColor: "hsl(var(--border))" }}>
                     <div className="flex items-center justify-between mb-2">
                       <div>
                         <div className="text-sm font-semibold text-foreground">{d.head}</div>
@@ -629,7 +764,7 @@ export default function Dashboard() {
                         <span className="text-sm font-black font-mono" style={{ color: loadColor }}>{load}%</span>
                       </div>
                     </div>
-                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(224 16% 20%)" }}>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted))" }}>
                       <div className="h-full rounded-full transition-all duration-700" style={{ width: `${load}%`, background: loadColor }} />
                     </div>
                   </div>
@@ -646,7 +781,7 @@ export default function Dashboard() {
           style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
           <button
             className="w-full flex items-center justify-between px-5 py-4 border-b hover:bg-white/[0.02] transition-colors"
-            style={{ borderColor: "hsl(224 16% 18%)" }}
+            style={{ borderColor: "hsl(var(--border))" }}
             onClick={() => setShowInsights((v) => !v)}>
             <div className="flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-lg flex items-center justify-center"
