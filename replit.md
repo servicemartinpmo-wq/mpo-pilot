@@ -133,8 +133,15 @@ Supabase project: `okgpcsfqkshdzbfuigfq`. Migrations in `supabase/migrations/`.
 
 - **App Walkthrough**: 5-slide interactive walkthrough shown after onboarding diagnostic deck (before launch). Covers Dashboard, Work/Strategy, Diagnostics, Reports, and Advisory. Skip button available. Can be triggered again from Help section.
 - **Guided / Simple Mode**: `useUserMode` hook returns `isSimpleMode`. `Dashboard` component shows `SimpleDashboard` when in simple mode — plain-language KPIs, priority list, setup checklist, quick links, mode switch. Mode also shown in onboarding selection screen for small orgs.
-- **Paste-as-Attachment**: In Reports (Custom Report tab) and CreatorLab, pasting text converts it to an attachment card instead of raw text. For paid tiers only (default=paid; free tier set via `localStorage.setItem("apphia_tier","free")`). Short pastes (<5 words) in CreatorLab pass through as normal.
-- **Dashboard hang fix**: App.tsx now treats a null/missing profile as needing onboarding (shows wizard) instead of rendering an infinite loading spinner. All hardcoded dark border values in Dashboard replaced with `hsl(var(--border))` and `hsl(var(--muted))` for light theme compatibility.
+- **Paste-as-Attachment**: In Reports (Custom Report tab) and Advisory, pasting text converts it to an attachment card instead of raw text. For paid tiers only (default=paid; free tier set via `localStorage.setItem("apphia_tier","free")`).
+- **Auth loading hang fix (permanent)**: `loadProfile` uses `Promise.race` with a 4-second timeout so every sign-in event resolves within 4 seconds max. Belt-and-suspenders 5-second safety timer on mount.
+- **Notification sounds**: `src/lib/notificationSound.ts` uses Web Audio API — alert tone (urgent/risk), success chime (wins/completions), soft ping (general). Wired into NotificationsPanel on open and AppLayout background poll (every 90s, respects snooze).
+- **Knowledge Hub — Formulas tab**: 6 formula categories (Org Health, EVM, Finance, Risk, SPC, Marketing) with 16+ expandable formula cards — notation, variables, description, worked example + result.
+- **Knowledge Hub — SOP viewer**: SOP rows expand to reveal numbered step-by-step procedure with vertical connector timeline. Click-to-expand per SOP.
+- **Knowledge Hub — Lessons Learned**: Expandable Add Lesson form (title, outcome, impact, summary, tags) appends to local state. Combined display of user-added + seed lessons.
+- **Knowledge Hub — Frameworks category filter**: Pill-button row above framework table filters categories in-place. "All" resets to full view.
+- **Knowledge Hub — Document download**: Documents tab download button generates a `.txt` file from saved template fields and triggers browser download.
+- **Reports — Lessons Learned tab**: Full Lessons Learned tab in Reports with Add Lesson form and complete card view. Seed data contains 5 real-world PMO lessons.
 
 ## Notes
 

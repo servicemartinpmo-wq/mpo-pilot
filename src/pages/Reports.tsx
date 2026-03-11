@@ -8,7 +8,8 @@ import { Paperclip } from "lucide-react";
 import {
   FileText, TrendingUp, AlertTriangle, CheckCircle, BarChart3,
   Download, ChevronDown, ChevronUp, Upload, X, Plus, Image, Folder,
-  Calendar, CalendarDays, Award, Clock, DollarSign, Activity
+  Calendar, CalendarDays, Award, Clock, DollarSign, Activity,
+  ThumbsUp, Save, BookOpen
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend, AreaChart, Area } from "recharts";
 
@@ -17,7 +18,42 @@ const SIGNAL_COLORS = {
   green: "hsl(var(--signal-green))", blue: "hsl(var(--electric-blue))",
 };
 
-type ReportTab = "executive" | "operations" | "departments" | "initiatives" | "quarterly" | "ytd" | "yearend" | "custom" | "kpi";
+type ReportTab = "executive" | "operations" | "departments" | "initiatives" | "quarterly" | "ytd" | "yearend" | "custom" | "kpi" | "lessons";
+
+const LESSONS_DATA = [
+  {
+    id: "l1", title: "Skipped stakeholder alignment before roadmap freeze",
+    dept: "Strategy", outcome: "negative" as const, impact: "High" as const, date: "2024-11",
+    summary: "Three senior stakeholders were not consulted before the Q4 roadmap was locked. This caused a last-minute reprioritisation that cost two weeks of sprint capacity. Always run a RACI sign-off checkpoint before freezing any roadmap.",
+    tags: ["PMO", "Stakeholders", "Planning"],
+  },
+  {
+    id: "l2", title: "Early vendor SOW review prevented a $180K overrun",
+    dept: "Finance", outcome: "positive" as const, impact: "High" as const, date: "2024-10",
+    summary: "Procurement flagged ambiguous deliverable language in a vendor SOW during a routine PMO review. Renegotiation before signing saved an estimated $180K in change-order exposure. Add mandatory PMO SOW review to all vendor engagements over $50K.",
+    tags: ["Finance", "Vendor", "Risk"],
+  },
+  {
+    id: "l3", title: "Weekly stand-ups halved blockers-to-resolution time",
+    dept: "Operations", outcome: "positive" as const, impact: "Medium" as const, date: "2024-09",
+    summary: "Switching from bi-weekly to weekly cross-functional stand-ups on the CRM migration initiative reduced average blocker resolution time from 8 days to 3.5 days. The format: 5-minute updates, blockers only, decisions-or-escalate.",
+    tags: ["Operations", "Velocity", "Cadence"],
+  },
+  {
+    id: "l4", title: "Undocumented dependency caused 3-week delay in go-live",
+    dept: "IT", outcome: "negative" as const, impact: "High" as const, date: "2024-08",
+    summary: "A critical integration dependency on the legacy ERP was discovered two days before go-live, causing a 3-week delay. Introduce mandatory dependency mapping sessions at project kick-off and mid-point for any initiative touching core systems.",
+    tags: ["IT", "Dependencies", "Risk"],
+  },
+  {
+    id: "l5", title: "Pilot cohort feedback loop accelerated product-market fit",
+    dept: "Product", outcome: "positive" as const, impact: "High" as const, date: "2024-07",
+    summary: "Running a 30-user pilot cohort with fortnightly structured feedback sessions before full rollout cut post-launch defect rate by 42%. The NPS of pilot cohort users was 22 points higher than the first general release cohort in prior cycles.",
+    tags: ["Product", "Feedback", "NPS"],
+  },
+];
+
+type Dept = "All" | "Executive" | "Finance" | "HR" | "Product" | "Operations" | "Sales" | "IT" | "Legal" | "Strategy";
 
 interface UploadedAsset {
   id: string;
@@ -82,6 +118,28 @@ export default function Reports() {
   const [reportTitle, setReportTitle] = useState("Custom Report");
   const [pasteToast, setPasteToast] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [userLessons, setUserLessons] = useState<typeof LESSONS_DATA>([]);
+  const [showAddLesson, setShowAddLesson] = useState(false);
+  const [newLesson, setNewLesson] = useState({
+    title: "", dept: "All" as Dept, outcome: "positive" as "positive" | "negative",
+    impact: "Medium" as "High" | "Medium", summary: "", tags: "",
+  });
+
+  function handleAddLesson() {
+    if (!newLesson.title.trim() || !newLesson.summary.trim()) return;
+    setUserLessons(prev => [{
+      id: `ul-${Date.now()}`,
+      title: newLesson.title,
+      dept: newLesson.dept,
+      outcome: newLesson.outcome,
+      impact: newLesson.impact,
+      date: new Date().toISOString().slice(0, 7),
+      summary: newLesson.summary,
+      tags: newLesson.tags.split(",").map(t => t.trim()).filter(Boolean),
+    }, ...prev]);
+    setNewLesson({ title: "", dept: "All", outcome: "positive", impact: "Medium", summary: "", tags: "" });
+    setShowAddLesson(false);
+  }
 
   const isPaidTier = (() => {
     try { return localStorage.getItem("apphia_tier") !== "free"; } catch { return true; }
@@ -154,6 +212,7 @@ export default function Reports() {
     { id: "ytd",        label: "Year to Date", icon: TrendingUp },
     { id: "yearend",    label: "Year-End", icon: Award },
     { id: "kpi",        label: "KPI Trends", icon: TrendingUp },
+    { id: "lessons",    label: "Lessons Learned", icon: BookOpen },
     { id: "custom",     label: "Custom Report" },
   ];
 
@@ -915,6 +974,114 @@ export default function Reports() {
               ))}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── LESSONS LEARNED TAB ── */}
+      {tab === "lessons" && (
+        <div className="space-y-5 animate-fade-in">
+          <SectionCard title="Lessons Learned" icon={BookOpen} accent="border-teal-500/20">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-xs text-muted-foreground">{userLessons.length + LESSONS_DATA.length} lessons captured — the institutional knowledge that makes every next project faster.</p>
+              <button
+                onClick={() => setShowAddLesson(v => !v)}
+                className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border font-semibold transition-all flex-shrink-0"
+                style={{ borderColor: "hsl(var(--electric-blue) / 0.3)", color: "hsl(var(--electric-blue))", background: "hsl(var(--electric-blue) / 0.07)" }}>
+                <Plus className="w-3.5 h-3.5" /> Add Lesson
+              </button>
+            </div>
+
+            {showAddLesson && (
+              <div className="mb-5 rounded-xl border-2 p-4 space-y-3"
+                style={{ borderColor: "hsl(var(--electric-blue) / 0.4)", background: "hsl(var(--electric-blue) / 0.04)" }}>
+                <p className="text-xs font-bold text-foreground">Log a New Lesson</p>
+                <input
+                  className="w-full px-3 py-2 text-sm rounded-lg border bg-background text-foreground focus:outline-none"
+                  style={{ borderColor: "hsl(var(--border))" }}
+                  placeholder="Lesson title…"
+                  value={newLesson.title}
+                  onChange={e => setNewLesson(p => ({ ...p, title: e.target.value }))} />
+                <div className="grid grid-cols-2 gap-3">
+                  <select className="px-3 py-2 text-sm rounded-lg border bg-background text-foreground focus:outline-none"
+                    style={{ borderColor: "hsl(var(--border))" }}
+                    value={newLesson.outcome}
+                    onChange={e => setNewLesson(p => ({ ...p, outcome: e.target.value as "positive" | "negative" }))}>
+                    <option value="positive">Positive outcome</option>
+                    <option value="negative">Negative outcome</option>
+                  </select>
+                  <select className="px-3 py-2 text-sm rounded-lg border bg-background text-foreground focus:outline-none"
+                    style={{ borderColor: "hsl(var(--border))" }}
+                    value={newLesson.impact}
+                    onChange={e => setNewLesson(p => ({ ...p, impact: e.target.value as "High" | "Medium" }))}>
+                    <option value="High">High impact</option>
+                    <option value="Medium">Medium impact</option>
+                  </select>
+                </div>
+                <textarea
+                  className="w-full px-3 py-2 text-sm rounded-lg border bg-background text-foreground focus:outline-none resize-none"
+                  style={{ borderColor: "hsl(var(--border))" }}
+                  rows={3}
+                  placeholder="Summary — what happened and what was the fix or learning?"
+                  value={newLesson.summary}
+                  onChange={e => setNewLesson(p => ({ ...p, summary: e.target.value }))} />
+                <input
+                  className="w-full px-3 py-2 text-sm rounded-lg border bg-background text-foreground focus:outline-none"
+                  style={{ borderColor: "hsl(var(--border))" }}
+                  placeholder="Tags (comma-separated): PMO, Risk, Finance…"
+                  value={newLesson.tags}
+                  onChange={e => setNewLesson(p => ({ ...p, tags: e.target.value }))} />
+                <div className="flex gap-2">
+                  <button onClick={() => setShowAddLesson(false)}
+                    className="text-xs px-3 py-2 rounded-lg border font-semibold text-muted-foreground"
+                    style={{ borderColor: "hsl(var(--border))" }}>Cancel</button>
+                  <button onClick={handleAddLesson}
+                    disabled={!newLesson.title.trim() || !newLesson.summary.trim()}
+                    className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-lg font-semibold disabled:opacity-40"
+                    style={{ background: "hsl(var(--electric-blue))", color: "white" }}>
+                    <Save className="w-3 h-3" /> Save Lesson
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {[...userLessons, ...LESSONS_DATA].map(lesson => (
+                <div key={lesson.id}
+                  className="rounded-xl border-2 border-border p-4 flex gap-4 hover:shadow-card transition-all">
+                  <div className="mt-0.5 flex-shrink-0">
+                    {lesson.outcome === "positive"
+                      ? <ThumbsUp className="w-4 h-4" style={{ color: "hsl(var(--signal-green))" }} />
+                      : <AlertTriangle className="w-4 h-4" style={{ color: "hsl(var(--signal-red))" }} />
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <p className="text-sm font-semibold text-foreground leading-snug">{lesson.title}</p>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+                          style={{
+                            background: lesson.impact === "High" ? "hsl(var(--signal-red) / 0.12)" : "hsl(var(--signal-yellow) / 0.12)",
+                            color: lesson.impact === "High" ? "hsl(var(--signal-red))" : "hsl(var(--signal-yellow))",
+                          }}>
+                          {lesson.impact} impact
+                        </span>
+                        <span className="text-[10px] text-muted-foreground">{lesson.date}</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-2">{lesson.summary}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {lesson.tags.map(tag => (
+                        <span key={tag} className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                          style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SectionCard>
         </div>
       )}
 

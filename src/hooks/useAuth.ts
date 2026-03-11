@@ -57,7 +57,12 @@ export function useAuth() {
   const [loading, setLoading]     = useState(true);
 
   const loadProfile = useCallback(async (userId: string) => {
-    const raw = await getProfile(userId);
+    // Race the DB fetch against a 4-second timeout so the spinner
+    // never hangs indefinitely when Supabase is slow / unreachable.
+    const raw = await Promise.race([
+      getProfile(userId),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 4000)),
+    ]);
     setProfile(mapProfile(raw));
   }, []);
 

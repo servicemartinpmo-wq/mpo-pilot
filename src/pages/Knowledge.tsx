@@ -4,14 +4,15 @@ import {
   Search, Filter, ChevronRight, CheckCircle, Star,
   Building2, Target, Users, DollarSign, Shield, Cpu, BarChart3,
   Rocket, BookMarked, Plus, Lock, Save, X, Edit3, FolderOpen,
-  ThumbsUp, AlertTriangle, Sparkles, Layers, Database
+  ThumbsUp, AlertTriangle, Sparkles, Layers, Database,
+  FlaskConical, TrendingUp, Hash, Activity, ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────
 type TemplateCategory = "RACI" | "SOP" | "Charter" | "OKR" | "Review" | "MOCHA" | "Risk";
 type Dept = "All" | "Executive" | "Finance" | "HR" | "Product" | "Operations" | "Sales" | "IT" | "Legal" | "Strategy";
-type HubTab = "templates" | "documents" | "sops" | "lessons" | "frameworks";
+type HubTab = "templates" | "documents" | "sops" | "lessons" | "frameworks" | "formulas";
 
 interface Template {
   id: string;
@@ -181,11 +182,312 @@ const LESSONS = [
 ];
 
 const SOPS = [
-  { id: "s1", title: "Quarterly Business Review Process", dept: "Executive", framework: "BSC", version: "v2.1", lastUpdated: "2025-01-15", status: "active", pages: 8 },
-  { id: "s2", title: "Procurement & Vendor Approval", dept: "Operations", framework: "Lean", version: "v1.4", lastUpdated: "2024-12-03", status: "active", pages: 5 },
-  { id: "s3", title: "Incident Response Playbook", dept: "IT", framework: "ITIL", version: "v3.0", lastUpdated: "2025-02-20", status: "active", pages: 12 },
-  { id: "s4", title: "Performance Review Cycle", dept: "HR", framework: "PMO Standard", version: "v1.2", lastUpdated: "2024-11-08", status: "needs-review", pages: 6 },
-  { id: "s5", title: "Customer Escalation Playbook", dept: "Sales", framework: "MEDDIC", version: "v2.0", lastUpdated: "2025-01-22", status: "active", pages: 4 },
+  {
+    id: "s1", title: "Quarterly Business Review Process", dept: "Executive", framework: "BSC", version: "v2.1", lastUpdated: "2025-01-15", status: "active", pages: 8,
+    steps: [
+      { n: 1, title: "Data Gathering (T-10 days)", detail: "Finance pulls P&L, actuals vs budget. Dept heads submit KPI scorecards and initiative status updates." },
+      { n: 2, title: "Scorecard Compilation (T-7 days)", detail: "PMO consolidates Balanced Scorecard across 4 perspectives: Financial, Customer, Internal Process, Learning & Growth." },
+      { n: 3, title: "Pre-read Distribution (T-3 days)", detail: "QBR deck distributed to all attendees. Red items (below 60%) flagged for discussion. Owners notified." },
+      { n: 4, title: "QBR Session (T-0)", detail: "90-minute structured session: 15 min financial review, 30 min KPI deep-dive, 30 min initiative health, 15 min priorities for next quarter." },
+      { n: 5, title: "Action Register Update (T+1 day)", detail: "All decisions and action items logged with owner, due date, and priority. Distributed within 24 hours." },
+      { n: 6, title: "Follow-up Tracking (T+30 days)", detail: "Mid-quarter check-in on action items. Escalation path for items at risk of missing deadline." },
+    ],
+  },
+  {
+    id: "s2", title: "Procurement & Vendor Approval", dept: "Operations", framework: "Lean", version: "v1.4", lastUpdated: "2024-12-03", status: "active", pages: 5,
+    steps: [
+      { n: 1, title: "Request Submission", detail: "Requestor submits Purchase Request (PR) with business justification, budget code, and at least 2 vendor quotes for purchases >$5,000." },
+      { n: 2, title: "Budget Verification", detail: "Finance confirms available budget. If unbudgeted, requires CFO approval before advancing." },
+      { n: 3, title: "Tiered Approval Gate", detail: "<$10K: Department Head. $10K–$50K: Finance + Dept Head. $50K–$200K: CFO. >$200K: Board ratification required." },
+      { n: 4, title: "Vendor Due Diligence", detail: "Legal reviews contracts >$25K. IT security review for any software/SaaS vendors. Insurance verification for services vendors." },
+      { n: 5, title: "PO Issuance & Onboarding", detail: "Approved PR converted to PO. Vendor added to approved vendor register. Payment terms confirmed (Net 30 standard)." },
+    ],
+  },
+  {
+    id: "s3", title: "Incident Response Playbook", dept: "IT", framework: "ITIL", version: "v3.0", lastUpdated: "2025-02-20", status: "active", pages: 12,
+    steps: [
+      { n: 1, title: "Detection & Logging (P1: <5 min)", detail: "Incident detected via monitoring alert or user report. Logged in ITSM with severity: P1 (Critical), P2 (Major), P3 (Minor), P4 (Low)." },
+      { n: 2, title: "Initial Triage", detail: "On-call engineer assesses scope and impact. P1/P2: escalate to Incident Commander immediately. Bridge call opened within 10 minutes." },
+      { n: 3, title: "Containment", detail: "Immediate actions to limit blast radius: isolate affected systems, roll back recent deploys, activate DR if needed." },
+      { n: 4, title: "Root Cause Analysis", detail: "5 Whys or Fishbone analysis. Document contributing factors. Timeline reconstructed from logs." },
+      { n: 5, title: "Resolution & Recovery", detail: "Fix deployed. Systems verified healthy. Users notified of resolution with summary. P1 SLA: resolve <4 hours." },
+      { n: 6, title: "Post-Incident Review (PIR)", detail: "Blameless PIR within 48 hours for P1/P2. Document: what happened, impact, root cause, preventive actions, owner, due date." },
+    ],
+  },
+  {
+    id: "s4", title: "Performance Review Cycle", dept: "HR", framework: "PMO Standard", version: "v1.2", lastUpdated: "2024-11-08", status: "needs-review", pages: 6,
+    steps: [
+      { n: 1, title: "Goal Setting (Start of Period)", detail: "Employee and manager co-create 3–5 SMART goals aligned to department OKRs. Goals signed off and logged in HRIS." },
+      { n: 2, title: "Mid-Year Check-in (Month 6)", detail: "30-minute 1:1 to review progress. Goals adjusted if org priorities shifted. Informal feedback documented." },
+      { n: 3, title: "Self-Assessment", detail: "Employee completes self-assessment against goals (1–5 scale) with supporting evidence. Due T-14 days before review." },
+      { n: 4, title: "Manager Assessment", detail: "Manager scores performance independently before reading self-assessment. Calibration session with peer managers for consistency." },
+      { n: 5, title: "Review Conversation", detail: "Structured 60-minute conversation: results vs goals, strengths, development areas, career aspirations. No surprises policy enforced." },
+      { n: 6, title: "Outcome & Compensation", detail: "Final rating (1–5) drives compensation adjustment, promotion consideration, and PIP initiation if required. Communicated within 2 weeks." },
+    ],
+  },
+  {
+    id: "s5", title: "Customer Escalation Playbook", dept: "Sales", framework: "MEDDIC", version: "v2.0", lastUpdated: "2025-01-22", status: "active", pages: 4,
+    steps: [
+      { n: 1, title: "Escalation Trigger", detail: "Customer flags critical issue via email/call. CSM acknowledges within 1 hour. Severity assessed (Account risk vs Product defect vs Process failure)." },
+      { n: 2, title: "Internal Notification", detail: "CSM notifies Account Exec and VP of Success. If ARR >$100K, CRO notified. Slack #escalations channel updated." },
+      { n: 3, title: "24-Hour Response Plan", detail: "Executive sponsor assigned. Customer call scheduled within 24 hours. Initial remediation options prepared." },
+      { n: 4, title: "Resolution Sprint", detail: "Cross-functional team (CS, Product, Engineering if needed) owns resolution. Daily updates to customer until resolved." },
+      { n: 5, title: "Root Cause & Prevention", detail: "Post-resolution: document root cause, customer impact, fix applied, and process change to prevent recurrence. Update health score in CRM." },
+    ],
+  },
+];
+
+// ── Formula Data ────────────────────────────────────────────────────────
+interface FormulaCard {
+  id: string;
+  category: string;
+  name: string;
+  notation: string;
+  description: string;
+  variables?: { symbol: string; meaning: string }[];
+  example?: string;
+  result?: string;
+}
+
+const FORMULA_CATEGORIES = [
+  {
+    id: "health",
+    label: "Org Health Scoring",
+    icon: Activity,
+    color: "hsl(var(--electric-blue))",
+    formulas: [
+      {
+        id: "f-health", name: "Org Health Score", notation: "H = Σ(wᵢ × sᵢ)",
+        description: "Weighted sum of six maturity dimensions, each scored 0–100. Produces the overall health score shown on the Dashboard.",
+        variables: [
+          { symbol: "wᵢ", meaning: "Dimension weight (see below)" },
+          { symbol: "sᵢ", meaning: "Dimension score (0–100)" },
+          { symbol: "H", meaning: "Overall health score (0–100)" },
+        ],
+        example: "Strategic Alignment (20%) = 72, Execution Discipline (20%) = 68, Risk Management (15%) = 80, Financial Health (15%) = 61, Team Capacity (15%) = 75, Governance (15%) = 70",
+        result: "H = 0.20×72 + 0.20×68 + 0.15×80 + 0.15×61 + 0.15×75 + 0.15×70 = 71.15",
+      } as FormulaCard,
+      {
+        id: "f-maturity", name: "Maturity Level Classification", notation: "Level = floor(H / 20) + 1",
+        description: "Maps the continuous health score (0–100) to one of five CMMI-aligned maturity levels.",
+        variables: [
+          { symbol: "H", meaning: "Org Health Score" },
+          { symbol: "Level 1", meaning: "Foundational (0–20)" },
+          { symbol: "Level 2", meaning: "Developing (21–40)" },
+          { symbol: "Level 3", meaning: "Defined (41–60)" },
+          { symbol: "Level 4", meaning: "Managed (61–80)" },
+          { symbol: "Level 5", meaning: "Optimized (81–100)" },
+        ],
+        example: "H = 71.15",
+        result: "Level 4 — Managed",
+      } as FormulaCard,
+    ],
+  },
+  {
+    id: "evm",
+    label: "Earned Value Management (EVM)",
+    icon: TrendingUp,
+    color: "hsl(var(--teal))",
+    formulas: [
+      {
+        id: "f-ev", name: "Earned Value", notation: "EV = BAC × % Complete",
+        description: "The budgeted value of work actually completed to date.",
+        variables: [
+          { symbol: "BAC", meaning: "Budget at Completion" },
+          { symbol: "% Complete", meaning: "Percentage of work done (0–1)" },
+        ],
+        example: "BAC = $500K, % Complete = 40%",
+        result: "EV = $500K × 0.40 = $200K",
+      } as FormulaCard,
+      {
+        id: "f-sv", name: "Schedule Variance", notation: "SV = EV − PV",
+        description: "Positive SV = ahead of schedule. Negative SV = behind schedule.",
+        variables: [
+          { symbol: "EV", meaning: "Earned Value" },
+          { symbol: "PV", meaning: "Planned Value (budgeted work scheduled by now)" },
+        ],
+        example: "EV = $200K, PV = $220K",
+        result: "SV = −$20K (behind schedule)",
+      } as FormulaCard,
+      {
+        id: "f-cv", name: "Cost Variance", notation: "CV = EV − AC",
+        description: "Positive CV = under budget. Negative CV = over budget.",
+        variables: [
+          { symbol: "EV", meaning: "Earned Value" },
+          { symbol: "AC", meaning: "Actual Cost (money spent to date)" },
+        ],
+        example: "EV = $200K, AC = $215K",
+        result: "CV = −$15K (over budget)",
+      } as FormulaCard,
+      {
+        id: "f-spi", name: "Schedule Performance Index", notation: "SPI = EV / PV",
+        description: "SPI > 1 = efficient. SPI < 1 = inefficient. Measures schedule efficiency.",
+        variables: [],
+        example: "EV = $200K, PV = $220K",
+        result: "SPI = 0.91 — delivering 91 cents of scheduled value per dollar planned",
+      } as FormulaCard,
+      {
+        id: "f-cpi", name: "Cost Performance Index", notation: "CPI = EV / AC",
+        description: "CPI > 1 = under budget. CPI < 1 = over budget. Key predictor of final cost.",
+        variables: [],
+        example: "EV = $200K, AC = $215K",
+        result: "CPI = 0.93 — spending $1.07 for every $1 of value delivered",
+      } as FormulaCard,
+      {
+        id: "f-eac", name: "Estimate at Completion", notation: "EAC = BAC / CPI",
+        description: "Projected total cost assuming current cost performance continues to the end.",
+        variables: [
+          { symbol: "BAC", meaning: "Budget at Completion" },
+          { symbol: "CPI", meaning: "Cost Performance Index" },
+        ],
+        example: "BAC = $500K, CPI = 0.93",
+        result: "EAC = $537.6K (projected overrun of $37.6K)",
+      } as FormulaCard,
+    ],
+  },
+  {
+    id: "finance",
+    label: "Financial & Investment Formulas",
+    icon: DollarSign,
+    color: "hsl(var(--signal-green))",
+    formulas: [
+      {
+        id: "f-roi", name: "Return on Investment", notation: "ROI = (Benefit − Cost) / Cost × 100",
+        description: "Percentage return relative to the investment. Used to rank initiatives by financial return.",
+        variables: [
+          { symbol: "Benefit", meaning: "Total projected financial benefit" },
+          { symbol: "Cost", meaning: "Total cost of the initiative" },
+        ],
+        example: "Benefit = $300K, Cost = $120K",
+        result: "ROI = (300K − 120K) / 120K × 100 = 150%",
+      } as FormulaCard,
+      {
+        id: "f-npv", name: "Net Present Value", notation: "NPV = Σ(CFₜ / (1+r)ᵗ) − I₀",
+        description: "Present value of all future cash flows minus the initial investment. NPV > 0 means the initiative creates value.",
+        variables: [
+          { symbol: "CFₜ", meaning: "Cash flow in period t" },
+          { symbol: "r", meaning: "Discount rate (hurdle rate)" },
+          { symbol: "I₀", meaning: "Initial investment" },
+        ],
+        example: "CF₁=$80K, CF₂=$90K, CF₃=$100K, r=10%, I₀=$200K",
+        result: "NPV = 72.7K + 74.4K + 75.1K − 200K = $22.2K (positive — proceed)",
+      } as FormulaCard,
+      {
+        id: "f-payback", name: "Payback Period", notation: "Payback = I₀ / Annual CF",
+        description: "Time to recover the initial investment. Shorter payback = lower risk.",
+        variables: [
+          { symbol: "I₀", meaning: "Initial investment" },
+          { symbol: "Annual CF", meaning: "Average annual cash flow" },
+        ],
+        example: "I₀ = $200K, Annual CF = $90K",
+        result: "Payback = 2.22 years",
+      } as FormulaCard,
+      {
+        id: "f-dcf", name: "Discounted Cash Flow", notation: "PV = CFₜ / (1 + r)ᵗ",
+        description: "Present value of a single future cash flow. Used to compare initiatives across different time horizons.",
+        variables: [
+          { symbol: "CFₜ", meaning: "Future cash flow at time t" },
+          { symbol: "r", meaning: "Annual discount rate" },
+          { symbol: "t", meaning: "Number of periods (years)" },
+        ],
+        example: "$120K in year 3 at 10% discount rate",
+        result: "PV = 120K / (1.10)³ = $90.2K today",
+      } as FormulaCard,
+    ],
+  },
+  {
+    id: "risk",
+    label: "Risk & Priority Scoring",
+    icon: Shield,
+    color: "hsl(var(--signal-red))",
+    formulas: [
+      {
+        id: "f-risk", name: "Risk Rating", notation: "R = P × I",
+        description: "Probability (1–5) × Impact (1–5) produces a risk score 1–25. Used to populate the risk register and colour-code items.",
+        variables: [
+          { symbol: "P", meaning: "Probability score: 1=Rare, 2=Unlikely, 3=Possible, 4=Likely, 5=Almost Certain" },
+          { symbol: "I", meaning: "Impact score: 1=Negligible, 2=Minor, 3=Moderate, 4=Major, 5=Catastrophic" },
+          { symbol: "1–4", meaning: "Low Risk" },
+          { symbol: "5–12", meaning: "Medium Risk" },
+          { symbol: "13–25", meaning: "High Risk" },
+        ],
+        example: "P = 3 (Possible), I = 4 (Major)",
+        result: "R = 12 — Medium Risk (review required)",
+      } as FormulaCard,
+      {
+        id: "f-priority", name: "Initiative Priority Score", notation: "P = 0.4·V + 0.3·U + 0.3·(1−E)",
+        description: "Composite score (0–100) used to rank initiatives in the queue. Higher score = higher priority.",
+        variables: [
+          { symbol: "V", meaning: "Strategic Value (0–100): alignment to org objectives" },
+          { symbol: "U", meaning: "Urgency (0–100): deadline proximity and stakeholder pressure" },
+          { symbol: "E", meaning: "Effort (0–100): estimated resources and time required" },
+          { symbol: "(1−E)", meaning: "Inverted effort — low effort boosts priority" },
+        ],
+        example: "V = 85, U = 70, E = 40",
+        result: "P = 0.4×85 + 0.3×70 + 0.3×60 = 34 + 21 + 18 = 73",
+      } as FormulaCard,
+    ],
+  },
+  {
+    id: "spc",
+    label: "Statistical Process Control (SPC)",
+    icon: BarChart3,
+    color: "hsl(var(--signal-purple))",
+    formulas: [
+      {
+        id: "f-ucl", name: "Upper Control Limit", notation: "UCL = X̄ + 3σ",
+        description: "Any data point above the UCL is a signal of special-cause variation — investigate immediately.",
+        variables: [
+          { symbol: "X̄", meaning: "Process mean (average)" },
+          { symbol: "σ", meaning: "Standard deviation of the process" },
+        ],
+        example: "X̄ = 48 units/day, σ = 4",
+        result: "UCL = 48 + 12 = 60 units/day",
+      } as FormulaCard,
+      {
+        id: "f-lcl", name: "Lower Control Limit", notation: "LCL = X̄ − 3σ",
+        description: "Data points below the LCL may indicate a process improvement or data integrity issue.",
+        variables: [],
+        example: "X̄ = 48, σ = 4",
+        result: "LCL = 48 − 12 = 36 units/day",
+      } as FormulaCard,
+      {
+        id: "f-cpk", name: "Process Capability Index (Cpk)", notation: "Cpk = min((USL−X̄)/3σ, (X̄−LSL)/3σ)",
+        description: "Measures how well the process fits within specification limits. Cpk ≥ 1.33 is generally acceptable.",
+        variables: [
+          { symbol: "USL", meaning: "Upper Specification Limit (from customer or standard)" },
+          { symbol: "LSL", meaning: "Lower Specification Limit" },
+          { symbol: "X̄", meaning: "Process mean" },
+          { symbol: "σ", meaning: "Standard deviation" },
+        ],
+        example: "USL=60, LSL=36, X̄=48, σ=4",
+        result: "Cpk = min((60−48)/12, (48−36)/12) = min(1.0, 1.0) = 1.0 (marginal — improve process)",
+      } as FormulaCard,
+    ],
+  },
+  {
+    id: "marketing",
+    label: "Marketing Algorithm",
+    icon: Hash,
+    color: "hsl(var(--amber))",
+    formulas: [
+      {
+        id: "f-mkt", name: "Marketing Mega-Algorithm Score", notation: "Score = Σ(wᵢ × fᵢ) / 100",
+        description: "Weighted composite of 7 marketing performance factors producing a 0–100 campaign effectiveness score.",
+        variables: [
+          { symbol: "Reach (15%)", meaning: "Audience size and expansion rate" },
+          { symbol: "Engagement (20%)", meaning: "Clicks, shares, comments, watch time" },
+          { symbol: "Conversion (25%)", meaning: "Lead-to-customer rate" },
+          { symbol: "Retention (15%)", meaning: "Customer return and repeat-purchase rate" },
+          { symbol: "ROI (10%)", meaning: "Revenue generated vs marketing spend" },
+          { symbol: "Brand (10%)", meaning: "Sentiment score and share of voice" },
+          { symbol: "Pipeline (5%)", meaning: "Marketing-attributed pipeline value" },
+        ],
+        example: "Reach=80, Engagement=72, Conversion=65, Retention=78, ROI=85, Brand=70, Pipeline=60",
+        result: "Score = 0.15×80 + 0.20×72 + 0.25×65 + 0.15×78 + 0.10×85 + 0.10×70 + 0.05×60 = 73.2",
+      } as FormulaCard,
+    ],
+  },
 ];
 
 interface PmoFramework {
@@ -373,14 +675,54 @@ export default function Knowledge() {
   const [activeTemplate, setActiveTemplate] = useState<Template | null>(null);
   const [savedDocuments, setSavedDocuments] = useState<SavedDocument[]>([]);
   const [expandedDoc, setExpandedDoc] = useState<string | null>(null);
+  const [expandedSop, setExpandedSop] = useState<string | null>(null);
+  const [userLessons, setUserLessons] = useState<typeof LESSONS>([]);
+  const [showAddLesson, setShowAddLesson] = useState(false);
+  const [newLesson, setNewLesson] = useState({ title: "", dept: "All" as Dept, outcome: "positive" as "positive" | "negative", impact: "Medium" as "High" | "Medium", summary: "", tags: "" });
+  const [expandedFormula, setExpandedFormula] = useState<string | null>(null);
+  const [fwCategoryFilter, setFwCategoryFilter] = useState<string>("All");
+
+  function downloadDocument(doc: SavedDocument) {
+    const lines = [
+      `Document: ${doc.templateTitle}`,
+      `Saved: ${doc.savedAt}`,
+      "",
+      ...Object.entries(doc.data).filter(([, v]) => v).map(([k, v]) => `${k.replace(/_/g, " ").toUpperCase()}\n${v}\n`),
+    ];
+    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${doc.templateTitle.replace(/\s+/g, "_")}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleAddLesson() {
+    if (!newLesson.title.trim() || !newLesson.summary.trim()) return;
+    const lesson = {
+      id: `ul-${Date.now()}`,
+      title: newLesson.title,
+      dept: newLesson.dept,
+      outcome: newLesson.outcome,
+      impact: newLesson.impact,
+      date: new Date().toISOString().slice(0, 7),
+      summary: newLesson.summary,
+      tags: newLesson.tags.split(",").map(t => t.trim()).filter(Boolean),
+    };
+    setUserLessons(prev => [lesson, ...prev]);
+    setNewLesson({ title: "", dept: "All", outcome: "positive", impact: "Medium", summary: "", tags: "" });
+    setShowAddLesson(false);
+  }
 
   const DEPTS: Dept[] = ["All", "Executive", "Finance", "HR", "Product", "Operations", "Sales", "IT", "Legal", "Strategy"];
   const TABS = [
     { key: "templates" as HubTab, label: "Templates", icon: FileText, count: TEMPLATES.length },
     { key: "documents" as HubTab, label: "Documents", icon: FolderOpen, count: savedDocuments.length },
     { key: "sops" as HubTab, label: "SOP Library", icon: BookMarked, count: SOPS.length },
-    { key: "lessons" as HubTab, label: "Lessons Learned", icon: Lightbulb, count: LESSONS.length },
+    { key: "lessons" as HubTab, label: "Lessons Learned", icon: Lightbulb, count: userLessons.length + LESSONS.length },
     { key: "frameworks" as HubTab, label: "Frameworks", icon: Database, count: PMO_FRAMEWORKS.length },
+    { key: "formulas" as HubTab, label: "Formulas", icon: FlaskConical, count: FORMULA_CATEGORIES.reduce((a, c) => a + c.formulas.length, 0) },
   ];
 
   const filteredTemplates = TEMPLATES.filter(t =>
@@ -593,8 +935,11 @@ export default function Knowledge() {
                         <p className="text-[10px] text-muted-foreground">Saved {doc.savedAt}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button className="text-[10px] px-2 py-1 rounded-md border font-medium"
+                    <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                      <button
+                        onClick={() => downloadDocument(doc)}
+                        title="Download as .txt"
+                        className="text-[10px] px-2 py-1 rounded-md border font-medium flex items-center gap-1 transition-colors hover:bg-muted"
                         style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
                         <Download className="w-3 h-3" />
                       </button>
@@ -627,7 +972,7 @@ export default function Knowledge() {
       {tab === "sops" && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-muted-foreground font-mono">{filteredSOPs.length} SOPs · max 200 pages per upload</span>
+            <span className="text-xs text-muted-foreground font-mono">{filteredSOPs.length} SOPs · click to view steps</span>
             <button className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border font-semibold transition-all"
               style={{ borderColor: "hsl(var(--electric-blue) / 0.3)", color: "hsl(var(--electric-blue))", background: "hsl(var(--electric-blue) / 0.07)" }}>
               <Upload className="w-3.5 h-3.5" /> Upload SOP
@@ -635,40 +980,63 @@ export default function Knowledge() {
           </div>
           <div className="space-y-3">
             {filteredSOPs.map(sop => (
-              <div key={sop.id}
-                className="bg-card rounded-xl border-2 border-border p-4 flex items-center justify-between gap-4 hover:shadow-card transition-all">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: "hsl(var(--teal) / 0.12)" }}>
-                    <BookMarked className="w-4 h-4" style={{ color: "hsl(var(--teal))" }} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">{sop.title}</p>
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
-                      <span>{sop.dept}</span>
-                      <span className="opacity-40">·</span>
-                      <span>{sop.framework}</span>
-                      <span className="opacity-40">·</span>
-                      <span>{sop.pages}p</span>
-                      <span className="opacity-40">·</span>
-                      <span>{sop.version}</span>
+              <div key={sop.id} className="bg-card rounded-xl border-2 border-border overflow-hidden transition-all">
+                <button
+                  className="w-full flex items-center justify-between gap-4 p-4 text-left hover:bg-muted/20 transition-colors"
+                  onClick={() => setExpandedSop(expandedSop === sop.id ? null : sop.id)}>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: "hsl(var(--teal) / 0.12)" }}>
+                      <BookMarked className="w-4 h-4" style={{ color: "hsl(var(--teal))" }} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{sop.title}</p>
+                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
+                        <span>{sop.dept}</span>
+                        <span className="opacity-40">·</span>
+                        <span>{sop.framework}</span>
+                        <span className="opacity-40">·</span>
+                        <span>{sop.pages}p</span>
+                        <span className="opacity-40">·</span>
+                        <span>{sop.version}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
-                    style={{
-                      background: sop.status === "active" ? "hsl(var(--signal-green) / 0.12)" : "hsl(var(--signal-yellow) / 0.12)",
-                      color: sop.status === "active" ? "hsl(var(--signal-green))" : "hsl(var(--signal-yellow))",
-                    }}>
-                    {sop.status === "active" ? "Active" : "Needs Review"}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground hidden sm:block">{sop.lastUpdated}</span>
-                  <button className="p-1.5 rounded-lg border hover:bg-muted transition-colors"
-                    style={{ borderColor: "hsl(var(--border))" }}>
-                    <Download className="w-3 h-3 text-muted-foreground" />
-                  </button>
-                </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
+                      style={{
+                        background: sop.status === "active" ? "hsl(var(--signal-green) / 0.12)" : "hsl(var(--signal-yellow) / 0.12)",
+                        color: sop.status === "active" ? "hsl(var(--signal-green))" : "hsl(var(--signal-yellow))",
+                      }}>
+                      {sop.status === "active" ? "Active" : "Needs Review"}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground hidden sm:block">{sop.lastUpdated}</span>
+                    <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", expandedSop === sop.id && "rotate-180")} />
+                  </div>
+                </button>
+                {expandedSop === sop.id && (
+                  <div className="border-t" style={{ borderColor: "hsl(var(--border))" }}>
+                    <div className="px-5 py-4 space-y-0">
+                      {sop.steps.map((step, i) => (
+                        <div key={step.n} className="flex gap-4">
+                          <div className="flex flex-col items-center">
+                            <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0"
+                              style={{ background: "hsl(var(--teal) / 0.15)", color: "hsl(var(--teal))", border: "1.5px solid hsl(var(--teal) / 0.3)" }}>
+                              {step.n}
+                            </div>
+                            {i < sop.steps.length - 1 && (
+                              <div className="w-px flex-1 my-1.5" style={{ background: "hsl(var(--border))" }} />
+                            )}
+                          </div>
+                          <div className="pb-4 flex-1">
+                            <p className="text-xs font-bold text-foreground mb-0.5">{step.title}</p>
+                            <p className="text-xs text-muted-foreground leading-relaxed">{step.detail}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -679,14 +1047,70 @@ export default function Knowledge() {
       {tab === "lessons" && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-muted-foreground font-mono">{LESSONS.length} lessons captured</span>
-            <button className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border font-semibold"
-              style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
+            <span className="text-xs text-muted-foreground font-mono">{userLessons.length + LESSONS.length} lessons captured</span>
+            <button
+              onClick={() => setShowAddLesson(v => !v)}
+              className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border font-semibold transition-all"
+              style={{ borderColor: "hsl(var(--electric-blue) / 0.3)", color: "hsl(var(--electric-blue))", background: "hsl(var(--electric-blue) / 0.07)" }}>
               <Plus className="w-3.5 h-3.5" /> Add Lesson
             </button>
           </div>
+
+          {showAddLesson && (
+            <div className="mb-4 rounded-xl border-2 p-4 space-y-3"
+              style={{ borderColor: "hsl(var(--electric-blue) / 0.4)", background: "hsl(var(--electric-blue) / 0.04)" }}>
+              <p className="text-xs font-bold text-foreground">Log a New Lesson</p>
+              <input
+                className="w-full px-3 py-2 text-sm rounded-lg border bg-background text-foreground focus:outline-none"
+                style={{ borderColor: "hsl(var(--border))" }}
+                placeholder="Lesson title…"
+                value={newLesson.title}
+                onChange={e => setNewLesson(p => ({ ...p, title: e.target.value }))} />
+              <div className="grid grid-cols-2 gap-3">
+                <select className="px-3 py-2 text-sm rounded-lg border bg-background text-foreground focus:outline-none"
+                  style={{ borderColor: "hsl(var(--border))" }}
+                  value={newLesson.outcome}
+                  onChange={e => setNewLesson(p => ({ ...p, outcome: e.target.value as "positive" | "negative" }))}>
+                  <option value="positive">Positive outcome</option>
+                  <option value="negative">Negative outcome</option>
+                </select>
+                <select className="px-3 py-2 text-sm rounded-lg border bg-background text-foreground focus:outline-none"
+                  style={{ borderColor: "hsl(var(--border))" }}
+                  value={newLesson.impact}
+                  onChange={e => setNewLesson(p => ({ ...p, impact: e.target.value as "High" | "Medium" }))}>
+                  <option value="High">High impact</option>
+                  <option value="Medium">Medium impact</option>
+                </select>
+              </div>
+              <textarea
+                className="w-full px-3 py-2 text-sm rounded-lg border bg-background text-foreground focus:outline-none resize-none"
+                style={{ borderColor: "hsl(var(--border))" }}
+                rows={3}
+                placeholder="Summary — what happened and what was the fix or learning?"
+                value={newLesson.summary}
+                onChange={e => setNewLesson(p => ({ ...p, summary: e.target.value }))} />
+              <input
+                className="w-full px-3 py-2 text-sm rounded-lg border bg-background text-foreground focus:outline-none"
+                style={{ borderColor: "hsl(var(--border))" }}
+                placeholder="Tags (comma-separated): PMO, Risk, Finance…"
+                value={newLesson.tags}
+                onChange={e => setNewLesson(p => ({ ...p, tags: e.target.value }))} />
+              <div className="flex gap-2">
+                <button onClick={() => setShowAddLesson(false)}
+                  className="text-xs px-3 py-2 rounded-lg border font-semibold text-muted-foreground"
+                  style={{ borderColor: "hsl(var(--border))" }}>Cancel</button>
+                <button onClick={handleAddLesson}
+                  disabled={!newLesson.title.trim() || !newLesson.summary.trim()}
+                  className="flex items-center gap-1.5 text-xs px-4 py-2 rounded-lg font-semibold disabled:opacity-40"
+                  style={{ background: "hsl(var(--electric-blue))", color: "white" }}>
+                  <Save className="w-3 h-3" /> Save Lesson
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-3">
-            {LESSONS.map(lesson => (
+            {[...userLessons, ...LESSONS].map(lesson => (
               <div key={lesson.id}
                 className="bg-card rounded-xl border-2 border-border p-4 flex gap-4 hover:shadow-card transition-all">
                 <div className="mt-0.5 flex-shrink-0">
@@ -774,8 +1198,32 @@ export default function Knowledge() {
             </div>
           </div>
 
+          {/* Category filter */}
+          {(() => {
+            const cats = ["All", ...Array.from(new Set(PMO_FRAMEWORKS.map(f => f.category)))];
+            return (
+              <div className="flex flex-wrap gap-1.5">
+                {cats.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => setFwCategoryFilter(cat)}
+                    className="text-[11px] px-3 py-1.5 rounded-full font-semibold border transition-all"
+                    style={fwCategoryFilter === cat ? {
+                      background: "hsl(var(--electric-blue))", color: "white", borderColor: "hsl(var(--electric-blue))"
+                    } : {
+                      background: "transparent", color: "hsl(var(--muted-foreground))", borderColor: "hsl(var(--border))"
+                    }}>
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
+
           {/* Framework Table by Category */}
-          {Array.from(new Set(PMO_FRAMEWORKS.map(f => f.category))).map(category => (
+          {Array.from(new Set(PMO_FRAMEWORKS.map(f => f.category)))
+            .filter(cat => fwCategoryFilter === "All" || cat === fwCategoryFilter)
+            .map(category => (
             <div key={category}>
               <div className="flex items-center gap-2 mb-3">
                 <div className="h-px flex-1" style={{ background: "hsl(var(--border))" }} />
@@ -832,6 +1280,102 @@ export default function Knowledge() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ── FORMULAS TAB ── */}
+      {tab === "formulas" && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              Every calculation powering the Apphia Command Center — from org health scoring to financial modelling.
+            </p>
+            <span className="text-xs font-mono text-muted-foreground">
+              {FORMULA_CATEGORIES.reduce((a, c) => a + c.formulas.length, 0)} formulas
+            </span>
+          </div>
+
+          {FORMULA_CATEGORIES.map(cat => {
+            const CatIcon = cat.icon;
+            return (
+              <div key={cat.id}>
+                {/* Category header */}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: `${cat.color}18`, border: `1px solid ${cat.color}30` }}>
+                    <CatIcon className="w-3.5 h-3.5" style={{ color: cat.color }} />
+                  </div>
+                  <span className="text-sm font-bold text-foreground">{cat.label}</span>
+                  <div className="h-px flex-1" style={{ background: "hsl(var(--border))" }} />
+                  <span className="text-[10px] font-mono text-muted-foreground">{cat.formulas.length} formula{cat.formulas.length !== 1 ? "s" : ""}</span>
+                </div>
+
+                {/* Formula cards */}
+                <div className="space-y-2">
+                  {cat.formulas.map(f => {
+                    const isOpen = expandedFormula === f.id;
+                    return (
+                      <div key={f.id}
+                        className="rounded-xl border-2 overflow-hidden transition-all"
+                        style={{ borderColor: isOpen ? `${cat.color}40` : "hsl(var(--border))", background: "hsl(var(--card))" }}>
+                        <button
+                          className="w-full flex items-start justify-between gap-4 px-4 py-3 text-left hover:bg-muted/20 transition-colors"
+                          onClick={() => setExpandedFormula(isOpen ? null : f.id)}>
+                          <div className="flex items-start gap-3 min-w-0">
+                            <code className="mt-0.5 text-xs font-mono font-bold px-2 py-0.5 rounded flex-shrink-0 whitespace-nowrap"
+                              style={{ background: `${cat.color}12`, color: cat.color, border: `1px solid ${cat.color}25` }}>
+                              {f.notation}
+                            </code>
+                            <div>
+                              <p className="text-sm font-semibold text-foreground leading-snug">{f.name}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{f.description}</p>
+                            </div>
+                          </div>
+                          <ChevronDown className={cn("w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5 transition-transform", isOpen && "rotate-180")} />
+                        </button>
+                        {isOpen && (
+                          <div className="px-4 pb-4 border-t space-y-3" style={{ borderColor: "hsl(var(--border))" }}>
+                            <p className="text-xs text-muted-foreground leading-relaxed pt-3">{f.description}</p>
+
+                            {f.variables && f.variables.length > 0 && (
+                              <div>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">Variables</p>
+                                <div className="space-y-1">
+                                  {f.variables.map(v => (
+                                    <div key={v.symbol} className="flex items-start gap-3">
+                                      <code className="text-xs font-mono font-bold flex-shrink-0 w-20"
+                                        style={{ color: cat.color }}>
+                                        {v.symbol}
+                                      </code>
+                                      <span className="text-xs text-muted-foreground">{v.meaning}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {f.example && (
+                              <div className="rounded-lg p-3 space-y-1.5"
+                                style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Example</p>
+                                <p className="text-xs text-foreground font-mono">{f.example}</p>
+                                {f.result && (
+                                  <div className="flex items-center gap-2 pt-1" style={{ borderTop: "1px solid hsl(var(--border))" }}>
+                                    <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: cat.color }}>Result</span>
+                                    <span className="text-xs font-mono font-bold text-foreground">{f.result}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
