@@ -1530,12 +1530,12 @@ export default function OnboardingWizard({ onComplete }: Props) {
                     <Eye className="w-4.5 h-4.5 text-white" />
                   </div>
                   <div className="font-black text-white text-sm mb-1">Guided Mode</div>
-                  <div className="text-xs font-semibold mb-3" style={{ color: "hsl(38 85% 62%)" }}>For solo owners &amp; first-time operators</div>
+                  <div className="text-xs font-semibold mb-3" style={{ color: "hsl(38 85% 62%)" }}>For new business owners &amp; those who prefer simplicity</div>
                   <p className="text-xs leading-relaxed mb-4" style={{ color: "hsl(0 0% 100% / 0.52)" }}>
-                    A clear, step-by-step experience in plain language — focused priorities, weekly check-ins, and no jargon. Switch to full mode anytime.
+                    A clean, focused layout in plain language — no confusing terms, no information overload. See what matters, take the next step, and build confidence at your own pace.
                   </p>
                   <ul className="space-y-1.5 text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
-                    {["Plain-language dashboard", "Weekly priority checklist", "Guided setup prompts", "Switch to full mode anytime"].map(f => (
+                    {["Clutter-free, easy-to-read layout", "Your top priorities, clearly explained", "Step-by-step prompts to guide you", "No business jargon — ever"].map(f => (
                       <li key={f} className="flex items-center gap-2">
                         <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(38 85% 55%)" }} />
                         {f}

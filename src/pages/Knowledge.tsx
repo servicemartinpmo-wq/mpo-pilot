@@ -890,6 +890,9 @@ function TemplateFillModal({ template, onClose, onSave }: {
 
 // ── Main Component ───────────────────────────────────────────────────
 export default function Knowledge() {
+  const isGuided = typeof window !== "undefined" && localStorage.getItem("apphia_user_mode") === "simple";
+  const guidedKit = MODE_KITS.guided;
+
   const [tab, setTab] = useState<HubTab>("templates");
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState<Dept>("All");
@@ -935,18 +938,26 @@ export default function Knowledge() {
   }
 
   const DEPTS: Dept[] = ["All", "Executive", "Finance", "HR", "Product", "Operations", "Sales", "IT", "Legal", "Strategy"];
-  const TABS = [
-    { key: "templates" as HubTab, label: "Templates", icon: FileText, count: TEMPLATES.length },
-    { key: "documents" as HubTab, label: "Documents", icon: FolderOpen, count: savedDocuments.length },
-    { key: "sops" as HubTab, label: "SOP Library", icon: BookMarked, count: SOPS.length },
-    { key: "lessons" as HubTab, label: "Lessons Learned", icon: Lightbulb, count: userLessons.length + LESSONS.length },
-    { key: "frameworks" as HubTab, label: "Frameworks", icon: Database, count: PMO_FRAMEWORKS.length },
-  ];
+  const TABS = isGuided
+    ? [
+        { key: "templates" as HubTab, label: "Templates", icon: FileText, count: TEMPLATES.filter(t => t.tier === "free").length },
+        { key: "documents" as HubTab, label: "My Documents", icon: FolderOpen, count: savedDocuments.length },
+      ]
+    : [
+        { key: "templates" as HubTab, label: "Templates", icon: FileText, count: TEMPLATES.length },
+        { key: "documents" as HubTab, label: "Documents", icon: FolderOpen, count: savedDocuments.length },
+        { key: "sops" as HubTab, label: "SOP Library", icon: BookMarked, count: SOPS.length },
+        { key: "lessons" as HubTab, label: "Lessons Learned", icon: Lightbulb, count: userLessons.length + LESSONS.length },
+        { key: "frameworks" as HubTab, label: "Frameworks", icon: Database, count: PMO_FRAMEWORKS.length },
+      ];
 
-  const filteredTemplates = TEMPLATES.filter(t =>
-    (deptFilter === "All" || t.dept.includes(deptFilter) || t.dept.includes("All")) &&
-    (t.title.toLowerCase().includes(search.toLowerCase()) || t.description.toLowerCase().includes(search.toLowerCase()))
-  );
+  const filteredTemplates = TEMPLATES.filter(t => {
+    if (isGuided && t.tier !== "free") return false;
+    return (
+      (deptFilter === "All" || t.dept.includes(deptFilter) || t.dept.includes("All")) &&
+      (t.title.toLowerCase().includes(search.toLowerCase()) || t.description.toLowerCase().includes(search.toLowerCase()))
+    );
+  });
 
   const filteredSOPs = SOPS.filter(s =>
     (deptFilter === "All" || s.dept === deptFilter) &&
@@ -968,48 +979,85 @@ export default function Knowledge() {
       )}
 
       {/* Header */}
-      <div className="relative flex items-center justify-center">
+      {isGuided ? (
         <div className="text-center">
-          <div className="flex items-center gap-2 mb-0.5 justify-center">
-            <h1 className="text-xl font-bold text-foreground">Resource Hub</h1>
-            <span className="text-[10px] px-2 py-0.5 rounded font-semibold"
-              style={{ background: "hsl(var(--teal) / 0.12)", color: "hsl(var(--teal))", border: "1px solid hsl(var(--teal) / 0.3)" }}>
-              LIVING
-            </span>
-          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-1">Resources</h1>
           <p className="text-sm text-muted-foreground">
-            Templates, SOPs, saved documents, and lessons — dynamically surfaced based on diagnostics and active challenges.
+            Simple, ready-to-use templates to help you run your business — no experience required.
           </p>
         </div>
-        <div className="absolute right-0">
-          <button className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border-2 font-semibold transition-all hover:opacity-90"
-            style={{ borderColor: "hsl(var(--electric-blue) / 0.3)", color: "hsl(var(--electric-blue))", background: "hsl(var(--electric-blue) / 0.07)" }}>
-            <Upload className="w-3.5 h-3.5" /> Upload SOP
-          </button>
+      ) : (
+        <div className="relative flex items-center justify-center">
+          <div className="text-center">
+            <div className="flex items-center gap-2 mb-0.5 justify-center">
+              <h1 className="text-xl font-bold text-foreground">Resource Hub</h1>
+              <span className="text-[10px] px-2 py-0.5 rounded font-semibold"
+                style={{ background: "hsl(var(--teal) / 0.12)", color: "hsl(var(--teal))", border: "1px solid hsl(var(--teal) / 0.3)" }}>
+                LIVING
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Templates, SOPs, saved documents, and lessons — dynamically surfaced based on diagnostics and active challenges.
+            </p>
+          </div>
+          <div className="absolute right-0">
+            <button className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border-2 font-semibold transition-all hover:opacity-90"
+              style={{ borderColor: "hsl(var(--electric-blue) / 0.3)", color: "hsl(var(--electric-blue))", background: "hsl(var(--electric-blue) / 0.07)" }}>
+              <Upload className="w-3.5 h-3.5" /> Upload SOP
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-
-      {/* Diagnostic Recommendations Banner */}
-      <div className="rounded-xl border-2 p-4 flex items-start gap-3"
-        style={{ borderColor: "hsl(var(--signal-yellow) / 0.4)", background: "hsl(var(--signal-yellow) / 0.05)" }}>
-        <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "hsl(var(--signal-yellow))" }} />
-        <div>
-          <p className="text-xs font-bold text-foreground mb-0.5">Recommended from last diagnostic session</p>
-          <p className="text-xs text-muted-foreground mb-2">
-            Based on active gaps in governance and strategic alignment, these resources are surfaced for you:
-          </p>
+      {/* Guided Mode — Getting Started Tips */}
+      {isGuided ? (
+        <div className="rounded-xl border-2 p-5"
+          style={{ borderColor: "hsl(38 88% 55% / 0.35)", background: "hsl(38 88% 55% / 0.05)" }}>
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-4 h-4 flex-shrink-0" style={{ color: "hsl(38 88% 55%)" }} />
+            <p className="text-sm font-bold text-foreground">Quick wins to get you started</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+            {guidedKit.quickWins.map((tip, i) => (
+              <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                <span className="mt-1 w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-black text-white"
+                  style={{ background: "hsl(38 88% 55%)" }}>{i + 1}</span>
+                {tip}
+              </div>
+            ))}
+          </div>
           <div className="flex flex-wrap gap-2">
-            {TEMPLATES.filter(t => t.diagnosticTag).map(t => (
-              <button key={t.id} onClick={() => setActiveTemplate(t)}
-                className="text-xs px-2.5 py-1 rounded-lg border font-medium transition-all hover:opacity-90"
-                style={{ borderColor: "hsl(var(--signal-yellow) / 0.5)", color: "hsl(var(--signal-yellow))", background: "hsl(var(--signal-yellow) / 0.08)" }}>
-                {t.title}
-              </button>
+            <p className="w-full text-[11px] font-semibold text-muted-foreground mb-1">Useful tools to know:</p>
+            {guidedKit.topFrameworks.map(f => (
+              <span key={f} className="text-xs px-2.5 py-1 rounded-lg border font-medium"
+                style={{ borderColor: "hsl(38 88% 55% / 0.4)", color: "hsl(38 88% 55%)", background: "hsl(38 88% 55% / 0.07)" }}>
+                {f}
+              </span>
             ))}
           </div>
         </div>
-      </div>
+      ) : (
+        /* Diagnostic Recommendations Banner */
+        <div className="rounded-xl border-2 p-4 flex items-start gap-3"
+          style={{ borderColor: "hsl(var(--signal-yellow) / 0.4)", background: "hsl(var(--signal-yellow) / 0.05)" }}>
+          <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "hsl(var(--signal-yellow))" }} />
+          <div>
+            <p className="text-xs font-bold text-foreground mb-0.5">Recommended from last diagnostic session</p>
+            <p className="text-xs text-muted-foreground mb-2">
+              Based on active gaps in governance and strategic alignment, these resources are surfaced for you:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {TEMPLATES.filter(t => t.diagnosticTag).map(t => (
+                <button key={t.id} onClick={() => setActiveTemplate(t)}
+                  className="text-xs px-2.5 py-1 rounded-lg border font-medium transition-all hover:opacity-90"
+                  style={{ borderColor: "hsl(var(--signal-yellow) / 0.5)", color: "hsl(var(--signal-yellow))", background: "hsl(var(--signal-yellow) / 0.08)" }}>
+                  {t.title}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Search + Filter */}
       <div className="flex flex-col sm:flex-row gap-3">
@@ -1018,28 +1066,30 @@ export default function Knowledge() {
           <input
             className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border-2 bg-card text-foreground focus:outline-none transition-all"
             style={{ borderColor: "hsl(var(--border))" }}
-            placeholder="Search templates, SOPs, or lessons…"
+            placeholder={isGuided ? "Search templates…" : "Search templates, SOPs, or lessons…"}
             value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-          <Filter className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-          {DEPTS.map(d => {
-            const Icon = DEPT_ICONS[d] || Building2;
-            return (
-              <button key={d} onClick={() => setDeptFilter(d)}
-                className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border font-medium whitespace-nowrap transition-all flex-shrink-0"
-                style={{
-                  borderColor: deptFilter === d ? "hsl(var(--electric-blue))" : "hsl(var(--border))",
-                  background: deptFilter === d ? "hsl(var(--electric-blue) / 0.1)" : "transparent",
-                  color: deptFilter === d ? "hsl(var(--electric-blue))" : "hsl(var(--muted-foreground))",
-                }}>
-                <Icon className="w-3 h-3" />{d}
-              </button>
-            );
-          })}
-        </div>
+        {!isGuided && (
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+            <Filter className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+            {DEPTS.map(d => {
+              const Icon = DEPT_ICONS[d] || Building2;
+              return (
+                <button key={d} onClick={() => setDeptFilter(d)}
+                  className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border font-medium whitespace-nowrap transition-all flex-shrink-0"
+                  style={{
+                    borderColor: deptFilter === d ? "hsl(var(--electric-blue))" : "hsl(var(--border))",
+                    background: deptFilter === d ? "hsl(var(--electric-blue) / 0.1)" : "transparent",
+                    color: deptFilter === d ? "hsl(var(--electric-blue))" : "hsl(var(--muted-foreground))",
+                  }}>
+                  <Icon className="w-3 h-3" />{d}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Tab nav */}
@@ -1064,8 +1114,10 @@ export default function Knowledge() {
       {tab === "templates" && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-muted-foreground font-mono">{filteredTemplates.length} templates · click to populate</span>
-            <span className="text-xs text-muted-foreground">Free templates available — Tier 1+ unlocks all</span>
+            <span className="text-xs text-muted-foreground font-mono">
+              {filteredTemplates.length} {isGuided ? "templates available — click any to open and fill in" : "templates · click to populate"}
+            </span>
+            {!isGuided && <span className="text-xs text-muted-foreground">Free templates available — Tier 1+ unlocks all</span>}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
             {filteredTemplates.map(tmpl => {
