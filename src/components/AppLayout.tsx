@@ -82,7 +82,6 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
     workAlwaysOpen: false,
     command: [
       { to: "/",            label: "Dashboard", icon: LayoutDashboard },
-      { to: "/crm",         label: "CRM",       icon: ShoppingBag     },
       { to: "/decisions",   label: "Decisions", icon: Scale           },
       { to: "/departments", label: "Divisions", icon: Building2       },
       { to: "/team",        label: "Team",      icon: Users           },
@@ -93,7 +92,8 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/action-items", label: "Action Items", icon: CheckSquare },
     ],
     growth: [
-      { to: "/marketing", label: "Marketing", icon: TrendingUp },
+      { to: "/crm",       label: "CRM",       icon: ShoppingBag },
+      { to: "/marketing", label: "Marketing", icon: TrendingUp  },
     ],
     tools: [
       { to: "/reports",      label: "Reports",      icon: FileText   },

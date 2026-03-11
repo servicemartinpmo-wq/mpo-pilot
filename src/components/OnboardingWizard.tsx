@@ -893,10 +893,10 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
 
       {/* Full-bleed background image — low opacity for texture */}
       <img
-        src={onboardNetwork}
+        src={onboardHero}
         alt=""
         className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-        style={{ opacity: 0.10, mixBlendMode: "luminosity" }}
+        style={{ opacity: 0.20, mixBlendMode: "luminosity" }}
       />
 
       {/* Ambient colour orbs */}

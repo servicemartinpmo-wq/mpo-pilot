@@ -2,14 +2,18 @@
  * TopStatusBar — persistent 28px command-center anchor bar.
  * Shows live org health score, critical alert count, and today's date.
  * Opens the command palette on click of the search area.
+ *
+ * Dashboard (/): hides brand + org health (already shown in dashboard side panel).
+ * All other pages: shows org health and replaces "Martin PMO" with the company name.
  */
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
-import { Activity, AlertTriangle, Search, Zap } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Activity, AlertTriangle, Search } from "lucide-react";
 import { useCountUp } from "@/hooks/useCountUp";
 import { cn } from "@/lib/utils";
 import { departments, actionItems, insights } from "@/lib/pmoData";
 import { loadProfile } from "@/lib/companyStore";
+import pmoLogoNoBg from "@/assets/pmo-logo-nobg.png";
 
 interface Props {
   onOpenCommandPalette: () => void;
@@ -17,6 +21,8 @@ interface Props {
 
 export default function TopStatusBar({ onOpenCommandPalette }: Props) {
   const profile = loadProfile();
+  const location = useLocation();
+  const isDashboard = location.pathname === "/";
 
   const avgHealth = useMemo(() => {
     if (!departments.length) return 72;
@@ -42,6 +48,8 @@ export default function TopStatusBar({ onOpenCommandPalette }: Props) {
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 
+  const displayName = profile?.orgName?.trim() || "Martin PMO";
+
   return (
     <div className="fixed top-0 left-0 right-0 z-[55] flex items-center justify-between px-4"
       style={{
@@ -50,39 +58,48 @@ export default function TopStatusBar({ onOpenCommandPalette }: Props) {
         borderBottom: "1px solid hsl(222 28% 18%)",
       }}>
 
-      {/* Left — brand + health */}
+      {/* Left — brand + health (hidden on Dashboard where panel already shows these) */}
       <div className="flex items-center gap-4">
+
+        {/* Brand mark — always visible */}
         <div className="flex items-center gap-1.5">
-          <Zap className="w-3 h-3" style={{ color: "hsl(222 88% 65%)" }} />
-          <span className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: "hsl(0 0% 100% / 0.50)" }}>
-            Martin PMO
-          </span>
+          <img src={pmoLogoNoBg} alt="PMO" className="w-4 h-4 object-contain" style={{ filter: "brightness(1.8)" }} />
+          {!isDashboard && (
+            <span className="text-[10px] font-black uppercase tracking-[0.18em]" style={{ color: "hsl(0 0% 100% / 0.50)" }}>
+              {displayName}
+            </span>
+          )}
         </div>
 
-        <div className="flex items-center gap-1.5">
-          <Activity className="w-3 h-3" style={{ color: healthColor }} />
-          <span className="text-[10px] font-bold" style={{ color: "hsl(0 0% 100% / 0.40)" }}>Org Health</span>
-          <Link to="/diagnostics" className="text-[11px] font-black font-mono transition-opacity hover:opacity-80"
-            style={{ color: healthColor }}>
-            {healthDisplay}
-          </Link>
-        </div>
+        {/* Org health — only on non-dashboard pages */}
+        {!isDashboard && (
+          <>
+            <div className="flex items-center gap-1.5">
+              <Activity className="w-3 h-3" style={{ color: healthColor }} />
+              <span className="text-[10px] font-bold" style={{ color: "hsl(0 0% 100% / 0.40)" }}>Org Health</span>
+              <Link to="/diagnostics" className="text-[11px] font-black font-mono transition-opacity hover:opacity-80"
+                style={{ color: healthColor }}>
+                {healthDisplay}
+              </Link>
+            </div>
 
-        {criticalAlerts > 0 && (
-          <Link to="/diagnostics" className="flex items-center gap-1 transition-opacity hover:opacity-80">
-            <AlertTriangle className="w-3 h-3" style={{ color: "hsl(350 72% 60%)" }} />
-            <span className="text-[10px] font-bold" style={{ color: "hsl(350 72% 60%)" }}>
-              {criticalAlerts} critical
-            </span>
-          </Link>
-        )}
+            {criticalAlerts > 0 && (
+              <Link to="/diagnostics" className="flex items-center gap-1 transition-opacity hover:opacity-80">
+                <AlertTriangle className="w-3 h-3" style={{ color: "hsl(350 72% 60%)" }} />
+                <span className="text-[10px] font-bold" style={{ color: "hsl(350 72% 60%)" }}>
+                  {criticalAlerts} critical
+                </span>
+              </Link>
+            )}
 
-        {overdueActions > 0 && (
-          <Link to="/action-items" className="hidden sm:flex items-center gap-1 transition-opacity hover:opacity-80">
-            <span className="text-[10px]" style={{ color: "hsl(38 90% 58%)" }}>
-              {overdueActions} pending actions
-            </span>
-          </Link>
+            {overdueActions > 0 && (
+              <Link to="/action-items" className="hidden sm:flex items-center gap-1 transition-opacity hover:opacity-80">
+                <span className="text-[10px]" style={{ color: "hsl(38 90% 58%)" }}>
+                  {overdueActions} pending actions
+                </span>
+              </Link>
+            )}
+          </>
         )}
       </div>
 
