@@ -5,7 +5,7 @@ import {
   Flag, ChevronDown, Filter, Star, Mail, MessageSquare,
   Video, Target, X, ChevronRight, Plus,
   FileText, Link as LinkIcon, Paperclip, Info, ArrowRight,
-  Repeat, Zap, Users
+  Repeat, Zap, Users, Flame
 } from "lucide-react";
 import { useState } from "react";
 
@@ -194,6 +194,102 @@ export default function ActionItems() {
           </button>
         </div>
       </div>
+
+      {/* ── Your Focus spotlight ── */}
+      {(() => {
+        const now = new Date();
+        const focusItems = enriched
+          .filter(a => a.displayStatus !== "Completed" && a.displayStatus !== "Dropped")
+          .map(a => ({
+            ...a,
+            daysOverdue: Math.floor((now.getTime() - new Date(a.dueDate).getTime()) / 86400000),
+          }))
+          .filter(a => a.daysOverdue >= 0)
+          .sort((a, b) => {
+            const score = (x: typeof a) => (x.priority === "High" ? 300 : x.priority === "Medium" ? 200 : 100) + x.daysOverdue;
+            return score(b) - score(a);
+          })
+          .slice(0, 3);
+
+        if (focusItems.length === 0) return null;
+
+        const formatDays = (d: number) => d === 0 ? "due today" : d === 1 ? "1 day overdue" : d < 7 ? `${d} days overdue` : d < 30 ? `${Math.floor(d / 7)}w overdue` : d < 365 ? `${Math.floor(d / 30)}mo overdue` : "1+ yr overdue";
+
+        return (
+          <div className="rounded-2xl overflow-hidden border-2"
+            style={{ borderColor: "hsl(0 84% 60% / 0.35)", background: "hsl(0 84% 60% / 0.04)" }}>
+            {/* Header strip */}
+            <div className="flex items-center gap-2.5 px-4 py-2.5 border-b"
+              style={{ borderColor: "hsl(0 84% 60% / 0.2)", background: "hsl(0 84% 60% / 0.07)" }}>
+              <span className="relative flex h-2 w-2 flex-shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                  style={{ background: "hsl(0 84% 60%)" }} />
+                <span className="relative inline-flex rounded-full h-2 w-2"
+                  style={{ background: "hsl(0 84% 60%)" }} />
+              </span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.16em]"
+                style={{ color: "hsl(0 84% 60%)" }}>
+                Your Focus — Address These First
+              </span>
+              <span className="ml-auto text-[10px] text-muted-foreground font-medium">
+                {focusItems.length} item{focusItems.length !== 1 ? "s" : ""} need your attention
+              </span>
+            </div>
+
+            <div className="divide-y" style={{ borderColor: "hsl(0 84% 60% / 0.12)" }}>
+              {focusItems.map((item, i) => (
+                <div key={item.id}
+                  className={cn("flex items-start gap-3 px-4 py-3 transition-colors", i === 0 && "bg-signal-red/3")}
+                  style={i === 0 ? { background: "hsl(0 84% 60% / 0.04)" } : {}}>
+
+                  {/* Priority rank */}
+                  <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-black"
+                    style={{
+                      background: i === 0 ? "hsl(0 84% 60% / 0.15)" : "hsl(var(--muted))",
+                      color: i === 0 ? "hsl(0 84% 60%)" : "hsl(var(--muted-foreground))",
+                    }}>
+                    {i + 1}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start gap-2 flex-wrap mb-0.5">
+                      <p className={cn("text-xs font-semibold leading-snug text-foreground", i === 0 && "font-bold")}>
+                        {item.title}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="flex items-center gap-1 text-[10px] font-bold"
+                        style={{ color: i === 0 ? "hsl(0 84% 60%)" : "hsl(38 92% 52%)" }}>
+                        <Clock className="w-2.5 h-2.5" />
+                        {formatDays(item.daysOverdue)}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">·</span>
+                      <span className="text-[10px] text-muted-foreground">{item.initiativeName}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
+                        style={{
+                          background: item.priority === "High" ? "hsl(0 84% 60% / 0.10)" : "hsl(38 92% 52% / 0.10)",
+                          color: item.priority === "High" ? "hsl(0 84% 60%)" : "hsl(38 92% 52%)",
+                        }}>
+                        {item.priority}
+                      </span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                        style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
+                        {item.displayStatus}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Flame for #1 critical */}
+                  {i === 0 && (
+                    <Flame className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "hsl(0 84% 60%)" }} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Quick stats ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

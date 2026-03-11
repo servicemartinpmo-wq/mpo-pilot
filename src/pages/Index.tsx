@@ -6,6 +6,7 @@ import InsightCard from "@/components/InsightCard";
 import CompanyHealthScore from "@/components/CompanyHealthScore";
 import StrategyScoreCard from "@/components/StrategyScoreCard";
 import UpgradeBanner from "@/components/UpgradeBanner";
+import { NudgeAlert } from "@/components/NudgeAlert";
 import {
   AlertTriangle, Users, Clock, Target, CheckCircle,
   ChevronRight, Zap, Activity, X, CalendarDays, UserCheck,
@@ -1115,6 +1116,9 @@ export default function Dashboard() {
         </div>
 
       </div>
+
+      {/* ── Personal nudge — overdue action item reminder ── */}
+      <NudgeAlert />
     </div>
   );
 }
