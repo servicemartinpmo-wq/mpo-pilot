@@ -261,7 +261,7 @@ export default function Reports() {
                     <p className="text-sm text-foreground/80 leading-snug">{ins.situation}</p>
                     <p className="text-xs text-muted-foreground mt-1">{ins.recommendation}</p>
                   </div>
-                  <ScoreBadge score={ins.executivePriorityScore} signal={ins.signal} size="sm" />
+                  <ScoreBadge score={ins.executive_priority_score ?? 50} signal={(ins.signal ?? "yellow") as "red" | "yellow" | "green" | "blue"} size="sm" />
                 </div>
               ))}
             </div>
@@ -323,11 +323,11 @@ export default function Reports() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-secondary rounded-lg p-3">
                   <div className="text-xs text-muted-foreground mb-1">Total Allocated</div>
-                  <div className="text-sm font-bold font-mono text-foreground">{formatCurrency(orgMetrics.totalBudgetAllocated)}</div>
+                  <div className="text-sm font-bold font-mono text-foreground">{formatCurrency(orgMetrics?.total_budget_allocated ?? 0)}</div>
                 </div>
                 <div className="bg-secondary rounded-lg p-3">
                   <div className="text-xs text-muted-foreground mb-1">Total Used</div>
-                  <div className="text-sm font-bold font-mono text-foreground">{formatCurrency(orgMetrics.totalBudgetUsed)}</div>
+                  <div className="text-sm font-bold font-mono text-foreground">{formatCurrency(orgMetrics?.total_budget_used ?? 0)}</div>
                 </div>
               </div>
             </SectionCard>
@@ -366,23 +366,23 @@ export default function Reports() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {[...departments].sort((a, b) => b.maturityScore - a.maturityScore).map(d => (
+                  {[...departments].sort((a, b) => (b.maturity_score ?? 0) - (a.maturity_score ?? 0)).map(d => (
                     <tr key={d.id} className="hover:bg-secondary/30 transition-colors">
                       <td className="px-4 py-2.5 font-medium text-foreground">{d.name}</td>
                       <td className="px-4 py-2.5">
                         <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium",
-                          d.maturityTier === "Optimized" ? "bg-signal-green/10 text-signal-green" :
-                          d.maturityTier === "Managed" ? "bg-electric-blue/10 text-electric-blue" :
-                          d.maturityTier === "Structured" ? "bg-teal/10 text-teal" :
-                          d.maturityTier === "Developing" ? "bg-signal-yellow/10 text-signal-yellow" :
+                          d.maturity_tier === "Optimized" ? "bg-signal-green/10 text-signal-green" :
+                          d.maturity_tier === "Managed" ? "bg-electric-blue/10 text-electric-blue" :
+                          d.maturity_tier === "Structured" ? "bg-teal/10 text-teal" :
+                          d.maturity_tier === "Developing" ? "bg-signal-yellow/10 text-signal-yellow" :
                           "bg-signal-red/10 text-signal-red"
-                        )}>{d.maturityTier}</span>
+                        )}>{d.maturity_tier}</span>
                       </td>
-                      <td className="px-4 py-2.5 font-mono font-bold text-foreground">{d.maturityScore}</td>
-                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.executionHealth}</td>
-                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.capacityUsed}%</td>
-                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.riskScore}</td>
-                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.sopAdherence}%</td>
+                      <td className="px-4 py-2.5 font-mono font-bold text-foreground">{d.maturity_score ?? 0}</td>
+                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.execution_health ?? 0}</td>
+                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.capacity_used ?? 0}%</td>
+                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.risk_score ?? 0}</td>
+                      <td className="px-4 py-2.5 font-mono text-muted-foreground">{d.sop_adherence ?? 0}%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -416,7 +416,7 @@ export default function Reports() {
                       ini.status === "Blocked" ? "bg-signal-orange animate-pulse" : "bg-signal-yellow"
                     )} />
                     <span className="text-xs text-foreground flex-1 truncate">{ini.name}</span>
-                    <span className="text-xs font-mono text-muted-foreground flex-shrink-0">{ini.completionPct}%</span>
+                    <span className="text-xs font-mono text-muted-foreground flex-shrink-0">{ini.completion_pct ?? 0}%</span>
                   </div>
                 ))}
               </div>
@@ -566,7 +566,7 @@ export default function Reports() {
           {/* YTD initiatives */}
           <SectionCard title="Initiative Progress YTD" icon={CheckCircle}>
             <div className="space-y-3">
-              {YTD_INITIATIVES.map(ini => (
+              {initiatives.map(ini => (
                 <div key={ini.id} className="flex items-center gap-4 p-3 rounded-lg bg-secondary/40 border border-border">
                   <div className={cn("w-2 h-2 rounded-full flex-shrink-0",
                     ini.status === "On Track" ? "bg-signal-green" :
@@ -577,11 +577,11 @@ export default function Reports() {
                   <span className="text-[10px] text-muted-foreground w-16 text-right">{ini.department}</span>
                   <div className="w-24 h-1.5 rounded-full bg-muted overflow-hidden">
                     <div className="h-full rounded-full" style={{
-                      width: `${ini.completionPct}%`,
+                      width: `${ini.completion_pct ?? 0}%`,
                       background: ini.status === "On Track" ? "hsl(var(--signal-green))" : ini.status === "Completed" ? "hsl(var(--electric-blue))" : "hsl(var(--signal-yellow))"
                     }} />
                   </div>
-                  <span className="text-xs font-mono text-muted-foreground w-8 text-right">{ini.completionPct}%</span>
+                  <span className="text-xs font-mono text-muted-foreground w-8 text-right">{ini.completion_pct ?? 0}%</span>
                   <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full",
                     ini.status === "On Track" ? "bg-signal-green/10 text-signal-green" :
                     ini.status === "Completed" ? "bg-electric-blue/10 text-electric-blue" :
@@ -613,9 +613,9 @@ export default function Reports() {
           <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
             {[
               { label: "Full-Year Revenue", value: "$20.6M", sub: "+18% YoY", color: "text-signal-green", icon: DollarSign },
-              { label: "Org Health Peak", value: `${orgMetrics.avgExecutionHealth}`, sub: `+${orgMetrics.avgExecutionHealth - 58} pts since Jan`, color: "text-electric-blue", icon: Activity },
+              { label: "Org Health Peak", value: `${orgMetrics?.avg_execution_health ?? 0}`, sub: `+${(orgMetrics?.avg_execution_health ?? 58) - 58} pts since Jan`, color: "text-electric-blue", icon: Activity },
               { label: "Initiatives Closed", value: completedInitiatives + 14, sub: "Across all departments", color: "text-teal", icon: CheckCircle },
-              { label: "SOP Coverage", value: `${orgMetrics.sopCoverage}%`, sub: "+14 pts growth YoY", color: "text-signal-yellow", icon: FileText },
+              { label: "SOP Coverage", value: `${orgMetrics?.sop_coverage ?? 0}%`, sub: "+14 pts growth YoY", color: "text-signal-yellow", icon: FileText },
             ].map(({ label, value, sub, color, icon: Icon }) => (
               <div key={label} className="bg-card rounded-xl border-2 border-border p-4 shadow-card">
                 <div className="flex items-center justify-between mb-2">
@@ -667,10 +667,10 @@ export default function Reports() {
                 <div className="space-y-3">
                   {[
                     { label: "Revenue", current: "$20.6M", prev: "$17.5M", delta: "+18%", positive: true },
-                    { label: "Org Health Score", current: `${orgMetrics.avgExecutionHealth}`, prev: "58", delta: `+${orgMetrics.avgExecutionHealth - 58}`, positive: true },
-                    { label: "Maturity Score", current: `${orgMetrics.overallMaturityScore}`, prev: "50", delta: `+${orgMetrics.overallMaturityScore - 50}`, positive: true },
+                    { label: "Org Health Score", current: `${orgMetrics?.avg_execution_health ?? 0}`, prev: "58", delta: `+${(orgMetrics?.avg_execution_health ?? 58) - 58}`, positive: true },
+                    { label: "Maturity Score", current: `${orgMetrics?.overall_maturity_score ?? 0}`, prev: "50", delta: `+${(orgMetrics?.overall_maturity_score ?? 50) - 50}`, positive: true },
                     { label: "Team Size", current: "118 FTE", prev: "84 FTE", delta: "+40%", positive: true },
-                    { label: "SOP Coverage", current: `${orgMetrics.sopCoverage}%`, prev: "64%", delta: "+14pp", positive: true },
+                    { label: "SOP Coverage", current: `${orgMetrics?.sop_coverage ?? 0}%`, prev: "64%", delta: "+14pp", positive: true },
                   ].map(({ label, current, prev, delta, positive }) => (
                     <div key={label} className="flex items-center gap-3 py-2 border-b border-border/50 last:border-0">
                       <span className="text-xs text-muted-foreground w-32 flex-shrink-0">{label}</span>
