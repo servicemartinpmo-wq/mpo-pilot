@@ -1,0 +1,327 @@
+Dashboard changes: sections sort of blend together, leverage icons with colors and/or example: Icon (Active Initiatives). 
+I really dont like the 3d sphere, its not 3d or cinematic looking enough. I do like the information inside of it. 
+Whats happening should be at the top, under the org information (Good morning x, etc)
+Change analysis modules to only in the admin page. 
+Each page on the app (if needed should have a drop down list with data under it instead of trying to cram everything into one page (except for Dashboard, Initiative
+
+Unlock more with Martin PMO-Ops, needs to be a thin bar at the top of the dashboard (can be clicked out/removed by user) and diagnostic page, with a read more option to show the key features. Once clicked it takes them to the membership landing page with the full feature list and details. 
+Put decades of consulting expertise, built into every tier. 
+
+Add that we have a non-profit discount for tier 3 (from the original price to 20% discount per month). 
+Add we have a discounted annual rate as well. 
+-
+
+Initiatives page - the status key should make the color coding throughout the app (outstanding/delayed: purple. Needs attention: Orange, On track: yellow, Abandoned: Red)
+Need sorting/filtering options for all columns
+Inititaive needs to be explained and there needs to be an onboarding process with a quick tutorial or how to use the app. 
+
+Everything in the app should be clickable and give more insight when you click or hover over it. 
+–
+
+
+
+Action item page - ensure the emails uploaded or copied from their email inbox are saved as an attachment (snapshot - like the output for Send to Asana) or the summarized text saved under References (when an action item is clicked into). Also a link to go back to the original email 
+Also, the flow of text and the layout of text should be like this. Like the INTJ brain. 
+
+Let’s also add events and a manual input or upload option for each page. This experience needs to be intuitive, but customizable as well. 
+
+Example:
+(M/O/C/H/A): Escalate API docs to CTO
+Status: In Progress
+Detail: 48hr mandate Formal escalation with resolution deadline. Unblocks INI-002, INI-005, INI-008.
+(M/O/C/H/A) Ryan Torres
+3-8-2025·
+Directive (programs and strategic plans) (or initiative - transformative or operational (day to day) projects): Customer Portal v2
+Product Development
+
+
+Note: All items will need to be reviewed, relayed, tested and piloted. 
+
+Priority/Focus Areas/Quick Wins
+Strengthen Monday Team Meetings for Cross-Team Information Flow
+Standardized Monday agenda sent every Friday by 3 PM ET
+Rotating notetaker (Lawren, Apphia, Educator if L and A unavailable). 
+Recap sent within 24 hours
+Shared Team Action Tracker updated weekly
+Dedicated planning time built into Monday meetings for upcoming week prep
+Use Monday meetings as the primary space for cross-team updates and school-related changes
+
+
+Create Clear Structural Guidelines (Roles, Responsibilities, Systems)
+Program Structure Handbook including:
+Clear roles & responsibilities
+Weekly expectations
+Curriculum guidance
+Garden task templates
+Communication protocols
+Behavior management & family communication steps
+Pivot Support Framework: Guidance on how educators can adjust lessons or routines when plans shift
+Pilot updated structures at PS84 before full rollout
+“Space & Grace” expectations added to team norms
+
+Improve Student Engagement With the Garden Program
+Site-specific brainstorming + strategy alignment
+Garden Connection Mini Projects
+Garden Crew rotation system (student leadership roles)
+Student Garden Jobs (watering, cleanup, harvesting, compost check, etc.)
+Cleanup routines built into every lesson plan
+Project Progress Tracker to support consistency and follow-through
+
+Enhance Collaboration Across Teams & School Partners
+Classroom - Garden team weekly check-ins (via Monday meetings + micro-updates)
+Clear guidance on coordination with site administrators (e.g., Ms. B)
+School partnership protocols:
+How updates from schools get communicated
+Procedure for schedule adjustments
+Site/School requirements mapped to roles
+Admin support for co-teacher/principal relations (Lauren or Apphia)
+Strengthen Team Culture & Working Practices
+Weekly “Golden Moments” in team meetings
+“Space & Grace” norm integrated into team communications
+Quarterly meet-and-greets with gardeners and external garden educators
+Monthly PD + peer learning circles
+Recognition systems (wins, shout-outs, contributions)
+
+Resource Access, Tools, Materials & Budget
+Standardized Materials Request Process
+Inventory log for garden tools and supplies
+Budget tracker (admin-managed)
+Quick access folder for:
+Materials lists
+Ordering procedures
+Vendor contacts
+Ensure resources are aligned with curriculum and garden tasks
+
+    II.      Operational Challenges & Remedy Plan
+
+Communication Gaps
+Challenges Identified:
+Coordination gaps across program/admin/co-teachers
+Gardeners + students disconnected from the garden program
+Missed urgent or time-sensitive updates
+Solution: 
+Centralized Google Drive with standardized folders
+Weekly communication cadence (Mon main meeting; Tues/Thu microupdates; Fri key updates/changes/accountments)
+Urgent updates sent via Group Thread
+Site admin coordination steps (Ms. B, school point people)
+
+Lack of Systems & Organization
+ Drive structure cleanup
+ Lesson planning + weekly planning templates
+ Standardized garden task lists (weekly + seasonal)
+
+Meeting Logistics
+ Agendas 48 hours before meetings
+ Meeting recap within 24 hours
+ “Team Action Tracker” for followups
+
+Student Engagement & Behavior Management
+ Student “Garden Jobs”
+ Cleanup routines built into plans
+ Family communication touch points
+
+Team Working Practices & Culture
+ Weekly “Golden Moments”
+ Quarterly garden educator meet & greets
+ Monthly PD + peer learning
+
+III.      Implementation Timeline
+Phase 1 (Weeks 1–2/4):
+ Launch Monday meeting structure
+ Publish agenda + recap templates
+ Create Team Action Tracker
+ Drive consolidation
+ Draft Program Structure Handbook
+
+
+
+Implementation Timeline
+
+Phase 1 (Weeks 1–2):
+ Launch Monday meeting structure
+ Publish agenda + recap templates
+ Create Team Action Tracker
+ Drive consolidation
+ Draft Program Structure Handbook
+
+Phase 2 (Weeks 3–6):
+ Implement templates
+ Pilot structural guidelines at PS84
+ Launch Garden Crew system
+ Weekly communication cadence
+
+Phase 3 (Months 2–4):
+ Ongoing PD
+ Family engagement rollout
+ Monthly crossteam syncs
+IV Roles & Responsibilities
+Executive Director:
+ Approves handbook, oversees implementation, manages DOE/principal relations
+Educator Liaison / Admin Lead:
+ Maintains agendas, followups, Drive structure
+
+Educators (Garden + Classroom):
+ Weekly plans, communication cadence, student engagement strategies
+Administrative Assistant:
+ File organization, contact lists, receipts, meeting archives
+
+
+V Program Structure Handbook (Draft)
+This draft includes:
+
+Roles & Responsibilities:
+ Executive Director, Program Director, Garden Educator, Classroom Educator, Admin Assistant
+
+Lesson Planning Expectations:
+ Weekly plan due Fridays/Thursdays?
+ Lesson plan template with objectives, materials, timing, garden activities
+
+ Garden Task List:
+ Weekly tasks (watering, compost check, harvesting)
+ Seasonal tasks (planting, winterizing)
+
+Communication Protocols:
+Urgent updates  (Group thread)
+General updates (Email)
+Weekly updates (Monday meeting + recap)
+
+Behavior Management Framework:
+ Proactive communication with families
+ Cleaning routines
+ Student Jobs system
+
+Meeting Structure:
+ Agenda template
+ Recap format
+
+
+VI.    Shared Google Drive Folder Map
+Beazer’s Garden Shared Drive - with Educators:
+
+ Program Operations
+Action Tracker
+Weekly Updates
+ Curriculum & Lesson Plans
+Templates
+Submitted Lesson Plans
+ Garden Tasks
+Weekly Tasks
+Seasonal Tasks
+ Team Meetings
+ Meeting type/by site
+  Agendas
+  Action Items and Notes
+ Site Specific Materials
+PSxxx
+Future Sites
+ Admin
+  Fine as is (for internal admin team)
+
+
+
+VII.    Templates
+Pull from Repository:
+Agenda Outline:
+ Golden Moments/Wins
+ Updates
+ Challenges
+ Solutions
+ Next Steps
+ Assignments
+
+Meeting Recap Template:
+ Summary
+ Decisions Made
+ Action Items (Owner + Deadline)
+
+Lesson Plan Template:
+ Objective
+ Materials
+ Procedure
+ Garden Integration
+ Reflection/Assessment
+
+Garden Task List Template:
+ Weekly Tasks
+ Monthly Tasks
+ Seasonal Tasks
+
+Communication Protocol Template:
+Weekly cadence
+Expectations and Etiquette
+Urgent update procedure
+Family communication procedure and touchpoints
+
+-
+
+Departments - sorting and filtering by department , maturity and the rest of the options 
+Instead of head use Lead
+Make sure there are clear blocks and titles between sections on each page
+
+It should flow where the title is slightly larger than the other text and in the middle of the page
+Everything else flows under that example:
+
+Dont user Org Avg Maturity use Average: Maturity
+Dont use sop adherence avg, use Average: SOP Adherence 
+
+The naming formats and structures need to be consistent through the app. 
+
+The maturity distribution (under department) needs to stay in its own column and not be with the title of each department 
+
+-
+
+Knowledge: name should change to Resource Hub - PMO-Ops
+Templates should be either download or click input information in a format like Adobe or docusign easily. 
+Workflows could be click, deploy and integrate (like active campaign’s workflows) with the option for where (that is dependent on historical data, learning and recommendations based on logic and strategic pillars and the PMO-Ops Prioritization matrix - urgency, deadline, impact, context (this is integral for tier 1 and 2) 
+
+Filtering should be by department and problem needs or diagnostic needs (these will likely be used in the remedy plan and can be prepopulated based on the user request or question or problem
+
+Lessons Learned should be in reports (next to needs attention)
+
+Pre-created systems that are adapted to the key problem the user/org is having (communications system, HR system including payroll processing times and having the calendar for that owner blocked off on that day as a recurring invite) that are made from prompts - each department should have one with variations based on structural issues. 
+–
+
+Reports - this page needs to be intuitive, but highly customizable. 
+
+
+There should be an intake process and an onboarding process. 
+Intake: Industries needs to be more inclusive: 
+Non-Profit & Social Services
+Wholesale Trade 
+Telecommunications
+Retail Trade
+Real Estate
+Professional & Business Services
+Pharmaceuticals & Biotechnology
+Mining & Natural Resources
+Media & Publishing
+Manufacturing
+Logistics & Transportation
+Legal Services
+Insurance
+Information Technology
+Hospitality & Tourism
+Healthcare Services 
+Government Contracting
+Food & Beverage
+Financial Services
+Environmental Services
+Engineering
+Energy & Utilities
+Education & Training
+E-commerce
+Defense & Security
+Consumer Goods
+Construction
+Automotive
+Arts, Entertainment & Recreation
+Agriculture & Agribusiness
+Other: (name)
+
+Also starred emails get priority in uploading through the email reader, etc
+
+“Tell me more about that” or Answer these questions feature (not to be used too often, the system would eventually learn most of how the org runs and the user talks and be used less and less
+
+CMS integration
+
+The overall structure for the app is good, but it needs to feel more sophisticated without cramming more information to the front end - UI,UX. 

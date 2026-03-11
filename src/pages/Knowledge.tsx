@@ -4,14 +4,14 @@ import {
   Search, Filter, ChevronRight, CheckCircle, Star,
   Building2, Target, Users, DollarSign, Shield, Cpu, BarChart3,
   Rocket, BookMarked, Plus, Lock, Save, X, Edit3, FolderOpen,
-  ThumbsUp, AlertTriangle, Sparkles, Layers
+  ThumbsUp, AlertTriangle, Sparkles, Layers, Database
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────
 type TemplateCategory = "RACI" | "SOP" | "Charter" | "OKR" | "Review" | "MOCHA" | "Risk";
 type Dept = "All" | "Executive" | "Finance" | "HR" | "Product" | "Operations" | "Sales" | "IT" | "Legal" | "Strategy";
-type HubTab = "templates" | "documents" | "sops" | "lessons";
+type HubTab = "templates" | "documents" | "sops" | "lessons" | "frameworks";
 
 interface Template {
   id: string;
@@ -188,6 +188,44 @@ const SOPS = [
   { id: "s5", title: "Customer Escalation Playbook", dept: "Sales", framework: "MEDDIC", version: "v2.0", lastUpdated: "2025-01-22", status: "active", pages: 4 },
 ];
 
+interface PmoFramework {
+  name: string;
+  category: string;
+  executionModule: string;
+  outputsTo: string;
+  statusRelevance: string;
+  temporalContext: string;
+  dependencies: string;
+  notes: string;
+}
+
+const PMO_FRAMEWORKS: PmoFramework[] = [
+  { name: "Balanced Scorecard", category: "Strategy & Org Alignment", executionModule: "Diagnostics, Reports", outputsTo: "Dashboard KPIs, Departments", statusRelevance: "Strategic Alignment", temporalContext: "Quarterly", dependencies: "OKR, KPI Tree", notes: "4 perspectives: Financial, Customer, Internal, Learning" },
+  { name: "OKRs", category: "Strategy & Org Alignment", executionModule: "Initiatives, Departments", outputsTo: "Dashboard, Reports, Action Items", statusRelevance: "On Track / At Risk", temporalContext: "Quarterly", dependencies: "BSC, KPI Tree", notes: "Objectives + measurable Key Results" },
+  { name: "PMBOK", category: "Initiative & Project Mgmt", executionModule: "Initiatives, Projects", outputsTo: "Action Items, Risk Register", statusRelevance: "All statuses", temporalContext: "Project lifecycle", dependencies: "RACI, MOCHA", notes: "PMI standard — 5 process groups" },
+  { name: "PRINCE2", category: "Initiative & Project Mgmt", executionModule: "Initiatives", outputsTo: "Governance Log, Reports", statusRelevance: "On Track / Delayed", temporalContext: "Stages", dependencies: "RACI", notes: "Stage-gated governance framework" },
+  { name: "RACI Matrix", category: "Initiative & Project Mgmt", executionModule: "Team, Departments", outputsTo: "Action Items, Governance", statusRelevance: "Accountability gaps", temporalContext: "Ongoing", dependencies: "MOCHA, Authority Matrix", notes: "Responsible / Accountable / Consulted / Informed" },
+  { name: "MOCHA", category: "Initiative & Project Mgmt", executionModule: "Team", outputsTo: "Action Items", statusRelevance: "Ownership clarity", temporalContext: "Per initiative", dependencies: "RACI", notes: "Manager / Owner / Consulted / Helper / Approver" },
+  { name: "Lean / Value Stream Mapping", category: "Operations & Process", executionModule: "Workflows, Diagnostics", outputsTo: "Departments, Action Items", statusRelevance: "Bottlenecks", temporalContext: "Continuous", dependencies: "ToC, Six Sigma", notes: "Identifies waste in value streams" },
+  { name: "Six Sigma (DMAIC)", category: "Operations & Process", executionModule: "Diagnostics", outputsTo: "Action Items, Reports", statusRelevance: "Needs Attention", temporalContext: "Project-based", dependencies: "Lean, SPC", notes: "Define-Measure-Analyze-Improve-Control" },
+  { name: "Theory of Constraints", category: "Operations & Process", executionModule: "Diagnostics", outputsTo: "Initiatives, Action Items", statusRelevance: "Blocked / At Risk", temporalContext: "Ongoing", dependencies: "Critical Chain", notes: "Identifies and exploits system bottlenecks" },
+  { name: "KPI Tree", category: "Performance & Metrics", executionModule: "Dashboard, Reports", outputsTo: "Diagnostics, Departments", statusRelevance: "All statuses", temporalContext: "Monthly", dependencies: "BSC, OKR", notes: "Hierarchical KPI decomposition" },
+  { name: "Control Charts (SPC)", category: "Performance & Metrics", executionModule: "Reports", outputsTo: "Diagnostics", statusRelevance: "Variance", temporalContext: "Real-time / Monthly", dependencies: "Six Sigma", notes: "Statistical process control — detect special vs common cause" },
+  { name: "CMMI Maturity Model", category: "Performance & Metrics", executionModule: "Departments, Diagnostics", outputsTo: "Dashboard, Reports", statusRelevance: "Maturity tier", temporalContext: "Quarterly", dependencies: "PDCA", notes: "5-level capability maturity: Foundational → Optimized" },
+  { name: "Risk Register (ISO 31000)", category: "Risk & Decision Science", executionModule: "Initiatives, Diagnostics", outputsTo: "Governance Log", statusRelevance: "Delayed / At Risk", temporalContext: "Ongoing", dependencies: "COSO ERM", notes: "Probability × Impact scoring" },
+  { name: "COSO ERM", category: "Risk & Decision Science", executionModule: "Diagnostics, Admin", outputsTo: "Governance Log, Reports", statusRelevance: "All risk statuses", temporalContext: "Annual + ongoing", dependencies: "ISO 31000", notes: "Enterprise risk management framework" },
+  { name: "Critical Chain (Goldratt)", category: "Risk & Decision Science", executionModule: "Initiatives", outputsTo: "Action Items, Diagnostics", statusRelevance: "Blocked", temporalContext: "Project lifecycle", dependencies: "PMBOK, ToC", notes: "Manages dependencies and buffers" },
+  { name: "DCF / Financial Modeling", category: "Finance & Investment", executionModule: "Reports", outputsTo: "Dashboard", statusRelevance: "Budget performance", temporalContext: "Quarterly", dependencies: "BSC", notes: "Discounted Cash Flow for initiative valuation" },
+  { name: "Porter's Five Forces", category: "Strategy & Org Alignment", executionModule: "Advisory", outputsTo: "Initiatives, Reports", statusRelevance: "Strategic context", temporalContext: "Annual", dependencies: "SWOT, BSC", notes: "Competitive positioning analysis" },
+  { name: "Agile (Scrum/Kanban)", category: "Initiative & Project Mgmt", executionModule: "Agile (Work Mgmt)", outputsTo: "Action Items, Sprints", statusRelevance: "Sprint velocity", temporalContext: "Sprint (2 weeks)", dependencies: "PMBOK, Lean", notes: "Iterative delivery — backlog, sprints, retrospectives" },
+  { name: "PDCA (Deming)", category: "Continuous Improvement", executionModule: "Diagnostics, Workflows", outputsTo: "Action Items", statusRelevance: "Improvement cycle", temporalContext: "Ongoing", dependencies: "Lean, Kaizen", notes: "Plan-Do-Check-Act cycle" },
+  { name: "Kaizen", category: "Continuous Improvement", executionModule: "Workflows, Departments", outputsTo: "Action Items", statusRelevance: "Incremental gains", temporalContext: "Ongoing", dependencies: "Lean, PDCA", notes: "Continuous small improvement culture" },
+  { name: "NPS / CSAT System", category: "Product/Customer/Marketing", executionModule: "Marketing, Reports", outputsTo: "Dashboard, Departments", statusRelevance: "Customer health", temporalContext: "Monthly", dependencies: "CX frameworks", notes: "Net Promoter Score + Customer Satisfaction" },
+  { name: "MEDDIC", category: "Product/Customer/Marketing", executionModule: "CRM", outputsTo: "Pipeline, Reports", statusRelevance: "Deal velocity", temporalContext: "Per deal cycle", dependencies: "CRM, Forecasting", notes: "Enterprise sales qualification framework" },
+  { name: "System Thinking (Senge)", category: "Systems Thinking", executionModule: "Diagnostics", outputsTo: "Diagnostics, Reports", statusRelevance: "Root cause", temporalContext: "Strategic cycles", dependencies: "Causal Loop Diagrams", notes: "Feedback loops, archetypes, leverage points" },
+  { name: "ITIL v4", category: "IT & Governance", executionModule: "Admin, Workflows", outputsTo: "Governance Log", statusRelevance: "Compliance", temporalContext: "Continuous", dependencies: "COBIT", notes: "IT service management best practices" },
+];
+
 // ── Helpers ─────────────────────────────────────────────────────────
 const CATEGORY_COLORS: Record<TemplateCategory, string> = {
   RACI: "hsl(var(--electric-blue))", SOP: "hsl(var(--teal))", Charter: "hsl(var(--signal-green))",
@@ -342,6 +380,7 @@ export default function Knowledge() {
     { key: "documents" as HubTab, label: "Documents", icon: FolderOpen, count: savedDocuments.length },
     { key: "sops" as HubTab, label: "SOP Library", icon: BookMarked, count: SOPS.length },
     { key: "lessons" as HubTab, label: "Lessons Learned", icon: Lightbulb, count: LESSONS.length },
+    { key: "frameworks" as HubTab, label: "Frameworks", icon: Database, count: PMO_FRAMEWORKS.length },
   ];
 
   const filteredTemplates = TEMPLATES.filter(t =>
@@ -683,6 +722,116 @@ export default function Knowledge() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ── FRAMEWORKS TAB ── */}
+      {tab === "frameworks" && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-muted-foreground">
+                Structured mapping of all frameworks embedded in the Command Center — their execution modules, outputs, temporal cadence, and inter-dependencies.
+              </p>
+            </div>
+            <span className="text-xs font-mono text-muted-foreground">{PMO_FRAMEWORKS.length} frameworks indexed</span>
+          </div>
+
+          {/* System Chains Panel */}
+          <div className="rounded-xl border-2 p-4 space-y-3"
+            style={{ borderColor: "hsl(var(--electric-blue) / 0.3)", background: "hsl(var(--electric-blue) / 0.04)" }}>
+            <div className="flex items-center gap-2 mb-1">
+              <Layers className="w-4 h-4" style={{ color: "hsl(var(--electric-blue))" }} />
+              <span className="text-xs font-bold text-foreground">System Chains — Bundled Framework Pipelines</span>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">Frameworks that activate together to address a specific organizational challenge.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {[
+                { name: "Operational Bottleneck Detection", chain: ["KPI Tree", "Control Charts (SPC)", "Theory of Constraints"], output: "Prioritized constraint fix list + KPI impact projection" },
+                { name: "Strategic Alignment System", chain: ["Balanced Scorecard", "OKRs", "RACI Matrix"], output: "Cascaded objectives from exec → department → individual" },
+                { name: "Execution Governance Engine", chain: ["PMBOK", "PRINCE2", "MOCHA"], output: "Stage-gated initiative control with clear accountability" },
+                { name: "Continuous Improvement Loop", chain: ["Lean / Value Stream Mapping", "Six Sigma (DMAIC)", "PDCA (Deming)"], output: "Process waste eliminated + quality metrics improved" },
+                { name: "Enterprise Risk Radar", chain: ["Risk Register (ISO 31000)", "COSO ERM", "Critical Chain (Goldratt)"], output: "Risk-weighted initiative prioritization + buffer plans" },
+                { name: "Growth Intelligence Stack", chain: ["NPS / CSAT System", "MEDDIC", "Porter's Five Forces"], output: "Pipeline velocity + competitive moat analysis" },
+              ].map(chain => (
+                <div key={chain.name} className="rounded-lg border p-3 bg-card"
+                  style={{ borderColor: "hsl(var(--border))" }}>
+                  <div className="text-xs font-bold text-foreground mb-1.5">{chain.name}</div>
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {chain.chain.map((fw, i) => (
+                      <span key={fw} className="inline-flex items-center gap-1">
+                        <span className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                          style={{ background: "hsl(var(--electric-blue) / 0.12)", color: "hsl(var(--electric-blue))" }}>
+                          {fw}
+                        </span>
+                        {i < chain.chain.length - 1 && <span className="text-muted-foreground text-[10px]">→</span>}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-muted-foreground leading-relaxed">{chain.output}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Framework Table by Category */}
+          {Array.from(new Set(PMO_FRAMEWORKS.map(f => f.category))).map(category => (
+            <div key={category}>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="h-px flex-1" style={{ background: "hsl(var(--border))" }} />
+                <span className="text-[11px] font-bold px-3 py-1 rounded-full"
+                  style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
+                  {category}
+                </span>
+                <div className="h-px flex-1" style={{ background: "hsl(var(--border))" }} />
+              </div>
+              <div className="rounded-xl border overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr style={{ background: "hsl(var(--muted))" }}>
+                      <th className="text-left px-3 py-2 font-semibold text-muted-foreground w-40">Framework</th>
+                      <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Execution Module</th>
+                      <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Outputs To</th>
+                      <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Status Relevance</th>
+                      <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Temporal Context</th>
+                      <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Dependencies</th>
+                      <th className="text-left px-3 py-2 font-semibold text-muted-foreground">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {PMO_FRAMEWORKS.filter(f => f.category === category).map((fw, i) => (
+                      <tr key={fw.name}
+                        style={{ background: i % 2 === 0 ? "hsl(var(--card))" : "hsl(var(--muted) / 0.3)" }}>
+                        <td className="px-3 py-2.5">
+                          <span className="font-bold text-foreground">{fw.name}</span>
+                        </td>
+                        <td className="px-3 py-2.5">
+                          <div className="flex flex-wrap gap-1">
+                            {fw.executionModule.split(", ").map(m => (
+                              <span key={m} className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                                style={{ background: "hsl(var(--electric-blue) / 0.1)", color: "hsl(var(--electric-blue))" }}>
+                                {m}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 text-muted-foreground">{fw.outputsTo}</td>
+                        <td className="px-3 py-2.5">
+                          <span className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                            style={{ background: "hsl(var(--teal) / 0.1)", color: "hsl(var(--teal))" }}>
+                            {fw.statusRelevance}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2.5 text-muted-foreground font-mono text-[10px]">{fw.temporalContext}</td>
+                        <td className="px-3 py-2.5 text-muted-foreground">{fw.dependencies}</td>
+                        <td className="px-3 py-2.5 text-muted-foreground leading-relaxed">{fw.notes}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

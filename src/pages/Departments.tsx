@@ -62,7 +62,7 @@ function DepartmentDetailPanel({ dept, deptInsights, onClose }: {
         <div className="p-5 space-y-5">
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-secondary rounded-xl p-3">
-              <div className="section-label mb-1.5">Department Head</div>
+              <div className="section-label mb-1.5">Department Lead</div>
               <div className="text-sm font-semibold text-foreground flex items-center gap-1.5">
                 <Users className="w-3.5 h-3.5 text-muted-foreground" /> {dept.head ?? "—"}
               </div>
@@ -376,8 +376,7 @@ export default function Departments() {
                   <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide cursor-pointer hover:text-foreground hidden lg:table-cell" onClick={() => toggleSort("risk_score")}>
                     Risk Score {sortKey === "risk_score" ? (sortDir === "desc" ? "↓" : "↑") : ""}
                   </th>
-                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden xl:table-cell">SOP %</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Head</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Lead</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -403,11 +402,6 @@ export default function Departments() {
                       <span className={cn("text-xs font-mono font-bold",
                         (dept.risk_score ?? 0) > 70 ? "text-signal-red" : (dept.risk_score ?? 0) > 50 ? "text-signal-yellow" : "text-signal-green"
                       )}>{dept.risk_score ?? 0}</span>
-                    </td>
-                    <td className="px-3 py-3 text-center hidden xl:table-cell">
-                      <span className={cn("text-xs font-mono font-bold",
-                        (dept.sop_adherence ?? 0) >= 80 ? "text-signal-green" : (dept.sop_adherence ?? 0) >= 60 ? "text-signal-yellow" : "text-signal-red"
-                      )}>{dept.sop_adherence ?? 0}%</span>
                     </td>
                     <td className="px-3 py-3 text-xs text-muted-foreground">{dept.head ?? "—"}</td>
                   </tr>

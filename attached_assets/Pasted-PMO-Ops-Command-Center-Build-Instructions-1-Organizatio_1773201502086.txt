@@ -1,0 +1,203 @@
+PMO-Ops Command Center – Build Instructions
+1. Organization Profile (after intake)
+Organization profile must store all historical data (projects, workflows, diagnostics, advisory requests, etc).
+Organization profile fields:
+company name
+industry
+team size
+departments
+integrations
+historical activity
+
+Add to intake, if signing in with google use the information already provided. 
+Allow logo upload and automatically apply brand color scheme, front and ( background image preferences - optional and done post intake under Profile) across UI.
+
+
+
+
+Note:
+Industry list should not be fixed/exhaustive (reference how Bubble handles backend lists). Allow future expansion.
+
+
+2. Pricing Structure
+Free – Personal Command View
+1 user
+3 projects
+manual email forwarding only (button in email to send from email to app)
+copy/paste exports only
+no file exports
+no integrations
+limited automation
+Template downloads only, no fill in for information and save in the system
+Basic prioritization ai and sorting
+Professional Operator
+$30 / user / month
+exports (PDF, CSV,Doc,PPT)
+Up to 3 integrations
+dashboards
+email → task forwarding
+One a day AI prioritization
+calendar sync
+workflow templates
+limited automations
+File exports
+Workflow Builder
+$50 / user / month
+Features: (everything in previous package)
+workflow builder and auto deployment
+SOP automation
+approval flows
+internal dashboards
+custom reporting
+API integrations, up to 10 integrations
+data imports
+knowledge base linking
+unlimited projects
+Operational (not IT) Troubleshooting advisory sessions available once per month 
+
+Command Center Tier (Flagship)
+$120–$150 / month (up to 5 users)
+Features: (everything in previous package)
+automated email intelligence
+inbox → task extraction
+priority detection
+deadline detection
+risk flagging
+suggested responses
+cross-platform data import (email, spreadsheets, PDFs, images)
+system builder (SOPs, department structures)
+executive command dashboard
+organizational diagnostics
+Continual operational dedicated advisor (personal contact information, chat email, phone)
+operational/admin/project/structural consulting support
+System/ etc digital to on the ground Integration support 
+Enterprise
+$1000–$2000 per month
+Includes: (everything in previous package)
+unlimited users
+Unlimited integrations
+Team operational audit (how they can work better together 
+Continual dedicated advisor (personal contact information, chat email, phone)
+operational/admin/project/structural consulting support
+workflow design
+internal operational audits
+continuous system configuration
+Continual dedicated advisor across all general industries (personal contact information, chat email, phone, any channel)
+Multipoint quarterly audits
+Model inspiration: ADP
+
+3. Core MVP Features (First Build)
+1. Executive Command Dashboard
+Displays:
+today’s priorities
+risks
+approvals needed
+deadlines
+alerts
+2. Email → Task Intelligence
+System reads email and:
+extracts tasks
+assigns priority
+detects deadlines
+flags risks
+shows side-by-side preview for quality control.
+3. Operational Status Monitor
+(Not “health”)
+Shows:
+project delays
+workload imbalance
+stalled tasks
+Status indicators:
+green
+yellow
+red
+4. Workflow Builder
+Users can create:
+SOP workflows
+approval chains
+recurring processes
+Inspired by Monday.com style automation.
+5. Advisory Desk
+Users can submit requests for operational support.
+Core advisory categories:
+strategy
+operations
+project management
+administrative systems
+process improvement
+Remove wording “advisory guidance” → use “advisory” only.
+
+4. Advisory Network
+Platform includes:
+implementation partners
+advisors
+vetted consultants
+Additional advisory categories (optional):
+finance
+marketing
+technology
+customer support
+Access varies by pricing tier.
+
+5. Team Page
+Team section includes:
+activity updates from all users
+team workload overview
+project ownership
+internal communication updates
+If single user account, system dynamically adjusts.
+Team size options:
+1
+2–10
+11–50
+51–200
+200+
+Include MOCHA framework here for team accountability.
+
+6. Diagnostics
+Executive Load Meter
+Displays percentage of workload handled by one person.
+Output includes:
+delegation recommendations
+task redistribution suggestions
+Uses delegation matrix logic from knowledge base.
+
+7. Quality Control Section
+Replace “System Active” and “Analytics”.
+Quality Control shows:
+missed tasks
+incomplete workflows
+data gaps
+overdue approvals
+Ensures nothing falls through the cracks.
+
+8. Industry Adaptation (Later Phase)
+System should support industry-specific terminology and integrations.
+Examples:
+healthcare
+engineering
+education
+creative agencies
+Each version may include:
+custom workflow templates
+industry terminology
+integrations
+
+9. UI / UX Inspiration
+Use best practices from:
+Monday.com – visual workflows
+Asana – portfolio and timeline views
+Zendesk – ticket prioritization
+Slack – notification clarity
+Shopify – onboarding experience
+QuickBooks – simple executive dashboards
+Focus primarily on front-end usability and clarity.
+
+10. Tagline Direction
+Example positioning:
+“You deserve the structure and support to succeed.”
+Alternative concept:
+AI-assisted Operations Command Center for leaders.
+
+✅ This version is structured so you can paste it directly into Lovable as a product build prompt.
+

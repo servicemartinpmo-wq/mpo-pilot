@@ -69,6 +69,14 @@
     --signal-orange: 28 94% 58%;
     --signal-purple: 268 68% 62%;
 
+    /* ── Status palette (project/initiative status) ── */
+    --status-completed:   174 65% 40%;    /* Teal — completed */
+    --status-on-track:    38 92% 52%;     /* Amber/yellow — on track */
+    --status-attention:   28 94% 58%;     /* Orange — needs attention */
+    --status-delayed:     268 68% 62%;    /* Purple — outstanding/delayed */
+    --status-abandoned:   350 82% 62%;    /* Red — abandoned */
+    --status-blocked:     350 82% 62%;    /* Red — blocked */
+
     /* ── Sidebar: deepest navy ── */
     --sidebar-background: 222 28% 9%;
     --sidebar-foreground: 38 12% 88%;

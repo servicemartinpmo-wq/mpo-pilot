@@ -527,7 +527,7 @@ function AIGeneratePanel({ onGenerate }: { onGenerate: (wf: GeneratedWorkflow) =
 
 // ── Main Component ───────────────────────────────────────────────────
 export default function Workflows() {
-  const [viewMode, setViewMode] = useState<"library" | "generate" | "bundles">("library");
+  const [viewMode, setViewMode] = useState<"library" | "generate" | "bundles" | "automation">("library");
   const [bundleTab, setBundleTab] = useState<BundleView>("system");
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState<WorkflowCategory | "All">("All");
@@ -594,6 +594,7 @@ export default function Workflows() {
           { key: "library", label: "Workflow Library", icon: GitBranch },
           { key: "generate", label: "Generate", icon: Sparkles },
           { key: "bundles", label: "Bundles", icon: Layers },
+          { key: "automation", label: "Automation Rules", icon: Zap },
         ].map(({ key, label, icon: Icon }) => (
           <button key={key} onClick={() => setViewMode(key as typeof viewMode)}
             className={cn("flex items-center gap-2 text-xs px-4 py-2 rounded-lg font-semibold transition-all")}
@@ -854,6 +855,337 @@ export default function Workflows() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* ── AUTOMATION RULES VIEW ── */}
+      {viewMode === "automation" && <AutomationRulesView />}
+    </div>
+  );
+}
+
+// ── Automation Rules View ─────────────────────────────────────────────
+type AutoTrigger = "task_overdue" | "kpi_drop" | "project_delay" | "approaching_deadline" | "blocked_task" | "capacity_exceeded";
+type AutoAction = "notify" | "create_action_item" | "escalate" | "update_status";
+type AutoConditionType = "threshold" | "department" | "priority" | "date_range";
+
+interface AutoRule {
+  id: string;
+  name: string;
+  trigger: AutoTrigger;
+  conditions: { type: AutoConditionType; value: string }[];
+  action: AutoAction;
+  actionDetail: string;
+  enabled: boolean;
+  lastFired?: string;
+  fireCount: number;
+}
+
+interface AutoLog {
+  id: string;
+  ruleId: string;
+  ruleName: string;
+  firedAt: string;
+  context: string;
+  result: "success" | "failed";
+}
+
+const TRIGGER_LABELS: Record<AutoTrigger, string> = {
+  task_overdue: "Task overdue",
+  kpi_drop: "KPI threshold drop",
+  project_delay: "Project delay",
+  approaching_deadline: "Approaching deadline",
+  blocked_task: "Task blocked",
+  capacity_exceeded: "Capacity exceeded",
+};
+
+const ACTION_LABELS: Record<AutoAction, string> = {
+  notify: "Send notification",
+  create_action_item: "Create action item",
+  escalate: "Escalate to lead",
+  update_status: "Update status",
+};
+
+const SAMPLE_RULES: AutoRule[] = [
+  {
+    id: "r1", name: "Escalate overdue critical tasks",
+    trigger: "task_overdue",
+    conditions: [{ type: "priority", value: "High / Critical" }],
+    action: "escalate",
+    actionDetail: "Notify department lead and create escalation action item",
+    enabled: true, lastFired: "2026-03-10", fireCount: 4,
+  },
+  {
+    id: "r2", name: "Alert on KPI drop below target",
+    trigger: "kpi_drop",
+    conditions: [{ type: "threshold", value: "< 70% of target" }],
+    action: "notify",
+    actionDetail: "Send dashboard notification and tag in briefing",
+    enabled: true, lastFired: "2026-03-08", fireCount: 2,
+  },
+  {
+    id: "r3", name: "Create action item for blocked initiatives",
+    trigger: "blocked_task",
+    conditions: [{ type: "department", value: "All departments" }],
+    action: "create_action_item",
+    actionDetail: "Auto-create unblock action item assigned to initiative owner",
+    enabled: false, fireCount: 0,
+  },
+  {
+    id: "r4", name: "Deadline reminder — 3 days out",
+    trigger: "approaching_deadline",
+    conditions: [{ type: "date_range", value: "≤ 3 days remaining" }],
+    action: "notify",
+    actionDetail: "Send 3-day reminder to task owner and project lead",
+    enabled: true, lastFired: "2026-03-11", fireCount: 7,
+  },
+  {
+    id: "r5", name: "Capacity overload alert",
+    trigger: "capacity_exceeded",
+    conditions: [{ type: "threshold", value: "> 90% capacity" }],
+    action: "escalate",
+    actionDetail: "Flag to COO and suggest reallocation in daily briefing",
+    enabled: true, lastFired: "2026-03-09", fireCount: 1,
+  },
+];
+
+const SAMPLE_LOGS: AutoLog[] = [
+  { id: "l1", ruleId: "r1", ruleName: "Escalate overdue critical tasks", firedAt: "Mar 10 · 2:14 PM", context: "Task: INI-007 delivery milestone — 6 days overdue", result: "success" },
+  { id: "l2", ruleId: "r4", ruleName: "Deadline reminder — 3 days out", firedAt: "Mar 11 · 9:00 AM", context: "Project: Customer Portal v2 — deadline Mar 14", result: "success" },
+  { id: "l3", ruleId: "r2", ruleName: "Alert on KPI drop below target", firedAt: "Mar 08 · 3:55 PM", context: "KPI: Marketing Pipeline Coverage dropped to 58%", result: "success" },
+  { id: "l4", ruleId: "r4", ruleName: "Deadline reminder — 3 days out", firedAt: "Mar 08 · 9:00 AM", context: "Project: Ops Restructure — deadline Mar 11", result: "success" },
+  { id: "l5", ruleId: "r5", ruleName: "Capacity overload alert", firedAt: "Mar 09 · 11:30 AM", context: "Department: Program Delivery at 94% capacity", result: "success" },
+];
+
+function AutomationRulesView() {
+  const [rules, setRules] = useState<AutoRule[]>(SAMPLE_RULES);
+  const [logTab, setLogTab] = useState<"rules" | "log">("rules");
+  const [showBuilder, setShowBuilder] = useState(false);
+  const [newRule, setNewRule] = useState({
+    name: "",
+    trigger: "task_overdue" as AutoTrigger,
+    conditionValue: "",
+    action: "notify" as AutoAction,
+    actionDetail: "",
+  });
+
+  function toggleRule(id: string) {
+    setRules(prev => prev.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r));
+  }
+
+  function addRule() {
+    if (!newRule.name.trim()) return;
+    const rule: AutoRule = {
+      id: `r${Date.now()}`,
+      name: newRule.name,
+      trigger: newRule.trigger,
+      conditions: newRule.conditionValue ? [{ type: "threshold", value: newRule.conditionValue }] : [],
+      action: newRule.action,
+      actionDetail: newRule.actionDetail,
+      enabled: true,
+      fireCount: 0,
+    };
+    setRules(prev => [rule, ...prev]);
+    setShowBuilder(false);
+    setNewRule({ name: "", trigger: "task_overdue", conditionValue: "", action: "notify", actionDetail: "" });
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-bold text-foreground">Automation Rules</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Define triggers, conditions, and actions that run automatically when events occur.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
+            <span className="font-bold" style={{ color: "hsl(var(--signal-green))" }}>
+              {rules.filter(r => r.enabled).length}
+            </span> active
+          </div>
+          <button
+            onClick={() => setShowBuilder(v => !v)}
+            className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl transition-all"
+            style={{
+              background: showBuilder ? "hsl(var(--electric-blue) / 0.15)" : "hsl(var(--electric-blue))",
+              color: showBuilder ? "hsl(var(--electric-blue))" : "white",
+            }}>
+            <Zap className="w-3.5 h-3.5" />
+            {showBuilder ? "Cancel" : "New Rule"}
+          </button>
+        </div>
+      </div>
+
+      {showBuilder && (
+        <div className="rounded-2xl border-2 p-5 space-y-4"
+          style={{ borderColor: "hsl(var(--electric-blue) / 0.3)", background: "hsl(var(--electric-blue) / 0.04)" }}>
+          <div className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Zap className="w-4 h-4 text-electric-blue" />
+            New Automation Rule
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="section-label mb-1.5 block">Rule Name</label>
+              <input
+                value={newRule.name}
+                onChange={e => setNewRule(p => ({ ...p, name: e.target.value }))}
+                placeholder="e.g. Alert on high-priority overdue tasks"
+                className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none focus:border-electric-blue/50"
+                style={{ borderColor: "hsl(var(--border))" }}
+              />
+            </div>
+            <div>
+              <label className="section-label mb-1.5 block">Trigger</label>
+              <select
+                value={newRule.trigger}
+                onChange={e => setNewRule(p => ({ ...p, trigger: e.target.value as AutoTrigger }))}
+                className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none"
+                style={{ borderColor: "hsl(var(--border))" }}>
+                {(Object.entries(TRIGGER_LABELS) as [AutoTrigger, string][]).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="section-label mb-1.5 block">Condition / Threshold</label>
+              <input
+                value={newRule.conditionValue}
+                onChange={e => setNewRule(p => ({ ...p, conditionValue: e.target.value }))}
+                placeholder="e.g. priority = High, capacity > 85%"
+                className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none"
+                style={{ borderColor: "hsl(var(--border))" }}
+              />
+            </div>
+            <div>
+              <label className="section-label mb-1.5 block">Action</label>
+              <select
+                value={newRule.action}
+                onChange={e => setNewRule(p => ({ ...p, action: e.target.value as AutoAction }))}
+                className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none"
+                style={{ borderColor: "hsl(var(--border))" }}>
+                {(Object.entries(ACTION_LABELS) as [AutoAction, string][]).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <label className="section-label mb-1.5 block">Action Detail</label>
+              <input
+                value={newRule.actionDetail}
+                onChange={e => setNewRule(p => ({ ...p, actionDetail: e.target.value }))}
+                placeholder="Describe what this action does..."
+                className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none"
+                style={{ borderColor: "hsl(var(--border))" }}
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3">
+            <button onClick={() => setShowBuilder(false)}
+              className="text-xs px-4 py-2 rounded-xl border text-muted-foreground hover:bg-secondary transition-colors"
+              style={{ borderColor: "hsl(var(--border))" }}>
+              Cancel
+            </button>
+            <button onClick={addRule}
+              className="text-xs font-bold px-5 py-2 rounded-xl transition-all"
+              style={{ background: "hsl(var(--electric-blue))", color: "white" }}>
+              Save Rule
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center gap-1 p-1 rounded-xl w-fit" style={{ background: "hsl(var(--muted))" }}>
+        {[{ key: "rules", label: "Rules" }, { key: "log", label: "Execution Log" }].map(({ key, label }) => (
+          <button key={key} onClick={() => setLogTab(key as "rules" | "log")}
+            className="text-xs px-4 py-2 rounded-lg font-semibold transition-all"
+            style={{
+              background: logTab === key ? "hsl(var(--card))" : "transparent",
+              color: logTab === key ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
+              boxShadow: logTab === key ? "var(--shadow-card)" : "none",
+            }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {logTab === "rules" && (
+        <div className="rounded-2xl border overflow-hidden"
+          style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+          <div className="divide-y" style={{ borderColor: "hsl(var(--border))" }}>
+            {rules.map(rule => (
+              <div key={rule.id} className="flex items-start gap-4 px-5 py-4 hover:bg-secondary/20 transition-colors">
+                <button onClick={() => toggleRule(rule.id)}
+                  className="flex-shrink-0 mt-0.5 w-9 h-5 rounded-full relative transition-all"
+                  style={{ background: rule.enabled ? "hsl(var(--signal-green) / 0.3)" : "hsl(var(--muted))" }}>
+                  <div className="absolute top-0.5 rounded-full w-4 h-4 transition-all"
+                    style={{
+                      background: rule.enabled ? "hsl(var(--signal-green))" : "hsl(var(--muted-foreground))",
+                      left: rule.enabled ? "calc(100% - 18px)" : "2px",
+                    }} />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="text-sm font-semibold text-foreground">{rule.name}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded border font-medium"
+                      style={{ background: "hsl(var(--electric-blue) / 0.08)", color: "hsl(var(--electric-blue))", borderColor: "hsl(var(--electric-blue) / 0.2)" }}>
+                      {TRIGGER_LABELS[rule.trigger]}
+                    </span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded border font-medium"
+                      style={{ background: "hsl(var(--signal-purple) / 0.08)", color: "hsl(var(--signal-purple))", borderColor: "hsl(var(--signal-purple) / 0.2)" }}>
+                      {ACTION_LABELS[rule.action]}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-1.5">{rule.actionDetail}</p>
+                  {rule.conditions.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {rule.conditions.map((c, i) => (
+                        <span key={i} className="text-[10px] px-2 py-0.5 rounded-full"
+                          style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
+                          {c.value}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  <div className="text-xs font-mono font-bold"
+                    style={{ color: rule.fireCount > 0 ? "hsl(var(--signal-green))" : "hsl(var(--muted-foreground))" }}>
+                    {rule.fireCount}×
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    {rule.lastFired ? `Last: ${rule.lastFired}` : "Never fired"}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {logTab === "log" && (
+        <div className="rounded-2xl border overflow-hidden"
+          style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+          <div className="px-5 py-3 border-b flex items-center gap-2"
+            style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--secondary) / 0.5)" }}>
+            <Activity className="w-3.5 h-3.5 text-muted-foreground" />
+            <span className="text-xs font-bold text-foreground">Recent Automation Executions</span>
+            <span className="ml-auto text-[10px] text-muted-foreground">{SAMPLE_LOGS.length} recent events</span>
+          </div>
+          <div className="divide-y" style={{ borderColor: "hsl(var(--border))" }}>
+            {SAMPLE_LOGS.map(log => (
+              <div key={log.id} className="flex items-start gap-3 px-5 py-3.5 hover:bg-secondary/20 transition-colors">
+                <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
+                  style={{ background: log.result === "success" ? "hsl(var(--signal-green))" : "hsl(var(--signal-red))" }} />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-semibold text-foreground mb-0.5">{log.ruleName}</div>
+                  <div className="text-xs text-muted-foreground">{log.context}</div>
+                </div>
+                <div className="flex-shrink-0 text-[10px] text-muted-foreground whitespace-nowrap">{log.firedAt}</div>
+              </div>
+            ))}
           </div>
         </div>
       )}

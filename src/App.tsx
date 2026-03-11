@@ -22,6 +22,11 @@ import Team from "./pages/Team";
 import CreatorLab from "./pages/CreatorLab";
 import Projects from "./pages/Projects";
 import Decisions from "./pages/Decisions";
+import Pricing from "./pages/Pricing";
+import CRM from "./pages/CRM";
+import Agile from "./pages/Agile";
+import Marketing from "./pages/Marketing";
+import GraphView from "./pages/GraphView";
 import AuthPage from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
@@ -163,6 +168,11 @@ function AppRoutes() {
             <Route path="/creator-lab" element={<CreatorLab />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/decisions" element={<Decisions />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/crm" element={<CRM />} />
+            <Route path="/agile" element={<Agile />} />
+            <Route path="/marketing" element={<Marketing />} />
+            <Route path="/graph" element={<GraphView />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>

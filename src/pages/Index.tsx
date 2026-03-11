@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { insights, actionItems, initiatives } from "@/lib/pmoData";
 import InsightCard from "@/components/InsightCard";
 import CompanyHealthScore from "@/components/CompanyHealthScore";
+import StrategyScoreCard from "@/components/StrategyScoreCard";
+import UpgradeBanner from "@/components/UpgradeBanner";
 import {
   AlertTriangle, Users, Clock, Target, CheckCircle,
   ChevronRight, Zap, Activity, X, CalendarDays, UserCheck,
@@ -13,6 +15,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAppData } from "@/hooks/useAppData";
 import { useAuth } from "@/hooks/useAuth";
 import { getNextBestActions } from "@/lib/supabaseDataService";
+import { useStrategyScores } from "@/hooks/useStrategyScores";
 
 // ── Day / time helpers ──────────────────────────────────
 function getTimeOfDay(): "morning" | "afternoon" | "evening" | "night" {
@@ -280,6 +283,7 @@ export default function Dashboard() {
     setReactedTo((prev) => ({ ...prev, [winId]: emoji }));
   }
 
+  const strategyScores = useStrategyScores();
   const greeting = getGreeting(firstName ?? "");
   const GreetIcon = greeting.icon;
 
@@ -295,6 +299,9 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
+
+      {/* ── Upgrade Banner ── */}
+      <UpgradeBanner storageKey="dash_upgrade_banner" />
 
       {/* ── Status Popups ── */}
       {popupsVisible && (
@@ -372,8 +379,23 @@ export default function Dashboard() {
             />
             <div className="mt-4 pt-4 w-full border-t flex items-center justify-center gap-2" style={{ borderColor: "hsl(224 16% 20%)" }}>
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(160 56% 46%)" }} />
-              <span className="text-[10px] text-muted-foreground">{activeChains} AI chains active</span>
+              <span className="text-[10px] text-muted-foreground">{activeChains} operational chains active</span>
             </div>
+          </div>
+        </div>
+
+        {/* ════════════════════════════════════════
+            STRATEGY SCORES
+            ════════════════════════════════════════ */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp className="w-3.5 h-3.5 text-electric-blue opacity-60" />
+            <span className="section-label">Executive Strategy Scores</span>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {strategyScores.map(score => (
+              <StrategyScoreCard key={score.id} score={score} />
+            ))}
           </div>
         </div>
 
@@ -423,7 +445,7 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <span className="text-sm font-bold text-foreground">Daily Briefing</span>
-                    <p className="text-[10px] text-muted-foreground">Apphia Intelligence</p>
+                    <p className="text-[10px] text-muted-foreground">Command Center Intelligence</p>
                   </div>
                 </div>
                 <Sparkles className="w-4 h-4 text-electric-blue opacity-40" />

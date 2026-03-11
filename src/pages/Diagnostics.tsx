@@ -1,4 +1,5 @@
 import { insights, frameworks, initiatives, departments, actionItems, governanceLogs } from "@/lib/pmoData";
+import UpgradeBanner from "@/components/UpgradeBanner";
 import { ScoreBadge, SignalDot } from "@/components/ScoreBadge";
 import { cn } from "@/lib/utils";
 import {
@@ -139,6 +140,8 @@ export default function Diagnostics() {
   const diagnosticsFrameworks = getFrameworksRunBy("Diagnostics");
 
   return (
+    <div className="flex flex-col min-h-screen bg-background">
+      <UpgradeBanner storageKey="diag_upgrade_banner" message="Unlock advanced diagnostics — deeper signal analysis, custom thresholds, and automated alerts." />
     <div className="p-6 space-y-6">
       {/* ── Header ── */}
       <div className="flex items-start justify-between">
@@ -227,7 +230,7 @@ export default function Diagnostics() {
       <div className="bg-card rounded-lg border-2 border-border shadow-card">
         <div className="px-4 py-3 border-b-2 border-border bg-secondary/60 rounded-t-lg flex flex-wrap items-center gap-2">
           <Brain className="w-4 h-4 text-electric-blue" />
-          <h2 className="text-sm font-semibold text-foreground">Apphia Engine — Live Intelligence</h2>
+          <h2 className="text-sm font-semibold text-foreground">Operational Intelligence — Live Engine</h2>
           <div className="flex items-center gap-1.5 ml-2">
             <span className="w-2 h-2 rounded-full bg-signal-green animate-pulse" />
             <span className="text-xs text-signal-green font-medium">Running</span>
@@ -855,6 +858,7 @@ export default function Diagnostics() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

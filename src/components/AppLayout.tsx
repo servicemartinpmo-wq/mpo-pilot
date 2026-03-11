@@ -5,8 +5,10 @@ import {
   Settings, Zap, ChevronRight, FileText, CheckSquare,
   BookOpen, Plug, Users, ChevronLeft, Headphones,
   GitBranch, Brain, BarChart3, Moon, Bell, Clock,
-  FolderOpen, Scale
+  FolderOpen, Scale, Layers, UserCircle, TrendingUp,
+  Network, ShoppingBag, CreditCard,
 } from "lucide-react";
+import { useUserMode } from "@/hooks/useUserMode";
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
 import { saveProfile } from "@/lib/companyStore";
@@ -18,16 +20,21 @@ const navItems = [
   { to: "/",             label: "Dashboard",    icon: LayoutDashboard, group: "command" },
   { to: "/projects",     label: "Projects",     icon: FolderOpen,      group: "command" },
   { to: "/initiatives",  label: "Initiatives",  icon: Rocket,          group: "command" },
+  { to: "/agile",        label: "Work Mgmt",    icon: Layers,          group: "command" },
   { to: "/action-items", label: "Action Items", icon: CheckSquare,     group: "command" },
   { to: "/decisions",    label: "Decisions",    icon: Scale,           group: "command" },
   { to: "/departments",  label: "Departments",  icon: Building2,       group: "command" },
   { to: "/team",         label: "Team",         icon: Users,           group: "command" },
   { to: "/diagnostics",  label: "Diagnostics",  icon: Activity,        group: "command" },
+  { to: "/crm",          label: "CRM",          icon: ShoppingBag,     group: "growth" },
+  { to: "/marketing",    label: "Marketing",    icon: TrendingUp,      group: "growth" },
   { to: "/reports",      label: "Reports",      icon: FileText,        group: "tools" },
   { to: "/knowledge",    label: "Resource Hub", icon: BookOpen,        group: "tools" },
+  { to: "/graph",        label: "Graph View",   icon: Network,         group: "tools" },
   { to: "/workflows",    label: "Workflows",    icon: GitBranch,       group: "tools" },
   { to: "/advisory",     label: "Advisory",     icon: Headphones,      group: "tools" },
   { to: "/integrations", label: "Integrations", icon: Plug,            group: "tools" },
+  { to: "/pricing",      label: "Upgrade",      icon: CreditCard,      group: "tools" },
   { to: "/admin",        label: "Systems",      icon: Settings,        group: "tools" },
 ];
 
@@ -108,7 +115,10 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   }
 
   const commandNav = navItems.filter((n) => n.group === "command");
+  const growthNav = navItems.filter((n) => n.group === "growth");
   const toolsNav = navItems.filter((n) => n.group === "tools");
+  const { mode, setMode, label: modeLabel, allModes } = useUserMode();
+  const [modeMenuOpen, setModeMenuOpen] = useState(false);
 
   const scoreColor =
     animatedScore >= 70 ? "hsl(160 56% 46%)" :
@@ -253,6 +263,47 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
               </NavLink>
             ))}
 
+            {/* Growth group */}
+            <div className="mt-3">
+              {!collapsed && (
+                <p className="text-[9px] font-bold uppercase tracking-[0.22em] px-2 pb-1 pt-1.5"
+                  style={{ color: "hsl(0 0% 100% / 0.18)" }}>
+                  Growth
+                </p>
+              )}
+              {growthNav.map(({ to, label, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 group relative",
+                      !isActive && "hover:bg-white/[0.04]"
+                    )
+                  }
+                  style={({ isActive }) => ({
+                    background: isActive ? "hsl(160 56% 42% / 0.1)" : undefined,
+                    boxShadow: isActive ? "inset 2px 0 0 hsl(160 56% 42% / 0.6)" : undefined,
+                  })}>
+                  {({ isActive }) => (
+                    <>
+                      <Icon className="w-4 h-4 flex-shrink-0"
+                        style={{ color: isActive ? "hsl(160 56% 52%)" : "hsl(0 0% 100% / 0.38)" }} />
+                      {!collapsed && (
+                        <>
+                          <span className="flex-1 truncate"
+                            style={{ color: isActive ? "#fff" : "hsl(0 0% 100% / 0.58)" }}>
+                            {label}
+                          </span>
+                          {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(160 56% 42%)" }} />}
+                        </>
+                      )}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+
             <div className="mt-3">
               {!collapsed && (
                 <p className="text-[9px] font-bold uppercase tracking-[0.22em] px-2 pb-1 pt-2"
@@ -297,14 +348,39 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           {/* ── Footer ── */}
           <div className="px-3 pb-3 pt-2 border-t space-y-2 relative" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
 
-            {/* Engine status */}
+            {/* User mode + Engine status */}
             {!collapsed && (
-              <div className="flex items-center gap-2 px-2">
-                <Brain className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(222 88% 65% / 0.5)" }} />
-                <span className="text-[10px] font-medium flex-1 truncate" style={{ color: "hsl(0 0% 100% / 0.28)" }}>
-                  Apphia Engine Active
-                </span>
-                <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(160 56% 46%)" }} />
+              <div className="relative">
+                <button
+                  onClick={() => setModeMenuOpen(o => !o)}
+                  className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/[0.04] transition-all">
+                  <UserCircle className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(38 92% 52% / 0.6)" }} />
+                  <span className="text-[10px] font-semibold flex-1 truncate text-left" style={{ color: "hsl(38 92% 52% / 0.7)" }}>
+                    {modeLabel} Mode
+                  </span>
+                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(160 56% 46%)" }} />
+                </button>
+                {modeMenuOpen && (
+                  <div className="absolute bottom-full mb-1 left-0 right-0 rounded-xl border overflow-hidden shadow-deep z-50"
+                    style={{ background: "hsl(222 28% 12%)", borderColor: "hsl(0 0% 100% / 0.08)" }}>
+                    <div className="px-3 py-2 border-b" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
+                      <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+                        Switch Mode
+                      </span>
+                    </div>
+                    {allModes.map(({ key, label }) => (
+                      <button
+                        key={key}
+                        onClick={() => { setMode(key); setModeMenuOpen(false); }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-[12px] transition-all hover:bg-white/[0.06]"
+                        style={{ color: mode === key ? "hsl(38 92% 62%)" : "hsl(0 0% 100% / 0.5)" }}>
+                        <UserCircle className="w-3.5 h-3.5 flex-shrink-0" style={{ color: mode === key ? "hsl(38 92% 52%)" : "hsl(0 0% 100% / 0.25)" }} />
+                        {label}
+                        {mode === key && <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ background: "hsl(38 92% 52%)" }} />}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

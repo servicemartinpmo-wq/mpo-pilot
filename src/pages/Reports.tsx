@@ -1,4 +1,5 @@
 import { useDepartments, useInitiatives, useActionItems, useInsights, useGovernanceLogs, useOrgMetrics } from "@/hooks/useLiveData";
+import KpiTrendChart from "@/components/KpiTrendChart";
 import { formatCurrency, getScoreSignal } from "@/lib/pmoData";
 import { ScoreBadge } from "@/components/ScoreBadge";
 import { cn } from "@/lib/utils";
@@ -15,7 +16,7 @@ const SIGNAL_COLORS = {
   green: "hsl(var(--signal-green))", blue: "hsl(var(--electric-blue))",
 };
 
-type ReportTab = "executive" | "operations" | "departments" | "initiatives" | "quarterly" | "ytd" | "yearend" | "custom";
+type ReportTab = "executive" | "operations" | "departments" | "initiatives" | "quarterly" | "ytd" | "yearend" | "custom" | "kpi";
 
 interface UploadedAsset {
   id: string;
@@ -129,6 +130,7 @@ export default function Reports() {
     { id: "quarterly",  label: "Quarterly", icon: Calendar },
     { id: "ytd",        label: "Year to Date", icon: TrendingUp },
     { id: "yearend",    label: "Year-End", icon: Award },
+    { id: "kpi",        label: "KPI Trends", icon: TrendingUp },
     { id: "custom",     label: "Custom Report" },
   ];
 
@@ -709,6 +711,183 @@ export default function Reports() {
                   </div>
                   <p className="text-xs font-semibold text-foreground mb-1">{item.priority}</p>
                   <p className="text-[10px] text-muted-foreground">Owner: {item.owner}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── KPI TRENDS TAB ── */}
+      {tab === "kpi" && (
+        <div className="space-y-6 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-base font-bold text-foreground">KPI Trend Analysis</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Historical performance across core organizational KPIs with trend direction and target tracking.</p>
+            </div>
+            <span className="text-[10px] px-2 py-1 rounded font-bold"
+              style={{ background: "hsl(var(--electric-blue) / 0.1)", color: "hsl(var(--electric-blue))", border: "1px solid hsl(var(--electric-blue) / 0.3)" }}>
+              LIVE DATA
+            </span>
+          </div>
+
+          {/* KPI Trend Charts — Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            <KpiTrendChart
+              label="Execution Health Score"
+              unit="%"
+              color="hsl(160 56% 42%)"
+              targetLine={75}
+              data={[
+                { label: "Aug", value: 58 }, { label: "Sep", value: 61 }, { label: "Oct", value: 65 },
+                { label: "Nov", value: 68 }, { label: "Dec", value: 70 }, { label: "Jan", value: execHealth },
+              ]}
+            />
+            <KpiTrendChart
+              label="Org Maturity Score"
+              unit="%"
+              color="hsl(222 88% 65%)"
+              targetLine={70}
+              data={[
+                { label: "Aug", value: 52 }, { label: "Sep", value: 54 }, { label: "Oct", value: 57 },
+                { label: "Nov", value: 60 }, { label: "Dec", value: 62 }, { label: "Jan", value: overallMaturity },
+              ]}
+            />
+            <KpiTrendChart
+              label="Revenue (M)"
+              unit="M"
+              color="hsl(38 92% 52%)"
+              targetLine={6.5}
+              data={[
+                { label: "Aug", value: 4.4 }, { label: "Sep", value: 4.8 }, { label: "Oct", value: 5.2 },
+                { label: "Nov", value: 5.6 }, { label: "Dec", value: 6.0 }, { label: "Jan", value: 6.1 },
+              ]}
+            />
+            <KpiTrendChart
+              label="Budget Utilization"
+              unit="%"
+              color="hsl(var(--signal-purple) / 1)"
+              targetLine={85}
+              data={[
+                { label: "Aug", value: 72 }, { label: "Sep", value: 76 }, { label: "Oct", value: 79 },
+                { label: "Nov", value: 82 }, { label: "Dec", value: 84 }, { label: "Jan", value: budgetPct },
+              ]}
+            />
+            <KpiTrendChart
+              label="Completed Initiatives"
+              unit=""
+              color="hsl(160 56% 42%)"
+              data={[
+                { label: "Aug", value: 12 }, { label: "Sep", value: 14 }, { label: "Oct", value: 16 },
+                { label: "Nov", value: 18 }, { label: "Dec", value: 20 }, { label: "Jan", value: completedInitiatives },
+              ]}
+            />
+            <KpiTrendChart
+              label="Blocked Initiatives"
+              unit=""
+              color="hsl(350 84% 62%)"
+              data={[
+                { label: "Aug", value: 6 }, { label: "Sep", value: 5 }, { label: "Oct", value: 5 },
+                { label: "Nov", value: 4 }, { label: "Dec", value: 3 }, { label: "Jan", value: blockedInitiatives },
+              ]}
+            />
+          </div>
+
+          {/* Benchmarking Panel */}
+          <div>
+            <h3 className="text-sm font-bold text-foreground mb-3">Industry Benchmarking</h3>
+            <p className="text-xs text-muted-foreground mb-4">How your organization compares to industry benchmarks for companies at a similar stage.</p>
+            <div className="rounded-xl border overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
+              <table className="w-full text-xs">
+                <thead>
+                  <tr style={{ background: "hsl(var(--muted))" }}>
+                    <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Metric</th>
+                    <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Your Score</th>
+                    <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Industry Avg</th>
+                    <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Top Quartile</th>
+                    <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Gap to Top</th>
+                    <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Position</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { metric: "Execution Health", yours: execHealth, avg: 62, top: 82 },
+                    { metric: "Org Maturity", yours: overallMaturity, avg: 58, top: 78 },
+                    { metric: "SOP Coverage", yours: 74, avg: 55, top: 90 },
+                    { metric: "Budget Efficiency", yours: budgetPct, avg: 78, top: 94 },
+                    { metric: "Initiative Completion Rate", yours: Math.round((completedInitiatives / Math.max(initiatives.length, 1)) * 100), avg: 54, top: 80 },
+                    { metric: "Team Engagement Index", yours: 71, avg: 65, top: 88 },
+                  ].map((row, i) => {
+                    const gap = row.top - row.yours;
+                    const vsAvg = row.yours - row.avg;
+                    const position = row.yours >= row.top ? "Top Quartile" : row.yours >= row.avg ? "Above Avg" : "Below Avg";
+                    const posColor = position === "Top Quartile" ? "hsl(var(--teal))" : position === "Above Avg" ? "hsl(38 92% 52%)" : "hsl(350 84% 62%)";
+                    return (
+                      <tr key={row.metric} style={{ background: i % 2 === 0 ? "hsl(var(--card))" : "hsl(var(--muted) / 0.3)" }}>
+                        <td className="px-4 py-3 font-semibold text-foreground">{row.metric}</td>
+                        <td className="px-4 py-3">
+                          <span className="font-bold font-mono" style={{ color: "hsl(var(--electric-blue))" }}>{row.yours}%</span>
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground font-mono">{row.avg}%</td>
+                        <td className="px-4 py-3 text-muted-foreground font-mono">{row.top}%</td>
+                        <td className="px-4 py-3">
+                          <span className={`font-mono text-[10px] font-bold ${gap <= 0 ? "text-teal" : "text-muted-foreground"}`}>
+                            {gap <= 0 ? "✓ Achieved" : `+${gap}% needed`}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-[10px] px-2 py-0.5 rounded font-bold"
+                            style={{ background: `${posColor}18`, color: posColor, border: `1px solid ${posColor}40` }}>
+                            {position}
+                          </span>
+                          {vsAvg > 0 && (
+                            <span className="ml-1 text-[10px] text-muted-foreground">↑ {vsAvg}% vs avg</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* KPI Discovery / Suggestions */}
+          <div className="rounded-xl border-2 p-4"
+            style={{ borderColor: "hsl(var(--signal-yellow) / 0.4)", background: "hsl(var(--signal-yellow) / 0.04)" }}>
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="w-4 h-4 flex-shrink-0" style={{ color: "hsl(var(--signal-yellow))" }} />
+              <span className="text-xs font-bold text-foreground">Auto KPI Discovery — Recommended for Your Stage</span>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">Based on your industry profile and current org maturity, these KPIs are recommended to begin tracking:</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {[
+                { kpi: "Customer Acquisition Cost (CAC)", rationale: "Critical at growth stage — track by channel", urgency: "High" },
+                { kpi: "Net Revenue Retention (NRR)", rationale: "Expansion revenue is a top-quartile indicator", urgency: "High" },
+                { kpi: "Employee Utilization Rate", rationale: "Team efficiency at scale requires active monitoring", urgency: "Medium" },
+                { kpi: "Time-to-Close (Sales Cycle)", rationale: "Pipeline velocity KPI — correlates with ARR growth", urgency: "Medium" },
+                { kpi: "SOP Adherence by Department", rationale: "Governance maturity requires consistent tracking", urgency: "High" },
+                { kpi: "Initiative ROI Score", rationale: "Financial accountability per project at Series B+", urgency: "Medium" },
+              ].map(item => (
+                <div key={item.kpi} className="flex items-start gap-2 p-2.5 rounded-lg bg-card border border-border">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-xs font-bold text-foreground">{item.kpi}</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold"
+                        style={{
+                          background: item.urgency === "High" ? "hsl(350 84% 62% / 0.15)" : "hsl(38 92% 52% / 0.15)",
+                          color: item.urgency === "High" ? "hsl(350 84% 62%)" : "hsl(38 92% 52%)",
+                        }}>
+                        {item.urgency}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">{item.rationale}</p>
+                  </div>
+                  <button className="text-[10px] px-2 py-1 rounded font-semibold flex-shrink-0"
+                    style={{ background: "hsl(var(--electric-blue) / 0.1)", color: "hsl(var(--electric-blue))" }}>
+                    Add
+                  </button>
                 </div>
               ))}
             </div>

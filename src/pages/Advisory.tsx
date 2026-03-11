@@ -7,10 +7,12 @@ import {
   Brain, Cog, Rocket, Shield, GitBranch, DollarSign, BarChart3,
   Cpu, Headphones, Target, ChevronRight, X, Upload, MessageSquare,
   Mail, Star, Lock, Zap, CheckCircle, Clock, ArrowUpRight, User,
-  Sparkles, FileText, AlertTriangle, Activity
+  Sparkles, FileText, AlertTriangle, Activity, Building2, Globe
 } from "lucide-react";
 import { getEngineState } from "@/lib/engine";
 import type { AdvisoryRecommendation } from "@/lib/engine/advisory";
+import { INDUSTRY_ADVISORS, getAdvisorForIndustry } from "@/lib/engine/industryAdvisors";
+import { useAuth } from "@/hooks/useAuth";
 
 type AdvisorCategory = "core" | "optional";
 type RequestStatus = "idle" | "submitting" | "submitted";
@@ -154,8 +156,10 @@ export default function Advisory() {
   const weekRecs = engine.recommendations.filter(r => r.priority === "This Week");
   const monthRecs = engine.recommendations.filter(r => r.priority === "This Month");
 
+  const { profile } = useAuth();
   const coreAdvisors = ADVISORS.filter(a => a.category === "core");
   const optionalAdvisors = ADVISORS.filter(a => a.category === "optional");
+  const industryAdvisor = getAdvisorForIndustry(profile?.industry ?? "");
 
   function openRequest(advisor: Advisor) {
     setRequestModal({
@@ -201,7 +205,7 @@ export default function Advisory() {
           <div className="flex-shrink-0">
             <button onClick={getAiRecommendation}
               className="flex items-center gap-2 text-sm font-bold px-4 py-2.5 rounded-xl border-2 border-electric-blue text-electric-blue hover:bg-electric-blue/10 transition-colors">
-              <Sparkles className="w-4 h-4" /> Get AI Recommendation
+              <Sparkles className="w-4 h-4" /> Get Recommendation
             </button>
           </div>
         </div>
@@ -464,6 +468,111 @@ export default function Advisory() {
           </div>
         </div>
       )}
+
+      {/* ── Industry Advisor Section (T010) ── */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <Globe className="w-4 h-4 text-teal" />
+          <h2 className="text-sm font-bold text-foreground">Industry Advisors &amp; Benchmarks</h2>
+          <span className="text-xs text-muted-foreground">{INDUSTRY_ADVISORS.length} industries covered</span>
+        </div>
+
+        {industryAdvisor && (
+          <div className="mb-5 rounded-2xl border-2 p-5"
+            style={{ borderColor: `${industryAdvisor.color}30`, background: `${industryAdvisor.color}06` }}>
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-2xl">{industryAdvisor.icon}</span>
+              <div>
+                <div className="text-sm font-black text-foreground">{industryAdvisor.industry} Advisory</div>
+                <div className="text-xs text-muted-foreground">{industryAdvisor.description}</div>
+              </div>
+              <span className="ml-auto text-[10px] font-bold px-2 py-1 rounded-full"
+                style={{ background: `${industryAdvisor.color}18`, color: industryAdvisor.color }}>
+                Your Industry
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <div className="section-label mb-2">Key KPIs</div>
+                <div className="space-y-1">
+                  {industryAdvisor.keyKPIs.slice(0, 4).map(kpi => (
+                    <div key={kpi} className="flex items-center gap-2 text-xs">
+                      <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: industryAdvisor.color }} />
+                      <span className="text-foreground/80">{kpi}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="section-label mb-2">Frameworks</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {industryAdvisor.frameworks.map(fw => (
+                    <span key={fw} className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+                      style={{ background: `${industryAdvisor.color}12`, color: industryAdvisor.color, border: `1px solid ${industryAdvisor.color}25` }}>
+                      {fw}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="section-label mb-2">Industry Benchmarks</div>
+                <div className="space-y-1.5">
+                  {industryAdvisor.benchmarks.map(b => (
+                    <div key={b.label} className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] text-muted-foreground truncate">{b.label}</span>
+                      <span className="text-[10px] font-bold font-mono text-foreground">{b.value}{b.unit}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            {Object.keys(industryAdvisor.terminology).length > 0 && (
+              <div className="mt-4 pt-4 border-t" style={{ borderColor: `${industryAdvisor.color}15` }}>
+                <div className="section-label mb-2">Terminology in your industry</div>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(industryAdvisor.terminology).map(([generic, specific]) => (
+                    <div key={generic} className="text-xs flex items-center gap-1.5">
+                      <span className="text-muted-foreground">{generic}</span>
+                      <span className="text-muted-foreground/40">→</span>
+                      <span className="font-medium text-foreground">{specific}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {INDUSTRY_ADVISORS.map(adv => (
+            <div key={adv.industry}
+              className="rounded-xl border p-4 hover:border-white/10 transition-all cursor-pointer"
+              style={{
+                background: "hsl(var(--card))",
+                borderColor: adv.industry === (industryAdvisor?.industry ?? "") ? `${adv.color}40` : "hsl(var(--border))"
+              }}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">{adv.icon}</span>
+                <span className="text-xs font-bold text-foreground">{adv.industry}</span>
+                {adv.industry === (industryAdvisor?.industry ?? "") && (
+                  <span className="ml-auto text-[8px] font-bold px-1.5 py-0.5 rounded"
+                    style={{ background: `${adv.color}18`, color: adv.color }}>
+                    YOURS
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-1 mt-2">
+                {adv.frameworks.slice(0, 2).map(fw => (
+                  <span key={fw} className="text-[9px] px-1.5 py-0.5 rounded"
+                    style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
+                    {fw}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

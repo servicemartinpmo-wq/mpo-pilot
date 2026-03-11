@@ -1,0 +1,327 @@
+Tagline:
+Know What Matters. We Support Leaders Who Do It All
+Purpose:
+The app is designed for overwhelmed executives, founders, and operators who need clarity, guidance, and structure across initiatives, tasks, and organizational performance. Built on deep expertise, designed to help users act with confidence.
+1. Dashboard / Command View
+Purpose: Executive “what matters today” overview.
+Sections / Blocks:
+Greeting & Org Info: “Good morning [Name]”, organization logo, key stats
+Today’s Priorities: clickable tasks, deadlines, ownership
+Operational Status (replaces “Org Health”): uses color-coded indicators: green = on track, yellow = needs attention, red = critical, blue = above board
+Initiatives at Risk: highlights overdue or blocked projects
+AI Insights: actionable recommendations, flagged risks, delegation suggestions
+Executive Load / Delegation Matrix
+Functionality / Click / Hover:
+Hover over status → see historical trend and details
+Click initiative/task → open full detail modal
+Popups for key updates, subscribed under the app name (top left)
+Data Flow / Integrations:
+Signals from Systems / Admin analytics
+Real-time updates from Team Page, email, WhatsApp, meetings
+Visual / UI Notes:
+Flat or cinematic design (no 3D sphere)
+Sectioned blocks with icons and color coding: Active Initiatives, Alerts, AI Insights
+Clear separation of sections; titles slightly larger and centered
+Thin top bar: “Unlock more with Martin PMO-Ops”, clickable to membership landing page; removable by user
+2. Initiatives Page
+Features:
+Initiative overview with onboarding tutorial
+Status color coding (globally consistent): Outstanding / Delayed = Purple, Needs Attention = Orange, On Track = Yellow, Abandoned = Red
+Sorting and filtering: owner, department, due date, status
+Clickable and hoverable for insights
+Drop-down lists for additional details
+Data Flow / Integrations:
+Pulls from Systems / Admin signals
+Real-time updates from Team Page & emails
+Visual / UI Notes:
+Color-coded status globally
+Drop-down menus to reduce information cramming
+3. Action Items & Events Page
+Features:
+Action items imported from email, WhatsApp, or manual entry
+Emails / WhatsApp messages saved as snapshot attachments or summarized in References
+Links back to original message included
+Layout optimized like INTJ brain: highly structured, concise, actionable
+Meeting Shortlist & Prep: automatically logs meetings from G-Suite (Calendar, Docs, Meet, Gemini) and Microsoft Office (Outlook Calendar, Teams, Word, Excel, PowerPoint)
+Detects missing agendas or prep items; allows override and saves preference
+Adds meetings to Dashboard Today view
+Example Entry:
+(M/O/C/H/A): Escalate API docs to CTO
+Status: In Progress
+Detail: 48hr mandate. Formal escalation. Unblocks INI-002, INI-005, INI-008
+Owner: Ryan Torres
+Date: 3-8-2025
+Directive / Initiative: Customer Portal v2 (Transformative / Operational)
+Department: Product Development
+Priority / Focus Areas / Quick Wins / Notes: Included
+Data Flow / Integrations:
+Email / WhatsApp → AI reads → extracts tasks, assigns priority, flags risks
+Meeting integration → logged automatically (no attendance)
+Visual / UI Notes:
+Clear hierarchy of actionable items vs events
+Hover for quick summary, click for details
+Star / flag for prioritization
+4. Systems (Admin)
+Features:
+Analytics dashboard: performance metrics, signal detection, last updated timestamp
+Org profile: historical data, team structure, authority matrix
+Roles & Access management
+Quality Control section
+Executive Load / Delegation Matrix
+Functionality / Click / Hover:
+Click metrics → historical trend
+Hover over roles → responsibilities and delegated tasks
+Updates propagate to dashboards
+Visual / UI Notes:
+Blocks with labels
+Color-coded charts/graphs
+Drop-downs for drill-down
+5. Resource Hub
+Features:
+Templates: download or click-to-input (Adobe / DocuSign style)
+Pre-built workflows: click → deploy → integrate (logic-driven)
+SOPs & Lessons Learned (linked to Reports)
+Filters: department / problem / diagnostic need
+Max 200 pages per upload batch
+Data Flow / Integrations:
+Historical data + PMO-Ops prioritization
+Department-specific pre-created systems
+Visual / UI Notes:
+Separate blocks for Templates, Workflows, SOPs
+Drop-down filters and clickable previews
+6. Team Page
+Features:
+Updates from users (dynamic if single user)
+MOCHA framework displayed: Manager, Owner, Consulted, Helped, Accountable
+Team size options: 1, 2–10, 11–50, 51–200, 200+
+Functionality / Click / Hover:
+Hover → summary of member updates and action items
+Click → detailed view of delegated work
+Visual / UI Notes:
+Color-coded by MOCHA roles
+Blocks for updates, tasks, achievements
+7. Advisory
+Core Advisors: Strategy, Operations, Project & Program Management, Administrative Systems, Process & Operational Improvement
+Optional Advisors: Finance, Marketing, Technology / IT, Data Analytics, Customer Support
+Features:
+Users submit requests: documents, screenshots, emails, WhatsApp messages, project plans
+Advisory naming: only “Advisory”
+Tiered access based on subscription
+Data Flow / Integrations:
+AI suggests which advisor to contact
+Requests link to Action Items / Systems
+8. Onboarding & Intake
+Features:
+Organization info, historical data, team size, department structure
+Inclusive industry list: Non-Profit & Social Services, Wholesale Trade, Telecommunications, Retail Trade, Real Estate, Professional & Business Services, Pharmaceuticals & Biotechnology, Mining & Natural Resources, Media & Publishing, Manufacturing, Logistics & Transportation, Legal Services, Insurance, Information Technology, Hospitality & Tourism, Healthcare Services, Government Contracting, Food & Beverage, Financial Services, Environmental Services, Engineering, Energy & Utilities, Education & Training, E-commerce, Defense & Security, Consumer Goods, Construction, Automotive, Arts, Entertainment & Recreation, Agriculture & Agribusiness, Other (user input)
+Starred emails/messages prioritized
+“Tell me more / Answer these questions” AI learning feature
+9. Pricing & Tiers
+Free – Personal Command View: $0, 1 user, 3 projects, limited automation, copy/paste export, manual email/WhatsApp forwarding, daily command dashboard
+Tier 1 – Professional Operator: $30 / user / month, exports (PDF/CSV/Slides), G-Suite / Microsoft / WhatsApp integrations, basic AI prioritization, 10 automations
+Tier 2 – Workflow Builder: $50 / user / month, workflow builder, SOP automation, approval flows, internal dashboards, custom reporting, API integrations, unlimited projects
+Tier 3 – Command Center (Flagship): $120–$150 / month (up to 5 users), automated email & WhatsApp intelligence, system builder, organizational diagnostics, executive command dashboard, branding layer, 7-day free trial, non-profit / annual discounts
+Enterprise: $1000–$2000 / month, unlimited users, PMO-Ops as a service, continuous system build, internal audits, leadership dashboards
+10. Email, WhatsApp & Office Integration
+Features:
+Inbox & WhatsApp → AI reads → extracts tasks → assigns priority → flags risks → adds to dashboard
+G-Suite & Microsoft Office integration: Gmail / Outlook (task extraction), Calendar (meeting logging & shortlist), Docs / Word (references for action items), Sheets / Excel (project data integration), PowerPoint (links to initiatives), Meet / Teams / Gemini (logged in Events & Meetings page)
+Starred emails/messages prioritized
+Side-by-side snapshot view for quality checks
+11. UX / UI Notes
+Dropdowns for content to reduce cramming
+Consistent naming: Average: Maturity, Average: SOP Adherence
+Operational Status replaces “Org Health” globally
+Color-coded status maintained across pages
+Clickable/hoverable elements
+Experience optimized with org logo and color scheme
+Lessons from Monday, Asana, Zendesk, Shopify, Slack, QuickBooks applied
+12. Key Differentiators
+Combines software + AI + human advisors
+Executive “what matters today” dashboard
+Email & WhatsApp as core input → task creation & prioritization
+Pre-built systems tailored to org problems
+Tiered access & non-profit / annual discounts
+Industry-specific logic optional
+Complete G-Suite / Microsoft Office logging for meetings, documents, and events
+Operational Health and Structural Health metrics displayed globally
+
+1. Dashboard / Command View
+Purpose: Executive “what matters today” overview
+Sections / Blocks:
+Greeting & Org Info: “Good morning [Name]”, org logo, top-level KPIs
+Today’s Priorities: clickable tasks, deadlines, ownership; hover → full details
+Operational Status: color-coded (Green = on track, Yellow = needs attention, Red = critical, Blue = above board)
+Initiatives at Risk: highlights overdue or blocked projects
+AI Insights: actionable recommendations, delegation suggestions
+Executive Load / Delegation Matrix
+Functionality / Click / Hover:
+Hover status → historical trend + AI suggestions
+Click task → full task modal
+Quick link → Advisory suggestions
+Data / Integrations:
+Real-time from Systems/Admin analytics, Team Page, Email/WhatsApp input
+Meeting logging from G-Suite / MS Office
+Visual / UI Notes:
+Flat cinematic info card design
+Sectioned blocks with distinct icons and color coding
+Thin top bar: “Unlock more with Martin PMO-Ops” → Membership landing page
+
+2. Initiatives Page
+Sections / Blocks:
+Initiative overview (Transformative vs Operational)
+Status Key: Outstanding/Delayed = Purple, Needs Attention = Orange, On Track = Yellow, Abandoned = Red
+Filters: owner, department, due date, status
+Onboarding tutorial
+Functionality / Click / Hover:
+Click → full modal with details
+Hover → historical trend + AI recommendations
+Sort / filter all columns
+Drop-downs for sub-data
+Data / Integrations:
+Pull from Systems / Admin signals, Team Page, email input
+Visual / UI Notes:
+Color-coded indicators, clean block layout
+3. Action Items & Events Page
+Sections / Blocks:
+Action Items: email & WhatsApp integration, starred items prioritized
+Event Log / Meeting Shortlist
+Meeting Prep Checklist: auto-detect missing agenda, allow override
+Manual input / upload for events & tasks
+Functionality / Click / Hover:
+Click → full detail modal with status, references, attachments, links
+Hover → quick summary
+Star / flag items for prioritization
+Data / Integrations:
+Email / WhatsApp → AI reads → extracts tasks, flags risks
+G-Suite / MS Office → log meetings & events (no attendance)
+Visual / UI Notes:
+INTJ-style structure: prioritized, minimal distraction
+Clickable hoverable hierarchy
+4. Systems (Admin)
+Sections / Blocks:
+Analytics dashboard: performance metrics, signals, last updated timestamp
+Org Profile: historical data, team structure, authority matrix
+Roles & Access management
+Quality Control section
+Delegation Matrix
+Functionality / Click / Hover:
+Click metric → historical trend
+Hover role → responsibilities + delegated tasks
+Data / Integrations:
+Real-time updates from all pages
+AI-assisted bottleneck detection
+Visual / UI Notes:
+Blocks with clear labels
+Color-coded charts
+Drop-down drill-downs
+5. Resource Hub
+Sections / Blocks:
+Templates: click-to-fill or download
+Pre-built Workflows: click → deploy → integrate
+SOPs & Lessons Learned
+Filters: department / problem / diagnostic need
+Max 200 pages per upload batch
+Functionality / Click / Hover:
+Click workflow → pre-populated suggestions
+Hover → purpose, past use, relevance
+Data / Integrations:
+Historical data + PMO-Ops prioritization
+Department-specific pre-created systems
+Visual / UI Notes:
+Separate blocks for Templates, Workflows, SOPs
+Drop-down filters & clickable previews
+6. Team Page
+Sections / Blocks:
+User updates (real-time)
+MOCHA framework display: Manager, Owner, Consulted, Helped, Accountable
+Team size selection: 1, 2–10, 11–50, 51–200, 200+
+Functionality / Click / Hover:
+Hover → summary of updates & tasks
+Click → detailed view of delegated work
+Data / Integrations:
+Pulls updates from emails, WhatsApp, meetings
+Visual / UI Notes:
+Color-coded by MOCHA roles
+Clear blocks for updates, tasks, achievements
+7. Advisory Page
+Core Advisors: Strategy, Operations, Project & Program Management, Administrative Systems, Process & Operational Improvement
+Optional Advisors: Finance, Marketing, IT, Customer Support
+Sections / Blocks:
+Request submission: document uploads, screenshots, emails, WhatsApp messages, project plans
+Tiered access: based on subscription
+Functionality / Click / Hover:
+Click advisor → request modal with upload & priority
+Hover → summary of expertise
+Data / Integrations:
+AI suggests relevant advisor
+Requests link to Action Items / Systems
+Visual / UI Notes:
+Blocks per advisor category
+Clear CTA to submit request
+8. Reports Page
+Sections / Blocks:
+Customizable dashboards: KPIs, lessons learned, operational metrics
+Pre-built vs custom reports
+Filters: department, problem, initiative
+Functionality / Click / Hover:
+Click → full view & export (PDF, CSV, slides)
+Hover → summary & last updated
+Data / Integrations:
+Pulls from all app data: email tasks, initiatives, action items, system signals
+Visual / UI Notes:
+Clean professional dashboard
+Drag-and-drop widgets
+9. Onboarding & Intake
+Sections / Blocks:
+Organization info & historical data
+Team size & department structure
+Inclusive Industry List: (full list as previously detailed)
+Starred emails/messages prioritized
+Functionality / Click / Hover:
+Step-by-step guided setup
+Hover → tooltips
+Data / Integrations:
+Stores historical context → populates dashboards, workflows
+Visual / UI Notes:
+Clean onboarding screens
+Step progress indicator
+10. Integrations Page
+Sections / Blocks:
+G-Suite: Docs, Sheets, Calendar, Meetings, Gemini
+Microsoft Office: Word, Excel, Outlook, Teams, Calendar
+WhatsApp integration
+Logging events & meeting shortlist
+Functionality / Click / Hover:
+Click → settings & sync options
+Hover → tooltip for sync status
+Data / Integrations:
+Real-time logging into Action Items & Events
+No attendance, only tracking/logging
+Visual / UI Notes:
+Icon per integration, color-coded active/inactive
+Settings accessible via top bar
+11. Pricing & Tiers
+Free: Personal Command View; $0; 1 user, 3 projects, limited automation, manual forwarding, copy/paste export
+Tier 1 – Professional Operator: $30 / user / month; exports, integrations, basic AI prioritization, 10 automations
+Tier 2 – Workflow Builder: $50 / user / month; workflow builder, SOP automation, internal dashboards, approval flows, custom reporting, API integrations, unlimited projects
+Tier 3 – Command Center: $120–$150 / month; up to 5 users; automated inbox, system builder, cross-platform intake, organizational diagnostics, executive command dashboard, branding layer, free trial, non-profit/annual discounts
+Enterprise: $1,000–$2,000 / month; unlimited users; PMO-Ops as a service; continuous system build, internal audits, leadership dashboards
+Functionality / Click / Hover:
+Hover → feature highlights
+Click → upgrade modal
+Visual / UI Notes:
+Thin top bars for “Unlock more”
+Clear table layout
+Consistent naming conventions
+12. Key Differentiators
+Combines software + AI + human advisors
+Executive “what matters today” dashboard
+Email & WhatsApp as core input → task creation & prioritization
+Pre-built systems tailored to org problems
+Tiered access & non-profit / annual discounts
+Industry-specific logic optional
+Complete G-Suite / Microsoft Office logging for meetings, documents, and events
+Operational Health (Yellow, Green, Red, Blue)
+Structural Health (systems running, SOP adherence)
+

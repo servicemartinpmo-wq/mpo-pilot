@@ -1,0 +1,69 @@
+Dashboard, seeing status and important updates as pop ups when the app is open. 
+
+Remove ai and INTJ language for the app completely
+
+Action items,
+ categories should be: 
+Action Items, Follow Up, Meetings, Email, Messaging (internal chat with team or with Whatsapp, slack and other kinds of comms integrations)
+Tier levels for prioritization should be explained (when hovered over) 
+Email inbox connection should have the email attached as a snapshot to each one.
+There should also been an action needed view and once it is read, it moves from email to action items. 
+Meetings without prep should be 
+You could structure it as 3 preparation signals:
+Clarity
+Objective defined
+Agenda created
+Decisions listed
+Readiness
+Pre-reads attached
+Stakeholders confirmed
+Updates prepared
+Execution
+Action items reviewed
+Notes template ready
+Follow-up owner assigned
+
+Departments: 
+Remove the org avg maturity and sop adherence from this page only, its repetitive and should only be in the dashboard and lefthand panel. 
+
+
+Diagnostics: 
+The flag and status flag key, etc drop down should be for used for the email and messaging panel and be moved to the action item page that has the email section.  
+Remove MOCHA from diagnostics, it should be in a subpage called teams(under departments)
+
+Reports:
+ page and features should be highly customizable with the option to upload text, files, folders and images
+
+ Resource Hub:
+Sections / Blocks:
+Templates: click-to-fill or download
+Pre-built Workflows: click → deploy → integrate
+SOPs & Lessons Learned
+Filters: department / problem / diagnostic need
+Max 200 pages per upload batch
+Functionality / Click / Hover:
+Click workflow → pre-populated suggestions
+Hover → purpose, past use, relevance
+Data / Integrations:
+Historical data + PMO-Ops prioritization
+Department-specific pre-created systems
+Visual / UI Notes:
+Separate blocks for Templates, Workflows, SOPs
+Drop-down filters & clickable previews
+6. Team Page
+Sections / Blocks:
+User updates (real-time)
+MOCHA framework display: Manager, Owner, Consulted, Helped, Accountable
+Team size selection: 1, 2–10, 11–50, 51–200, 200+
+Functionality / Click / Hover:
+Hover → summary of updates & tasks
+Click → detailed view of delegated work
+Data / Integrations:
+Pulls updates from emails, WhatsApp, meetings
+Visual / UI Notes:
+Color-coded by MOCHA roles
+Clear blocks for updates, tasks, achievements
+
+Systems: 
+Analysis Module Summary moves here from diagnostics
+
