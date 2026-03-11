@@ -1,0 +1,231 @@
+🔟 Ingraining User Obsession
+This is behavioral design:
+A. Predictive Value
+AI always surfaces next best action that feels like a personal assistant.
+Users learn to trust it, like: “If I ignore the app, I miss something important.”
+B. Positive Feedback Loops
+Gamify progress: streaks, company health score improvements
+Immediate rewards: task completion → AI acknowledges, updates dashboards
+Social sharing: allow users to share insights or playbooks
+C. Feature Nudges
+Based on usage: “You haven’t used this yet — here’s why it helps”.
+Personalization: “Your team uses X often, enable Y to improve productivity”
+D. Minimal Friction
+Popups fade automatically, dashboards are clean and intuitive, notifications actionable.
+Always show value first → the app feels “magical,” not forced.
+
+Signal ingestion
+Score calculation function
+Trigger automation
+AI optimization output
+
+Features exclusive to marketing department - Signal Ingestion (Raw Campaign Data)
+You already created algorithm_signals. We’ll use it as the raw signal table.
+Example record:
+platform
+signal_type
+metric_name
+metric_value
+google_ads
+engagement
+click_through_rate
+0.042
+linkedin_ads
+conversion
+conversion_rate
+0.031
+meta_ads
+efficiency
+ROAS
+4.2
+
+SQL schema:
+CREATE TABLE algorithm_signals (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ organization_id uuid,
+ campaign_id text,
+ platform text,
+ signal_type text,
+ metric_name text,
+ metric_value numeric,
+ recorded_at timestamp default now()
+);
+
+2️⃣ Campaign Score Calculation Function
+This function calculates all 7 algorithm scores and the Mega Algorithm Score.
+CREATE OR REPLACE FUNCTION calculate_algorithm_score(campaign TEXT)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+DECLARE
+   engagement NUMERIC;
+   relevance NUMERIC;
+   conversion NUMERIC;
+   authority NUMERIC;
+   freshness NUMERIC;
+   network NUMERIC;
+   efficiency NUMERIC;
+   mega_score NUMERIC;
+BEGIN
+
+SELECT AVG(metric_value) INTO engagement
+FROM algorithm_signals
+WHERE campaign_id = campaign
+AND signal_type = 'engagement';
+
+SELECT AVG(metric_value) INTO relevance
+FROM algorithm_signals
+WHERE campaign_id = campaign
+AND signal_type = 'relevance';
+
+SELECT AVG(metric_value) INTO conversion
+FROM algorithm_signals
+WHERE campaign_id = campaign
+AND signal_type = 'conversion';
+
+SELECT AVG(metric_value) INTO authority
+FROM algorithm_signals
+WHERE campaign_id = campaign
+AND signal_type = 'authority';
+
+SELECT AVG(metric_value) INTO freshness
+FROM algorithm_signals
+WHERE campaign_id = campaign
+AND signal_type = 'freshness';
+
+SELECT AVG(metric_value) INTO network
+FROM algorithm_signals
+WHERE campaign_id = campaign
+AND signal_type = 'network';
+
+SELECT AVG(metric_value) INTO efficiency
+FROM algorithm_signals
+WHERE campaign_id = campaign
+AND signal_type = 'efficiency';
+
+mega_score :=
+0.20 * COALESCE(engagement,0) +
+0.20 * COALESCE(relevance,0) +
+0.20 * COALESCE(conversion,0) +
+0.15 * COALESCE(authority,0) +
+0.10 * COALESCE(freshness,0) +
+0.10 * COALESCE(network,0) +
+0.05 * COALESCE(efficiency,0);
+
+INSERT INTO algorithm_scores (
+   campaign_id,
+   engagement_score,
+   relevance_score,
+   conversion_score,
+   authority_score,
+   freshness_score,
+   network_score,
+   efficiency_score,
+   mega_algorithm_score
+)
+VALUES (
+   campaign,
+   engagement,
+   relevance,
+   conversion,
+   authority,
+   freshness,
+   network,
+   efficiency,
+   mega_score
+);
+
+END;
+$$;
+
+3️⃣ Automatic Trigger (Runs When Data Arrives)
+Every time new signal data arrives, we automatically recalculate the campaign score.
+CREATE OR REPLACE FUNCTION trigger_algorithm_score()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+ PERFORM calculate_algorithm_score(NEW.campaign_id);
+ RETURN NEW;
+END;
+$$;
+Create trigger:
+CREATE TRIGGER run_algorithm_scoring
+AFTER INSERT ON algorithm_signals
+FOR EACH ROW
+EXECUTE FUNCTION trigger_algorithm_score();
+Now scoring happens automatically whenever campaign metrics update.
+
+4️⃣ AI Optimization Table
+After scoring, the AI engine can generate insights.
+Table:
+CREATE TABLE campaign_ai_insights (
+ id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+ campaign_id text,
+ mega_score numeric,
+ diagnosis text,
+ recommendation text,
+ predicted_lead_change numeric,
+ predicted_revenue_change numeric,
+ created_at timestamp default now()
+);
+Example AI insight:
+campaign
+score
+diagnosis
+SaaS Launch
+78
+targeting mismatch
+
+Recommendation:
+Narrow audience to CTOs and VP Engineering
+Test video creative
+Increase budget on LinkedIn
+
+5️⃣ Optional: Scheduled Recalculation
+Some metrics change daily.
+Use Supabase cron:
+SELECT calculate_algorithm_score(campaign_id)
+FROM algorithm_signals
+GROUP BY campaign_id;
+Run every 12 or 24 hours.
+
+6️⃣ Marketing Intelligence Dashboard
+Now your dashboard can display:
+Campaign Performance Score
+
+Mega Algorithm Score: 82 / 100
+
+Engagement: 88
+Relevance: 76
+Conversion: 71
+Authority: 80
+Freshness: 92
+Network: 75
+Efficiency: 79
+With AI recommendations.
+
+7️⃣ Enterprise-Level Upgrade
+Enterprise users unlock:
+Predictive campaign modeling
+Budget allocation optimization
+Cross-platform algorithm insights
+Competitor benchmark comparisons
+Integrations include:
+Google Ads
+Meta Ads Manager
+LinkedIn Campaign Manager
+HubSpot
+Salesforce
+
+✅ What you now have
+A self-running marketing intelligence engine that:
+collects signals
+calculates algorithm scores
+updates automatically
+generates AI recommendations
+
+If you'd like, I can also show you one advanced system that would make this marketing AI dramatically more powerful: a “cross-company algorithm learning engine.”
+It lets your app learn which marketing strategies work best across all users while keeping company data private, which is how platforms like Palantir Technologies create massive competitive advantages.
+
+

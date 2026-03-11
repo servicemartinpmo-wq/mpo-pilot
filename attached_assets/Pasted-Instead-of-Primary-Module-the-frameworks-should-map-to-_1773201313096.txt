@@ -1,0 +1,411 @@
+Instead of Primary Module, the frameworks should map to:
+Execution Module (where it runs)
+Outputs To (which modules get updated)
+Frameworks are the backend and what power diagnostics and reporting (though can be found as a list of whats running in the analysis modules under System)
+
+STRUCTURE FOR RESOURCE HUB FRAMEWORKS
+Columns should be:
+Framework / Method
+Execution Module
+Outputs To
+Status Relevance
+Temporal Context
+Dependencies / Links
+Notes / Historical Context
+
+STRATEGY & ORGANIZATIONAL ALIGNMENT
+Framework
+Execution Module
+Outputs To
+Balanced Scorecard
+Diagnostics
+Dashboard, Reports
+OKR Alignment
+Initiatives
+Dashboard, Reports
+Strategic Choice Cascade
+Advisory
+Initiatives
+Hoshin Kanri
+Systems
+Initiatives, Departments
+McKinsey 7S
+Diagnostics
+Departments
+Galbraith Star Model
+Diagnostics
+Departments
+VRIO
+Diagnostics
+Initiatives
+SWOT Analysis
+Diagnostics
+Initiatives
+PESTEL Analysis
+Diagnostics
+Advisory
+Porter Five Forces
+Diagnostics
+Advisory
+Blue Ocean Strategy
+Advisory
+Initiatives
+BCG Growth Share Matrix
+Diagnostics
+Initiatives
+GE McKinsey Matrix
+Diagnostics
+Initiatives
+
+
+INITIATIVE & PROJECT MANAGEMENT
+Framework
+Execution Module
+Outputs To
+PMBOK Knowledge Areas
+Systems
+Initiatives
+PRINCE2
+Systems
+Initiatives
+Critical Chain Project Management
+Diagnostics
+Initiatives
+Critical Path Method
+Diagnostics
+Initiatives
+PERT Analysis
+Diagnostics
+Initiatives
+Stage Gate Process
+Systems
+Initiatives
+Work Breakdown Structure
+Tools
+Initiatives
+Gantt Charts
+Tools
+Dashboard
+RAID Log
+Tools
+Initiatives
+MoSCoW Prioritization
+Advisory
+Initiatives
+Weighted Decision Matrix
+Advisory
+Initiatives
+
+
+OPERATIONS & PROCESS MANAGEMENT
+Framework
+Execution Module
+Outputs To
+Lean
+Diagnostics
+Departments
+Theory of Constraints
+Diagnostics
+Initiatives
+Six Sigma DMAIC
+Diagnostics
+Action Items
+Value Stream Mapping
+Tools
+Departments
+SIPOC Mapping
+Tools
+Departments
+Business Process Reengineering
+Advisory
+Departments
+Kaizen
+Systems
+Action Items
+PDCA Cycle
+Systems
+Action Items
+Total Quality Management
+Diagnostics
+Dashboard
+Statistical Process Control
+Diagnostics
+Dashboard
+Control Charts
+Diagnostics
+Reports
+
+
+PERFORMANCE & METRICS
+Framework
+Execution Module
+Outputs To
+KPI Tree
+Diagnostics
+Dashboard
+Leading vs Lagging Indicators
+Diagnostics
+Dashboard
+Benchmarking
+Diagnostics
+Reports
+Operational Maturity Models
+Diagnostics
+Dashboard
+PMO Maturity Model
+Diagnostics
+Reports
+EFQM Excellence Model
+Diagnostics
+Reports
+Malcolm Baldrige Framework
+Diagnostics
+Reports
+
+
+RISK & DECISION SCIENCE
+Framework
+Execution Module
+Outputs To
+Risk Heat Map
+Diagnostics
+Dashboard
+Enterprise Risk Management
+Systems
+Reports
+ISO 31000
+Systems
+Reports
+FMEA
+Diagnostics
+Action Items
+Bowtie Risk Analysis
+Diagnostics
+Reports
+Monte Carlo Simulation
+Tools
+Reports
+Decision Trees
+Tools
+Advisory
+Sensitivity Analysis
+Tools
+Advisory
+Scenario Planning
+Advisory
+Initiatives
+Real Options Analysis
+Advisory
+Initiatives
+
+
+FINANCE & INVESTMENT DECISIONING
+Framework
+Execution Module
+Outputs To
+NPV
+Tools
+Initiatives
+IRR
+Tools
+Initiatives
+Payback Period
+Tools
+Initiatives
+Cost Benefit Analysis
+Advisory
+Initiatives
+Economic Value Added
+Diagnostics
+Dashboard
+Activity Based Costing
+Diagnostics
+Reports
+
+
+TEAM & ORGANIZATIONAL BEHAVIOR
+Framework
+Execution Module
+Outputs To
+Emotional Intelligence
+Advisory
+Team
+Situational Leadership
+Advisory
+Team
+Servant Leadership
+Advisory
+Team
+Leadership Pipeline
+Diagnostics
+Team
+Tuckman Team Model
+Diagnostics
+Team
+Span of Control Analysis
+Diagnostics
+Departments
+Organizational Network Analysis
+Tools
+Departments
+
+
+CHANGE MANAGEMENT
+Framework
+Execution Module
+Outputs To
+Kotter 8 Step Model
+Systems
+Initiatives
+ADKAR
+Systems
+Initiatives
+Lewin Change Model
+Systems
+Initiatives
+Cultural Web
+Diagnostics
+Departments
+
+
+PRODUCT / CUSTOMER / MARKETING
+Framework
+Execution Module
+Outputs To
+Jobs to Be Done
+Advisory
+Initiatives
+Value Proposition Canvas
+Advisory
+Initiatives
+Customer Journey Mapping
+Tools
+Reports
+Net Promoter Score
+Diagnostics
+Dashboard
+AARRR Metrics
+Diagnostics
+Dashboard
+Marketing Mix 4Ps
+Advisory
+Initiatives
+
+
+SYSTEMS THINKING & COMPLEXITY
+Framework
+Execution Module
+Outputs To
+Cynefin Framework
+Advisory
+Initiatives
+Systems Thinking
+Advisory
+Diagnostics
+Causal Loop Diagrams
+Tools
+Diagnostics
+Feedback Loop Mapping
+Tools
+Diagnostics
+Complexity Theory
+Advisory
+Diagnostics
+
+
+BEHAVIORAL & DECISION PSYCHOLOGY
+Framework
+Execution Module
+Outputs To
+Cognitive Bias Codex
+Advisory
+Advisory
+Prospect Theory
+Advisory
+Initiatives
+Nudge Theory
+Advisory
+Action Items
+Fogg Behavior Model
+Advisory
+Team
+COM-B Model
+Advisory
+Team
+
+
+INNOVATION & PRODUCT DEVELOPMENT
+Framework
+Execution Module
+Outputs To
+Design Thinking
+Advisory
+Initiatives
+Double Diamond
+Advisory
+Initiatives
+Lean Startup
+Systems
+Initiatives
+Horizon 1-3 Innovation
+Diagnostics
+Initiatives
+Innovation Ambition Matrix
+Diagnostics
+Initiatives
+Disruptive Innovation Model
+Advisory
+Initiatives
+
+
+IT & GOVERNANCE
+Framework
+Execution Module
+Outputs To
+ITIL
+Systems
+Departments
+COBIT
+Systems
+Reports
+ISO 9001
+Systems
+Reports
+Capability Maturity Model (CMMI)
+Diagnostics
+Reports
+
+
+HOW THIS CONNECTS TO YOUR APP
+Resource Hub
+Stores the frameworks.
+Diagnostics
+Runs the frameworks.
+Systems
+Bundles frameworks into automated operating systems.
+Advisory
+Explains why something matters and what to do next.
+Dashboard
+Shows the results of frameworks and diagnostics.
+Initiatives
+Where recommended actions appear.
+Action Items
+Where execution tasks are generated.
+Reports
+Exports analysis results.
+
+VERY IMPORTANT (this will make your app MUCH stronger)
+Right now you have frameworks.
+But the real power is SYSTEM CHAINS like:
+Example:
+Operational Bottleneck Detection System
+KPI Tree
+Control Charts
+Bottleneck Analysis
+Theory of Constraints
+Critical Chain PM
+Output:
+Initiative recommendation
+Action items
+Dashboard alert
+
