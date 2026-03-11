@@ -416,7 +416,7 @@ export default function Reports() {
                       ini.status === "Blocked" ? "bg-signal-orange animate-pulse" : "bg-signal-yellow"
                     )} />
                     <span className="text-xs text-foreground flex-1 truncate">{ini.name}</span>
-                    <span className="text-xs font-mono text-muted-foreground flex-shrink-0">{ini.completionPct}%</span>
+                    <span className="text-xs font-mono text-muted-foreground flex-shrink-0">{ini.completion_pct ?? 0}%</span>
                   </div>
                 ))}
               </div>
