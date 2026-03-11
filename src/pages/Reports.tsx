@@ -566,7 +566,7 @@ export default function Reports() {
           {/* YTD initiatives */}
           <SectionCard title="Initiative Progress YTD" icon={CheckCircle}>
             <div className="space-y-3">
-              {YTD_INITIATIVES.map(ini => (
+              {initiatives.map(ini => (
                 <div key={ini.id} className="flex items-center gap-4 p-3 rounded-lg bg-secondary/40 border border-border">
                   <div className={cn("w-2 h-2 rounded-full flex-shrink-0",
                     ini.status === "On Track" ? "bg-signal-green" :
@@ -577,11 +577,11 @@ export default function Reports() {
                   <span className="text-[10px] text-muted-foreground w-16 text-right">{ini.department}</span>
                   <div className="w-24 h-1.5 rounded-full bg-muted overflow-hidden">
                     <div className="h-full rounded-full" style={{
-                      width: `${ini.completionPct}%`,
+                      width: `${ini.completion_pct ?? 0}%`,
                       background: ini.status === "On Track" ? "hsl(var(--signal-green))" : ini.status === "Completed" ? "hsl(var(--electric-blue))" : "hsl(var(--signal-yellow))"
                     }} />
                   </div>
-                  <span className="text-xs font-mono text-muted-foreground w-8 text-right">{ini.completionPct}%</span>
+                  <span className="text-xs font-mono text-muted-foreground w-8 text-right">{ini.completion_pct ?? 0}%</span>
                   <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full",
                     ini.status === "On Track" ? "bg-signal-green/10 text-signal-green" :
                     ini.status === "Completed" ? "bg-electric-blue/10 text-electric-blue" :
