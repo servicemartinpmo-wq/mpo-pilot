@@ -261,7 +261,7 @@ export default function Reports() {
                     <p className="text-sm text-foreground/80 leading-snug">{ins.situation}</p>
                     <p className="text-xs text-muted-foreground mt-1">{ins.recommendation}</p>
                   </div>
-                  <ScoreBadge score={ins.executivePriorityScore} signal={ins.signal} size="sm" />
+                  <ScoreBadge score={ins.executive_priority_score ?? 50} signal={(ins.signal ?? "yellow") as "red" | "yellow" | "green" | "blue"} size="sm" />
                 </div>
               ))}
             </div>
