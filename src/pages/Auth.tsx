@@ -7,20 +7,12 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Zap, CheckCircle, AlertCircle } from "lucide-react";
-import { SiReplit } from "react-icons/si";
 
 type Mode = "signin" | "signup" | "forgot";
 
 export default function AuthPage() {
   const navigate = useNavigate();
   const { signIn, signUp, resetPassword } = useAuth();
-  const { signInWithReplit: authSignInWithReplit } = useAuth();
-  
-  // Use the local wrapper for better error handling/logging
-  const handleReplitSignIn = () => {
-    console.log("Replit login button clicked");
-    authSignInWithReplit();
-  };
 
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
