@@ -1,6 +1,6 @@
-# Apphia Command Center
+# Martin PMO — PMO-Ops Command Center
 
-A PMO/Ops command center SPA built with React, Vite, TypeScript, Tailwind CSS, and Supabase.
+A PMO/Ops command center SPA built with React, Vite, TypeScript, Tailwind CSS, and Supabase. Internal engine name: Apphia (never shown to users). Company: Martin PMO. App: PMO-Ops Command Center.
 
 ## Architecture
 

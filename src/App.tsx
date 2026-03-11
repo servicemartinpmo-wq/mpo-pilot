@@ -44,6 +44,7 @@ const queryClient = new QueryClient({
 function AppRoutes() {
   const { user, profile, loading, updateProfile } = useAuth();
   const [seeded, setSeeded] = useState(false);
+  const [onboardingDone, setOnboardingDone] = useState(false);
 
   // Keep all live data in sync via Supabase realtime channels
   useRealtimeSync(user?.id);
@@ -87,10 +88,11 @@ function AppRoutes() {
   }
 
   // Onboarding not complete or profile row missing in DB
-  if (!profile || !profile.onboardingComplete) {
-    const handleOnboardingComplete = async (p: CompanyProfile) => {
+  if (!onboardingDone && (!profile || !profile.onboardingComplete)) {
+    const handleOnboardingComplete = (p: CompanyProfile) => {
       saveProfile(p);
-      await updateProfile({
+      setOnboardingDone(true); // immediately navigate to the app
+      updateProfile({
         userName: p.userName,
         orgName: p.orgName,
         orgType: p.orgType,
@@ -105,7 +107,7 @@ function AppRoutes() {
         font: p.font,
         density: p.density,
         onboardingComplete: true,
-      });
+      }).catch(console.error);
     };
     return <OnboardingWizard onComplete={handleOnboardingComplete} />;
   }

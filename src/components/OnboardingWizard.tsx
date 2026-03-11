@@ -1215,83 +1215,130 @@ function AppWalkthrough({ onComplete }: { onComplete: () => void }) {
   const isLast = slide === WALKTHROUGH_SLIDES.length - 1;
   const s = WALKTHROUGH_SLIDES[slide];
   const Icon = s.icon;
+  const total = WALKTHROUGH_SLIDES.length;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
-      style={{ background: "hsl(225 48% 6%)", fontFamily: "Inter, sans-serif" }}>
-      <div className="absolute inset-0 pointer-events-none"
-        style={{ backgroundImage: `radial-gradient(circle, hsl(222 88% 65% / 0.06) 0%, transparent 70%)`, backgroundSize: "cover" }} />
+    <div className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center px-4 py-8"
+      style={{ background: "hsl(225 45% 8%)" }}>
 
-      <div className="relative w-full max-w-2xl mx-auto px-6 flex flex-col items-center">
+      {/* Ambient orbs */}
+      <div className="absolute pointer-events-none" style={{ top: "-12%", right: "-6%", width: 560, height: 560, borderRadius: "50%", background: "radial-gradient(circle, hsl(222 80% 58% / 0.11) 0%, transparent 65%)" }} />
+      <div className="absolute pointer-events-none" style={{ bottom: "-14%", left: "-8%", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, hsl(38 88% 55% / 0.07) 0%, transparent 65%)" }} />
 
-        {/* Progress dots */}
-        <div className="flex items-center gap-2 mb-10">
-          {WALKTHROUGH_SLIDES.map((_, i) => (
-            <div key={i} className="transition-all duration-300 rounded-full cursor-pointer"
-              onClick={() => setSlide(i)}
-              style={{
-                width: i === slide ? 28 : 8, height: 8,
-                background: i === slide ? s.accent : i < slide ? "hsl(0 0% 100% / 0.3)" : "hsl(0 0% 100% / 0.12)",
-              }} />
-          ))}
-        </div>
+      {/* Card frame */}
+      <div className="w-full max-w-xl" style={{ position: "relative", zIndex: 10 }}>
+        <div className="rounded-[26px] p-[5px]" style={{
+          background: "hsl(225 50% 14%)",
+          boxShadow: "0 36px 88px hsl(225 50% 4% / 0.65), 0 0 0 1px hsl(225 48% 22% / 0.4)",
+        }}>
+          {/* White interior */}
+          <div className="rounded-[22px] overflow-hidden" style={{ background: "hsl(220 18% 97%)" }}>
 
-        {/* Slide content */}
-        <div key={slide} className="w-full text-center animate-fade-in">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6"
-            style={{ background: s.accentBg, border: `1.5px solid ${s.accent}3a` }}>
-            <Icon className="w-8 h-8" style={{ color: s.accent }} />
-          </div>
+            {/* Top progress bar */}
+            <div className="h-[3px] w-full" style={{ background: "hsl(225 30% 88%)" }}>
+              <div className="h-full transition-all duration-500 rounded-full"
+                style={{ width: `${((slide + 1) / total) * 100}%`, background: `linear-gradient(to right, hsl(222 80% 58%), hsl(38 88% 55%))` }} />
+            </div>
 
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-bold mb-4 tracking-wider"
-            style={{ background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.12)", color: s.accent }}>
-            {s.label}
-          </div>
+            <div className="px-8 py-9 lg:px-10">
 
-          <h2 className="text-3xl font-black text-white mb-3 leading-tight">{s.headline}</h2>
-          <p className="text-sm text-white/55 leading-relaxed max-w-lg mx-auto mb-8">{s.sub}</p>
-
-          <div className="inline-flex flex-col gap-3 text-left mb-10">
-            {s.bullets.map((b, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <div className="w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
-                  style={{ background: s.accentBg }}>
-                  <Check className="w-3 h-3" style={{ color: s.accent }} />
+              {/* Step counter */}
+              <div className="flex items-center justify-between mb-7">
+                <div className="flex gap-1.5">
+                  {WALKTHROUGH_SLIDES.map((_, i) => (
+                    <button key={i} onClick={() => setSlide(i)}
+                      className="transition-all duration-300 rounded-full"
+                      style={{
+                        width: i === slide ? 22 : 7, height: 7,
+                        background: i === slide ? s.accent : i < slide ? "hsl(225 30% 70%)" : "hsl(225 30% 86%)",
+                      }} />
+                  ))}
                 </div>
-                <span className="text-sm text-white/75 leading-snug">{b}</span>
+                <span className="text-xs font-semibold" style={{ color: "hsl(225 20% 55%)" }}>
+                  {slide + 1} / {total}
+                </span>
               </div>
-            ))}
+
+              {/* Icon */}
+              <div className="mb-5">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                  style={{ background: `${s.accent}18`, border: `1.5px solid ${s.accent}35` }}>
+                  <Icon className="w-7 h-7" style={{ color: s.accent }} />
+                </div>
+              </div>
+
+              {/* Label */}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3"
+                style={{ background: `${s.accent}12`, border: `1px solid ${s.accent}30` }}>
+                <span className="text-[10px] font-black tracking-[0.15em]" style={{ color: s.accent }}>{s.label}</span>
+              </div>
+
+              {/* Headline */}
+              <h2 className="text-2xl lg:text-[1.75rem] font-black leading-tight mb-2.5"
+                style={{ color: "hsl(225 48% 12%)" }}>
+                {s.headline}
+              </h2>
+
+              {/* Sub-text */}
+              <p className="text-sm leading-relaxed mb-7"
+                style={{ color: "hsl(225 18% 42%)" }}>
+                {s.sub}
+              </p>
+
+              {/* Bullets */}
+              <div className="space-y-3 mb-8">
+                {s.bullets.map((b, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
+                      style={{ background: s.accent }} />
+                    <span className="text-sm leading-snug" style={{ color: "hsl(225 20% 35%)" }}>{b}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Navigation */}
+              <div className="flex items-center justify-between pt-5 border-t" style={{ borderColor: "hsl(225 20% 88%)" }}>
+                <div>
+                  {slide > 0 ? (
+                    <button onClick={() => setSlide(s => s - 1)}
+                      className="flex items-center gap-1.5 text-sm font-medium transition-colors"
+                      style={{ color: "hsl(225 20% 55%)" }}
+                      onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = "hsl(225 48% 12%)"}
+                      onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = "hsl(225 20% 55%)"}>
+                      <ArrowLeft className="w-4 h-4" /> Back
+                    </button>
+                  ) : (
+                    <button onClick={onComplete}
+                      className="text-xs font-medium transition-colors"
+                      style={{ color: "hsl(225 20% 65%)" }}
+                      onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.color = "hsl(225 20% 40%)"}
+                      onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.color = "hsl(225 20% 65%)"}>
+                      Skip tour
+                    </button>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => isLast ? onComplete() : setSlide(s => s + 1)}
+                  className="flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-bold text-white transition-all duration-200"
+                  style={{ background: `linear-gradient(135deg, ${s.accent}, hsl(183 62% 42%))`, boxShadow: `0 6px 24px ${s.accent}40` }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 10px 32px ${s.accent}55`; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = ""; (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 6px 24px ${s.accent}40`; }}>
+                  {isLast ? (
+                    <><Zap className="w-4 h-4" /> Enter Your Command Center</>
+                  ) : (
+                    <>Continue <ChevronRight className="w-4 h-4" /></>
+                  )}
+                </button>
+              </div>
+
+            </div>
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className="flex items-center gap-4">
-          {slide > 0 && (
-            <button onClick={() => setSlide(s => s - 1)}
-              className="flex items-center gap-2 text-sm font-semibold text-white/40 hover:text-white/70 transition-colors px-4 py-2.5">
-              <ArrowLeft className="w-4 h-4" /> Back
-            </button>
-          )}
-          <button
-            onClick={() => isLast ? onComplete() : setSlide(s => s + 1)}
-            className="flex items-center gap-2.5 px-8 py-3 rounded-2xl text-sm font-black text-white transition-all hover:scale-105 active:scale-95"
-            style={{ background: `linear-gradient(135deg, ${s.accent}, hsl(183 62% 42%))`, boxShadow: `0 0 32px ${s.accent}44` }}>
-            {isLast ? (
-              <><Zap className="w-4 h-4" /> Enter Your Command Center</>
-            ) : (
-              <>Next <ChevronRight className="w-4 h-4" /></>
-            )}
-          </button>
-          {!isLast && (
-            <button onClick={onComplete}
-              className="text-xs text-white/30 hover:text-white/50 transition-colors px-4 py-2.5">
-              Skip tour
-            </button>
-          )}
-        </div>
-
-        <p className="mt-8 text-[11px] text-white/20">
-          {slide + 1} of {WALKTHROUGH_SLIDES.length} — You can revisit this walkthrough in the Help section anytime
+        {/* Below-card note */}
+        <p className="text-center mt-5 text-[11px]" style={{ color: "hsl(0 0% 100% / 0.25)" }}>
+          You can revisit this tour from the Help section at any time
         </p>
       </div>
     </div>
@@ -1411,7 +1458,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
   }
 
   const canAdvance =
-    step === 0 ? form.userName.trim().length > 0 && form.orgName.trim().length > 0
+    step === 0 ? form.userName.trim().length > 0 && form.orgName.trim().length > 0 && form.industry.length > 0
       : step === 1 ? form.teamSize.length > 0 && form.revenueRange.length > 0
         : true;
 
@@ -1426,77 +1473,97 @@ export default function OnboardingWizard({ onComplete }: Props) {
 
   if (showModeSelect) {
     return (
-      <div className="fixed inset-0 z-50 overflow-hidden flex flex-col items-center justify-center"
-        style={{ background: "linear-gradient(135deg, hsl(225 50% 6%) 0%, hsl(225 40% 10%) 50%, hsl(220 35% 8%) 100%)" }}>
-        <div className="absolute inset-0 pointer-events-none"
-          style={{ backgroundImage: `linear-gradient(hsl(233 72% 58% / 0.04) 1px, transparent 1px), linear-gradient(90deg, hsl(233 72% 58% / 0.04) 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
-        <div className="relative z-10 max-w-2xl w-full px-6 text-center">
-          <div className="flex items-center justify-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})`, boxShadow: `0 0 20px hsl(var(--electric-blue) / 0.3)` }}>
-              <Zap className="w-5 h-5 text-white" />
+      <div className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center px-4 py-8"
+        style={{ background: "hsl(225 45% 8%)" }}>
+        <div className="absolute pointer-events-none" style={{ top: "-10%", right: "-5%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, hsl(222 80% 58% / 0.10) 0%, transparent 65%)" }} />
+        <div className="absolute pointer-events-none" style={{ bottom: "-12%", left: "-6%", width: 420, height: 420, borderRadius: "50%", background: "radial-gradient(circle, hsl(38 88% 55% / 0.07) 0%, transparent 65%)" }} />
+
+        <div className="relative z-10 w-full max-w-2xl">
+          {/* Card frame */}
+          <div className="rounded-[26px] p-[5px]" style={{
+            background: "hsl(225 50% 14%)",
+            boxShadow: "0 36px 88px hsl(225 50% 4% / 0.65), 0 0 0 1px hsl(225 48% 22% / 0.4)",
+          }}>
+            <div className="rounded-[22px] px-8 py-10 lg:px-10" style={{ background: "hsl(220 18% 97%)" }}>
+
+              {/* Header */}
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4"
+                  style={{ background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})`, boxShadow: `0 6px 20px hsl(var(--electric-blue) / 0.28)` }}>
+                  <Zap className="w-6 h-6 text-white" />
+                </div>
+                <h2 className="text-2xl font-black mb-2" style={{ color: "hsl(225 48% 12%)" }}>
+                  How would you like to work?
+                </h2>
+                <p className="text-sm" style={{ color: "hsl(225 18% 45%)" }}>
+                  Choose your experience. You can switch at any time from your settings.
+                </p>
+              </div>
+
+              {/* Mode cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-7">
+                {/* Full Command Center */}
+                <button onClick={() => selectMode("standard")}
+                  className="rounded-2xl p-5 text-left transition-all duration-200 group"
+                  style={{ background: "hsl(225 48% 13%)", border: "1.5px solid hsl(225 40% 22%)" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = `${ACCENT}`; (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = "hsl(225 40% 22%)"; (e.currentTarget as HTMLButtonElement).style.transform = ""; }}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-4"
+                    style={{ background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})` }}>
+                    <Layers className="w-4.5 h-4.5 text-white" />
+                  </div>
+                  <div className="font-black text-white text-sm mb-1">Full Command Center</div>
+                  <div className="text-xs font-semibold mb-3" style={{ color: "hsl(222 70% 68%)" }}>Recommended for growing teams</div>
+                  <p className="text-xs leading-relaxed mb-4" style={{ color: "hsl(0 0% 100% / 0.52)" }}>
+                    All modules active — strategy scores, diagnostics, initiatives, reporting, and automation. Built for operators who want complete visibility.
+                  </p>
+                  <ul className="space-y-1.5 text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+                    {["All pages and modules", "Full diagnostic engine", "Strategy scores + reporting", "Automation rules + workflows"].map(f => (
+                      <li key={f} className="flex items-center gap-2">
+                        <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(var(--teal))" }} />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex items-center gap-1.5 text-xs font-bold" style={{ color: ACCENT }}>
+                    Select this <ChevronRight className="w-3.5 h-3.5" />
+                  </div>
+                </button>
+
+                {/* Guided Mode */}
+                <button onClick={() => selectMode("guided")}
+                  className="rounded-2xl p-5 text-left transition-all duration-200 group"
+                  style={{ background: "hsl(225 48% 13%)", border: "1.5px solid hsl(225 40% 22%)" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = "hsl(38 88% 55%)"; (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = "hsl(225 40% 22%)"; (e.currentTarget as HTMLButtonElement).style.transform = ""; }}>
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-4"
+                    style={{ background: "linear-gradient(135deg, hsl(38 85% 46%), hsl(28 82% 50%))" }}>
+                    <Eye className="w-4.5 h-4.5 text-white" />
+                  </div>
+                  <div className="font-black text-white text-sm mb-1">Guided Mode</div>
+                  <div className="text-xs font-semibold mb-3" style={{ color: "hsl(38 85% 62%)" }}>For solo owners &amp; first-time operators</div>
+                  <p className="text-xs leading-relaxed mb-4" style={{ color: "hsl(0 0% 100% / 0.52)" }}>
+                    A clear, step-by-step experience in plain language — focused priorities, weekly check-ins, and no jargon. Switch to full mode anytime.
+                  </p>
+                  <ul className="space-y-1.5 text-xs mb-4" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+                    {["Plain-language dashboard", "Weekly priority checklist", "Guided setup prompts", "Switch to full mode anytime"].map(f => (
+                      <li key={f} className="flex items-center gap-2">
+                        <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(38 85% 55%)" }} />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex items-center gap-1.5 text-xs font-bold" style={{ color: "hsl(38 85% 60%)" }}>
+                    Select this <ChevronRight className="w-3.5 h-3.5" />
+                  </div>
+                </button>
+              </div>
+
+              <p className="text-center text-[11px]" style={{ color: "hsl(225 20% 55%)" }}>
+                You can switch your experience mode at any time from the sidebar settings.
+              </p>
             </div>
           </div>
-          <h2 className="text-2xl font-black text-white mb-2">How would you like to work?</h2>
-          <p className="text-sm mb-8" style={{ color: "hsl(0 0% 100% / 0.55)" }}>
-            Based on your profile, we've prepared two experience options. You can change this anytime from your profile settings.
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-            {/* Standard Mode */}
-            <button onClick={() => selectMode("standard")}
-              className="rounded-2xl p-6 text-left transition-all hover:scale-[1.02] group"
-              style={{ background: "hsl(0 0% 100% / 0.06)", border: "1.5px solid hsl(0 0% 100% / 0.15)", backdropFilter: "blur(12px)" }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-                style={{ background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})` }}>
-                <Layers className="w-5 h-5 text-white" />
-              </div>
-              <div className="font-black text-white text-base mb-1">Full Command Center</div>
-              <div className="text-xs font-semibold mb-3" style={{ color: "hsl(var(--electric-blue) / 0.9)" }}>Recommended for growing teams</div>
-              <p className="text-xs leading-relaxed mb-4" style={{ color: "hsl(0 0% 100% / 0.55)" }}>
-                All modules active — strategy scores, KPIs, diagnostics, initiatives, CRM, workflows, and full reporting. Built for operators who want complete control.
-              </p>
-              <ul className="space-y-1.5 text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                {["All pages and modules", "Full diagnostic engine", "Strategy scores + benchmarks", "Automation rules + workflows"].map(f => (
-                  <li key={f} className="flex items-center gap-2">
-                    <CheckCircle className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(var(--teal))" }} />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-4 flex items-center gap-2 text-xs font-bold" style={{ color: ACCENT }}>
-                Select this <ChevronRight className="w-3.5 h-3.5" />
-              </div>
-            </button>
-
-            {/* Guided Mode */}
-            <button onClick={() => selectMode("guided")}
-              className="rounded-2xl p-6 text-left transition-all hover:scale-[1.02] group"
-              style={{ background: "hsl(0 0% 100% / 0.06)", border: "1.5px solid hsl(38 85% 50% / 0.4)", backdropFilter: "blur(12px)" }}>
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-                style={{ background: "linear-gradient(135deg, hsl(38 85% 46%), hsl(28 82% 50%))" }}>
-                <Eye className="w-5 h-5 text-white" />
-              </div>
-              <div className="font-black text-white text-base mb-1">Guided Mode</div>
-              <div className="text-xs font-semibold mb-3" style={{ color: "hsl(38 85% 60%)" }}>For solo owners &amp; first-time operators</div>
-              <p className="text-xs leading-relaxed mb-4" style={{ color: "hsl(0 0% 100% / 0.55)" }}>
-                A simplified, step-by-step experience in plain language. No jargon — just clear next actions, weekly check-ins, and focused priorities. You can switch to full mode anytime.
-              </p>
-              <ul className="space-y-1.5 text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-                {["Plain-language dashboard", "Weekly priority checklist", "Guided setup prompts", "Switch to full mode anytime"].map(f => (
-                  <li key={f} className="flex items-center gap-2">
-                    <CheckCircle className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(38 85% 55%)" }} />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-4 flex items-center gap-2 text-xs font-bold" style={{ color: "hsl(38 85% 60%)" }}>
-                Select this <ChevronRight className="w-3.5 h-3.5" />
-              </div>
-            </button>
-          </div>
-          <p className="text-[11px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
-            You can switch your experience mode at any time from the sidebar settings.
-          </p>
         </div>
       </div>
     );
@@ -1663,7 +1730,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                     </div>
                   </div>
                   <div>
-                    <FieldLabel>Industry</FieldLabel>
+                    <FieldLabel>Industry <span style={{ color: "hsl(var(--destructive))" }}>*</span></FieldLabel>
                     <IndustryPicker value={form.industry} onChange={ind => setForm(f => ({ ...f, industry: ind }))} />
                   </div>
                 </div>
