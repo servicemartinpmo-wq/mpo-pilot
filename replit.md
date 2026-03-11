@@ -13,10 +13,11 @@ A PMO/Ops command center SPA built with React, Vite, TypeScript, Tailwind CSS, a
 
 ## Design System
 
-**Dark mode forced globally** — `class="dark"` on `<html>` in index.html. Command center aesthetic throughout.
-- Background: `hsl(224 22% 8%)` — deep midnight navy
-- Cards: `hsl(224 20% 12%)` — slightly lighter navy card surfaces
-- Sidebar: `hsl(222 28% 9%)` — deepest navy (always dark)
+**Light by default** — no `class="dark"` on `<html>`. Sidebar always dark (hardcoded inline styles). CRM (`/crm`) and Marketing (`/marketing`) pages keep dark/navy backgrounds. All other pages use CSS variable-driven theming.
+- Sidebar: hardcoded `hsl(222 28% 9%)` — always dark regardless of mode
+- Cards: `hsl(var(--card))` — adapts to active mode theme
+- Background: `hsl(var(--background))` — adapts to active mode theme
+- **CRM/Marketing only**: retain `style={{ background: "hsl(224 22% 10%)" }}` for immersive dark look
 - **Electric Blue** `hsl(222 88% 65%)` — primary/tools nav active, data accents
 - **Amber/Gold** `hsl(38 92% 52%)` — focus/important/command nav active
 - **Teal** `hsl(174 68% 42%)` — success/secondary

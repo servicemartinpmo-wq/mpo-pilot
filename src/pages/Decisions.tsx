@@ -101,13 +101,13 @@ function AddDecisionModal({ onClose, onSave }: AddDecisionModalProps) {
   }
 
   const fieldClass = "w-full px-3.5 py-2.5 rounded-xl text-sm text-foreground border outline-none focus:ring-1 focus:ring-electric-blue transition-all";
-  const fieldStyle = { background: "hsl(224 18% 16%)", borderColor: "hsl(224 16% 22%)" };
+  const fieldStyle = { background: "hsl(var(--card))", borderColor: "hsl(var(--border))" };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="w-full max-w-lg rounded-2xl border animate-fade-up"
-        style={{ background: "hsl(224 20% 11%)", borderColor: "hsl(224 16% 18%)" }}>
-        <div className="flex items-center justify-between px-6 py-5 border-b" style={{ borderColor: "hsl(224 16% 18%)" }}>
+        style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+        <div className="flex items-center justify-between px-6 py-5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "hsl(38 92% 52% / 0.12)" }}>
               <Scale className="w-4 h-4 text-amber" />
@@ -340,7 +340,7 @@ export default function Decisions() {
 
                 {/* Expanded detail */}
                 {selected?.id === d.id && (
-                  <div className="mt-4 pt-4 border-t space-y-3 animate-fade-in" style={{ borderColor: "hsl(224 16% 20%)" }}>
+                  <div className="mt-4 pt-4 border-t space-y-3 animate-fade-in" style={{ borderColor: "hsl(var(--border))" }}>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="section-label mb-1.5">Rationale</p>

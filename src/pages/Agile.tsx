@@ -90,7 +90,7 @@ const BUG_STATUS_CONFIG: Record<BugStatus, { label: string; color: string }> = {
   open: { label: "Open", color: "hsl(350 84% 62%)" },
   in_progress: { label: "In Progress", color: "hsl(38 92% 52%)" },
   resolved: { label: "Resolved", color: "hsl(160 56% 42%)" },
-  closed: { label: "Closed", color: "hsl(0 0% 100% / 0.3)" },
+  closed: { label: "Closed", color: "hsl(var(--muted-foreground))" },
   wont_fix: { label: "Won't Fix", color: "hsl(0 0% 100% / 0.25)" },
 };
 
@@ -132,17 +132,17 @@ function StoryCard({ story }: { story: Story }) {
   const PrIcon = prConf.icon;
   return (
     <div className="rounded-xl border p-3.5 cursor-pointer transition-all hover:bg-white/[0.025] group"
-      style={{ background: "hsl(224 22% 10%)", borderColor: "hsl(0 0% 100% / 0.07)" }}>
+      style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
       <div className="flex items-start justify-between gap-2 mb-2">
         <span className="text-xs font-medium line-clamp-2 leading-snug flex-1"
-          style={{ color: "hsl(38 15% 92%)" }}>
+          style={{ color: "hsl(var(--foreground))" }}>
           {story.title}
         </span>
         <button className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-          <MoreHorizontal className="w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
+          <MoreHorizontal className="w-4 h-4" style={{ color: "hsl(var(--muted-foreground))" }} />
         </button>
       </div>
-      <div className="text-[10px] mb-3" style={{ color: "hsl(0 0% 100% / 0.35)" }}>{story.epicName}</div>
+      <div className="text-[10px] mb-3" style={{ color: "hsl(var(--muted-foreground))" }}>{story.epicName}</div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <PrIcon className="w-3 h-3" style={{ color: prConf.color }} />
@@ -153,7 +153,7 @@ function StoryCard({ story }: { story: Story }) {
         </div>
         <div className="flex items-center gap-2">
           {story.comments > 0 && (
-            <div className="flex items-center gap-1 text-[10px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+            <div className="flex items-center gap-1 text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
               <MessageSquare className="w-3 h-3" />{story.comments}
             </div>
           )}
@@ -198,7 +198,7 @@ export default function Agile() {
             </div>
           ) : null}
           <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
-            style={{ background: "hsl(38 92% 52%)", color: "hsl(224 22% 8%)" }}>
+            style={{ background: "hsl(38 92% 52%)", color: "hsl(var(--background))" }}>
             <Plus className="w-4 h-4" />
             Add {tab === "bugs" ? "Bug" : "Story"}
           </button>
@@ -214,7 +214,7 @@ export default function Agile() {
           { label: "Sprint Velocity", value: `${SPRINTS.find(s => s.status === "active")?.velocity ?? 0}pt`, color: "hsl(160 56% 42%)" },
         ].map(({ label, value, color }) => (
           <div key={label} className="rounded-xl border p-4"
-            style={{ background: "hsl(224 20% 12%)", borderColor: "hsl(0 0% 100% / 0.07)" }}>
+            style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
             <div className="text-xs mb-1 font-medium" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{label}</div>
             <div className="text-2xl font-black font-mono" style={{ color }}>{value}</div>
           </div>
@@ -223,7 +223,7 @@ export default function Agile() {
 
       {/* Tabs */}
       <div className="flex items-center gap-1 p-1 rounded-xl w-fit border"
-        style={{ background: "hsl(224 20% 12%)", borderColor: "hsl(0 0% 100% / 0.06)" }}>
+        style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
         {([
           { id: "board", label: "Board", icon: Layers },
           { id: "backlog", label: "Backlog", icon: GitBranch },
@@ -260,7 +260,7 @@ export default function Agile() {
                     </span>
                   </div>
                   <button className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-white/[0.06] transition-all">
-                    <Plus className="w-3.5 h-3.5" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
+                    <Plus className="w-3.5 h-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
                   </button>
                 </div>
                 <div className="space-y-2.5">
@@ -286,7 +286,7 @@ export default function Agile() {
             const statusColor = epic.status === "active" ? "hsl(160 56% 42%)" : epic.status === "completed" ? "hsl(222 88% 65%)" : "hsl(38 92% 52%)";
             return (
               <div key={epic.id} className="rounded-2xl border overflow-hidden"
-                style={{ background: "hsl(224 20% 11%)", borderColor: "hsl(0 0% 100% / 0.07)" }}>
+                style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
                 <div className="flex items-center justify-between px-5 py-4 border-b"
                   style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
                   <div className="flex items-center gap-3">
@@ -305,7 +305,7 @@ export default function Agile() {
                       {epic.progress}%
                     </div>
                     {epic.owner && (
-                      <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.35)" }}>{epic.owner}</span>
+                      <span className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>{epic.owner}</span>
                     )}
                   </div>
                 </div>
@@ -335,7 +335,7 @@ export default function Agile() {
                             <td className="px-4 py-3 text-xs font-mono text-center w-12" style={{ color: "hsl(222 88% 65%)" }}>
                               {story.storyPoints}pt
                             </td>
-                            <td className="px-5 py-3 text-xs text-right" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                            <td className="px-5 py-3 text-xs text-right" style={{ color: "hsl(var(--muted-foreground))" }}>
                               {story.assignee ?? "—"}
                             </td>
                           </tr>
@@ -358,7 +358,7 @@ export default function Agile() {
             const statusColor = sprint.status === "active" ? "hsl(38 92% 52%)" : sprint.status === "completed" ? "hsl(160 56% 42%)" : "hsl(222 88% 65%)";
             return (
               <div key={sprint.id} className="rounded-2xl border p-6"
-                style={{ background: "hsl(224 20% 11%)", borderColor: "hsl(0 0% 100% / 0.07)" }}>
+                style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
                 <div className="flex items-start justify-between mb-5">
                   <div>
                     <div className="flex items-center gap-3 mb-1.5">
@@ -394,7 +394,7 @@ export default function Agile() {
                   ].map(({ label, value, color }) => (
                     <div key={label} className="rounded-xl p-3 text-center"
                       style={{ background: "hsl(0 0% 100% / 0.03)" }}>
-                      <div className="text-xs mb-1" style={{ color: "hsl(0 0% 100% / 0.35)" }}>{label}</div>
+                      <div className="text-xs mb-1" style={{ color: "hsl(var(--muted-foreground))" }}>{label}</div>
                       <div className="text-xl font-black font-mono" style={{ color }}>{value}</div>
                     </div>
                   ))}
@@ -420,13 +420,13 @@ export default function Agile() {
       {/* Bugs View */}
       {tab === "bugs" && (
         <div className="rounded-2xl border overflow-hidden"
-          style={{ background: "hsl(224 20% 11%)", borderColor: "hsl(0 0% 100% / 0.07)" }}>
+          style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
           <table className="w-full">
             <thead>
               <tr style={{ borderBottom: "1px solid hsl(0 0% 100% / 0.06)" }}>
                 {["Bug", "Severity", "Priority", "Status", "Assignee", "Reporter", "Reported", ""].map(h => (
                   <th key={h} className="px-5 py-3.5 text-left text-[11px] font-bold uppercase tracking-wider"
-                    style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+                    style={{ color: "hsl(var(--muted-foreground))" }}>
                     {h}
                   </th>
                 ))}
@@ -465,7 +465,7 @@ export default function Agile() {
                       {bug.assignee ?? <span style={{ color: "hsl(0 0% 100% / 0.2)" }}>Unassigned</span>}
                     </td>
                     <td className="px-5 py-4 text-sm" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{bug.reporter}</td>
-                    <td className="px-5 py-4 text-sm" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                    <td className="px-5 py-4 text-sm" style={{ color: "hsl(var(--muted-foreground))" }}>
                       {new Date(bug.created).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                     </td>
                     <td className="px-5 py-4">

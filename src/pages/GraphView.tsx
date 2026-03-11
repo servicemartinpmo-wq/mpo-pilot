@@ -144,7 +144,7 @@ export default function GraphView() {
 
       {/* Tabs */}
       <div className="flex items-center gap-1 p-1 rounded-xl w-fit border"
-        style={{ background: "hsl(224 20% 12%)", borderColor: "hsl(0 0% 100% / 0.06)" }}>
+        style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
         {([
           { id: "org", label: "Organization", icon: Users },
           { id: "work", label: "Work Graph", icon: Layers },
@@ -167,7 +167,7 @@ export default function GraphView() {
 
         {/* Graph canvas */}
         <div className="flex-1 rounded-2xl border overflow-hidden relative"
-          style={{ background: "hsl(224 20% 10%)", borderColor: "hsl(0 0% 100% / 0.07)", height: 540 }}>
+          style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", height: 540 }}>
 
           {/* Title overlay */}
           <div className="absolute top-4 left-4 z-10">
@@ -262,7 +262,7 @@ export default function GraphView() {
         <div className="w-64 flex-shrink-0">
           {selectedNode ? (
             <div className="rounded-2xl border p-5 h-full"
-              style={{ background: "hsl(224 20% 11%)", borderColor: "hsl(0 0% 100% / 0.07)" }}>
+              style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ background: selectedNode.color }} />
@@ -311,7 +311,7 @@ export default function GraphView() {
             </div>
           ) : (
             <div className="rounded-2xl border p-5 h-full flex flex-col items-center justify-center text-center"
-              style={{ background: "hsl(224 20% 11%)", borderColor: "hsl(0 0% 100% / 0.07)" }}>
+              style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
               <Network className="w-8 h-8 mb-3" style={{ color: "hsl(0 0% 100% / 0.15)" }} />
               <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
                 Click any node to see details and connections
@@ -329,7 +329,7 @@ export default function GraphView() {
           { label: "Node Types", value: new Set(data.nodes.map(n => n.type)).size },
         ].map(({ label, value }) => (
           <div key={label} className="rounded-xl border p-4 text-center"
-            style={{ background: "hsl(224 20% 12%)", borderColor: "hsl(0 0% 100% / 0.07)" }}>
+            style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
             <div className="text-xs mb-1 font-medium" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{label}</div>
             <div className="text-2xl font-black font-mono" style={{ color: "hsl(38 92% 52%)" }}>{value}</div>
           </div>

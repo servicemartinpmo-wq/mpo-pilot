@@ -12,7 +12,8 @@ import {
   ChevronRight, Zap, Activity, X, CalendarDays, UserCheck,
   Brain, Sparkles, TrendingUp, ArrowRight, Star,
   Coffee, Sunrise, Sun, Moon, ChevronDown, ListChecks,
-  BarChart3, BookOpen, Settings, Tag,
+  BarChart3, BookOpen, Settings, Tag, Palette, FolderOpen,
+  Rocket, Image, FileText, ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useNavigate } from "react-router-dom";
@@ -214,13 +215,20 @@ function NbaItem({ title, description, priority, category, idx, isLast }: {
 }
 
 // ── Win Reactions ──────────────────────────────────────
-const WIN_ITEMS = [
-  { id: "w1", text: "Customer Portal v2 design completed ahead of schedule", owner: "E. Vasquez", reactions: { "🎉": 4, "🔥": 2 } },
-  { id: "w2", text: "Q4 budget variance reduced from 12% to 3%", owner: "D. Kim", reactions: { "✅": 3, "💪": 5 } },
-  { id: "w3", text: "SOP coverage hit 78% — highest ever recorded", owner: "R. Torres", reactions: { "🚀": 6, "👏": 3 } },
+type WinReactionKey = "star" | "zap" | "check" | "trend" | "activity";
+const WIN_ICON_MAP: Record<WinReactionKey, React.ElementType> = {
+  star:     Star,
+  zap:      Zap,
+  check:    CheckCircle,
+  trend:    TrendingUp,
+  activity: Activity,
+};
+const WIN_ITEMS: { id: string; text: string; owner: string; reactions: Partial<Record<WinReactionKey, number>> }[] = [
+  { id: "w1", text: "Customer Portal v2 design completed ahead of schedule", owner: "E. Vasquez", reactions: { star: 4, zap: 2 } },
+  { id: "w2", text: "Q4 budget variance reduced from 12% to 3%", owner: "D. Kim", reactions: { check: 3, star: 5 } },
+  { id: "w3", text: "SOP coverage hit 78% — highest ever recorded", owner: "R. Torres", reactions: { trend: 6, activity: 3 } },
 ];
-
-const WORKPLACE_EMOJIS = ["✅","🎉","🔥","💪","🚀","👏","⭐","🏆","💡","🎯","👍","✨","💯","🙌","🤝","📈","🛡️","⚡","🏅","💼"];
+const ALL_REACTION_KEYS: WinReactionKey[] = ["star", "zap", "check", "trend", "activity"];
 
 // ── Score dimension row ──────────────────────────────────────
 function ScoreDim({ label, score }: { label: string; score: number }) {
@@ -247,11 +255,11 @@ interface HeroBannerProps {
   criticalCount: number;
   pendingActions: number;
   nbaItems: { title: string; priority?: string; category?: string }[];
-  winItems: { id: string; text: string; owner: string; reactions: Record<string, number> }[];
-  winReactions: Record<string, Record<string, number>>;
-  reactedTo: Record<string, string>;
-  onReact: (winId: string, emoji: string) => void;
-  onAddEmoji: (winId: string, emoji: string) => void;
+  winItems: { id: string; text: string; owner: string; reactions: Partial<Record<WinReactionKey, number>> }[];
+  winReactions: Record<string, Partial<Record<WinReactionKey, number>>>;
+  reactedTo: Record<string, WinReactionKey>;
+  onReact: (winId: string, key: WinReactionKey) => void;
+  onAddEmoji: (winId: string, key: WinReactionKey) => void;
 }
 const BANNER_PHOTOS = [
   { src: "/banner-tiger.png",    label: "Tiger",            category: "Wildlife" },
@@ -390,40 +398,22 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
                         <p className="text-xs text-white opacity-90 leading-snug mb-1 line-clamp-1">{win.text}</p>
                         <div className="flex items-center gap-1 flex-wrap">
                           <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.45)" }}>{win.owner}</span>
-                          {Object.entries(winReactions[win.id] ?? win.reactions).map(([emoji, count]) => (
-                            <button key={emoji} onClick={() => onReact(win.id, emoji)}
-                              className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] border transition-all"
-                              style={{
-                                background: reactedTo[win.id] === emoji ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.08)",
-                                borderColor: reactedTo[win.id] === emoji ? "rgba(255,255,255,0.50)" : "rgba(255,255,255,0.18)",
-                                color: "rgba(255,255,255,0.80)",
-                              }}>
-                              {emoji}<span className="font-mono">{count}</span>
-                            </button>
-                          ))}
-                          <div className="relative">
-                            <button
-                              onClick={() => setBannerPicker(bannerPicker === win.id ? null : win.id)}
-                              className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] border transition-all"
-                              style={{ background: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.60)" }}>
-                              +
-                            </button>
-                            {bannerPicker === win.id && (
-                              <div className="absolute bottom-full left-0 mb-1.5 z-50 rounded-xl p-2 grid grid-cols-5 gap-1"
-                                style={{ background: "hsl(222 32% 13%)", border: "1px solid hsl(0 0% 100% / 0.12)", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
-                                {WORKPLACE_EMOJIS.map(e => (
-                                  <button key={e}
-                                    onClick={() => { onAddEmoji(win.id, e); setBannerPicker(null); }}
-                                    className="w-7 h-7 flex items-center justify-center rounded-lg text-base transition-colors"
-                                    style={{ background: "transparent" }}
-                                    onMouseEnter={el => (el.currentTarget.style.background = "rgba(255,255,255,0.10)")}
-                                    onMouseLeave={el => (el.currentTarget.style.background = "transparent")}>
-                                    {e}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          {(Object.entries(winReactions[win.id] ?? win.reactions) as [WinReactionKey, number][]).map(([key, count]) => {
+                            const IconComp = WIN_ICON_MAP[key];
+                            if (!IconComp) return null;
+                            return (
+                              <button key={key} onClick={() => onReact(win.id, key)}
+                                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] border transition-all"
+                                style={{
+                                  background: reactedTo[win.id] === key ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.08)",
+                                  borderColor: reactedTo[win.id] === key ? "rgba(255,255,255,0.50)" : "rgba(255,255,255,0.18)",
+                                  color: "rgba(255,255,255,0.80)",
+                                }}>
+                                <IconComp className="w-2.5 h-2.5 flex-shrink-0" />
+                                <span className="font-mono">{count}</span>
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -620,10 +610,147 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
   );
 }
 
+// ── Creative Dashboard ────────────────────────────────────────────────────────
+const CREATIVE_PROJECTS = [
+  { id: "cp1", title: "Brand Refresh", client: "Meridian Co.", status: "Active", img: "/banner-tiger.png" },
+  { id: "cp2", title: "Campaign Strategy", client: "Apex Studios", status: "Review", img: "/banner-mountain.jpg" },
+  { id: "cp3", title: "Editorial Design", client: "Novo Press", status: "Active", img: "/banner-city.jpg" },
+  { id: "cp4", title: "Social Content", client: "Solaris Health", status: "Draft", img: "/banner-forest.png" },
+];
+
+function CreativeDashboard({ firstName, nbaItems, projects }: {
+  firstName: string;
+  nbaItems: { title: string; description?: string; priority?: string }[];
+  projects: { name: string; status: string }[];
+}) {
+  const activeCount  = projects.filter(p => p.status === "In Progress" || p.status === "Active" || p.status === "On Track").length;
+  return (
+    <div className="flex flex-col min-h-screen" style={{ background: "hsl(36 35% 97%)" }}>
+      {/* ── Hero Banner ── */}
+      <div className="relative overflow-hidden" style={{ height: 300 }}>
+        <img src="/banner-mountain.jpg" className="absolute inset-0 w-full h-full object-cover" alt="Creative studio" />
+        <div className="absolute inset-0" style={{ background: "linear-gradient(120deg, rgba(20,12,8,0.80) 0%, rgba(20,12,8,0.35) 60%, transparent 100%)" }} />
+        <div className="relative z-10 flex flex-col justify-end h-full px-8 pb-8">
+          <p className="text-[10px] font-bold tracking-[0.22em] uppercase mb-1.5" style={{ color: "rgba(255,255,255,0.45)" }}>Creative Studio</p>
+          <h1 className="text-3xl font-black text-white mb-3 leading-tight">
+            {firstName ? `Good to see you, ${firstName}.` : "Welcome back."}
+          </h1>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-white/80">
+              <FolderOpen className="w-4 h-4 text-white/50" />
+              {activeCount} active
+            </div>
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-white/80">
+              <CheckCircle className="w-4 h-4 text-white/50" />
+              {nbaItems.length} open tasks
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Content ── */}
+      <div className="flex-1 p-6 max-w-[1400px] mx-auto w-full space-y-6">
+
+        {/* Project image grid */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-bold" style={{ color: "hsl(20 25% 14%)" }}>Active Projects</h2>
+            <Link to="/projects" className="text-xs font-semibold hover:underline" style={{ color: "hsl(350 52% 48%)" }}>
+              All projects →
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {CREATIVE_PROJECTS.map(p => (
+              <Link key={p.id} to="/projects"
+                className="relative rounded-2xl overflow-hidden group cursor-pointer"
+                style={{ height: 190, display: "block" }}>
+                <img src={p.img} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt={p.title} />
+                <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(10,6,4,0.80) 0%, rgba(10,6,4,0.10) 60%, transparent 100%)" }} />
+                <div className="absolute top-3 right-3">
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold" style={{
+                    background: "rgba(255,255,255,0.15)",
+                    color: "white",
+                    backdropFilter: "blur(6px)",
+                    border: "1px solid rgba(255,255,255,0.20)",
+                  }}>
+                    {p.status}
+                  </span>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <div className="text-white font-bold text-sm leading-snug">{p.title}</div>
+                  <div className="text-white/55 text-[11px] mt-0.5">{p.client}</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Quick links row */}
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { to: "/crm",         label: "Portfolio",  sub: "Client relationships", icon: Users,      color: "hsl(350 52% 48%)" },
+            { to: "/marketing",   label: "Outreach",   sub: "Campaigns & pipeline", icon: TrendingUp, color: "hsl(174 55% 38%)" },
+            { to: "/action-items",label: `${nbaItems.length} Tasks`, sub: "Open to-dos", icon: CheckCircle, color: "hsl(38 65% 48%)" },
+          ].map(({ to, label, sub, icon: Icon, color }) => (
+            <Link key={to} to={to}
+              className="rounded-2xl border p-5 flex items-center gap-4 transition-all hover:shadow-sm group"
+              style={{ background: "white", borderColor: "hsl(30 22% 88%)" }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: `${color}18` }}>
+                <Icon className="w-5 h-5" style={{ color }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold truncate" style={{ color: "hsl(20 25% 14%)" }}>{label}</div>
+                <div className="text-xs" style={{ color: "hsl(20 15% 48%)" }}>{sub}</div>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-40 flex-shrink-0 transition-opacity" style={{ color: "hsl(20 15% 40%)" }} />
+            </Link>
+          ))}
+        </div>
+
+        {/* Open tasks */}
+        {nbaItems.length > 0 && (
+          <div className="rounded-2xl border p-5" style={{ background: "white", borderColor: "hsl(30 22% 88%)" }}>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" style={{ color: "hsl(350 52% 52%)" }} />
+                <span className="text-sm font-bold" style={{ color: "hsl(20 25% 14%)" }}>Open Tasks</span>
+              </div>
+              <Link to="/action-items" className="text-xs font-semibold hover:underline" style={{ color: "hsl(350 52% 48%)" }}>
+                All tasks →
+              </Link>
+            </div>
+            <div className="space-y-2.5">
+              {nbaItems.slice(0, 5).map((item, i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "hsl(36 28% 95%)" }}>
+                  <div className="w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5" style={{ borderColor: "hsl(30 22% 80%)" }} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium leading-snug" style={{ color: "hsl(20 25% 14%)" }}>{item.title}</p>
+                    {item.description && <p className="text-xs mt-0.5" style={{ color: "hsl(20 15% 48%)" }}>{item.description}</p>}
+                  </div>
+                  {item.priority && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
+                      style={{
+                        background: item.priority === "High" || item.priority === "high" ? "hsl(350 52% 55% / 0.12)" : "hsl(30 22% 90%)",
+                        color: item.priority === "High" || item.priority === "high" ? "hsl(350 52% 48%)" : "hsl(20 15% 48%)",
+                      }}>
+                      {item.priority}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const data = useAppData();
   const { user } = useAuth();
-  const { isSimpleMode } = useUserMode();
+  const { mode, isSimpleMode } = useUserMode();
 
   const {
     kpis, engine, orgHealth: liveOverallHealth,
@@ -645,10 +772,10 @@ export default function Dashboard() {
   const [popupsVisible,   setPopupsVisible]   = useState(false);
   const [showInsights,    setShowInsights]    = useState(false);
   const [selectedTask,    setSelectedTask]    = useState<string | null>(null);
-  const [winReactions, setWinReactions]       = useState(
+  const [winReactions, setWinReactions]       = useState<Record<string, Partial<Record<WinReactionKey, number>>>>(
     Object.fromEntries(WIN_ITEMS.map((w) => [w.id, { ...w.reactions }]))
   );
-  const [reactedTo, setReactedTo]             = useState<Record<string, string>>({});
+  const [reactedTo, setReactedTo]             = useState<Record<string, WinReactionKey>>({});
   const [nextBestActions, setNextBestActions] = useState<Array<{ title: string; description?: string; priority?: string; category?: string }>>([]);
 
   // Load Next Best Actions from DB
@@ -698,18 +825,15 @@ export default function Dashboard() {
 
   useEffect(() => { const t = setTimeout(() => setPopupsVisible(true), 900); return () => clearTimeout(t); }, []);
 
-  const [openPicker, setOpenPicker] = useState<string | null>(null);
-
-  function addReaction(winId: string, emoji: string) {
+  function addReaction(winId: string, key: WinReactionKey) {
     if (reactedTo[winId]) return;
-    setWinReactions((prev) => ({ ...prev, [winId]: { ...prev[winId], [emoji]: (prev[winId][emoji] || 0) + 1 } }));
-    setReactedTo((prev) => ({ ...prev, [winId]: emoji }));
+    setWinReactions((prev) => ({ ...prev, [winId]: { ...prev[winId], [key]: ((prev[winId]?.[key] ?? 0)) + 1 } }));
+    setReactedTo((prev) => ({ ...prev, [winId]: key }));
   }
 
-  function addEmojiToWin(winId: string, emoji: string) {
-    setWinReactions((prev) => ({ ...prev, [winId]: { ...prev[winId], [emoji]: (prev[winId]?.[emoji] || 0) + 1 } }));
-    setReactedTo((prev) => ({ ...prev, [winId]: emoji }));
-    setOpenPicker(null);
+  function addEmojiToWin(winId: string, key: WinReactionKey) {
+    setWinReactions((prev) => ({ ...prev, [winId]: { ...prev[winId], [key]: ((prev[winId]?.[key] ?? 0)) + 1 } }));
+    setReactedTo((prev) => ({ ...prev, [winId]: key }));
   }
 
   const strategyScores = useStrategyScores();
@@ -726,6 +850,10 @@ export default function Dashboard() {
 
   if (isSimpleMode) {
     return <SimpleDashboard firstName={firstName ?? ""} kpis={kpis} nbaItems={nbaItems} />;
+  }
+
+  if (mode === "creative") {
+    return <CreativeDashboard firstName={firstName ?? ""} nbaItems={nbaItems} projects={data.initiatives} />;
   }
 
   return (
@@ -838,36 +966,31 @@ export default function Dashboard() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[10px] text-muted-foreground">{win.owner}</span>
                         <div className="flex items-center gap-1 flex-wrap">
-                          {Object.entries(winReactions[win.id]).map(([emoji, count]) => (
-                            <button key={emoji} onClick={() => addReaction(win.id, emoji)}
+                          {(Object.entries(winReactions[win.id]) as [WinReactionKey, number][]).map(([key, count]) => {
+                            const IconComp = WIN_ICON_MAP[key];
+                            if (!IconComp) return null;
+                            return (
+                            <button key={key} onClick={() => addReaction(win.id, key)}
                               className={cn(
                                 "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] border transition-all",
-                                reactedTo[win.id] === emoji
+                                reactedTo[win.id] === key
                                   ? "bg-electric-blue/15 border-electric-blue/30 text-electric-blue"
                                   : "border-border hover:bg-muted/60 text-muted-foreground"
                               )}>
-                              {emoji}<span className="font-mono">{count}</span>
+                              <IconComp className="w-2.5 h-2.5 flex-shrink-0" />
+                              <span className="font-mono">{count}</span>
                             </button>
-                          ))}
-                          <div className="relative">
-                            <button
-                              onClick={() => setOpenPicker(openPicker === win.id ? null : win.id)}
-                              className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] border transition-all text-muted-foreground hover:text-foreground hover:border-border/80 border-border/50">
-                              +
-                            </button>
-                            {openPicker === win.id && (
-                              <div className="absolute bottom-full left-0 mb-1.5 z-50 rounded-xl p-2 grid grid-cols-5 gap-0.5"
-                                style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
-                                {WORKPLACE_EMOJIS.map(e => (
-                                  <button key={e}
-                                    onClick={() => addEmojiToWin(win.id, e)}
-                                    className="w-7 h-7 flex items-center justify-center rounded-lg text-base hover:bg-muted transition-colors">
-                                    {e}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                            );
+                          })}
+                          {ALL_REACTION_KEYS.filter(k => !(k in (winReactions[win.id] ?? win.reactions))).slice(0, 1).map(k => {
+                            const IconComp = WIN_ICON_MAP[k];
+                            return (
+                              <button key={k} onClick={() => addReaction(win.id, k)}
+                                className="flex items-center justify-center w-5 h-5 rounded-full border transition-all border-border/50 text-muted-foreground hover:border-border hover:text-foreground">
+                                <IconComp className="w-2.5 h-2.5" />
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>

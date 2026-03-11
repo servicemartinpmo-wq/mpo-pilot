@@ -73,13 +73,13 @@ function AddProjectModal({ userId, onClose, onSaved }: AddProjectModalProps) {
   }
 
   const fieldClass = "w-full px-3.5 py-2.5 rounded-xl text-sm text-foreground border outline-none focus:ring-1 focus:ring-electric-blue transition-all";
-  const fieldStyle = { background: "hsl(224 18% 16%)", borderColor: "hsl(224 16% 22%)" };
+  const fieldStyle = { background: "hsl(var(--card))", borderColor: "hsl(var(--border))" };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div className="w-full max-w-lg rounded-2xl border animate-fade-up"
-        style={{ background: "hsl(224 20% 11%)", borderColor: "hsl(224 16% 18%)" }}>
-        <div className="flex items-center justify-between px-6 py-5 border-b" style={{ borderColor: "hsl(224 16% 18%)" }}>
+        style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+        <div className="flex items-center justify-between px-6 py-5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "hsl(222 88% 65% / 0.12)" }}>
               <Rocket className="w-4 h-4 text-electric-blue" />
@@ -227,7 +227,7 @@ export default function Projects() {
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
           className="w-full max-w-xs pl-9 pr-4 py-2.5 rounded-xl text-sm border outline-none focus:ring-1 focus:ring-electric-blue transition-all text-foreground"
-          style={{ background: "hsl(224 18% 13%)", borderColor: "hsl(224 16% 20%)" }}
+          style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}
           placeholder="Search projects..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -238,10 +238,10 @@ export default function Projects() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="rounded-xl border p-5 animate-pulse" style={{ background: "hsl(224 20% 12%)", borderColor: "hsl(224 16% 18%)" }}>
-              <div className="h-4 rounded w-3/4 mb-3" style={{ background: "hsl(224 16% 20%)" }} />
-              <div className="h-3 rounded w-full mb-2" style={{ background: "hsl(224 16% 18%)" }} />
-              <div className="h-3 rounded w-1/2" style={{ background: "hsl(224 16% 18%)" }} />
+            <div key={i} className="rounded-xl border p-5 animate-pulse" style={{ background: "hsl(var(--muted))", borderColor: "hsl(var(--border))" }}>
+              <div className="h-4 rounded w-3/4 mb-3" style={{ background: "hsl(var(--muted))" }} />
+              <div className="h-3 rounded w-full mb-2" style={{ background: "hsl(var(--muted))" }} />
+              <div className="h-3 rounded w-1/2" style={{ background: "hsl(var(--muted))" }} />
             </div>
           ))}
         </div>
@@ -298,7 +298,7 @@ export default function Projects() {
                       <span className="text-[10px] text-muted-foreground">Completion</span>
                       <span className="text-[10px] font-mono font-semibold" style={{ color: completionColor }}>{completion}%</span>
                     </div>
-                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(224 16% 20%)" }}>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted))" }}>
                       <div className="h-full rounded-full transition-all duration-500"
                         style={{ width: `${completion}%`, background: completionColor }} />
                     </div>
@@ -306,7 +306,7 @@ export default function Projects() {
                 )}
 
                 {/* Meta row */}
-                <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-auto pt-3 border-t" style={{ borderColor: "hsl(224 16% 18%)" }}>
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-auto pt-3 border-t" style={{ borderColor: "hsl(var(--border))" }}>
                   {p.end_date && (
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
