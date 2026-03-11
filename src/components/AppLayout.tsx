@@ -20,30 +20,175 @@ import { useAuth } from "@/hooks/useAuth";
 import { getNotifications } from "@/lib/supabaseDataService";
 import { playAlertSound, playSuccessSound, playPingSound } from "@/lib/notificationSound";
 
-const navItems = [
-  { to: "/",             label: "Dashboard",    icon: LayoutDashboard, group: "command" },
-  { to: "/decisions",    label: "Decisions",    icon: Scale,           group: "command" },
-  { to: "/departments",  label: "Departments",  icon: Building2,       group: "command" },
-  { to: "/team",         label: "Team",         icon: Users,           group: "command" },
-  { to: "/diagnostics",  label: "Diagnostics",  icon: Activity,        group: "command" },
-  { to: "/crm",          label: "CRM",          icon: ShoppingBag,     group: "growth" },
-  { to: "/marketing",    label: "Marketing",    icon: TrendingUp,      group: "growth" },
-  { to: "/pricing",      label: "Upgrade",      icon: CreditCard,      group: "tools" },
-  { to: "/reports",      label: "Reports",      icon: FileText,        group: "tools" },
-  { to: "/knowledge",    label: "Resource Hub", icon: BookOpen,        group: "tools" },
-  { to: "/graph",        label: "Graph View",   icon: Network,         group: "tools" },
-  { to: "/workflows",    label: "Workflows",    icon: GitBranch,       group: "tools" },
-  { to: "/advisory",     label: "Advisory",     icon: Headphones,      group: "tools" },
-  { to: "/integrations", label: "Integrations", icon: Plug,            group: "tools" },
-  { to: "/admin",        label: "Systems",      icon: Settings,        group: "tools" },
-];
+// ── Mode-specific nav configuration ────────────────────────────────────────
+// Each mode gets its own nav order, group labels, and item terminology.
+// workAlwaysOpen: true = work items rendered as a pinned primary section (Startup).
 
-const workMgmtItems = [
-  { to: "/initiatives",  label: "Initiatives",  icon: Rocket       },
-  { to: "/projects",     label: "Projects",     icon: FolderOpen   },
-  { to: "/action-items", label: "Action Items", icon: CheckSquare  },
-  { to: "/agile",        label: "Agile Board",  icon: Layers       },
-];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type NavItem = { to: string; label: string; icon: React.ComponentType<any> };
+interface ModeNavConfig {
+  commandLabel: string;
+  workLabel: string;
+  growthLabel: string;
+  toolsLabel: string;
+  command: NavItem[];
+  work: NavItem[];
+  growth: NavItem[];
+  tools: NavItem[];
+  workAlwaysOpen: boolean;
+}
+
+const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
+  executive: {
+    commandLabel: "Command",
+    workLabel: "Work Management",
+    growthLabel: "Growth",
+    toolsLabel: "Tools",
+    workAlwaysOpen: false,
+    command: [
+      { to: "/",            label: "Dashboard",    icon: LayoutDashboard },
+      { to: "/decisions",   label: "Decisions",    icon: Scale           },
+      { to: "/departments", label: "Departments",  icon: Building2       },
+      { to: "/team",        label: "Team",         icon: Users           },
+      { to: "/diagnostics", label: "Diagnostics",  icon: Activity        },
+    ],
+    work: [
+      { to: "/initiatives",  label: "Initiatives",  icon: Rocket      },
+      { to: "/projects",     label: "Projects",     icon: FolderOpen  },
+      { to: "/action-items", label: "Action Items", icon: CheckSquare },
+      { to: "/agile",        label: "Agile Board",  icon: Layers      },
+    ],
+    growth: [
+      { to: "/crm",       label: "CRM",       icon: ShoppingBag },
+      { to: "/marketing", label: "Marketing", icon: TrendingUp  },
+    ],
+    tools: [
+      { to: "/pricing",      label: "Upgrade",      icon: CreditCard  },
+      { to: "/reports",      label: "Reports",      icon: FileText    },
+      { to: "/knowledge",    label: "Resource Hub", icon: BookOpen    },
+      { to: "/graph",        label: "Graph View",   icon: Network     },
+      { to: "/workflows",    label: "Workflows",    icon: GitBranch   },
+      { to: "/advisory",     label: "Advisory",     icon: Headphones  },
+      { to: "/integrations", label: "Integrations", icon: Plug        },
+      { to: "/admin",        label: "Systems",      icon: Settings    },
+    ],
+  },
+
+  founder: {
+    commandLabel: "Command",
+    workLabel: "Roadmap",
+    growthLabel: "Pipeline",
+    toolsLabel: "Tools",
+    workAlwaysOpen: false,
+    command: [
+      { to: "/",            label: "Dashboard",  icon: LayoutDashboard },
+      { to: "/crm",         label: "CRM",        icon: ShoppingBag     },
+      { to: "/decisions",   label: "Decisions",  icon: Scale           },
+      { to: "/departments", label: "Divisions",  icon: Building2       },
+      { to: "/team",        label: "Team",        icon: Users           },
+    ],
+    work: [
+      { to: "/initiatives",  label: "Initiatives",  icon: Rocket      },
+      { to: "/projects",     label: "Projects",     icon: FolderOpen  },
+      { to: "/action-items", label: "Action Items", icon: CheckSquare },
+    ],
+    growth: [
+      { to: "/marketing",   label: "Marketing",    icon: TrendingUp  },
+      { to: "/diagnostics", label: "Diagnostics",  icon: Activity    },
+    ],
+    tools: [
+      { to: "/reports",      label: "Reports",      icon: FileText   },
+      { to: "/knowledge",    label: "Resource Hub", icon: BookOpen   },
+      { to: "/advisory",     label: "Board",        icon: Headphones },
+      { to: "/integrations", label: "Integrations", icon: Plug       },
+      { to: "/admin",        label: "Systems",      icon: Settings   },
+    ],
+  },
+
+  startup: {
+    commandLabel: "Overview",
+    workLabel: "Engineering",
+    growthLabel: "Revenue",
+    toolsLabel: "Platform",
+    workAlwaysOpen: true,
+    command: [
+      { to: "/",            label: "Dashboard",   icon: LayoutDashboard },
+      { to: "/diagnostics", label: "Diagnostics", icon: Activity        },
+      { to: "/reports",     label: "Reports",     icon: FileText        },
+      { to: "/departments", label: "Teams",       icon: Building2       },
+    ],
+    work: [
+      { to: "/initiatives",  label: "Roadmap",     icon: Rocket      },
+      { to: "/projects",     label: "Projects",    icon: FolderOpen  },
+      { to: "/agile",        label: "Agile Board", icon: Layers      },
+      { to: "/action-items", label: "Backlog",     icon: CheckSquare },
+    ],
+    growth: [
+      { to: "/crm",       label: "Pipeline", icon: ShoppingBag },
+      { to: "/marketing", label: "Growth",   icon: TrendingUp  },
+    ],
+    tools: [
+      { to: "/graph",        label: "Dependency Map", icon: Network   },
+      { to: "/workflows",    label: "Workflows",      icon: GitBranch },
+      { to: "/knowledge",    label: "Docs & Playbooks",icon: BookOpen },
+      { to: "/integrations", label: "Integrations",   icon: Plug      },
+      { to: "/admin",        label: "Systems",         icon: Settings  },
+    ],
+  },
+
+  freelance: {
+    commandLabel: "Client Ops",
+    workLabel: "Active Work",
+    growthLabel: "Pipeline",
+    toolsLabel: "Tools",
+    workAlwaysOpen: false,
+    command: [
+      { to: "/",            label: "Dashboard",     icon: LayoutDashboard },
+      { to: "/crm",         label: "Clients",       icon: ShoppingBag     },
+      { to: "/marketing",   label: "Pipeline",      icon: TrendingUp      },
+      { to: "/reports",     label: "Finances",      icon: FileText        },
+      { to: "/departments", label: "Functions",     icon: Building2       },
+      { to: "/team",        label: "Collaborators", icon: Users           },
+    ],
+    work: [
+      { to: "/projects",     label: "Client Work",  icon: FolderOpen  },
+      { to: "/action-items", label: "Tasks",         icon: CheckSquare },
+      { to: "/initiatives",  label: "Retainers",    icon: Rocket      },
+    ],
+    growth: [],
+    tools: [
+      { to: "/knowledge",    label: "Resource Hub", icon: BookOpen   },
+      { to: "/advisory",     label: "Mentors",      icon: Headphones },
+      { to: "/integrations", label: "Integrations", icon: Plug       },
+      { to: "/admin",        label: "Settings",     icon: Settings   },
+    ],
+  },
+
+  simple: {
+    commandLabel: "Start Here",
+    workLabel: "Tasks",
+    growthLabel: "Growth",
+    toolsLabel: "Resources",
+    workAlwaysOpen: false,
+    command: [
+      { to: "/",             label: "Dashboard",   icon: LayoutDashboard },
+      { to: "/action-items", label: "My Actions",  icon: CheckSquare     },
+      { to: "/departments",  label: "Org Overview",icon: Building2       },
+      { to: "/decisions",    label: "Decisions",   icon: Scale           },
+    ],
+    work: [
+      { to: "/initiatives", label: "Initiatives", icon: Rocket     },
+      { to: "/projects",    label: "Projects",    icon: FolderOpen },
+    ],
+    growth: [],
+    tools: [
+      { to: "/reports",   label: "Reports",      icon: FileText   },
+      { to: "/knowledge", label: "Resource Hub", icon: BookOpen   },
+      { to: "/advisory",  label: "Advisory",     icon: Headphones },
+    ],
+  },
+};
+// ───────────────────────────────────────────────────────────────────────────
 
 function PulseTrace({ color }: { color: string }) {
   return (
@@ -269,14 +414,16 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
     setSnoozeOpen(false);
   }
 
-  const commandNav = navItems.filter((n) => n.group === "command");
-  const growthNav = navItems.filter((n) => n.group === "growth");
-  const toolsNav = navItems.filter((n) => n.group === "tools");
   const { mode, setMode, label: modeLabel, allModes } = useUserMode();
   const theme = MODE_THEMES[mode] ?? MODE_THEMES.executive;
+  const navCfg = MODE_NAV_CONFIGS[mode] ?? MODE_NAV_CONFIGS.executive;
+  const commandNav = navCfg.command;
+  const growthNav  = navCfg.growth;
+  const toolsNav   = navCfg.tools;
+  const workItems  = navCfg.work;
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
   const location = useLocation();
-  const isOnWorkMgmt = workMgmtItems.some(i => location.pathname.startsWith(i.to));
+  const isOnWorkMgmt = workItems.some(i => location.pathname.startsWith(i.to));
   const [workMgmtOpen, setWorkMgmtOpen] = useState(() => isOnWorkMgmt);
 
   const scoreColor =
@@ -549,7 +696,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
             {!collapsed && (
               <p className="text-[9px] font-bold uppercase tracking-[0.22em] px-2 pb-1 pt-1.5"
                 style={{ color: "hsl(0 0% 100% / 0.18)" }}>
-                Command
+                {navCfg.commandLabel}
               </p>
             )}
 
@@ -612,25 +759,36 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
               </NavLink>
             ))}
 
-            {/* Work Management collapsible section */}
+            {/* Work section — pinned (startup) or collapsible (all other modes) */}
             <div className="mt-1">
-              <button
-                onClick={() => setWorkMgmtOpen(o => !o)}
-                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 hover:bg-white/[0.04]">
-                <Layers className="w-4 h-4 flex-shrink-0" style={{ color: "hsl(0 0% 100% / 0.38)" }} />
-                {!collapsed && (
-                  <>
-                    <span className="flex-1 truncate text-left" style={{ color: "hsl(0 0% 100% / 0.58)" }}>Work Management</span>
-                    <ChevronRight className="w-3 h-3 flex-shrink-0 transition-transform duration-200"
-                      style={{ color: "hsl(0 0% 100% / 0.25)", transform: workMgmtOpen ? "rotate(90deg)" : "rotate(0deg)" }} />
-                  </>
-                )}
-              </button>
+              {/* Startup: always-open section label */}
+              {navCfg.workAlwaysOpen && !collapsed && (
+                <p className="text-[9px] font-bold uppercase tracking-[0.22em] px-2 pb-1 pt-2.5"
+                  style={{ color: theme.accentIcon, opacity: 0.55 }}>
+                  {navCfg.workLabel}
+                </p>
+              )}
+              {/* All other modes: collapsible toggle */}
+              {!navCfg.workAlwaysOpen && (
+                <button
+                  onClick={() => setWorkMgmtOpen(o => !o)}
+                  className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 hover:bg-white/[0.04]">
+                  <Layers className="w-4 h-4 flex-shrink-0" style={{ color: "hsl(0 0% 100% / 0.38)" }} />
+                  {!collapsed && (
+                    <>
+                      <span className="flex-1 truncate text-left" style={{ color: "hsl(0 0% 100% / 0.58)" }}>{navCfg.workLabel}</span>
+                      <ChevronRight className="w-3 h-3 flex-shrink-0 transition-transform duration-200"
+                        style={{ color: "hsl(0 0% 100% / 0.25)", transform: workMgmtOpen ? "rotate(90deg)" : "rotate(0deg)" }} />
+                    </>
+                  )}
+                </button>
+              )}
 
-              {/* Sub-items */}
-              {workMgmtOpen && (
-                <div className={collapsed ? "" : "ml-3 pl-2.5 border-l"} style={{ borderColor: "hsl(0 0% 100% / 0.08)" }}>
-                  {workMgmtItems.map(({ to, label, icon: Icon }) => (
+              {/* Work sub-items — always visible if workAlwaysOpen, else follow toggle */}
+              {(navCfg.workAlwaysOpen || workMgmtOpen) && (
+                <div className={navCfg.workAlwaysOpen ? "" : (collapsed ? "" : "ml-3 pl-2.5 border-l")}
+                  style={{ borderColor: "hsl(0 0% 100% / 0.08)" }}>
+                  {workItems.map(({ to, label, icon: Icon }) => (
                     <NavLink
                       key={to}
                       to={to}
@@ -684,12 +842,13 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
               )}
             </div>
 
-            {/* Growth group */}
+            {/* Growth group — hidden when mode has no growth items */}
+            {growthNav.length > 0 && (
             <div className="mt-3">
               {!collapsed && (
                 <p className="text-[9px] font-bold uppercase tracking-[0.22em] px-2 pb-1 pt-1.5"
                   style={{ color: "hsl(0 0% 100% / 0.18)" }}>
-                  Growth
+                  {navCfg.growthLabel}
                 </p>
               )}
               {growthNav.map(({ to, label, icon: Icon }) => (
@@ -735,6 +894,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                 </NavLink>
               ))}
             </div>
+            )}
 
             <div className="mt-3 rounded-2xl p-1.5" style={{
               background: "hsl(220 55% 97% / 0.07)",
@@ -744,7 +904,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
               {!collapsed && (
                 <p className="text-[9px] font-bold uppercase tracking-[0.22em] px-2 pb-1 pt-1.5"
                   style={{ color: "hsl(220 60% 90% / 0.45)" }}>
-                  Tools
+                  {navCfg.toolsLabel}
                 </p>
               )}
               {toolsNav.map(({ to, label, icon: Icon }) => (
