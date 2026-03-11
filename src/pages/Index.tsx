@@ -219,6 +219,8 @@ const WIN_ITEMS = [
   { id: "w3", text: "SOP coverage hit 78% — highest ever recorded", owner: "R. Torres", reactions: { "🚀": 6, "👏": 3 } },
 ];
 
+const WORKPLACE_EMOJIS = ["✅","🎉","🔥","💪","🚀","👏","⭐","🏆","💡","🎯","👍","✨","💯","🙌","🤝","📈","🛡️","⚡","🏅","💼"];
+
 // ── Score dimension row ──────────────────────────────────────
 function ScoreDim({ label, score }: { label: string; score: number }) {
   const color = score >= 70 ? "hsl(160 56% 42%)" : score >= 50 ? "hsl(38 92% 52%)" : "hsl(350 84% 62%)";
@@ -248,6 +250,7 @@ interface HeroBannerProps {
   winReactions: Record<string, Record<string, number>>;
   reactedTo: Record<string, string>;
   onReact: (winId: string, emoji: string) => void;
+  onAddEmoji: (winId: string, emoji: string) => void;
 }
 const BANNER_PHOTOS = [
   { src: "/banner-tiger.png",    label: "Tiger",            category: "Wildlife" },
@@ -260,8 +263,9 @@ const BANNER_PHOTOS = [
 ];
 const DEFAULT_HERO_PHOTO = 0;
 
-function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCount, atRiskCount, criticalCount, pendingActions, nbaItems, winItems, winReactions, reactedTo, onReact }: HeroBannerProps) {
+function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCount, atRiskCount, criticalCount, pendingActions, nbaItems, winItems, winReactions, reactedTo, onReact, onAddEmoji }: HeroBannerProps) {
   const [slide, setSlide] = useState(0);
+  const [bannerPicker, setBannerPicker] = useState<string | null>(null);
   const [photo, setPhoto] = useState(() => {
     const saved = typeof window !== "undefined" ? parseInt(localStorage.getItem("apphia_hero_photo") ?? "") : NaN;
     return isNaN(saved) || saved >= BANNER_PHOTOS.length ? DEFAULT_HERO_PHOTO : saved;
@@ -396,6 +400,29 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
                               {emoji}<span className="font-mono">{count}</span>
                             </button>
                           ))}
+                          <div className="relative">
+                            <button
+                              onClick={() => setBannerPicker(bannerPicker === win.id ? null : win.id)}
+                              className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] border transition-all"
+                              style={{ background: "rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.60)" }}>
+                              +
+                            </button>
+                            {bannerPicker === win.id && (
+                              <div className="absolute bottom-full left-0 mb-1.5 z-50 rounded-xl p-2 grid grid-cols-5 gap-1"
+                                style={{ background: "hsl(222 32% 13%)", border: "1px solid hsl(0 0% 100% / 0.12)", boxShadow: "0 8px 24px rgba(0,0,0,0.5)" }}>
+                                {WORKPLACE_EMOJIS.map(e => (
+                                  <button key={e}
+                                    onClick={() => { onAddEmoji(win.id, e); setBannerPicker(null); }}
+                                    className="w-7 h-7 flex items-center justify-center rounded-lg text-base transition-colors"
+                                    style={{ background: "transparent" }}
+                                    onMouseEnter={el => (el.currentTarget.style.background = "rgba(255,255,255,0.10)")}
+                                    onMouseLeave={el => (el.currentTarget.style.background = "transparent")}>
+                                    {e}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -670,10 +697,18 @@ export default function Dashboard() {
 
   useEffect(() => { const t = setTimeout(() => setPopupsVisible(true), 900); return () => clearTimeout(t); }, []);
 
+  const [openPicker, setOpenPicker] = useState<string | null>(null);
+
   function addReaction(winId: string, emoji: string) {
     if (reactedTo[winId]) return;
     setWinReactions((prev) => ({ ...prev, [winId]: { ...prev[winId], [emoji]: (prev[winId][emoji] || 0) + 1 } }));
     setReactedTo((prev) => ({ ...prev, [winId]: emoji }));
+  }
+
+  function addEmojiToWin(winId: string, emoji: string) {
+    setWinReactions((prev) => ({ ...prev, [winId]: { ...prev[winId], [emoji]: (prev[winId]?.[emoji] || 0) + 1 } }));
+    setReactedTo((prev) => ({ ...prev, [winId]: emoji }));
+    setOpenPicker(null);
   }
 
   const strategyScores = useStrategyScores();
@@ -727,6 +762,7 @@ export default function Dashboard() {
           winReactions={winReactions}
           reactedTo={reactedTo}
           onReact={addReaction}
+          onAddEmoji={addEmojiToWin}
         />
 
         {/* ════════════════════════════════════════
@@ -812,6 +848,25 @@ export default function Dashboard() {
                               {emoji}<span className="font-mono">{count}</span>
                             </button>
                           ))}
+                          <div className="relative">
+                            <button
+                              onClick={() => setOpenPicker(openPicker === win.id ? null : win.id)}
+                              className="flex items-center justify-center w-5 h-5 rounded-full text-[10px] border transition-all text-muted-foreground hover:text-foreground hover:border-border/80 border-border/50">
+                              +
+                            </button>
+                            {openPicker === win.id && (
+                              <div className="absolute bottom-full left-0 mb-1.5 z-50 rounded-xl p-2 grid grid-cols-5 gap-0.5"
+                                style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
+                                {WORKPLACE_EMOJIS.map(e => (
+                                  <button key={e}
+                                    onClick={() => addEmojiToWin(win.id, e)}
+                                    className="w-7 h-7 flex items-center justify-center rounded-lg text-base hover:bg-muted transition-colors">
+                                    {e}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
