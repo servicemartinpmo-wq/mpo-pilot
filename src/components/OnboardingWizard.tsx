@@ -412,17 +412,17 @@ function Slide2Operational({ scores, form, onPrev, onNext }: { scores: ReturnTyp
       area: "Workflow Automation Opportunity",
       score: null,
       signal: "locked",
-      finding: "Automation opportunity detection across your workflows — identifies which processes can be fully or partially automated. Available in Tier 2+.",
+      finding: "Automation opportunity detection across your workflows — identifies which processes can be fully or partially automated. Available on Solo plan and above.",
       locked: true,
-      tier: "Tier 2+",
+      tier: "Solo+",
     },
     {
       area: "Quality Audit (ISO Compliance Check)",
       score: null,
       signal: "locked",
-      finding: "Full ISO 9001 / ISO 31000 compliance gap analysis against your documented procedures. Generates a remediation roadmap. Available in Tier 3.",
+      finding: "Full ISO 9001 / ISO 31000 compliance gap analysis against your documented procedures. Generates a remediation roadmap. Available on the Growth plan and above.",
       locked: true,
-      tier: "Tier 3",
+      tier: "Growth+",
     },
   ];
 
@@ -505,15 +505,15 @@ function Slide3Strategic({ scores, form, onPrev, onNext }: { scores: ReturnType<
           area="SWOT Analysis"
           score={null}
           signal="locked"
-          finding="Full SWOT synthesis combining your intake data, industry benchmarks, and Porter Five Forces analysis. Generates a prioritized action matrix. Tier 1+."
-          locked tier="Tier 1+"
+          finding="Full SWOT synthesis combining your intake data, industry benchmarks, and Porter Five Forces analysis. Generates a prioritized action matrix. Available on Solo plan and above."
+          locked tier="Solo+"
         />
         <FindingRow
           area="Market Positioning (Porter Five Forces)"
           score={null}
           signal="locked"
-          finding="Industry-specific competitive force analysis. Identifies threat of substitution, buyer power, and strategic entry barriers. Available in Tier 2+."
-          locked tier="Tier 2+"
+          finding="Industry-specific competitive force analysis. Identifies threat of substitution, buyer power, and strategic entry barriers. Available on the Growth plan and above."
+          locked tier="Growth+"
         />
         <FindingRow
           area="Scenario Planning & Strategic Stress Test"
@@ -597,15 +597,15 @@ function Slide4People({ scores, form, onPrev, onNext }: { scores: ReturnType<typ
           area="Skill Gap Analysis"
           score={null}
           signal="locked"
-          finding="Cross-department capability mapping against your strategic objectives. Identifies where to hire, train, or restructure. Available in Tier 1+."
-          locked tier="Tier 1+"
+          finding="Cross-department capability mapping against your strategic objectives. Identifies where to hire, train, or restructure. Available on the Solo plan and above."
+          locked tier="Solo+"
         />
         <FindingRow
           area="McKinsey 7S Coherence Check"
           score={null}
           signal="locked"
-          finding="7-element analysis: Strategy, Structure, Systems, Skills, Style, Staff, Shared Values. Identifies misalignment that creates hidden friction. Tier 2+."
-          locked tier="Tier 2+"
+          finding="7-element analysis: Strategy, Structure, Systems, Skills, Style, Staff, Shared Values. Identifies misalignment that creates hidden friction. Available on Growth plan and above."
+          locked tier="Growth+"
         />
         <FindingRow
           area="Culture & Engagement Diagnostic"
@@ -687,8 +687,8 @@ function Slide5Risk({ scores, form, onPrev, onNext }: { scores: ReturnType<typeo
             area="Regulatory & Compliance"
             score={null}
             signal="locked"
-            finding="Industry-specific regulatory compliance gap analysis. SOX, GDPR, ISO 27001 cross-reference. Tier 3+."
-            locked tier="Tier 3+"
+            finding="Industry-specific regulatory compliance gap analysis. SOX, GDPR, ISO 27001 cross-reference. Available on the Command plan and above."
+            locked tier="Command+"
           />
           <FindingRow
             area="Crisis & Business Continuity"
@@ -706,22 +706,22 @@ function Slide5Risk({ scores, form, onPrev, onNext }: { scores: ReturnType<typeo
             area="Technology Maturity"
             score={null}
             signal="locked"
-            finding="IT maturity assessment: cloud adoption, data analytics capability, ERP systems, and digital transformation readiness. Tier 2+."
-            locked tier="Tier 2+"
+            finding="IT maturity assessment: cloud adoption, data analytics capability, ERP systems, and digital transformation readiness. Available on Growth plan and above."
+            locked tier="Growth+"
           />
           <FindingRow
             area="Financial Ratio Analysis"
             score={null}
             signal="locked"
-            finding="Liquidity, solvency, profitability and efficiency ratios. Benchmarked against industry standards. Requires financials upload. Tier 1+."
-            locked tier="Tier 1+"
+            finding="Liquidity, solvency, profitability and efficiency ratios. Benchmarked against industry standards. Requires financials upload. Available on Solo plan and above."
+            locked tier="Solo+"
           />
           <FindingRow
             area="Customer & Market Diagnostics"
             score={null}
             signal="locked"
-            finding="NPS assessment, customer journey mapping, and market segmentation analysis. Available in Tier 2+."
-            locked tier="Tier 2+"
+            finding="NPS assessment, customer journey mapping, and market segmentation analysis. Available on Growth plan and above."
+            locked tier="Growth+"
           />
         </div>
       </div>
@@ -732,8 +732,8 @@ function Slide5Risk({ scores, form, onPrev, onNext }: { scores: ReturnType<typeo
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { tier: "Free", desc: "3-area snapshot + quick wins", color: "hsl(0 0% 100% / 0.5)" },
-            { tier: "Tier 1", desc: "Ops + Strategy + Financial basics", color: "hsl(var(--electric-blue))" },
-            { tier: "Tier 2", desc: "8 diagnostic dimensions + benchmarking", color: "hsl(42 92% 55%)" },
+            { tier: "Solo · $30", desc: "Ops + Strategy + Financial basics", color: "hsl(var(--electric-blue))" },
+            { tier: "Growth · $75", desc: "8 diagnostic dimensions + benchmarking", color: "hsl(42 92% 55%)" },
             { tier: "Enterprise", desc: "Full multi-dept diagnostic + scenario planning", color: "hsl(148 52% 55%)" },
           ].map(({ tier, desc, color }) => (
             <div key={tier} className="rounded-xl p-3" style={{ background: "hsl(0 0% 100% / 0.05)", border: `1px solid ${color}30` }}>
@@ -764,10 +764,10 @@ function Slide6Roadmap({ scores, form, onPrev, onLaunch }: { scores: ReturnType<
   ];
 
   const unlockItems = [
-    { name: "SWOT + Porter Analysis", tier: "Tier 1", desc: "Industry competitive position" },
-    { name: "Financial Ratio Analysis", tier: "Tier 1", desc: "Liquidity, solvency, growth" },
-    { name: "Full Workflow Audit", tier: "Tier 2", desc: "8 diagnostic dimensions" },
-    { name: "McKinsey 7S Assessment", tier: "Tier 2", desc: "Org coherence check" },
+    { name: "SWOT + Porter Analysis", tier: "Solo+", desc: "Industry competitive position" },
+    { name: "Financial Ratio Analysis", tier: "Solo+", desc: "Liquidity, solvency, growth" },
+    { name: "Full Workflow Audit", tier: "Growth+", desc: "8 diagnostic dimensions" },
+    { name: "McKinsey 7S Assessment", tier: "Growth+", desc: "Org coherence check" },
     { name: "Multi-Dept Diagnostic Report", tier: "Enterprise", desc: "Full organizational scan" },
     { name: "Scenario Planning & Stress Test", tier: "Enterprise", desc: "Strategic risk simulation" },
   ];
@@ -809,7 +809,7 @@ function Slide6Roadmap({ scores, form, onPrev, onLaunch }: { scores: ReturnType<
           <div className="text-xs font-bold uppercase tracking-[0.15em] mb-4" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Unlock with Higher Tiers</div>
           <div className="space-y-2.5">
             {unlockItems.map(({ name, tier, desc }) => {
-              const tierColor = tier === "Tier 1" ? ACCENT : tier === "Tier 2" ? "hsl(42 92% 55%)" : "hsl(148 52% 50%)";
+              const tierColor = tier === "Solo+" ? ACCENT : tier === "Growth+" ? "hsl(42 92% 55%)" : tier === "Command+" ? "hsl(268 68% 65%)" : "hsl(148 52% 50%)";
               return (
                 <div key={name} className="flex items-center gap-3 rounded-xl px-4 py-3"
                   style={{ background: "hsl(0 0% 100% / 0.04)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>

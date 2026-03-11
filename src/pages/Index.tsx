@@ -508,7 +508,6 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
 
   return (
     <div className="flex flex-col min-h-screen" style={{ background: "hsl(210 20% 98%)" }}>
-      <UpgradeBanner storageKey="dash_upgrade_banner" />
 
       {/* ── Top welcome strip ── */}
       <div className="border-b px-8 py-6 flex items-center gap-5" style={{ background: "white", borderColor: "hsl(213 20% 91%)" }}>
@@ -1298,9 +1297,6 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-
-      {/* ── Upgrade Banner ── */}
-      <UpgradeBanner storageKey="dash_upgrade_banner" />
 
       {/* ── Status Popups ── */}
       {popupsVisible && (
