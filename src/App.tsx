@@ -8,6 +8,7 @@ import AppLayout from "./components/AppLayout";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import VoiceCommand from "./components/VoiceCommand";
 import ApphiaPanel from "./components/ApphiaPanel";
+import FeedbackPopup from "./components/FeedbackPopup";
 import CommandPalette from "./components/CommandPalette";
 import TopStatusBar from "./components/TopStatusBar";
 import Index from "./pages/Index";
@@ -214,6 +215,7 @@ const App = () => (
           <AppRoutes />
           <ApphiaPanel />
           <VoiceCommand />
+          <FeedbackPopup />
         </ErrorBoundary>
       </BrowserRouter>
     </TooltipProvider>
