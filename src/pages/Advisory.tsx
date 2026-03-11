@@ -39,29 +39,29 @@ const ADVISORS: Advisor[] = [
   {
     id: "strategy", name: "Strategy Advisory", shortName: "Strategy",
     category: "core", tier: "free",
-    expertise: "Vision · Competitive Analysis · Strategic Prioritization · OKR Architecture",
+    expertise: "Vision · Competitive Analysis · Strategic Prioritization · Goal Architecture",
     description: "Translates ambition into structured strategy. Diagnoses misalignment between vision and execution, recommends sequencing of initiatives, and builds the strategic logic that governs prioritization.",
     icon: Brain, color: "hsl(var(--electric-blue))", bg: "hsl(var(--electric-blue) / 0.08)",
     responseTime: "24–48 hrs", activeRequests: 2,
-    tags: ["Rumelt", "BSC", "OKR", "Porter"],
+    tags: ["Strategy", "Alignment", "Prioritization", "Competitive"],
   },
   {
     id: "operations", name: "Operations Advisory", shortName: "Operations",
     category: "core", tier: "free",
-    expertise: "Process Design · Workflow Optimization · Capacity Planning · Lean/Six Sigma",
+    expertise: "Process Design · Workflow Optimization · Capacity Planning · Performance Improvement",
     description: "Eliminates operational friction, maps value streams, and builds execution systems. Identifies bottlenecks, quantifies waste, and designs the operating model that enables consistent delivery.",
     icon: Cog, color: "hsl(var(--teal))", bg: "hsl(var(--teal) / 0.08)",
     responseTime: "24–48 hrs", activeRequests: 1,
-    tags: ["Lean", "Six Sigma", "TOC", "Value Chain"],
+    tags: ["Processes", "Optimization", "Throughput", "Value"],
   },
   {
     id: "pmo", name: "Project & Program Management", shortName: "PMO",
     category: "core", tier: "free",
-    expertise: "Initiative Governance · RACI · MOCHA · Delivery Frameworks · Risk Management",
+    expertise: "Initiative Governance · Accountability Design · Delivery Systems · Risk Management",
     description: "Governs the full initiative lifecycle from intake to close. Establishes accountability frameworks, manages dependencies, and ensures every project has a clear owner, timeline, and decision gate.",
     icon: Rocket, color: "hsl(var(--signal-purple))", bg: "hsl(var(--signal-purple) / 0.08)",
     responseTime: "24 hrs", activeRequests: 3,
-    tags: ["MOCHA", "RACI", "PMO", "Governance"],
+    tags: ["Governance", "Accountability", "Delivery", "Risk"],
   },
   {
     id: "admin-systems", name: "Administrative Systems", shortName: "Admin Systems",
@@ -79,7 +79,7 @@ const ADVISORS: Advisor[] = [
     description: "Systematically improves performance through structured diagnostics. Identifies root causes, designs KPI frameworks, and implements performance management systems that drive sustained improvement.",
     icon: GitBranch, color: "hsl(var(--signal-yellow))", bg: "hsl(var(--signal-yellow) / 0.08)",
     responseTime: "48 hrs", activeRequests: 1,
-    tags: ["DMAIC", "Kaizen", "KPIs", "Improvement"],
+    tags: ["Performance", "Root Cause", "KPIs", "Improvement"],
   },
   // ── Optional Advisors ──
   {
@@ -280,7 +280,7 @@ export default function Advisory() {
               )}
               <div>
                 <span className="text-sm font-black text-foreground">
-                  Apphia Engine · {engine.recommendations.length} Live Recommendations
+                  {engine.recommendations.length} Live Recommendations
                 </span>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   {immediateRecs.length > 0 && <span className="text-signal-red font-semibold">{immediateRecs.length} Immediate · </span>}

@@ -1288,7 +1288,7 @@ export default function Knowledge() {
         <div className="space-y-6">
           <div className="flex items-center justify-between">
             <p className="text-xs text-muted-foreground">
-              Every calculation powering the Apphia Command Center — from org health scoring to financial modelling.
+              Every calculation behind your Command Center — from org health scoring to financial modelling.
             </p>
             <span className="text-xs font-mono text-muted-foreground">
               {FORMULA_CATEGORIES.reduce((a, c) => a + c.formulas.length, 0)} formulas

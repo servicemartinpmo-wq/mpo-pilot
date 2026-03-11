@@ -69,7 +69,7 @@ function AppRoutes() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-electric-blue/30 border-t-electric-blue rounded-full animate-spin" />
-          <p className="text-xs text-muted-foreground">Loading Apphia…</p>
+          <p className="text-xs text-muted-foreground">Loading…</p>
         </div>
       </div>
     );

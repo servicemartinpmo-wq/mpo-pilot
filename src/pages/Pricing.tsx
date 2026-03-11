@@ -178,8 +178,7 @@ export default function Pricing() {
           <span style={{ color: "hsl(38 92% 52%)" }}>and support to succeed</span>
         </h1>
         <p className="text-lg max-w-2xl mx-auto mb-8" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
-          From solo operators to enterprise teams — Apphia combines software, operational intelligence,
-          and advisory expertise in one command center.
+          From solo operators to enterprise teams — PMO-Ops Command Center combines software, operational intelligence, and advisory expertise in one place.
         </p>
 
         {/* Billing toggle */}

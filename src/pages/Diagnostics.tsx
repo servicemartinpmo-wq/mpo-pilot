@@ -65,27 +65,27 @@ interface AuditFinding {
 }
 
 const EXTERNAL_AUDIT_AREAS: AuditFinding[] = [
-  { area: "Financial Controls", status: "warn", finding: "Budget approval thresholds exceed single-signatory limits on 3 initiatives", recommendation: "Implement dual-control approval for expenditures >$50K", source: "SOX Section 302/404" },
-  { area: "Risk Register Compliance", status: "pass", finding: "7/10 initiatives have documented, active risk registers", recommendation: "Extend to all initiatives — INI-001, INI-002, INI-003 remain undocumented", source: "ISO 31000:2018" },
-  { area: "Governance Documentation", status: "warn", finding: "3 initiatives lack board-level approval thresholds", recommendation: "Define escalation thresholds for all capital commitments", source: "COSO ERM Framework" },
-  { area: "Policy Adherence", status: "pass", finding: "Operational policies reviewed and current across 8/9 departments", recommendation: "Refresh Technology policy — last reviewed 14 months ago", source: "ISO 9001:2015" },
-  { area: "Audit Trail Integrity", status: "pass", finding: "Governance log entries present for all major decisions", recommendation: "Introduce automated timestamping for decision log entries", source: "SOX Audit Trail Requirements" },
-  { area: "Segregation of Duties", status: "fail", finding: "2 departments lack segregation between approver and executor roles", recommendation: "Immediate role separation required for Program Delivery and Finance", source: "COSO Internal Control Framework" },
-  { area: "Regulatory Alignment", status: "warn", finding: "GDPR data handling review overdue by 60 days", recommendation: "Schedule immediate data privacy audit with DPO", source: "GDPR Article 35" },
-  { area: "Compliance Reporting", status: "pass", finding: "Board reports issued quarterly with no missed cycles", recommendation: "Add risk register summary to board pack for completeness", source: "OECD Corporate Governance Principles" },
+  { area: "Financial Controls", status: "warn", finding: "Budget approval thresholds exceed single-signatory limits on 3 initiatives", recommendation: "Implement dual-control approval for expenditures >$50K", source: "Financial Control Best Practice" },
+  { area: "Risk Register Compliance", status: "pass", finding: "7/10 initiatives have documented, active risk registers", recommendation: "Extend to all initiatives — INI-001, INI-002, INI-003 remain undocumented", source: "Risk Management Standard" },
+  { area: "Governance Documentation", status: "warn", finding: "3 initiatives lack board-level approval thresholds", recommendation: "Define escalation thresholds for all capital commitments", source: "Enterprise Risk Management" },
+  { area: "Policy Adherence", status: "pass", finding: "Operational policies reviewed and current across 8/9 departments", recommendation: "Refresh Technology policy — last reviewed 14 months ago", source: "Quality Management Standard" },
+  { area: "Audit Trail Integrity", status: "pass", finding: "Governance log entries present for all major decisions", recommendation: "Introduce automated timestamping for decision log entries", source: "Audit Trail Requirements" },
+  { area: "Segregation of Duties", status: "fail", finding: "2 departments lack segregation between approver and executor roles", recommendation: "Immediate role separation required for Program Delivery and Finance", source: "Internal Control Standard" },
+  { area: "Regulatory Alignment", status: "warn", finding: "GDPR data handling review overdue by 60 days", recommendation: "Schedule immediate data privacy audit with DPO", source: "Data Privacy Regulation" },
+  { area: "Compliance Reporting", status: "pass", finding: "Board reports issued quarterly with no missed cycles", recommendation: "Add risk register summary to board pack for completeness", source: "Corporate Governance Best Practice" },
 ];
 
 const INTERNAL_AUDIT_AREAS: AuditFinding[] = [
-  { area: "Strategic Alignment", status: "warn", finding: "Marketing Q2 OKRs misaligned with pipeline targets (68% brand vs 45% demand-gen)", recommendation: "Realign Marketing OKRs in next sprint planning cycle", source: "Balanced Scorecard (Kaplan & Norton)" },
-  { area: "Initiative Health", status: "warn", finding: "INI-007 at 94% capacity load with no deferral plan in place", recommendation: "Pause or rescope INI-007 until Program Delivery capacity drops below 80%", source: "PMBOK Resource Management" },
-  { area: "Execution Discipline", status: "fail", finding: "Average action item close rate: 61% — target is 80%", recommendation: "Introduce weekly action item review cadence with department leads", source: "Lean Execution (Womack & Jones)" },
-  { area: "Capacity Utilization", status: "warn", finding: "Program Delivery at 94%, Technology at 87% — above sustainable threshold", recommendation: "Reallocate 2 FTEs from underutilized Customer Success (62%) to delivery", source: "Lean Workload Analysis" },
-  { area: "Dependency Mapping", status: "pass", finding: "Critical dependencies mapped for 8/10 active initiatives", recommendation: "Complete dependency mapping for INI-004 and INI-009", source: "Critical Chain (Goldratt)" },
-  { area: "Process Adherence", status: "pass", finding: "Core operational processes documented and followed in 7/9 departments", recommendation: "Update Sales process SOPs to reflect new CRM workflow", source: "PDCA Cycle (Deming)" },
-  { area: "Leadership Bandwidth", status: "warn", finding: "COO approval required for 14 items currently pending — creating bottleneck", recommendation: "Delegate Tier 3 decisions to department heads via updated authority matrix", source: "Span of Control Analysis (Galbraith)" },
-  { area: "Knowledge Capture", status: "fail", finding: "No lessons-learned documentation in last 2 completed initiatives", recommendation: "Implement post-project retrospective template — mandatory for all closures", source: "Agile Retrospectives (Derby & Larsen)" },
-  { area: "Communication Flows", status: "pass", finding: "Weekly status reports issued for all active Tier 1 initiatives", recommendation: "Extend to Tier 2 — currently only 40% have standing updates", source: "PMBOK Communications Management" },
-  { area: "Maturity Progression", status: "warn", finding: "2 departments stuck at CMMI Level 2 for 3+ consecutive quarters", recommendation: "Assign improvement sponsor and 90-day maturity improvement plan", source: "CMMI Maturity Model" },
+  { area: "Strategic Alignment", status: "warn", finding: "Marketing Q2 targets misaligned with pipeline goals (68% brand vs 45% demand-gen)", recommendation: "Realign Marketing targets in next planning cycle", source: "Strategic Alignment Diagnostics" },
+  { area: "Initiative Health", status: "warn", finding: "INI-007 at 94% capacity load with no deferral plan in place", recommendation: "Pause or rescope INI-007 until Program Delivery capacity drops below 80%", source: "Resource Management Analysis" },
+  { area: "Execution Discipline", status: "fail", finding: "Average action item close rate: 61% — target is 80%", recommendation: "Introduce weekly action item review cadence with department leads", source: "Execution Performance Analysis" },
+  { area: "Capacity Utilization", status: "warn", finding: "Program Delivery at 94%, Technology at 87% — above sustainable threshold", recommendation: "Reallocate 2 FTEs from underutilized Customer Success (62%) to delivery", source: "Workload Distribution Analysis" },
+  { area: "Dependency Mapping", status: "pass", finding: "Critical dependencies mapped for 8/10 active initiatives", recommendation: "Complete dependency mapping for INI-004 and INI-009", source: "Initiative Dependency Scan" },
+  { area: "Process Adherence", status: "pass", finding: "Core operational processes documented and followed in 7/9 departments", recommendation: "Update Sales process SOPs to reflect new CRM workflow", source: "Process Compliance Audit" },
+  { area: "Leadership Bandwidth", status: "warn", finding: "COO approval required for 14 items currently pending — creating bottleneck", recommendation: "Delegate Tier 3 decisions to department heads via updated authority matrix", source: "Decision Flow Analysis" },
+  { area: "Knowledge Capture", status: "fail", finding: "No lessons-learned documentation in last 2 completed initiatives", recommendation: "Implement post-project retrospective template — mandatory for all closures", source: "Knowledge Management Audit" },
+  { area: "Communication Flows", status: "pass", finding: "Weekly status reports issued for all active Tier 1 initiatives", recommendation: "Extend to Tier 2 — currently only 40% have standing updates", source: "Communications Health Check" },
+  { area: "Maturity Progression", status: "warn", finding: "2 departments have shown no maturity improvement for 3+ consecutive quarters", recommendation: "Assign improvement sponsor and 90-day maturity improvement plan", source: "Organizational Maturity Assessment" },
 ];
 
 export default function Diagnostics() {
@@ -93,7 +93,7 @@ export default function Diagnostics() {
   const [govTab, setGovTab] = useState<"all" | "Risk" | "Decision" | "Change">("all");
   const [showSummary, setShowSummary] = useState(false);
   const [selectedCheck, setSelectedCheck] = useState<{ label: string; detail: string; status: string } | null>(null);
-  const [engineTab, setEngineTab] = useState<"signals" | "diagnosis" | "frameworks" | "chains">("signals");
+  const [engineTab, setEngineTab] = useState<"signals" | "diagnosis">("signals");
   const [expandedDiag, setExpandedDiag] = useState<string | null>(null);
   const [auditStatus, setAuditStatus] = useState<AuditStatus>("idle");
   const [auditType, setAuditType] = useState<AuditType | null>(null);
@@ -147,7 +147,7 @@ export default function Diagnostics() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground mb-0.5">Diagnostics</h1>
-          <p className="text-sm text-muted-foreground">Signal detection · Root cause · Governance oversight · Framework engine</p>
+          <p className="text-sm text-muted-foreground">Signal detection · Root cause analysis · Governance oversight</p>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={() => setShowSummary(v => !v)}
@@ -239,8 +239,6 @@ export default function Diagnostics() {
             {([
               { key: "signals", label: "Signals", icon: Activity },
               { key: "diagnosis", label: "Diagnosis", icon: FlaskConical },
-              { key: "frameworks", label: "Frameworks", icon: Database },
-              { key: "chains", label: "System Chains", icon: Network },
             ] as const).map(({ key, label, icon: Icon }) => (
               <button key={key} onClick={() => setEngineTab(key)}
                 className={cn("text-xs px-2.5 py-1 rounded-full border transition-all flex items-center gap-1",
@@ -402,74 +400,6 @@ export default function Diagnostics() {
           </div>
         )}
 
-        {/* ── Frameworks Tab ── */}
-        {engineTab === "frameworks" && (
-          <div>
-            <div className="px-4 py-2.5 border-b border-border bg-secondary/30">
-              <p className="text-xs text-muted-foreground">
-                {diagnosticsFrameworks.length} frameworks assigned to Diagnostics module ·
-                Fires on signal detection · Outputs to Dashboard, Reports, Initiatives
-              </p>
-            </div>
-            <div className="divide-y max-h-80 overflow-y-auto">
-              {diagnosticsFrameworks.map(fw => (
-                <div key={fw.id} className="px-4 py-3 hover:bg-secondary/20 transition-colors">
-                  <div className="flex items-start gap-3">
-                    <Database className="w-3.5 h-3.5 text-electric-blue mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 mb-0.5">
-                        <span className="text-xs font-semibold text-foreground">{fw.name}</span>
-                        <span className="text-xs px-1.5 py-0.5 bg-secondary rounded text-muted-foreground">{fw.domain}</span>
-                        <span className="text-xs px-1.5 py-0.5 bg-electric-blue/8 text-electric-blue rounded border border-electric-blue/20">{fw.temporalContext}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{fw.statusRelevance}</p>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {fw.outputsTo.map(m => (
-                          <span key={m} className="text-xs px-1 py-0.5 bg-secondary rounded text-muted-foreground border border-border">→ {m}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ── System Chains Tab ── */}
-        {engineTab === "chains" && (
-          <div>
-            <div className="px-4 py-2.5 border-b border-border bg-secondary/30">
-              <p className="text-xs text-muted-foreground">
-                {engine.activeChains.length} chains active · Last full engine run: {new Date(engine.orgHealth.updatedAt).toLocaleTimeString()}
-              </p>
-            </div>
-            <div className="divide-y max-h-80 overflow-y-auto">
-              {engine.activeChains.map(chainId => {
-                const def = { "strategic-alignment": "Strategic Alignment System", "initiative-portfolio": "Initiative Portfolio Management", "project-delivery": "Project Delivery System", "operational-bottleneck": "Operational Bottleneck Detection", "operational-performance": "Operational Performance System", "org-structure": "Org Structure System", "risk-management": "Risk Management System", "resource-capacity": "Resource & Capacity System", "process-improvement": "Process Improvement System", "org-health-monitoring": "Org Health Monitoring System" }[chainId] || chainId;
-                const chainSignals = engine.signals.filter(s => s.id.includes(chainId.split("-")[0]));
-                const hasCritical = engine.signals.some(s => s.severity === "Critical");
-                const status = hasCritical ? "Triggered" : "Active";
-                return (
-                  <div key={chainId} className="px-4 py-3 flex items-center gap-3 hover:bg-secondary/20 transition-colors">
-                    <Cpu className="w-4 h-4 text-electric-blue flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-semibold text-foreground">{def}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">
-                        Monitoring {engine.signals.length} signals · {engine.recommendations.length} recommendations generated
-                      </div>
-                    </div>
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium border",
-                      status === "Triggered"
-                        ? "text-signal-red bg-signal-red/10 border-signal-red/30"
-                        : "text-signal-green bg-signal-green/10 border-signal-green/30"
-                    )}>{status}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── Strategic Clarity + Structural Integrity ── */}

@@ -208,7 +208,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                     ? profile.orgName.length > 14
                       ? profile.orgName.slice(0, 13) + "…"
                       : profile.orgName
-                    : "Apphia"}
+                    : "PMO-Ops"}
                 </div>
                 <div className="text-[10px] mt-0.5 font-medium" style={{ color: "hsl(38 92% 52% / 0.7)" }}>
                   Command Center

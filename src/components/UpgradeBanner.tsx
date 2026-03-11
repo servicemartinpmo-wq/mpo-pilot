@@ -35,7 +35,7 @@ export default function UpgradeBanner({ storageKey, message }: Props) {
       <div className="flex items-center gap-2.5 text-sm">
         <Sparkles className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "hsl(38 92% 52%)" }} />
         <span style={{ color: "hsl(0 0% 100% / 0.55)" }}>
-          {message ?? "Unlock more with Apphia Command Center —"}
+          {message ?? "Unlock more with PMO-Ops Command Center —"}
           <span style={{ color: "hsl(38 92% 52%)" }}> decades of consulting expertise, built into every tier.</span>
         </span>
       </div>

@@ -159,7 +159,7 @@ export default function NotificationsPanel({ userId, open, onClose, onUnreadChan
               <div>
                 <p className="text-sm font-semibold text-foreground mb-1">You're all caught up</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  No new notifications right now. Apphia is watching your workspace.
+                  No new notifications right now. You'll be alerted when something needs your attention.
                 </p>
               </div>
             </div>
@@ -211,7 +211,7 @@ export default function NotificationsPanel({ userId, open, onClose, onUnreadChan
         {/* Footer */}
         <div className="px-5 py-3 border-t" style={{ borderColor: "hsl(224 16% 18%)" }}>
           <p className="text-[10px] text-center" style={{ color: "hsl(224 12% 38%)" }}>
-            Apphia Engine · monitoring 25 systems
+            PMO-Ops Command Center · live monitoring
           </p>
         </div>
       </div>

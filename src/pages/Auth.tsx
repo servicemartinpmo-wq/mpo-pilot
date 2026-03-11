@@ -111,7 +111,7 @@ export default function AuthPage() {
             style={{ background: "var(--gradient-electric)", boxShadow: `0 0 28px ${ACCENT}33` }}>
             <Zap className="w-6 h-6 text-white" />
           </div>
-          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1">Apphia</div>
+          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1">Martin PMO</div>
           <h1 className="text-2xl font-black text-foreground tracking-tight">
             {mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}
           </h1>

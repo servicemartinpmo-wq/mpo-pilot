@@ -920,8 +920,8 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
             <Zap className="w-8 h-8 text-white" />
           </div>
           <div>
-            <div className="text-xs font-black uppercase tracking-[0.3em] text-white/50 mb-0.5">Apphia</div>
-            <div className="text-xl font-black uppercase tracking-[0.22em] text-white">Command Center</div>
+            <div className="text-xs font-black uppercase tracking-[0.3em] text-white/50 mb-0.5">Martin PMO</div>
+            <div className="text-xl font-black uppercase tracking-[0.22em] text-white">PMO-Ops Command Center</div>
           </div>
         </div>
 
@@ -930,7 +930,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold mb-5"
             style={{ background: "hsl(var(--electric-blue) / 0.12)", border: "1px solid hsl(var(--electric-blue) / 0.28)", color: "hsl(var(--electric-blue))" }}>
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: ACCENT }} />
-            Powered by 25 AI systems · 100+ management frameworks
+            Built for executives and operators who demand performance
           </div>
           <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black text-white leading-[1.1] tracking-[-0.02em] mb-5">
             Your organization,<br />
@@ -939,7 +939,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
             </span>
           </h1>
           <p className="text-base lg:text-lg font-medium max-w-2xl mx-auto leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
-            Apphia Command Center gives executives and operators a live intelligence layer — surfacing risks, diagnosing execution gaps, and driving strategic alignment across every department.
+            PMO-Ops Command Center gives executives and operators total visibility — surfacing risks, diagnosing execution gaps, and driving strategic alignment across every department.
           </p>
         </div>
 
@@ -1147,8 +1147,8 @@ const WALKTHROUGH_SLIDES = [
     accentBg: "hsl(38 92% 52% / 0.12)",
     label: "ADVISORY & AUTOMATION",
     headline: "Your always-on strategic partner.",
-    sub: "Industry advisors, 24 built-in frameworks, and automation rules that run your playbooks while you focus on the business.",
-    bullets: ["Industry-specific advisors for 7 sectors", "24 frameworks: SWOT, OKR, BCG, McKinsey, and more", "Automation rules — set triggers, let the engine run"],
+    sub: "Industry advisors, built-in strategic toolkits, and automation rules that run your playbooks while you focus on the business.",
+    bullets: ["Industry-specific advisors for 7 sectors", "Built-in strategic toolkits — always current, always ready", "Automation rules — set triggers, let the system run"],
   },
 ];
 
@@ -1311,7 +1311,16 @@ export default function OnboardingWizard({ onComplete }: Props) {
   }
 
   function launch() {
-    if (savedProfile) onComplete(savedProfile);
+    const profile = savedProfile ?? {
+      ...form,
+      accentHue: 215,
+      font: "inter" as const,
+      density: "comfortable" as const,
+      analyticsEnabled: true,
+      onboardingComplete: true,
+    };
+    if (!savedProfile) saveProfile(profile);
+    onComplete(profile);
   }
 
   function toggleDept(dept: string) {
@@ -1462,8 +1471,8 @@ export default function OnboardingWizard({ onComplete }: Props) {
               <Zap className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-white font-black tracking-[0.22em] text-sm uppercase leading-none">Apphia</div>
-              <div className="text-xs tracking-widest uppercase mt-0.5 font-medium" style={{ color: "hsl(233 70% 82%)" }}>Command Center</div>
+              <div className="text-white font-black tracking-[0.22em] text-sm uppercase leading-none">Martin PMO</div>
+              <div className="text-xs tracking-widest uppercase mt-0.5 font-medium" style={{ color: "hsl(233 70% 82%)" }}>PMO-Ops Command Center</div>
             </div>
           </div>
         </div>
@@ -1513,7 +1522,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
               style={{ background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})` }}>
               <Zap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-black tracking-widest text-sm uppercase text-foreground">Apphia</span>
+            <span className="font-black tracking-widest text-sm uppercase text-foreground">Martin PMO</span>
           </div>
           <span className="text-xs font-bold px-3 py-1.5 rounded-full"
             style={{ background: "hsl(var(--electric-blue) / 0.10)", color: "hsl(var(--electric-blue))", border: "1px solid hsl(var(--electric-blue) / 0.25)" }}>
