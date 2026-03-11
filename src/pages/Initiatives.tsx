@@ -419,7 +419,7 @@ function InitiativeModal({
           {tab === "mocha" && (
             <div>
               <div className="text-xs text-muted-foreground mb-4">MOCHA accountability matrix — clarity on who drives, who approves, who supports.</div>
-              <div className="grid grid-cols-5 gap-2 mb-5">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mb-5">
                 {[
                   { key: "M", label: "Manager", color: "text-electric-blue bg-electric-blue/10 border-electric-blue/25" },
                   { key: "O", label: "Owner",   color: "text-teal bg-teal/10 border-teal/25" },
@@ -662,15 +662,15 @@ export default function Initiatives() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <div className="page-header bg-card">
-        <div className="relative flex items-center justify-center gap-4">
-          <div className="text-center">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex-1 text-center sm:text-left">
             <div className="section-label mb-1.5">Portfolio</div>
-            <h1 className="text-2xl font-black text-foreground tracking-tight mb-1">Initiatives</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight mb-1">Initiatives</h1>
             <p className="text-sm text-muted-foreground">
               {initiatives.length} initiatives · Impact scored · OKR & strategic pillar alignment
             </p>
           </div>
-          <div className="absolute right-0 flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
             <div className="grid grid-cols-3 gap-2">
               <div className="bg-secondary rounded-xl px-3 py-2 text-center">
                 <div className="text-xl font-black font-mono text-signal-green">{onTrack}</div>
@@ -696,7 +696,7 @@ export default function Initiatives() {
         </div>
       </div>
 
-      <div className="p-6 space-y-5">
+      <div className="p-4 sm:p-6 space-y-5">
         {totalDecisionDeadlines > 0 && (
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-signal-orange/30 bg-signal-orange/6">
             <Clock className="w-4 h-4 text-signal-orange flex-shrink-0" />

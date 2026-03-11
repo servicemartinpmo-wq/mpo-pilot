@@ -145,24 +145,26 @@ export default function Diagnostics() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <UpgradeBanner storageKey="diag_upgrade_banner" message="Unlock advanced diagnostics — deeper signal analysis, custom thresholds, and automated alerts." />
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
       {/* ── Header ── */}
-      <div className="relative flex items-center justify-center">
-        <div className="text-center">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex-1 text-center sm:text-left">
           <h1 className="text-xl font-bold text-foreground mb-0.5">Diagnostics</h1>
           <p className="text-sm text-muted-foreground">Signal detection · Root cause analysis · Governance oversight</p>
         </div>
-        <div className="absolute right-0 flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
           <button onClick={() => setShowSummary(v => !v)}
             className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border-2 border-electric-blue/40 text-electric-blue font-semibold hover:bg-electric-blue/8 transition-colors">
             <Zap className="w-3.5 h-3.5" />
-            {showSummary ? "Hide" : "Show"} Summary
+            <span className="hidden sm:inline">{showSummary ? "Hide" : "Show"} Summary</span>
+            <span className="sm:hidden">Summary</span>
             {showSummary ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
           <button onClick={() => setAuditStatus("selecting")}
             className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border-2 border-teal/40 text-teal font-semibold hover:bg-teal/8 transition-colors">
             <ClipboardList className="w-3.5 h-3.5" />
-            Full Org Audit
+            <span className="hidden sm:inline">Full Org Audit</span>
+            <span className="sm:hidden">Audit</span>
           </button>
           <div className="text-right">
             <div className="text-xs text-muted-foreground mb-0.5">Open Items</div>

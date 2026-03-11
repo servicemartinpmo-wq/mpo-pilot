@@ -738,18 +738,18 @@ function CreativeDashboard({ firstName }: {
     <div className="flex flex-col" style={{ background: "#080808", minHeight: "100vh" }}>
 
       {/* ── Minimal header ── */}
-      <div className="px-8 pt-6 pb-5 flex items-end justify-between"
+      <div className="px-4 sm:px-8 pt-5 sm:pt-6 pb-4 sm:pb-5 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4"
         style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
         <div>
           <p className="text-[9px] font-bold uppercase tracking-[0.4em] mb-1.5"
             style={{ color: "rgba(255,255,255,0.28)" }}>
             Portfolio Studio
           </p>
-          <h1 className="text-[28px] font-black tracking-[-0.02em] text-white leading-none">
+          <h1 className="text-[22px] sm:text-[28px] font-black tracking-[-0.02em] text-white leading-none">
             {firstName ? `${firstName}'s Work` : "Creative Work"}
           </h1>
         </div>
-        <div className="flex items-center gap-6 pb-1">
+        <div className="flex items-center gap-4 sm:gap-6 pb-0 sm:pb-1">
           {[
             { to: "/crm",       label: "Clients" },
             { to: "/projects",  label: "Projects" },

@@ -7,6 +7,7 @@ import {
   GitBranch, Brain, BarChart3, Moon, Bell, Clock,
   FolderOpen, Scale, Layers, UserCircle, TrendingUp,
   Network, ShoppingBag, CreditCard, Tag,
+  Menu, X, MoreHorizontal,
 } from "lucide-react";
 import pmoLogoLight from "@/assets/pmo-logo-light.png";
 import { useUserMode } from "@/hooks/useUserMode";
@@ -417,6 +418,24 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
     setSnoozeOpen(false);
   }
 
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 768);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  useEffect(() => {
+    if (mobileDrawerOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileDrawerOpen]);
+
   const { mode, setMode, label: modeLabel, allModes } = useUserMode();
   const theme = MODE_THEMES[mode] ?? MODE_THEMES.executive;
   const navCfg = MODE_NAV_CONFIGS[mode] ?? MODE_NAV_CONFIGS.executive;
@@ -485,6 +504,10 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
 
   const sidebarWidth = collapsed ? 58 : 234;
 
+  const mobileBottomItems = [
+    ...commandNav.slice(0, 4),
+  ];
+
   const CREATIVE_ACCENT     = "hsl(174 72% 52%)";
   const CREATIVE_ACCENT_DIM = "hsl(174 72% 52% / 0.12)";
   const CREATIVE_ROSE       = "hsl(350 72% 62%)";
@@ -546,11 +569,21 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           </div>
 
           {/* Main nav row */}
-          <div className="relative z-10 flex items-center gap-0 px-6 border-b"
+          <div className="relative z-10 flex items-center gap-0 px-4 md:px-6 border-b"
             style={{ borderColor: CREATIVE_NAV_BORDER, height: 52, background: "hsl(222 22% 6% / 0.96)", backdropFilter: "blur(8px)" }}>
 
+            {/* Mobile hamburger */}
+            {isMobile && (
+              <button
+                onClick={() => setMobileDrawerOpen(o => !o)}
+                className="mr-3 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ color: "hsl(220 10% 60%)", background: "hsl(0 0% 100% / 0.05)" }}>
+                {mobileDrawerOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+              </button>
+            )}
+
             {/* Brand */}
-            <div className="flex items-center gap-2.5 mr-6 flex-shrink-0">
+            <div className="flex items-center gap-2.5 mr-4 md:mr-6 flex-shrink-0">
               <div className="w-7 h-7 rounded-xl flex items-center justify-center"
                 style={{ background: `linear-gradient(135deg, ${CREATIVE_ACCENT}, hsl(28 82% 50%))` }}>
                 <Tag className="w-3.5 h-3.5 text-white" />
@@ -560,8 +593,8 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
               </span>
             </div>
 
-            {/* Horizontal nav links */}
-            <nav className="flex items-center flex-1 overflow-x-auto" style={{ scrollbarWidth: "none" as const }}>
+            {/* Horizontal nav links — hidden on mobile */}
+            <nav className={cn("flex items-center flex-1 overflow-x-auto", isMobile && "hidden")} style={{ scrollbarWidth: "none" as const }}>
               {commandNav.map(({ to, label, icon: Icon }) => (
                 <NavLink key={to} to={to} end={to === "/"}
                   className="flex items-center gap-1.5 px-3 h-[52px] text-[12px] font-medium whitespace-nowrap transition-colors border-b-2 flex-shrink-0"
@@ -663,9 +696,34 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           </div>
         </header>
 
+        {/* Mobile drawer overlay for creative mode */}
+        {isMobile && mobileDrawerOpen && (
+          <div className="fixed inset-0 z-40 flex" style={{ top: 80 }}>
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileDrawerOpen(false)} />
+            <div className="relative z-50 w-72 h-full overflow-y-auto flex flex-col"
+              style={{ background: CREATIVE_NAV_BG, borderRight: `1px solid ${CREATIVE_NAV_BORDER}` }}>
+              <div className="px-4 py-3 border-b" style={{ borderColor: CREATIVE_NAV_BORDER }}>
+                <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: CREATIVE_ACCENT }}>Navigation</p>
+              </div>
+              <nav className="flex-1 p-3 space-y-0.5">
+                {[...commandNav, ...workItems, ...toolsNav].map(({ to, label, icon: Icon }) => (
+                  <NavLink key={to} to={to} end={to === "/"}
+                    onClick={() => setMobileDrawerOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all"
+                    style={({ isActive }) => ({
+                      color: isActive ? CREATIVE_ACCENT : "hsl(220 10% 58%)",
+                      background: isActive ? CREATIVE_ACCENT_DIM : "transparent",
+                    })}>
+                    {({ isActive }) => <><Icon className="w-4 h-4 flex-shrink-0" style={{ color: isActive ? CREATIVE_ACCENT : "hsl(220 10% 42%)" }} />{label}</>}
+                  </NavLink>
+                ))}
+              </nav>
+            </div>
+          </div>
+        )}
+
         {/* Main canvas — pure black */}
-        <main className="flex-1 overflow-auto relative" style={{ background: "#080808" }}>
-          {/* Full-canvas art texture — very subtle */}
+        <main className="flex-1 overflow-auto relative" style={{ background: "#080808", paddingBottom: isMobile ? 72 : undefined }}>
           {/* Radial glow — top teal */}
           <div className="fixed pointer-events-none z-0"
             style={{ top: -200, left: "10%", right: "10%", height: 500, background: `radial-gradient(ellipse 80% 60% at 50% 0%, hsl(174 72% 52% / 0.06) 0%, transparent 70%)` }} />
@@ -677,6 +735,44 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           </div>
         </main>
 
+        {/* Mobile bottom nav for creative mode */}
+        {isMobile && (
+          <nav
+            className="fixed bottom-0 left-0 right-0 z-50 flex items-stretch"
+            style={{
+              height: 64,
+              background: CREATIVE_NAV_BG,
+              borderTop: `1px solid ${CREATIVE_NAV_BORDER}`,
+              paddingBottom: "env(safe-area-inset-bottom)",
+            }}>
+            {mobileBottomItems.map(({ to, label, icon: Icon }) => {
+              const isActive = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+              return (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={to === "/"}
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="flex-1 flex flex-col items-center justify-center gap-1 transition-all"
+                  style={isActive ? { background: CREATIVE_ACCENT_DIM } : undefined}>
+                  <Icon className="w-5 h-5" style={{ color: isActive ? CREATIVE_ACCENT : "hsl(220 10% 48%)" }} />
+                  <span className="text-[9px] font-semibold truncate max-w-[52px] text-center"
+                    style={{ color: isActive ? CREATIVE_ACCENT : "hsl(220 10% 48%)" }}>
+                    {label}
+                  </span>
+                </NavLink>
+              );
+            })}
+            <button
+              onClick={() => setMobileDrawerOpen(o => !o)}
+              className="flex-1 flex flex-col items-center justify-center gap-1 transition-all"
+              style={{ color: "hsl(220 10% 48%)" }}>
+              <MoreHorizontal className="w-5 h-5" />
+              <span className="text-[9px] font-semibold">More</span>
+            </button>
+          </nav>
+        )}
+
         {user?.id && (
           <NotificationsPanel userId={user.id} open={notifOpen} onClose={() => setNotifOpen(false)} onUnreadChange={setUnreadCount} />
         )}
@@ -685,12 +781,76 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   }
 
   return (
-    <div className="pmo-grid" style={{ gridTemplateColumns: `${sidebarWidth}px 1fr`, paddingTop: 28, ...(theme.cssVars as React.CSSProperties) }}>
+    <div className="pmo-grid" style={{
+      gridTemplateColumns: isMobile ? "1fr" : `${sidebarWidth}px 1fr`,
+      paddingTop: 28,
+      ...(theme.cssVars as React.CSSProperties)
+    }}>
+
+      {/* ── Mobile backdrop ── */}
+      {isMobile && mobileDrawerOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+          style={{ top: 28 }}
+          onClick={() => setMobileDrawerOpen(false)}
+        />
+      )}
+
+      {/* ── Mobile top bar ── */}
+      {isMobile && (
+        <header
+          className="fixed left-0 right-0 z-50 flex items-center gap-3 px-4"
+          style={{
+            top: 28,
+            height: 52,
+            background: theme.sidebarBg,
+            borderBottom: "1px solid hsl(0 0% 100% / 0.08)",
+          }}>
+          <button
+            onClick={() => setMobileDrawerOpen(o => !o)}
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+            style={{ color: "hsl(0 0% 100% / 0.7)", background: "hsl(0 0% 100% / 0.06)" }}>
+            {mobileDrawerOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </button>
+          <div className="flex-1 flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: "linear-gradient(135deg, hsl(222 88% 65%), hsl(174 68% 42%))" }}>
+              <Tag className="w-3 h-3 text-white" />
+            </div>
+            <span className="text-[13px] font-black text-white leading-none tracking-tight">Martin PMO</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="text-[10px] font-bold px-2 py-1 rounded-lg"
+              style={{ color: scoreColor, background: "hsl(0 0% 100% / 0.06)", border: "1px solid hsl(0 0% 100% / 0.08)" }}>
+              {animatedScore}
+            </div>
+            <button
+              onClick={() => setNotifOpen(true)}
+              className="relative w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ color: "hsl(0 0% 100% / 0.6)", background: "hsl(0 0% 100% / 0.06)" }}>
+              <Bell className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full"
+                  style={{ background: "hsl(38 92% 52%)" }} />
+              )}
+            </button>
+          </div>
+        </header>
+      )}
 
       {/* ── Sidebar ── */}
       <aside
-        className="flex flex-col h-screen sticky top-0 overflow-hidden transition-all duration-300 relative"
-        style={{ width: sidebarWidth }}>
+        className={cn(
+          "flex flex-col overflow-hidden transition-all duration-300 relative",
+          isMobile
+            ? "fixed z-50 h-[calc(100vh-28px)] top-7 left-0"
+            : "h-screen sticky top-0"
+        )}
+        style={{
+          width: isMobile ? 264 : sidebarWidth,
+          transform: isMobile && !mobileDrawerOpen ? "translateX(-100%)" : "translateX(0)",
+          transition: "transform 0.3s cubic-bezier(0.4,0,0.2,1)",
+        }}>
 
         {/* Base background — mode-themed gradient */}
         <div className="absolute inset-0 z-0" style={{ background: theme.sidebarBg }} />
@@ -1195,9 +1355,50 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
       </aside>
 
       {/* Main content */}
-      <main className="min-h-screen overflow-auto bg-background">
+      <main className="min-h-screen overflow-auto bg-background"
+        style={isMobile ? { paddingTop: 52, paddingBottom: 72 } : undefined}>
         {children}
       </main>
+
+      {/* ── Mobile bottom nav ── */}
+      {isMobile && (
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-50 flex items-stretch"
+          style={{
+            height: 64,
+            background: theme.sidebarBg,
+            borderTop: "1px solid hsl(0 0% 100% / 0.08)",
+            paddingBottom: "env(safe-area-inset-bottom)",
+          }}>
+          {mobileBottomItems.map(({ to, label, icon: Icon }) => {
+            const isActive = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+            const trace = navTrace(to);
+            const iconCol = isActive ? theme.accentIcon : trace ? trace : "hsl(0 0% 100% / 0.45)";
+            return (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === "/"}
+                onClick={() => setMobileDrawerOpen(false)}
+                className="flex-1 flex flex-col items-center justify-center gap-1 transition-all"
+                style={isActive ? { background: theme.accentBg } : undefined}>
+                <Icon className="w-5 h-5" style={{ color: iconCol }} />
+                <span className="text-[9px] font-semibold truncate max-w-[52px] text-center"
+                  style={{ color: isActive ? "hsl(38 10% 96%)" : "hsl(0 0% 100% / 0.45)" }}>
+                  {label}
+                </span>
+              </NavLink>
+            );
+          })}
+          <button
+            onClick={() => setMobileDrawerOpen(o => !o)}
+            className="flex-1 flex flex-col items-center justify-center gap-1 transition-all"
+            style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+            <MoreHorizontal className="w-5 h-5" />
+            <span className="text-[9px] font-semibold">More</span>
+          </button>
+        </nav>
+      )}
 
       {/* Notifications Panel */}
       {user?.id && (

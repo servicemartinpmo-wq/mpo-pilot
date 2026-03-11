@@ -227,22 +227,20 @@ export default function Advisory() {
       {/* ── Header ── */}
       <div className="rounded-2xl border-2 overflow-hidden"
         style={{ borderColor: "hsl(var(--electric-blue) / 0.2)", background: "linear-gradient(135deg, hsl(var(--electric-blue) / 0.06) 0%, hsl(var(--teal) / 0.03) 60%, hsl(var(--background)) 100%)" }}>
-        <div className="px-7 py-6 relative flex items-center justify-center">
-          <div className="text-center">
-            <div className="flex items-center gap-2 mb-2 justify-center">
+        <div className="px-4 sm:px-7 py-5 sm:py-6 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex-1 text-center sm:text-left">
+            <div className="flex items-center gap-2 mb-1.5 justify-center sm:justify-start">
               <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Martin PMO-Ops</span>
             </div>
-            <h1 className="text-3xl font-black text-foreground tracking-tight mb-2">Advisory</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight mb-1.5">Advisory</h1>
             <p className="text-sm text-muted-foreground font-medium max-w-xl">
               Expert advisors for every domain — submit a request, upload documents or messages, and receive structured guidance aligned to your organization's priorities.
             </p>
           </div>
-          <div className="absolute right-0">
-            <button onClick={getAiRecommendation}
-              className="flex items-center gap-2 text-sm font-bold px-4 py-2.5 rounded-xl border-2 border-electric-blue text-electric-blue hover:bg-electric-blue/10 transition-colors">
-              <Sparkles className="w-4 h-4" /> Get Recommendation
-            </button>
-          </div>
+          <button onClick={getAiRecommendation}
+            className="self-center sm:self-start flex items-center gap-2 text-sm font-bold px-4 py-2.5 rounded-xl border-2 border-electric-blue text-electric-blue hover:bg-electric-blue/10 transition-colors">
+            <Sparkles className="w-4 h-4" /> <span className="hidden sm:inline">Get </span>Recommendation
+          </button>
         </div>
 
         {aiSuggestion && (

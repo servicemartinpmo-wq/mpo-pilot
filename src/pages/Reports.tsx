@@ -318,7 +318,7 @@ export default function Reports() {
         </div>
       </div>
 
-      <div className="px-6 space-y-6">
+      <div className="px-4 sm:px-6 space-y-5 sm:space-y-6">
 
       {/* Tab bar — wraps on smaller screens */}
       <div className="flex flex-wrap gap-1 p-1 bg-secondary rounded-xl border border-border">

@@ -180,19 +180,17 @@ export default function ActionItems() {
   }
 
   return (
-    <div className="p-6 space-y-5 max-w-none">
+    <div className="p-4 sm:p-6 space-y-5 max-w-none">
 
       {/* ── Header ── */}
-      <div className="relative flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-black text-foreground mb-1 tracking-tight">Action Items & Events</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex-1">
+          <h1 className="text-xl sm:text-2xl font-black text-foreground mb-0.5 tracking-tight">Action Items & Events</h1>
           <p className="text-sm text-muted-foreground font-medium">Structured · Concise · Actionable</p>
         </div>
-        <div className="absolute right-0">
-          <button className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border-2 border-electric-blue/40 text-electric-blue font-semibold hover:bg-electric-blue/8 transition-colors">
-            <Plus className="w-3.5 h-3.5" /> New Item
-          </button>
-        </div>
+        <button className="self-start sm:self-auto flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border-2 border-electric-blue/40 text-electric-blue font-semibold hover:bg-electric-blue/8 transition-colors">
+          <Plus className="w-3.5 h-3.5" /> New Item
+        </button>
       </div>
 
       {/* ── Your Focus spotlight ── */}

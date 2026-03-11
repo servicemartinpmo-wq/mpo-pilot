@@ -292,15 +292,15 @@ export default function Departments() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <div className="page-header bg-card">
-        <div className="relative flex items-center justify-center gap-4">
-          <div className="text-center">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex-1 text-center sm:text-left">
             <div className="section-label mb-1.5">Organization</div>
-            <h1 className="text-2xl font-black text-foreground tracking-tight mb-1">Department Engine</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight mb-1">Department Engine</h1>
             <p className="text-sm text-muted-foreground">
               {departments.length} departments · Operational Maturity Scoring · CMMI-based assessment
             </p>
           </div>
-          <div className="absolute right-0 flex gap-3">
+          <div className="flex flex-wrap justify-center sm:justify-end gap-2">
             <div className="bg-secondary rounded-xl px-4 py-2.5 text-center">
               <div className="text-2xl font-black font-mono text-electric-blue">{avgMaturity}</div>
               <div className="section-label">Avg Maturity</div>
@@ -323,7 +323,7 @@ export default function Departments() {
         </div>
       </div>
 
-      <div className="flex-1 p-6 space-y-6">
+      <div className="flex-1 p-4 sm:p-6 space-y-5 sm:space-y-6">
         <div className="data-card">
           <div className="data-card-header">
             <div className="flex items-center gap-2">
@@ -336,7 +336,7 @@ export default function Departments() {
               filter === "All" ? "bg-electric-blue/10 text-electric-blue border-electric-blue/30" : "text-muted-foreground border-border"
             )}>All Tiers</button>
           </div>
-          <div className="p-4 grid grid-cols-5 gap-3">
+          <div className="p-4 grid grid-cols-3 sm:grid-cols-5 gap-3">
             {tiers.map(tier => {
               const count = tierCounts[tier] ?? 0;
               const s = tierStyles[tier];

@@ -107,25 +107,23 @@ export default function CRM() {
   const wonValue = SAMPLE_OPPORTUNITIES.filter(o => o.stage === "closed_won").reduce((s, o) => s + o.value, 0);
 
   return (
-    <div className="min-h-screen p-6 space-y-6" style={{ background: "hsl(224 22% 10%)" }}>
+    <div className="min-h-screen p-4 sm:p-6 space-y-5 sm:space-y-6" style={{ background: "hsl(224 22% 10%)" }}>
 
       {/* Header */}
-      <div className="relative flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-black mb-1" style={{ color: "hsl(38 15% 94%)" }}>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex-1">
+          <h1 className="text-xl sm:text-2xl font-black mb-0.5" style={{ color: "hsl(38 15% 94%)" }}>
             CRM & Sales Intelligence
           </h1>
           <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
             Companies, contacts, and opportunity pipeline
           </p>
         </div>
-        <div className="absolute right-0">
-          <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-            style={{ background: "hsl(38 92% 52%)", color: "hsl(224 22% 8%)" }}>
-            <Plus className="w-4 h-4" />
-            Add {tab === "companies" ? "Company" : tab === "contacts" ? "Contact" : "Opportunity"}
-          </button>
-        </div>
+        <button className="self-start sm:self-auto flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+          style={{ background: "hsl(38 92% 52%)", color: "hsl(224 22% 8%)" }}>
+          <Plus className="w-4 h-4" />
+          Add {tab === "companies" ? "Company" : tab === "contacts" ? "Contact" : "Opportunity"}
+        </button>
       </div>
 
       {/* Stats row */}

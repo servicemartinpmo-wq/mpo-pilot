@@ -212,34 +212,32 @@ export default function Decisions() {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-7 max-w-[1400px] mx-auto">
+    <div className="min-h-screen bg-background p-4 sm:p-7 max-w-[1400px] mx-auto">
       {/* Header */}
-      <div className="relative flex items-center justify-center mb-8">
-        <div className="text-center">
-          <div className="flex items-center gap-2.5 mb-2 justify-center">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6 sm:mb-8">
+        <div className="flex-1">
+          <div className="flex items-center gap-2.5 mb-1.5">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center"
               style={{ background: "hsl(38 92% 52% / 0.12)", border: "1px solid hsl(38 92% 52% / 0.2)" }}>
               <Scale className="w-4.5 h-4.5 text-amber" />
             </div>
-            <h1 className="text-2xl font-black text-foreground tracking-tight">Decision Log</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">Decision Log</h1>
           </div>
           <p className="text-sm text-muted-foreground">
             Build your organization's decision memory. Track reasoning, outcomes, and accuracy.
           </p>
         </div>
-        <div className="absolute right-0">
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95"
-            style={{ background: "hsl(38 92% 52%)" }}>
-            <Plus className="w-4 h-4" />
-            Log Decision
-          </button>
-        </div>
+        <button
+          onClick={() => setShowModal(true)}
+          className="self-start sm:self-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95"
+          style={{ background: "hsl(38 92% 52%)" }}>
+          <Plus className="w-4 h-4" />
+          Log Decision
+        </button>
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 sm:mb-8">
         {stats.map(({ label, value, color }) => (
           <div key={label} className="rounded-xl border p-5"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>

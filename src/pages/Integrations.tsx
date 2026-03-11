@@ -338,35 +338,35 @@ export default function Integrations() {
     <div className="min-h-screen bg-background">
 
       {/* ── Page header ── */}
-      <div className="px-8 pt-8 pb-6 border-b border-border">
-        <div className="relative flex items-center justify-center gap-4">
-          <div className="text-center">
+      <div className="px-4 sm:px-8 pt-6 sm:pt-8 pb-5 sm:pb-6 border-b border-border">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1">
             <p className="section-label mb-2">Command Center</p>
-            <h1 className="text-3xl font-black text-foreground tracking-tight">Integrations</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">Integrations</h1>
             <p className="text-sm text-muted-foreground mt-1.5 max-w-lg">
               Connect your inbox, calendar, documents, and messaging — AI reads everything and surfaces what matters.
             </p>
           </div>
-          <div className="absolute right-0 flex items-center gap-6">
+          <div className="flex items-center gap-4 sm:gap-6 mt-2 sm:mt-0">
             <div>
-              <div className="text-2xl font-black font-mono text-signal-green">{connectedCount}</div>
+              <div className="text-xl sm:text-2xl font-black font-mono text-signal-green">{connectedCount}</div>
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Connected</div>
             </div>
-            <div className="w-px h-8 bg-border" />
+            <div className="w-px h-8 bg-border hidden sm:block" />
             <div>
-              <div className="text-2xl font-black font-mono text-electric-blue">{availableCount}</div>
+              <div className="text-xl sm:text-2xl font-black font-mono text-electric-blue">{availableCount}</div>
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Available</div>
             </div>
-            <div className="w-px h-8 bg-border" />
+            <div className="w-px h-8 bg-border hidden sm:block" />
             <div>
-              <div className="text-2xl font-black font-mono text-muted-foreground">{comingSoonCount}</div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Coming Soon</div>
+              <div className="text-xl sm:text-2xl font-black font-mono text-muted-foreground">{comingSoonCount}</div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Soon</div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-8 py-7 space-y-8 max-w-5xl">
+      <div className="px-4 sm:px-8 py-5 sm:py-7 space-y-6 sm:space-y-8 max-w-5xl">
 
         {/* ── AI Inbox banner ── */}
         <div className="rounded-xl border border-electric-blue/25 px-6 py-5 flex gap-5 items-start"

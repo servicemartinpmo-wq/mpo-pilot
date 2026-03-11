@@ -187,32 +187,30 @@ export default function Projects() {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-7 max-w-[1400px] mx-auto">
+    <div className="min-h-screen bg-background p-4 sm:p-7 max-w-[1400px] mx-auto">
       {/* Header */}
-      <div className="relative flex items-center justify-center mb-8">
-        <div className="text-center">
-          <div className="flex items-center gap-2.5 mb-2 justify-center">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6 sm:mb-8">
+        <div className="flex-1">
+          <div className="flex items-center gap-2.5 mb-1.5">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center"
               style={{ background: "hsl(222 88% 65% / 0.12)", border: "1px solid hsl(222 88% 65% / 0.2)" }}>
               <Rocket className="w-4.5 h-4.5 text-electric-blue" />
             </div>
-            <h1 className="text-2xl font-black text-foreground tracking-tight">Projects</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">Projects</h1>
           </div>
           <p className="text-sm text-muted-foreground">Track, manage, and ship your projects.</p>
         </div>
-        <div className="absolute right-0">
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95"
-            style={{ background: "hsl(222 88% 65%)" }}>
-            <Plus className="w-4 h-4" />
-            New Project
-          </button>
-        </div>
+        <button
+          onClick={() => setShowModal(true)}
+          className="self-start sm:self-auto flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95"
+          style={{ background: "hsl(222 88% 65%)" }}>
+          <Plus className="w-4 h-4" />
+          New Project
+        </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4 mb-7">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-7">
         {stats.map(({ label, value, color }) => (
           <div key={label} className="rounded-xl border p-5"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
