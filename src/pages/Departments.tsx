@@ -282,15 +282,15 @@ export default function Departments() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <div className="page-header bg-card">
-        <div className="flex items-start justify-between gap-4">
-          <div>
+        <div className="relative flex items-center justify-center gap-4">
+          <div className="text-center">
             <div className="section-label mb-1.5">Organization</div>
-            <h1 className="text-2xl font-black text-foreground tracking-tight mb-1 text-center">Department Engine</h1>
-            <p className="text-sm text-muted-foreground text-center">
+            <h1 className="text-2xl font-black text-foreground tracking-tight mb-1">Department Engine</h1>
+            <p className="text-sm text-muted-foreground">
               {departments.length} departments · Operational Maturity Scoring · CMMI-based assessment
             </p>
           </div>
-          <div className="flex gap-3 flex-shrink-0">
+          <div className="absolute right-0 flex gap-3">
             <div className="bg-secondary rounded-xl px-4 py-2.5 text-center">
               <div className="text-2xl font-black font-mono text-electric-blue">{avgMaturity}</div>
               <div className="section-label">Avg Maturity</div>

@@ -147,12 +147,12 @@ export default function Diagnostics() {
       <UpgradeBanner storageKey="diag_upgrade_banner" message="Unlock advanced diagnostics — deeper signal analysis, custom thresholds, and automated alerts." />
     <div className="p-6 space-y-6">
       {/* ── Header ── */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-foreground mb-0.5 text-center">Diagnostics</h1>
-          <p className="text-sm text-muted-foreground text-center">Signal detection · Root cause analysis · Governance oversight</p>
+      <div className="relative flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-xl font-bold text-foreground mb-0.5">Diagnostics</h1>
+          <p className="text-sm text-muted-foreground">Signal detection · Root cause analysis · Governance oversight</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="absolute right-0 flex items-center gap-3">
           <button onClick={() => setShowSummary(v => !v)}
             className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border-2 border-electric-blue/40 text-electric-blue font-semibold hover:bg-electric-blue/8 transition-colors">
             <Zap className="w-3.5 h-3.5" />

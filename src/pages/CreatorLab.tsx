@@ -230,16 +230,16 @@ export default function CreatorLab() {
     <div className="p-6 space-y-6 max-w-5xl">
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1.5">
+      <div className="relative flex items-center justify-center">
+        <div className="text-center">
+          <div className="flex items-center gap-2 mb-1.5 justify-center">
             <Unlock className="w-4 h-4 text-signal-green" />
             <span className="text-xs font-bold text-signal-green uppercase tracking-wider">Creator Access · Private</span>
           </div>
-          <h1 className="text-3xl font-black text-foreground tracking-tight text-center">Creator Lab</h1>
-          <p className="text-sm text-muted-foreground mt-1 text-center">Customize, configure, and control every aspect of the app.</p>
+          <h1 className="text-3xl font-black text-foreground tracking-tight">Creator Lab</h1>
+          <p className="text-sm text-muted-foreground mt-1">Customize, configure, and control every aspect of the app.</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="absolute right-0 flex items-center gap-3">
           <button
             onClick={() => { localStorage.removeItem(STORAGE_KEY); setUnlocked(false); }}
             className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border transition-colors"

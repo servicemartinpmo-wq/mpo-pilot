@@ -567,24 +567,22 @@ export default function Workflows() {
       )}
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-0.5">
-            <h1 className="text-xl font-bold text-foreground text-center">Prebuilt Workflows</h1>
+      <div className="relative flex items-center justify-center">
+        <div className="text-center">
+          <div className="flex items-center gap-2 mb-0.5 justify-center">
+            <h1 className="text-xl font-bold text-foreground">Prebuilt Workflows</h1>
             <span className="text-[10px] px-2 py-0.5 rounded font-semibold"
               style={{ background: "hsl(var(--electric-blue) / 0.12)", color: "hsl(var(--electric-blue))", border: "1px solid hsl(var(--electric-blue) / 0.3)" }}>
               {WORKFLOWS.length} WORKFLOWS
             </span>
           </div>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-sm text-muted-foreground">
             Select, generate, or bundle workflows. Deploy to any app module. System bundles run continuously.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="font-mono font-bold" style={{ color: "hsl(var(--electric-blue))" }}>{runningCount}</span> running
-            <span className="font-mono font-bold" style={{ color: "hsl(var(--signal-green))" }}>{completeCount}</span> complete
-          </div>
+        <div className="absolute right-0 flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="font-mono font-bold" style={{ color: "hsl(var(--electric-blue))" }}>{runningCount}</span> running
+          <span className="font-mono font-bold" style={{ color: "hsl(var(--signal-green))" }}>{completeCount}</span> complete
         </div>
       </div>
 

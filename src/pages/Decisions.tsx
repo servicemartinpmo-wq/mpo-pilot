@@ -214,26 +214,28 @@ export default function Decisions() {
   return (
     <div className="min-h-screen bg-background p-7 max-w-[1400px] mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <div className="flex items-center gap-2.5 mb-2">
+      <div className="relative flex items-center justify-center mb-8">
+        <div className="text-center">
+          <div className="flex items-center gap-2.5 mb-2 justify-center">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center"
               style={{ background: "hsl(38 92% 52% / 0.12)", border: "1px solid hsl(38 92% 52% / 0.2)" }}>
               <Scale className="w-4.5 h-4.5 text-amber" />
             </div>
-            <h1 className="text-2xl font-black text-foreground tracking-tight text-center">Decision Log</h1>
+            <h1 className="text-2xl font-black text-foreground tracking-tight">Decision Log</h1>
           </div>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-sm text-muted-foreground">
             Build your organization's decision memory. Track reasoning, outcomes, and accuracy.
           </p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95"
-          style={{ background: "hsl(38 92% 52%)" }}>
-          <Plus className="w-4 h-4" />
-          Log Decision
-        </button>
+        <div className="absolute right-0">
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-95"
+            style={{ background: "hsl(38 92% 52%)" }}>
+            <Plus className="w-4 h-4" />
+            Log Decision
+          </button>
+        </div>
       </div>
 
       {/* Stats row */}

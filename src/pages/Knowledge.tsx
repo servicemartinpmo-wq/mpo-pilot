@@ -937,20 +937,20 @@ export default function Knowledge() {
       )}
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-0.5">
-            <h1 className="text-xl font-bold text-foreground text-center">Resource Hub</h1>
+      <div className="relative flex items-center justify-center">
+        <div className="text-center">
+          <div className="flex items-center gap-2 mb-0.5 justify-center">
+            <h1 className="text-xl font-bold text-foreground">Resource Hub</h1>
             <span className="text-[10px] px-2 py-0.5 rounded font-semibold"
               style={{ background: "hsl(var(--teal) / 0.12)", color: "hsl(var(--teal))", border: "1px solid hsl(var(--teal) / 0.3)" }}>
               LIVING
             </span>
           </div>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-sm text-muted-foreground">
             Templates, SOPs, saved documents, and lessons — dynamically surfaced based on diagnostics and active challenges.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="absolute right-0">
           <button className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border-2 font-semibold transition-all hover:opacity-90"
             style={{ borderColor: "hsl(var(--electric-blue) / 0.3)", color: "hsl(var(--electric-blue))", background: "hsl(var(--electric-blue) / 0.07)" }}>
             <Upload className="w-3.5 h-3.5" /> Upload SOP

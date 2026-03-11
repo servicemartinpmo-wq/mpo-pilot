@@ -339,15 +339,15 @@ export default function Integrations() {
 
       {/* ── Page header ── */}
       <div className="px-8 pt-8 pb-6 border-b border-border">
-        <div className="flex items-end justify-between gap-4">
-          <div>
+        <div className="relative flex items-center justify-center gap-4">
+          <div className="text-center">
             <p className="section-label mb-2">Command Center</p>
-            <h1 className="text-3xl font-black text-foreground tracking-tight text-center">Integrations</h1>
-            <p className="text-sm text-muted-foreground mt-1.5 max-w-lg text-center">
+            <h1 className="text-3xl font-black text-foreground tracking-tight">Integrations</h1>
+            <p className="text-sm text-muted-foreground mt-1.5 max-w-lg">
               Connect your inbox, calendar, documents, and messaging — AI reads everything and surfaces what matters.
             </p>
           </div>
-          <div className="flex items-center gap-6 text-right">
+          <div className="absolute right-0 flex items-center gap-6">
             <div>
               <div className="text-2xl font-black font-mono text-signal-green">{connectedCount}</div>
               <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Connected</div>

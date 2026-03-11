@@ -662,15 +662,15 @@ export default function Initiatives() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <div className="page-header bg-card">
-        <div className="flex items-start justify-between gap-4">
-          <div>
+        <div className="relative flex items-center justify-center gap-4">
+          <div className="text-center">
             <div className="section-label mb-1.5">Portfolio</div>
-            <h1 className="text-2xl font-black text-foreground tracking-tight mb-1 text-center">Initiatives</h1>
-            <p className="text-sm text-muted-foreground text-center">
+            <h1 className="text-2xl font-black text-foreground tracking-tight mb-1">Initiatives</h1>
+            <p className="text-sm text-muted-foreground">
               {initiatives.length} initiatives · Impact scored · OKR & strategic pillar alignment
             </p>
           </div>
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="absolute right-0 flex items-center gap-3">
             <div className="grid grid-cols-3 gap-2">
               <div className="bg-secondary rounded-xl px-3 py-2 text-center">
                 <div className="text-xl font-black font-mono text-signal-green">{onTrack}</div>

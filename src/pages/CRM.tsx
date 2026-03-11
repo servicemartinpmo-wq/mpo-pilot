@@ -109,20 +109,22 @@ export default function CRM() {
     <div className="min-h-screen p-6 space-y-6" style={{ background: "hsl(224 22% 10%)" }}>
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-black mb-1 text-center" style={{ color: "hsl(38 15% 94%)" }}>
+      <div className="relative flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-black mb-1" style={{ color: "hsl(38 15% 94%)" }}>
             CRM & Sales Intelligence
           </h1>
-          <p className="text-sm text-center" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+          <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
             Companies, contacts, and opportunity pipeline
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
-          style={{ background: "hsl(38 92% 52%)", color: "hsl(224 22% 8%)" }}>
-          <Plus className="w-4 h-4" />
-          Add {tab === "companies" ? "Company" : tab === "contacts" ? "Contact" : "Opportunity"}
-        </button>
+        <div className="absolute right-0">
+          <button className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
+            style={{ background: "hsl(38 92% 52%)", color: "hsl(224 22% 8%)" }}>
+            <Plus className="w-4 h-4" />
+            Add {tab === "companies" ? "Company" : tab === "contacts" ? "Contact" : "Opportunity"}
+          </button>
+        </div>
       </div>
 
       {/* Stats row */}

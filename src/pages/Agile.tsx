@@ -180,16 +180,16 @@ export default function Agile() {
     <div className="min-h-screen p-6 space-y-6">
 
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-black mb-1 text-center" style={{ color: "hsl(38 15% 94%)" }}>
+      <div className="relative flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-black mb-1" style={{ color: "hsl(38 15% 94%)" }}>
             Work Management
           </h1>
-          <p className="text-sm text-center" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+          <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
             Board, backlog, sprints, and bug tracking
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="absolute right-0 flex items-center gap-3">
           {tab === "board" || tab === "backlog" ? (
             <div className="flex items-center gap-2 px-3 py-2 rounded-xl border text-sm"
               style={{ background: "hsl(38 92% 52% / 0.08)", borderColor: "hsl(38 92% 52% / 0.2)", color: "hsl(38 92% 62%)" }}>

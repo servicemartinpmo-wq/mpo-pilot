@@ -240,14 +240,16 @@ export default function Reports() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-foreground mb-0.5 text-center">Reports</h1>
-          <p className="text-sm text-muted-foreground text-center">Organizational reports — executive, operational, quarterly, and annual</p>
+      <div className="relative flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-xl font-bold text-foreground mb-0.5">Reports</h1>
+          <p className="text-sm text-muted-foreground">Organizational reports — executive, operational, quarterly, and annual</p>
         </div>
-        <button className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border border-border bg-card hover:bg-secondary transition-colors font-medium text-foreground">
-          <Download className="w-3.5 h-3.5" /> Export PDF
-        </button>
+        <div className="absolute right-0">
+          <button className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border border-border bg-card hover:bg-secondary transition-colors font-medium text-foreground">
+            <Download className="w-3.5 h-3.5" /> Export PDF
+          </button>
+        </div>
       </div>
 
       {/* Tab bar — wraps on smaller screens */}

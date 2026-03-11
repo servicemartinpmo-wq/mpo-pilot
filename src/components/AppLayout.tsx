@@ -177,24 +177,39 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
         className="flex flex-col h-screen sticky top-0 overflow-hidden transition-all duration-300 relative"
         style={{ width: sidebarWidth }}>
 
-        {/* Base background */}
+        {/* Base background — rich layered gradient */}
         <div className="absolute inset-0 z-0" style={{
-          background: "hsl(var(--sidebar-background))"
+          background: "linear-gradient(160deg, hsl(222 32% 13%) 0%, hsl(222 28% 9%) 50%, hsl(220 30% 7%) 100%)"
         }} />
 
-        {/* Subtle top glow */}
-        <div className="absolute top-0 left-0 right-0 h-40 z-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse 150% 80% at 50% -10%, hsl(222 88% 65% / 0.08) 0%, transparent 70%)"
+        {/* Laminated sheen — diagonal gloss */}
+        <div className="absolute inset-0 z-0 pointer-events-none" style={{
+          background: "linear-gradient(130deg, hsl(0 0% 100% / 0.045) 0%, transparent 38%, transparent 62%, hsl(0 0% 100% / 0.018) 100%)"
+        }} />
+
+        {/* Fine horizontal texture — subtle banding */}
+        <div className="absolute inset-0 z-0 pointer-events-none" style={{
+          backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 3px, hsl(0 0% 100% / 0.009) 3px, hsl(0 0% 100% / 0.009) 4px)"
+        }} />
+
+        {/* Embossed top edge */}
+        <div className="absolute top-0 left-0 right-0 h-px z-1 pointer-events-none" style={{
+          background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.16) 20%, hsl(0 0% 100% / 0.16) 80%, transparent)"
+        }} />
+
+        {/* Top glow */}
+        <div className="absolute top-0 left-0 right-0 h-44 z-0 pointer-events-none" style={{
+          background: "radial-gradient(ellipse 150% 80% at 50% -10%, hsl(222 88% 65% / 0.10) 0%, transparent 70%)"
         }} />
 
         {/* Bottom amber warmth */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 z-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse 120% 80% at 50% 115%, hsl(38 92% 52% / 0.06) 0%, transparent 70%)"
+        <div className="absolute bottom-0 left-0 right-0 h-36 z-0 pointer-events-none" style={{
+          background: "radial-gradient(ellipse 120% 80% at 50% 115%, hsl(38 92% 52% / 0.08) 0%, transparent 70%)"
         }} />
 
         {/* Right edge separator */}
         <div className="absolute inset-y-0 right-0 w-px z-10" style={{
-          background: "linear-gradient(180deg, transparent 0%, hsl(0 0% 100% / 0.05) 20%, hsl(0 0% 100% / 0.05) 80%, transparent 100%)"
+          background: "linear-gradient(180deg, transparent 0%, hsl(0 0% 100% / 0.09) 15%, hsl(0 0% 100% / 0.09) 85%, transparent 100%)"
         }} />
 
         {/* ── Content ── */}
