@@ -1116,8 +1116,7 @@ export default function Dashboard() {
             className="relative overflow-hidden w-full flex items-center justify-between px-5 py-3.5 border-b hover:bg-white/[0.02] transition-colors"
             style={{ borderColor: "hsl(var(--border))" }}
             onClick={() => setShowInsights((v) => !v)}>
-            <img src={onboardHero} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.14, mixBlendMode: "luminosity" }} />
-            <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, hsl(224 20% 12% / 0.92) 0%, hsl(224 20% 12% / 0.6) 60%, transparent 100%)" }} />
+            <img src={onboardHero} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.10, mixBlendMode: "luminosity" }} />
             <div className="relative z-10 flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-lg flex items-center justify-center"
                 style={{ background: "hsl(222 88% 65% / 0.14)" }}>

@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import {
   LayoutDashboard, Rocket, Activity, Building2,
@@ -21,10 +21,7 @@ import { playAlertSound, playSuccessSound, playPingSound } from "@/lib/notificat
 
 const navItems = [
   { to: "/",             label: "Dashboard",    icon: LayoutDashboard, group: "command" },
-  { to: "/projects",     label: "Projects",     icon: FolderOpen,      group: "command" },
   { to: "/initiatives",  label: "Initiatives",  icon: Rocket,          group: "command" },
-  { to: "/agile",        label: "Work Mgmt",    icon: Layers,          group: "command" },
-  { to: "/action-items", label: "Action Items", icon: CheckSquare,     group: "command" },
   { to: "/decisions",    label: "Decisions",    icon: Scale,           group: "command" },
   { to: "/departments",  label: "Departments",  icon: Building2,       group: "command" },
   { to: "/team",         label: "Team",         icon: Users,           group: "command" },
@@ -39,6 +36,12 @@ const navItems = [
   { to: "/integrations", label: "Integrations", icon: Plug,            group: "tools" },
   { to: "/pricing",      label: "Upgrade",      icon: CreditCard,      group: "tools" },
   { to: "/admin",        label: "Systems",      icon: Settings,        group: "tools" },
+];
+
+const workMgmtItems = [
+  { to: "/projects",     label: "Projects",     icon: FolderOpen   },
+  { to: "/action-items", label: "Action Items", icon: CheckSquare  },
+  { to: "/agile",        label: "Agile Board",  icon: Layers       },
 ];
 
 type SnoozeDuration = "off" | "1h" | "3h" | "tonight" | "weekend";
@@ -155,6 +158,9 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   const toolsNav = navItems.filter((n) => n.group === "tools");
   const { mode, setMode, label: modeLabel, allModes } = useUserMode();
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
+  const location = useLocation();
+  const isOnWorkMgmt = workMgmtItems.some(i => location.pathname.startsWith(i.to));
+  const [workMgmtOpen, setWorkMgmtOpen] = useState(() => isOnWorkMgmt);
 
   const scoreColor =
     animatedScore >= 70 ? "hsl(160 56% 46%)" :
@@ -292,6 +298,56 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                 )}
               </NavLink>
             ))}
+
+            {/* Work Management collapsible section */}
+            <div className="mt-1">
+              <button
+                onClick={() => setWorkMgmtOpen(o => !o)}
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 hover:bg-white/[0.04]">
+                <Layers className="w-4 h-4 flex-shrink-0" style={{ color: "hsl(0 0% 100% / 0.38)" }} />
+                {!collapsed && (
+                  <>
+                    <span className="flex-1 truncate text-left" style={{ color: "hsl(0 0% 100% / 0.58)" }}>Work Management</span>
+                    <ChevronRight className="w-3 h-3 flex-shrink-0 transition-transform duration-200"
+                      style={{ color: "hsl(0 0% 100% / 0.25)", transform: workMgmtOpen ? "rotate(90deg)" : "rotate(0deg)" }} />
+                  </>
+                )}
+              </button>
+
+              {/* Sub-items */}
+              {workMgmtOpen && (
+                <div className={collapsed ? "" : "ml-3 pl-2.5 border-l"} style={{ borderColor: "hsl(0 0% 100% / 0.08)" }}>
+                  {workMgmtItems.map(({ to, label, icon: Icon }) => (
+                    <NavLink
+                      key={to}
+                      to={to}
+                      className={({ isActive }) =>
+                        cn(
+                          "flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] font-medium transition-all duration-150",
+                          !isActive && "hover:bg-white/[0.04]"
+                        )
+                      }
+                      style={({ isActive }) => ({
+                        background: isActive ? "hsl(38 92% 52% / 0.10)" : undefined,
+                        boxShadow: isActive ? "inset 2px 0 0 hsl(38 92% 52% / 0.5)" : undefined,
+                      })}>
+                      {({ isActive }) => (
+                        <>
+                          <Icon className="w-3.5 h-3.5 flex-shrink-0"
+                            style={{ color: isActive ? "hsl(38 92% 62%)" : "hsl(0 0% 100% / 0.30)" }} />
+                          {!collapsed && (
+                            <span className="flex-1 truncate"
+                              style={{ color: isActive ? "hsl(38 10% 96%)" : "hsl(0 0% 100% / 0.50)" }}>
+                              {label}
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </NavLink>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Growth group */}
             <div className="mt-3">
