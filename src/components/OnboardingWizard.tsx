@@ -1114,6 +1114,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
   const [transitioning, setTransitioning] = useState(false);
   const [customDept, setCustomDept] = useState("");
   const [showDiagnostic, setShowDiagnostic] = useState(false);
+  const [showModeSelect, setShowModeSelect] = useState(false);
   const [savedProfile, setSavedProfile] = useState<CompanyProfile | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -1149,6 +1150,17 @@ export default function OnboardingWizard({ onComplete }: Props) {
     };
     saveProfile(profile);
     setSavedProfile(profile);
+    const isSmallOrg = form.teamSize === "1" || form.revenueRange === "Pre-revenue" || form.revenueRange === "< $1M";
+    if (isSmallOrg) {
+      setShowModeSelect(true);
+    } else {
+      setShowDiagnostic(true);
+    }
+  }
+
+  function selectMode(mode: "standard" | "guided") {
+    try { localStorage.setItem("apphia_user_mode", mode === "guided" ? "simple" : "founder"); } catch {}
+    setShowModeSelect(false);
     setShowDiagnostic(true);
   }
 
@@ -1197,6 +1209,84 @@ export default function OnboardingWizard({ onComplete }: Props) {
 
   if (showWelcome) {
     return <WelcomeScreen onStart={() => setShowWelcome(false)} />;
+  }
+
+  if (showModeSelect) {
+    return (
+      <div className="fixed inset-0 z-50 overflow-hidden flex flex-col items-center justify-center"
+        style={{ background: "linear-gradient(135deg, hsl(225 50% 6%) 0%, hsl(225 40% 10%) 50%, hsl(220 35% 8%) 100%)" }}>
+        <div className="absolute inset-0 pointer-events-none"
+          style={{ backgroundImage: `linear-gradient(hsl(233 72% 58% / 0.04) 1px, transparent 1px), linear-gradient(90deg, hsl(233 72% 58% / 0.04) 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
+        <div className="relative z-10 max-w-2xl w-full px-6 text-center">
+          <div className="flex items-center justify-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})`, boxShadow: `0 0 20px hsl(var(--electric-blue) / 0.3)` }}>
+              <Zap className="w-5 h-5 text-white" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-black text-white mb-2">How would you like to work?</h2>
+          <p className="text-sm mb-8" style={{ color: "hsl(0 0% 100% / 0.55)" }}>
+            Based on your profile, we've prepared two experience options. You can change this anytime from your profile settings.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            {/* Standard Mode */}
+            <button onClick={() => selectMode("standard")}
+              className="rounded-2xl p-6 text-left transition-all hover:scale-[1.02] group"
+              style={{ background: "hsl(0 0% 100% / 0.06)", border: "1.5px solid hsl(0 0% 100% / 0.15)", backdropFilter: "blur(12px)" }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                style={{ background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})` }}>
+                <Layers className="w-5 h-5 text-white" />
+              </div>
+              <div className="font-black text-white text-base mb-1">Full Command Center</div>
+              <div className="text-xs font-semibold mb-3" style={{ color: "hsl(var(--electric-blue) / 0.9)" }}>Recommended for growing teams</div>
+              <p className="text-xs leading-relaxed mb-4" style={{ color: "hsl(0 0% 100% / 0.55)" }}>
+                All modules active — strategy scores, KPIs, diagnostics, initiatives, CRM, workflows, and full reporting. Built for operators who want complete control.
+              </p>
+              <ul className="space-y-1.5 text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                {["All pages and modules", "Full diagnostic engine", "Strategy scores + benchmarks", "Automation rules + workflows"].map(f => (
+                  <li key={f} className="flex items-center gap-2">
+                    <CheckCircle className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(var(--teal))" }} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4 flex items-center gap-2 text-xs font-bold" style={{ color: ACCENT }}>
+                Select this <ChevronRight className="w-3.5 h-3.5" />
+              </div>
+            </button>
+
+            {/* Guided Mode */}
+            <button onClick={() => selectMode("guided")}
+              className="rounded-2xl p-6 text-left transition-all hover:scale-[1.02] group"
+              style={{ background: "hsl(0 0% 100% / 0.06)", border: "1.5px solid hsl(38 85% 50% / 0.4)", backdropFilter: "blur(12px)" }}>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
+                style={{ background: "linear-gradient(135deg, hsl(38 85% 46%), hsl(28 82% 50%))" }}>
+                <Eye className="w-5 h-5 text-white" />
+              </div>
+              <div className="font-black text-white text-base mb-1">Guided Mode</div>
+              <div className="text-xs font-semibold mb-3" style={{ color: "hsl(38 85% 60%)" }}>For solo owners &amp; first-time operators</div>
+              <p className="text-xs leading-relaxed mb-4" style={{ color: "hsl(0 0% 100% / 0.55)" }}>
+                A simplified, step-by-step experience in plain language. No jargon — just clear next actions, weekly check-ins, and focused priorities. You can switch to full mode anytime.
+              </p>
+              <ul className="space-y-1.5 text-xs" style={{ color: "hsl(0 0% 100% / 0.5)" }}>
+                {["Plain-language dashboard", "Weekly priority checklist", "Guided setup prompts", "Switch to full mode anytime"].map(f => (
+                  <li key={f} className="flex items-center gap-2">
+                    <CheckCircle className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(38 85% 55%)" }} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-4 flex items-center gap-2 text-xs font-bold" style={{ color: "hsl(38 85% 60%)" }}>
+                Select this <ChevronRight className="w-3.5 h-3.5" />
+              </div>
+            </button>
+          </div>
+          <p className="text-[11px]" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
+            You can switch your experience mode at any time from the sidebar settings.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (showDiagnostic) {

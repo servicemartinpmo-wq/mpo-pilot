@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export type UserMode = "founder" | "executive" | "startup" | "creative" | "freelance";
+export type UserMode = "founder" | "executive" | "startup" | "creative" | "freelance" | "simple";
 
 const MODE_LABELS: Record<UserMode, string> = {
   founder: "Founder",
@@ -8,6 +8,7 @@ const MODE_LABELS: Record<UserMode, string> = {
   startup: "Startup",
   creative: "Creative",
   freelance: "Freelance",
+  simple: "Guided Mode",
 };
 
 const MODE_DESCRIPTIONS: Record<UserMode, string> = {
@@ -16,6 +17,7 @@ const MODE_DESCRIPTIONS: Record<UserMode, string> = {
   startup: "Product launches, growth metrics, and team velocity",
   creative: "Creative workflows, project pipelines, and client delivery",
   freelance: "Client management, task tracking, and deliverable timelines",
+  simple: "Plain-language guidance with step-by-step support — no jargon",
 };
 
 const MODE_GREETING: Record<UserMode, string> = {
@@ -24,6 +26,7 @@ const MODE_GREETING: Record<UserMode, string> = {
   startup: "Growth signals and execution status",
   creative: "Your active projects and upcoming deliverables",
   freelance: "Your client work and upcoming deadlines",
+  simple: "Welcome — here's what needs your attention today",
 };
 
 const STORAGE_KEY = "apphia_user_mode";
@@ -52,6 +55,7 @@ export function useUserMode() {
     label: MODE_LABELS[mode],
     description: MODE_DESCRIPTIONS[mode],
     greeting: MODE_GREETING[mode],
+    isSimpleMode: mode === "simple",
     allModes: Object.entries(MODE_LABELS).map(([key, label]) => ({
       key: key as UserMode,
       label,

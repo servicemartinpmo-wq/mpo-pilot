@@ -12,134 +12,72 @@
 
 @layer base {
   :root {
-    /* ── Core surfaces (warm dark) ── */
-    --background: 224 22% 8%;
-    --foreground: 38 15% 94%;
+    /* ── Core surfaces (clean light — default) ── */
+    --background: 220 18% 97%;
+    --foreground: 225 30% 8%;
 
-    --card: 224 20% 12%;
-    --card-foreground: 38 12% 92%;
+    --card: 0 0% 100%;
+    --card-foreground: 225 30% 8%;
 
-    --popover: 224 22% 11%;
-    --popover-foreground: 38 12% 92%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 225 30% 8%;
 
-    /* Navy/indigo primary */
-    --primary: 222 88% 65%;
+    /* Navy/indigo primary (deeper for light bg contrast) */
+    --primary: 222 70% 42%;
     --primary-foreground: 0 0% 100%;
 
     /* Amber warm accent */
-    --amber: 38 92% 52%;
+    --amber: 38 85% 46%;
     --amber-foreground: 224 22% 8%;
 
     /* Teal success */
-    --teal: 174 68% 42%;
+    --teal: 174 65% 34%;
     --teal-foreground: 0 0% 100%;
 
-    /* Electric blue */
-    --electric-blue: 222 88% 65%;
+    /* Electric blue (adjusted for light bg readability) */
+    --electric-blue: 222 72% 48%;
     --electric-blue-foreground: 0 0% 100%;
 
     /* Rose alert */
-    --rose: 350 84% 62%;
+    --rose: 350 72% 52%;
     --rose-foreground: 0 0% 100%;
 
     /* Secondary: muted surfaces */
-    --secondary: 224 18% 17%;
-    --secondary-foreground: 38 10% 80%;
+    --secondary: 220 15% 94%;
+    --secondary-foreground: 225 30% 14%;
 
-    --muted: 224 16% 19%;
-    --muted-foreground: 224 12% 52%;
+    --muted: 220 12% 92%;
+    --muted-foreground: 225 18% 44%;
 
-    --accent: 224 18% 20%;
-    --accent-foreground: 38 12% 92%;
+    --accent: 220 15% 88%;
+    --accent-foreground: 225 30% 8%;
 
-    --destructive: 350 84% 62%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 350 72% 50%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 224 16% 20%;
-    --input: 224 18% 18%;
-    --ring: 222 88% 65%;
+    --border: 220 15% 86%;
+    --input: 220 15% 82%;
+    --ring: 222 70% 50%;
 
     --radius: 0.75rem;
 
-    /* ── Signal colors ── */
-    --signal-red:    350 82% 62%;
-    --signal-yellow: 38 92% 52%;
-    --signal-green:  160 56% 42%;
-    --signal-blue:   222 88% 65%;
-    --signal-orange: 28 94% 58%;
-    --signal-purple: 268 68% 62%;
+    /* ── Signal colors (adjusted for light bg) ── */
+    --signal-red:    350 70% 52%;
+    --signal-yellow: 38 82% 44%;
+    --signal-green:  160 50% 34%;
+    --signal-blue:   222 72% 48%;
+    --signal-orange: 28 82% 50%;
+    --signal-purple: 268 58% 52%;
 
-    /* ── Status palette (project/initiative status) ── */
-    --status-completed:   174 65% 40%;    /* Teal — completed */
-    --status-on-track:    38 92% 52%;     /* Amber/yellow — on track */
-    --status-attention:   28 94% 58%;     /* Orange — needs attention */
-    --status-delayed:     268 68% 62%;    /* Purple — outstanding/delayed */
-    --status-abandoned:   350 82% 62%;    /* Red — abandoned */
-    --status-blocked:     350 82% 62%;    /* Red — blocked */
+    /* ── Status palette ── */
+    --status-completed:   174 60% 34%;
+    --status-on-track:    38 82% 44%;
+    --status-attention:   28 82% 50%;
+    --status-delayed:     268 58% 52%;
+    --status-abandoned:   350 70% 52%;
+    --status-blocked:     350 70% 52%;
 
-    /* ── Sidebar: deepest navy ── */
-    --sidebar-background: 222 28% 9%;
-    --sidebar-foreground: 38 12% 88%;
-    --sidebar-primary: 222 88% 65%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 24% 15%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 222 22% 16%;
-    --sidebar-ring: 222 88% 65%;
-
-    /* ── Score tiers ── */
-    --tier-foundational: 350 82% 62%;
-    --tier-developing:   38 92% 52%;
-    --tier-structured:   174 65% 40%;
-    --tier-managed:      222 88% 65%;
-    --tier-optimized:    160 56% 42%;
-
-    /* ── Navy token ── */
-    --navy: 222 35% 14%;
-
-    /* ── Gradients ── */
-    --gradient-navy:    linear-gradient(160deg, hsl(222 28% 9%), hsl(224 24% 14%));
-    --gradient-electric: linear-gradient(135deg, hsl(222 88% 65%), hsl(174 65% 40%));
-    --gradient-amber: linear-gradient(135deg, hsl(38 92% 52%), hsl(28 94% 58%));
-
-    /* ── Shadows (warm glow effect) ── */
-    --shadow-card:     0 1px 3px 0 hsl(222 30% 5% / 0.5), 0 1px 2px -1px hsl(222 30% 5% / 0.3);
-    --shadow-elevated: 0 4px 20px -2px hsl(222 30% 5% / 0.6), 0 2px 8px -1px hsl(222 30% 5% / 0.4);
-    --shadow-deep:     0 12px 48px -6px hsl(222 30% 5% / 0.7), 0 4px 16px -2px hsl(222 30% 5% / 0.5);
-    --shadow-amber:    0 0 20px -4px hsl(38 92% 52% / 0.25), 0 4px 16px -4px hsl(38 92% 52% / 0.15);
-    --shadow-blue:     0 0 20px -4px hsl(222 88% 65% / 0.25), 0 4px 16px -4px hsl(222 88% 65% / 0.15);
-
-    /* ── Glass token ── */
-    --glass-bg:     hsl(224 20% 14% / 0.7);
-    --glass-border: hsl(38 40% 70% / 0.08);
-
-    --chart-1: 222 88% 65%;
-    --chart-2: 174 65% 42%;
-    --chart-3: 160 56% 42%;
-    --chart-4: 38 92% 52%;
-    --chart-5: 268 68% 62%;
-  }
-
-  .light {
-    --background: 220 18% 97%;
-    --foreground: 225 30% 8%;
-    --card: 0 0% 100%;
-    --card-foreground: 225 30% 8%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 225 30% 8%;
-    --primary: 222 70% 40%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 15% 94%;
-    --secondary-foreground: 225 30% 14%;
-    --muted: 220 12% 92%;
-    --muted-foreground: 225 20% 45%;
-    --accent: 220 15% 88%;
-    --accent-foreground: 225 30% 8%;
-    --destructive: 350 84% 55%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 220 15% 85%;
-    --input: 220 15% 82%;
-    --ring: 222 70% 50%;
+    /* ── Sidebar: deep navy (always dark) ── */
     --sidebar-background: 225 50% 11%;
     --sidebar-foreground: 0 0% 92%;
     --sidebar-primary: 222 80% 62%;
@@ -148,8 +86,110 @@
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 225 40% 20%;
     --sidebar-ring: 222 80% 62%;
-    --glass-bg: hsl(0 0% 100% / 0.7);
-    --glass-border: hsl(224 20% 30% / 0.12);
+
+    /* ── Score tiers ── */
+    --tier-foundational: 350 70% 52%;
+    --tier-developing:   38 82% 44%;
+    --tier-structured:   174 60% 34%;
+    --tier-managed:      222 72% 48%;
+    --tier-optimized:    160 50% 34%;
+
+    /* ── Navy token ── */
+    --navy: 222 35% 14%;
+
+    /* ── Gradients ── */
+    --gradient-navy:    linear-gradient(160deg, hsl(222 28% 9%), hsl(224 24% 14%));
+    --gradient-electric: linear-gradient(135deg, hsl(222 72% 48%), hsl(174 65% 34%));
+    --gradient-amber: linear-gradient(135deg, hsl(38 85% 46%), hsl(28 82% 50%));
+
+    /* ── Shadows (soft, professional for light) ── */
+    --shadow-card:     0 1px 4px 0 hsl(224 30% 20% / 0.08), 0 1px 2px -1px hsl(224 30% 20% / 0.06);
+    --shadow-elevated: 0 4px 20px -2px hsl(224 30% 20% / 0.1), 0 2px 8px -1px hsl(224 30% 20% / 0.07);
+    --shadow-deep:     0 12px 48px -6px hsl(224 30% 20% / 0.14), 0 4px 16px -2px hsl(224 30% 20% / 0.09);
+    --shadow-amber:    0 0 20px -4px hsl(38 85% 46% / 0.18), 0 4px 16px -4px hsl(38 85% 46% / 0.1);
+    --shadow-blue:     0 0 20px -4px hsl(222 72% 48% / 0.18), 0 4px 16px -4px hsl(222 72% 48% / 0.1);
+
+    /* ── Glass token ── */
+    --glass-bg:     hsl(0 0% 100% / 0.82);
+    --glass-border: hsl(224 20% 30% / 0.1);
+
+    --chart-1: 222 72% 48%;
+    --chart-2: 174 60% 36%;
+    --chart-3: 160 50% 34%;
+    --chart-4: 38 82% 46%;
+    --chart-5: 268 55% 52%;
+  }
+
+  .dark {
+    /* ── Core surfaces (warm dark) ── */
+    --background: 224 22% 8%;
+    --foreground: 38 15% 94%;
+    --card: 224 20% 12%;
+    --card-foreground: 38 12% 92%;
+    --popover: 224 22% 11%;
+    --popover-foreground: 38 12% 92%;
+    --primary: 222 88% 65%;
+    --primary-foreground: 0 0% 100%;
+    --amber: 38 92% 52%;
+    --amber-foreground: 224 22% 8%;
+    --teal: 174 68% 42%;
+    --teal-foreground: 0 0% 100%;
+    --electric-blue: 222 88% 65%;
+    --electric-blue-foreground: 0 0% 100%;
+    --rose: 350 84% 62%;
+    --rose-foreground: 0 0% 100%;
+    --secondary: 224 18% 17%;
+    --secondary-foreground: 38 10% 80%;
+    --muted: 224 16% 19%;
+    --muted-foreground: 224 12% 52%;
+    --accent: 224 18% 20%;
+    --accent-foreground: 38 12% 92%;
+    --destructive: 350 84% 62%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 224 16% 20%;
+    --input: 224 18% 18%;
+    --ring: 222 88% 65%;
+    --signal-red:    350 82% 62%;
+    --signal-yellow: 38 92% 52%;
+    --signal-green:  160 56% 42%;
+    --signal-blue:   222 88% 65%;
+    --signal-orange: 28 94% 58%;
+    --signal-purple: 268 68% 62%;
+    --status-completed:   174 65% 40%;
+    --status-on-track:    38 92% 52%;
+    --status-attention:   28 94% 58%;
+    --status-delayed:     268 68% 62%;
+    --status-abandoned:   350 82% 62%;
+    --status-blocked:     350 82% 62%;
+    --sidebar-background: 222 28% 9%;
+    --sidebar-foreground: 38 12% 88%;
+    --sidebar-primary: 222 88% 65%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 24% 15%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 222 22% 16%;
+    --sidebar-ring: 222 88% 65%;
+    --tier-foundational: 350 82% 62%;
+    --tier-developing:   38 92% 52%;
+    --tier-structured:   174 65% 40%;
+    --tier-managed:      222 88% 65%;
+    --tier-optimized:    160 56% 42%;
+    --navy: 222 35% 14%;
+    --gradient-navy:    linear-gradient(160deg, hsl(222 28% 9%), hsl(224 24% 14%));
+    --gradient-electric: linear-gradient(135deg, hsl(222 88% 65%), hsl(174 65% 40%));
+    --gradient-amber: linear-gradient(135deg, hsl(38 92% 52%), hsl(28 94% 58%));
+    --shadow-card:     0 1px 3px 0 hsl(222 30% 5% / 0.5), 0 1px 2px -1px hsl(222 30% 5% / 0.3);
+    --shadow-elevated: 0 4px 20px -2px hsl(222 30% 5% / 0.6), 0 2px 8px -1px hsl(222 30% 5% / 0.4);
+    --shadow-deep:     0 12px 48px -6px hsl(222 30% 5% / 0.7), 0 4px 16px -2px hsl(222 30% 5% / 0.5);
+    --shadow-amber:    0 0 20px -4px hsl(38 92% 52% / 0.25), 0 4px 16px -4px hsl(38 92% 52% / 0.15);
+    --shadow-blue:     0 0 20px -4px hsl(222 88% 65% / 0.25), 0 4px 16px -4px hsl(222 88% 65% / 0.15);
+    --glass-bg:     hsl(224 20% 14% / 0.7);
+    --glass-border: hsl(38 40% 70% / 0.08);
+    --chart-1: 222 88% 65%;
+    --chart-2: 174 65% 42%;
+    --chart-3: 160 56% 42%;
+    --chart-4: 38 92% 52%;
+    --chart-5: 268 68% 62%;
   }
 }
 
@@ -157,7 +197,7 @@
   * { @apply border-border; }
 
   html {
-    color-scheme: dark;
+    color-scheme: light;
   }
 
   body {
@@ -167,7 +207,12 @@
     -moz-osx-font-smoothing: grayscale;
     font-size: 14px;
     line-height: 1.5;
-    /* Subtle warm grain texture */
+    background-image:
+      radial-gradient(ellipse 80% 50% at 20% -10%, hsl(222 72% 48% / 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 110%, hsl(38 85% 46% / 0.03) 0%, transparent 60%);
+  }
+
+  .dark body {
     background-image:
       radial-gradient(ellipse 80% 50% at 20% -10%, hsl(222 88% 65% / 0.06) 0%, transparent 60%),
       radial-gradient(ellipse 60% 40% at 80% 110%, hsl(38 92% 52% / 0.04) 0%, transparent 60%);
@@ -182,12 +227,15 @@
   h2 { font-size: 1.375rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
   h3 { font-size: 1.0625rem; font-weight: 600; letter-spacing: -0.015em; }
 
-  /* Warm scrollbar */
+  /* Light scrollbar */
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: hsl(224 18% 25%); border-radius: 99px; }
-  ::-webkit-scrollbar-thumb:hover { background: hsl(224 18% 35%); }
-  * { scrollbar-width: thin; scrollbar-color: hsl(224 18% 25%) transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(220 15% 76%); border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(220 15% 64%); }
+  * { scrollbar-width: thin; scrollbar-color: hsl(220 15% 76%) transparent; }
+
+  .dark ::-webkit-scrollbar-thumb { background: hsl(224 18% 25%); }
+  .dark ::-webkit-scrollbar-thumb:hover { background: hsl(224 18% 35%); }
 }
 
 /* ─────────────────────────────────────────────

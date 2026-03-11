@@ -13,17 +13,18 @@ A PMO/Ops command center SPA built with React, Vite, TypeScript, Tailwind CSS, a
 
 ## Design System
 
-**"Warm Command Center"** — high-tech sophistication + home-office warmth.
-- Background: `hsl(224 22% 8%)` — deep warm charcoal navy (dark mode by default, `:root` = dark)
-- Sidebar: `hsl(222 28% 9%)` — deepest navy
-- Cards: `hsl(224 20% 12%)` — elevated dark surface
-- **Amber/Gold** `hsl(38 92% 52%)` — focus/important/command nav active
-- **Electric Blue** `hsl(222 88% 65%)` — primary/tools nav active, data accents
-- **Teal** `hsl(174 68% 42%)` — success/secondary
-- **Rose** `hsl(350 84% 62%)` — alerts/critical
-- Text: warm off-white `hsl(38 15% 94%)` — never cold white
+**Light theme by default** — professional, clean, SaaS-standard.
+- Background: `hsl(220 18% 97%)` — soft off-white (light mode default in `:root`)
+- Cards: `hsl(0 0% 100%)` — white cards with soft shadows
+- Sidebar: `hsl(225 50% 11%)` — deep navy (always dark, regardless of theme)
+- **Electric Blue** `hsl(222 72% 48%)` — primary/tools nav active, data accents
+- **Amber/Gold** `hsl(38 85% 46%)` — focus/important/command nav active
+- **Teal** `hsl(174 65% 34%)` — success/secondary
+- **Rose** `hsl(350 72% 52%)` — alerts/critical
+- Text: dark navy `hsl(225 30% 8%)` — high contrast on white
+- Dark mode available via `.dark` class
 - Fonts: Inter (body), JetBrains Mono (scores/metrics)
-- Key utilities: `.glass-card`, `.glow-amber`, `.glow-blue`, `.glow-rose`, `.warm-divider`, `.pmo-card`
+- User Modes: founder | executive | startup | creative | freelance | simple (Guided Mode)
 
 ## Pages & Routes
 
