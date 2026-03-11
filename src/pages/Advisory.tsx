@@ -1,13 +1,14 @@
 /**
  * Advisory — 5 core + 4 optional advisors with request modals, tier gating, and AI recommendation
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import {
   Brain, Cog, Rocket, Shield, GitBranch, DollarSign, BarChart3,
   Cpu, Headphones, Target, ChevronRight, X, Upload, MessageSquare,
   Mail, Star, Lock, Zap, CheckCircle, Clock, ArrowUpRight, User,
-  Sparkles, FileText, AlertTriangle, Activity, Building2, Globe
+  Sparkles, FileText, AlertTriangle, Activity, Building2, Globe,
+  Paperclip,
 } from "lucide-react";
 import { getEngineState } from "@/lib/engine";
 import type { AdvisoryRecommendation } from "@/lib/engine/advisory";
@@ -149,6 +150,34 @@ export default function Advisory() {
   const [hoveredAdvisor, setHoveredAdvisor] = useState<string | null>(null);
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [showRecs, setShowRecs] = useState(false);
+  const [modalAttachments, setModalAttachments] = useState<{ id: string; name: string; words: number }[]>([]);
+  const [pasteBadge, setPasteBadge] = useState<string | null>(null);
+
+  const isPaidTier = (() => {
+    try { return localStorage.getItem("apphia_tier") !== "free"; } catch { return true; }
+  })();
+
+  const handleAdvisoryPaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    if (!isPaidTier || !requestModal) return;
+    const text = e.clipboardData.getData("text");
+    if (!text.trim()) return;
+    e.preventDefault();
+    const words = text.trim().split(/\s+/).length;
+    setModalAttachments(prev => [...prev, {
+      id: Math.random().toString(36).slice(2),
+      name: text.trim().slice(0, 60) + (text.trim().length > 60 ? "…" : ""),
+      words,
+    }]);
+    const badge = `Attached · ${words} word${words !== 1 ? "s" : ""}`;
+    setPasteBadge(badge);
+    setTimeout(() => setPasteBadge(null), 2500);
+  }, [isPaidTier, requestModal]);
+
+  const closeModal = useCallback(() => {
+    setRequestModal(null);
+    setModalAttachments([]);
+    setPasteBadge(null);
+  }, []);
 
   // Live engine recommendations
   const engine = useMemo(() => getEngineState(), []);
@@ -339,7 +368,7 @@ export default function Advisory() {
       {/* ── Request Modal ── */}
       {requestModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={() => setRequestModal(null)} />
+          <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={closeModal} />
           <div className="relative w-full max-w-xl bg-card rounded-2xl border-2 border-border shadow-elevated overflow-hidden">
 
             {/* Modal header */}
@@ -353,7 +382,7 @@ export default function Advisory() {
                 <h3 className="text-base font-black text-foreground">{requestModal.advisor.name}</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">{requestModal.advisor.expertise}</p>
               </div>
-              <button onClick={() => setRequestModal(null)} className="text-muted-foreground hover:text-foreground transition-colors">
+              <button onClick={closeModal} className="text-muted-foreground hover:text-foreground transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -368,7 +397,7 @@ export default function Advisory() {
                 <p className="text-sm text-muted-foreground">
                   The {requestModal.advisor.shortName} Advisor will review your request and respond within {requestModal.advisor.responseTime}.
                 </p>
-                <button onClick={() => setRequestModal(null)}
+                <button onClick={closeModal}
                   className="mt-6 text-sm font-bold px-5 py-2.5 rounded-xl border-2 border-electric-blue text-electric-blue hover:bg-electric-blue/10 transition-colors">
                   Close
                 </button>
@@ -414,16 +443,31 @@ export default function Advisory() {
 
                 {/* Message */}
                 <div>
-                  <label className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 block">
-                    Describe your request
-                  </label>
-                  <textarea
-                    value={requestModal.message}
-                    onChange={e => setRequestModal({ ...requestModal, message: e.target.value })}
-                    placeholder="Include relevant context, blockers, desired outcomes, or attach supporting documents..."
-                    rows={4}
-                    className="w-full px-3 py-2.5 text-sm rounded-xl border-2 bg-card text-foreground placeholder:text-muted-foreground focus:outline-none resize-none transition-all"
-                    style={{ borderColor: "hsl(var(--border))" }} />
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold text-foreground uppercase tracking-wide">
+                      Describe your request
+                    </label>
+                    {isPaidTier && (
+                      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                        <Paperclip className="w-3 h-3" /> Paste to attach
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    {pasteBadge && (
+                      <div className="absolute -top-7 left-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-electric-blue bg-electric-blue/10 border border-electric-blue/20 z-10">
+                        <Paperclip className="w-3 h-3" /> {pasteBadge}
+                      </div>
+                    )}
+                    <textarea
+                      value={requestModal.message}
+                      onChange={e => setRequestModal({ ...requestModal, message: e.target.value })}
+                      onPaste={handleAdvisoryPaste}
+                      placeholder={isPaidTier ? "Paste context or documents to attach, or describe your request here…" : "Include relevant context, blockers, desired outcomes, or attach supporting documents..."}
+                      rows={4}
+                      className="w-full px-3 py-2.5 text-sm rounded-xl border-2 bg-card text-foreground placeholder:text-muted-foreground focus:outline-none resize-none transition-all"
+                      style={{ borderColor: "hsl(var(--border))" }} />
+                  </div>
                 </div>
 
                 {/* Attachments */}
@@ -431,6 +475,21 @@ export default function Advisory() {
                   <label className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 block">
                     Attachments
                   </label>
+                  {modalAttachments.length > 0 && (
+                    <div className="space-y-1.5 mb-2">
+                      {modalAttachments.map(att => (
+                        <div key={att.id} className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-secondary border border-border">
+                          <Paperclip className="w-3.5 h-3.5 text-electric-blue flex-shrink-0" />
+                          <span className="text-xs text-foreground flex-1 truncate">{att.name}</span>
+                          <span className="text-[10px] text-muted-foreground">{att.words}w</span>
+                          <button onClick={() => setModalAttachments(prev => prev.filter(a => a.id !== att.id))}
+                            className="opacity-40 hover:opacity-80 transition-opacity">
+                            <X className="w-3 h-3 text-muted-foreground" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2">
                     {[
                       { label: "Document", icon: FileText },
@@ -449,7 +508,7 @@ export default function Advisory() {
 
                 {/* Submit */}
                 <div className="flex gap-3 pt-2">
-                  <button onClick={() => setRequestModal(null)}
+                  <button onClick={closeModal}
                     className="text-sm px-4 py-2.5 rounded-xl border-2 border-border text-muted-foreground font-semibold hover:text-foreground hover:border-foreground/30 transition-colors">
                     Cancel
                   </button>

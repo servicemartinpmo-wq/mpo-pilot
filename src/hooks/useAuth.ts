@@ -66,23 +66,29 @@ export function useAuth() {
       async (_event, newSession) => {
         setSession(newSession);
         setUser(newSession?.user ?? null);
-        if (newSession?.user) {
-          await loadProfile(newSession.user.id);
-        } else {
-          setProfile(null);
+        try {
+          if (newSession?.user) {
+            await loadProfile(newSession.user.id);
+          } else {
+            setProfile(null);
+          }
+        } catch {
+          // profile stays null — onboarding wizard will handle it
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
+    // Belt-and-suspenders: also load via getSession in case onAuthStateChange
+    // fires with a stale null before the real INITIAL_SESSION resolves
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       if (s?.user) {
         setSession(s);
         setUser(s.user);
-        loadProfile(s.user.id).finally(() => setLoading(false));
-      } else {
-        setLoading(false);
+        loadProfile(s.user.id).catch(() => {}).finally(() => setLoading(false));
       }
+      // else: onAuthStateChange will fire with null INITIAL_SESSION and set loading=false
     });
 
     return () => subscription.unsubscribe();
