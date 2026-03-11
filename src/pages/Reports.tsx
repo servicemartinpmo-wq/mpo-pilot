@@ -323,11 +323,11 @@ export default function Reports() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-secondary rounded-lg p-3">
                   <div className="text-xs text-muted-foreground mb-1">Total Allocated</div>
-                  <div className="text-sm font-bold font-mono text-foreground">{formatCurrency(orgMetrics.totalBudgetAllocated)}</div>
+                  <div className="text-sm font-bold font-mono text-foreground">{formatCurrency(orgMetrics?.total_budget_allocated ?? 0)}</div>
                 </div>
                 <div className="bg-secondary rounded-lg p-3">
                   <div className="text-xs text-muted-foreground mb-1">Total Used</div>
-                  <div className="text-sm font-bold font-mono text-foreground">{formatCurrency(orgMetrics.totalBudgetUsed)}</div>
+                  <div className="text-sm font-bold font-mono text-foreground">{formatCurrency(orgMetrics?.total_budget_used ?? 0)}</div>
                 </div>
               </div>
             </SectionCard>
