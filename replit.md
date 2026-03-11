@@ -1,174 +1,58 @@
-# Martin PMO — PMO-Ops Command Center
+# PMO-Ops Command Center
 
-A PMO/Ops command center SPA built with React, Vite, TypeScript, Tailwind CSS, and Supabase. Internal engine name: Apphia (never shown to users). Company: Martin PMO. App: PMO-Ops Command Center.
+## Overview
 
-## Architecture
+The PMO-Ops Command Center, internally codenamed "Apphia," is a single-page application designed for Martin PMO to serve as a comprehensive command center for Project Management Office (PMO) and Operations tasks. It aims to provide a centralized hub for managing projects, decisions, initiatives, action items, departments, and teams. The application integrates strategic advisory frameworks, robust reporting, and workflow automation, underpinned by an AI-driven organizational health engine to provide diagnostics, signals, and recommendations.
 
-- **Frontend**: React 18 + TypeScript + Vite (port 5000)
-- **UI**: Tailwind CSS + shadcn/ui (Radix primitives)
-- **Auth & Database**: Supabase (project ID: `okgpcsfqkshdzbfuigfq`)
-- **Routing**: React Router v6
-- **State**: React Query + local hooks
-- **Charts**: Recharts
+The project's vision is to empower organizations with actionable insights and intelligent tools to enhance operational efficiency, strategic alignment, and decision-making. Key capabilities include:
 
-## Design System
+- Executive dashboard for high-level oversight
+- Project and initiative management with CRUD operations
+- AI-powered diagnostics and strategic advisory
+- Comprehensive reporting and analytics
+- Workflow automation and integrations
+- Knowledge management and resource hub
 
-**Light by default** — no `class="dark"` on `<html>`. Sidebar always dark (hardcoded inline styles). CRM (`/crm`) and Marketing (`/marketing`) pages keep dark/navy backgrounds. All other pages use CSS variable-driven theming.
-- Sidebar: hardcoded `hsl(222 28% 9%)` — always dark regardless of mode
-- Cards: `hsl(var(--card))` — adapts to active mode theme
-- Background: `hsl(var(--background))` — adapts to active mode theme
-- **CRM/Marketing only**: retain `style={{ background: "hsl(224 22% 10%)" }}` for immersive dark look
-- **Electric Blue** `hsl(222 88% 65%)` — primary/tools nav active, data accents
-- **Amber/Gold** `hsl(38 92% 52%)` — focus/important/command nav active
-- **Teal** `hsl(174 68% 42%)` — success/secondary
-- **Rose** `hsl(350 84% 62%)` — alerts/critical
-- Section headers: cinematic `diag-slide-bg-*.jpg` images at 15-18% opacity (luminosity blend) with gradient overlay
-- Hero banner: `onboard-hero.jpg` at 22% opacity (luminosity) + `onboard-network.jpg` at 8% (screen blend)
-- Fonts: Inter (body), JetBrains Mono (scores/metrics)
-- User Modes: founder | executive | startup | creative | freelance | simple (Guided Mode)
-- Toast duration: 12 seconds (Sonner + Radix + PopupToast all unified)
+## User Preferences
 
-## Pages & Routes
+- **Communication Style**: Clear, direct, and concise. Avoid jargon where simpler terms suffice.
+- **Workflow**: Iterative development with clear milestones. Prioritize foundational features before advanced enhancements.
+- **Interaction**: Ask for clarification or confirmation before implementing significant architectural changes or complex features. Provide options when multiple valid approaches exist.
+- **Explanations**: Detailed explanations for non-trivial changes or design decisions are preferred.
+- **Feedback**: Integrate feedback actively, ensuring changes align with specified requirements.
+- **Deployment**: Focus on a stable and deployable product at each major iteration.
 
-| Path | Page | Notes |
-|------|------|-------|
-| `/` | Dashboard (Index) | Executive command center |
-| `/projects` | Projects | NEW — project grid with CRUD |
-| `/decisions` | Decisions | NEW — decision log with outcomes |
-| `/initiatives` | Initiatives | Initiative portfolio |
-| `/action-items` | Action Items | Task management |
-| `/departments` | Departments | Dept cards |
-| `/team` | Team | Team members |
-| `/diagnostics` | Diagnostics | Signal → Diagnosis → Advisory pipeline |
-| `/reports` | Reports | Analytics outputs |
-| `/knowledge` | Resource Hub | Knowledge base |
-| `/workflows` | Workflows | Workflow automation |
-| `/advisory` | Advisory | Strategic advisory frameworks |
-| `/integrations` | Integrations | External connections |
-| `/admin` | Systems | App settings |
+## System Architecture
 
-## Key Components
+The PMO-Ops Command Center is built as a Single Page Application (SPA) using a modern web development stack.
 
-- `AppLayout.tsx` — Sidebar (collapsed/expanded), notification bell, health score bar, snooze
-- `CompanyHealthScore.tsx` — Animated SVG ring gauge with dimension breakdown
-- `NotificationsPanel.tsx` — Slide-in notifications panel from DB `notifications` table
-- `InsightCard.tsx` — Intelligence signal cards ranked by priority score
-- `OrgHealthOrb.tsx` — Living 3D-style health orb
-- `OnboardingWizard.tsx` — 4-step onboarding + 6-slide diagnostic deck + 5-slide app walkthrough
-- `PageBanner.tsx` — Contextual page banners
+- **Frontend**: React 18 with TypeScript, powered by Vite for fast development. The application runs on port 5000.
+- **UI/UX**: Tailwind CSS is used for utility-first styling, complemented by `shadcn/ui` (built on Radix primitives) for accessible and customizable UI components.
+    - **Color Scheme**: The application defaults to a light theme with a hardcoded dark sidebar (`hsl(222 28% 9%)`). Specific pages like CRM and Marketing maintain a dark background (`hsl(224 22% 10%)`) for an immersive look.
+    - **Accent Colors**: Electric Blue (`hsl(222 88% 65%)`) for primary actions, Amber/Gold (`hsl(38 92% 52%)`) for focus, Teal (`hsl(174 68% 42%)`) for success, and Rose (`hsl(350 84% 62%)`) for critical alerts.
+    - **Typography**: Inter for body text and JetBrains Mono for metrics and scores.
+    - **Visual Elements**: Cinematic background images (`diag-slide-bg-*.jpg`, `onboard-hero.jpg`, `onboard-network.jpg`) with opacity and blend modes are used for section headers and hero banners to create a distinct aesthetic.
+    - **Interaction Patterns**: Features like a global Command Palette (⌘K / Ctrl+K), a fixed Top Status Bar, animated SVG progress rings, delta pills, mini sparklines, activity heatmaps, and typewriter effects are implemented for an enhanced user experience. Card hover lifts and focus mode (`.focus-group`) are used for visual interaction.
+- **Authentication & Database**: Supabase serves as the backend for authentication and database management. It handles user profiles, organizational data, project specifics, and real-time updates.
+- **Routing**: React Router v6 manages client-side navigation.
+- **State Management**: React Query is used for server-state management, complemented by local React hooks for UI state.
+- **Charting**: Recharts is utilized for data visualization and analytics outputs.
+- **AI Engine**: An internal AI engine, located in `src/lib/engine/`, provides advisory, maturity assessments, and signal generation for organizational health.
+- **Core Components**: Key reusable components include `AppLayout`, `CompanyHealthScore` (animated SVG ring gauge), `NotificationsPanel`, `InsightCard`, `OrgHealthOrb` (3D-style health orb), `OnboardingWizard`, and `PageBanner`.
+- **Data Services**: `supabaseDataService.ts` centralizes all CRUD operations with Supabase.
+- **Project Structure**: Organized into `pages/`, `components/` (with `components/ui/` for shadcn components), `hooks/`, `lib/` (for services, stores, engine logic, and static data), and `integrations/supabase/`.
 
-## Project Structure
+## External Dependencies
 
-```
-src/
-  App.tsx              — Root routing and auth guard
-  main.tsx             — Entry point
-  pages/               — Page components
-  components/          — Shared components (AppLayout, OnboardingWizard, etc.)
-  components/ui/       — shadcn/ui component library
-  hooks/
-    useAuth.ts         — Auth hook (Supabase session, profile, sign-in/out)
-    useAppData.ts      — Central data hook (merges engine state + profile)
-    useLiveData.ts     — Live data from Supabase
-  lib/
-    supabaseDataService.ts  — All Supabase CRUD operations
-    companyStore.ts         — Local profile store (localStorage)
-    engine/                 — AI org-health engine (advisory, maturity, signals, etc.)
-    pmoData.ts              — Static seed data for new users
-    frameworkData.ts        — Framework reference data
-  integrations/
-    supabase/               — Supabase client + generated types (4,088 lines)
-```
-
-## Environment Variables
-
-Stored in Replit secrets/environment:
-- `VITE_SUPABASE_URL` — Supabase project URL
-- `VITE_SUPABASE_PUBLISHABLE_KEY` — Supabase anon/public key
-- `VITE_SUPABASE_PROJECT_ID` — Supabase project ID
-
-## Development
-
-```bash
-npm run dev    # Start dev server on port 5000
-npm run build  # Build for production
-```
-
-## Database
-
-Supabase project: `okgpcsfqkshdzbfuigfq`. Migrations in `supabase/migrations/`.
-
-**Original profile-centric tables** (use `profile_id` FK):
-- `profiles`, `departments`, `initiatives`
-- `insights`, `governance_logs`, `sop_records`
-- `org_metrics`, `integration_connections`, `creator_prompts`
-- `authority_matrix`, `team_members`
-
-**New org/user-centric tables** (migration 20260311000002):
-- `organizations`, `organization_members`, `users`, `teams`, `department_membership`
-- `projects`, `kpis`, `kpi_history`, `milestones`
-- `risks`, `dependencies`, `task_dependencies`
-- `signals`, `signal_definitions`
-- `frameworks`, `knowledge_items`, `modules`, `framework_knowledge_link`
-- `decision_weights`, `attachments`
-- `advisories`, `advisory_modules`, `advisory_recommendations`
-- `notifications`, `activity_feed`, `next_best_actions`
-- `ai_call_logs`, `ai_usage`, `algorithm_signals`, `algorithm_scores`
-- `alerts`, `api_keys`, `workflow_runs`
-- `reminders`, `task_reminders`, `meetings`
-- `user_work_capacity`, `user_snoozes`, `org_health_metrics`
-- `kg_nodes`, `kg_relationships` (knowledge graph)
-
-**Key DB functions**: `compute_next_best_for_user`, `generate_daily_plan`, `get_initiative_details`, `get_project_progress`, `get_project_milestones`, `get_project_kpi_summary`, `get_signal_summary`, `get_milestone_progress`, `compute_predicted_duration`, `calculate_algorithm_score`, `validate_dependency`, `track_kpi_history`, `record_history`, `enqueue_update_notification_v2`
-
-**Note**: `action_items` in remote Supabase uses `user_id` (not `profile_id`). The data service handles both via `or()` filters.
-
-## UI/UX Design System
-
-- **Mission-control aesthetic**: White cards on light-gray background, deep navy sidebar, electric blue + teal accents
-- **DepartmentCard**: 4 explicit numeric metric tiles — Capacity %, Execution Health, Risk Score, SOP Adherence — color-coded Red/Yellow/Green with colored accent top bar
-- **Initiatives page**: Dual view (Table / Cards toggle). Table shows Priority Score, Strategic Alignment, Estimated Impact, Dependency Risk, Progress, Owner, Due Date — all sortable. Cards show full detail.
-- **InsightCard**: Standardized 4-section format — Situation (always visible), Diagnosis, Recommendation, System Remedy (expandable). Scored mini-bar row for Impact/Urgency/Risk/Leverage.
-- **FrameworkPanel**: Grid of labeled framework cards showing full names (Porter's Five Forces, Balanced Scorecard, OKRs, Lean, Six Sigma, TOC, Rumelt) with status chips
-
-## Features (Recent)
-
-- **Industry Snapshot** (`src/components/IndustrySnapshot.tsx`): Industry-aware operational dashboard widget rendered on the main dashboard between Strategy Scores and Next Best Actions. Reads the `industry` field from CompanyProfile and auto-renders the relevant snapshot. Covers 16 industry buckets: Inventory (E-commerce/Retail — includes Last Order Date + Reorder Point), Schedule (Education), Sprint/System (Engineering/IT/Telecom), Portfolio (Financial Services/Insurance), Clinical (Healthcare/Pharma), Production (Manufacturing/Automotive), Matter (Legal Services), Fleet/Shipment (Logistics), Property (Real Estate/Construction), Content Pipeline (Media/Arts), Grant/Program (Non-Profit), Venue/Occupancy (Hospitality/F&B), Energy/Grid (Energy & Utilities), Field/Crop (Agriculture), Contract/Mission (Defense/Gov Contracting), Client Engagement (Professional Services). Returns null if industry is not recognized or empty.
-- **Admin Customize Tab — Resource Hub Mode**: Business Mode + Experience Style selector added to Systems > Customize tab. Imports `BusinessMode` and `MODE_KITS` from `Knowledge.tsx`. State persisted to `localStorage("apphia_knowledge_mode")`. Two rows: Business Type (Freelance/Startup/SMB/Enterprise) and Experience Style (Creative/Guided) as pill-card buttons.
-
-- **App Walkthrough**: 5-slide interactive walkthrough shown after onboarding diagnostic deck (before launch). Covers Dashboard, Work/Strategy, Diagnostics, Reports, and Advisory. Skip button available. Can be triggered again from Help section.
-- **Guided / Simple Mode**: `useUserMode` hook returns `isSimpleMode`. `Dashboard` component shows `SimpleDashboard` when in simple mode — plain-language KPIs, priority list, setup checklist, quick links, mode switch. Mode also shown in onboarding selection screen for small orgs.
-- **Paste-as-Attachment**: In Reports (Custom Report tab) and Advisory, pasting text converts it to an attachment card instead of raw text. For paid tiers only (default=paid; free tier set via `localStorage.setItem("apphia_tier","free")`).
-- **Auth loading hang fix (permanent)**: `loadProfile` uses `Promise.race` with a 4-second timeout so every sign-in event resolves within 4 seconds max. Belt-and-suspenders 5-second safety timer on mount.
-- **Notification sounds**: `src/lib/notificationSound.ts` uses Web Audio API — alert tone (urgent/risk), success chime (wins/completions), soft ping (general). Wired into NotificationsPanel on open and AppLayout background poll (every 90s, respects snooze).
-- **Knowledge Hub — Formulas tab**: 6 formula categories (Org Health, EVM, Finance, Risk, SPC, Marketing) with 16+ expandable formula cards — notation, variables, description, worked example + result.
-- **Knowledge Hub — SOP viewer**: SOP rows expand to reveal numbered step-by-step procedure with vertical connector timeline. Click-to-expand per SOP.
-- **Knowledge Hub — Lessons Learned**: Expandable Add Lesson form (title, outcome, impact, summary, tags) appends to local state. Combined display of user-added + seed lessons.
-- **Knowledge Hub — Frameworks category filter**: Pill-button row above framework table filters categories in-place. "All" resets to full view.
-- **Knowledge Hub — Document download**: Documents tab download button generates a `.txt` file from saved template fields and triggers browser download.
-- **Reports — Lessons Learned tab**: Full Lessons Learned tab in Reports with Add Lesson form and complete card view. Seed data contains 5 real-world PMO lessons.
-
-## Next-Gen UI Enhancements (March 2026)
-
-- **Command Palette** (`src/components/CommandPalette.tsx`): ⌘K / Ctrl+K global keyboard-driven search and navigation. Covers all 18 app pages + quick actions. Fuzzy search with score-ranked results. Arrow key navigation, Enter to open, Esc to close. Recent pages remembered in `localStorage("apphia_cmd_recent")`. Wired into `App.tsx` with keyboard shortcut handler.
-- **Top Status Bar** (`src/components/TopStatusBar.tsx`): Fixed 28px bar at the very top of every authenticated page. Shows live org health score (animated count-up), critical alert count, pending action items, today's date, and a ⌘K search trigger. Height compensated via `paddingTop: 28` in both AppLayout layout modes.
-- **Progress Ring** (`src/components/ProgressRing.tsx`): SVG circular fill ring with animated stroke-dashoffset draw-on effect + center count-up number. Used in Dashboard org health gauge (replacing conic-gradient). Respects `prefers-reduced-motion`.
-- **Delta Pill** (`src/components/DeltaPill.tsx`): +3 / −7 change badge with TrendingUp/TrendingDown icon and green/red/neutral coloring. Used in Reports quarterly card KpiTiles to show quarter-over-quarter change.
-- **Mini Sparkline** (`src/components/MiniSparkline.tsx`): Inline 48×20px SVG sparkline with stroke-dashoffset draw animation. Auto color (green/red/neutral based on trend direction). Added as "6-Mo Trend" column in Departments table.
-- **Activity Heatmap** (`src/components/ActivityHeatmap.tsx`): GitHub-style 26-week × 7-day execution activity calendar. 5-level intensity coloring, hover tooltip, month labels, legend. Added to Reports → Quarterly tab as "Execution Activity" section.
-- **Typewriter Effect** (`src/hooks/useTypewriter.ts`): Streams text character-by-character (configurable speed + delay + cursor). Applied to recommendation `action` text in Advisory page via `TypewriterText` component. Respects `prefers-reduced-motion`.
-- **Score Tooltip** (`src/components/ScoreBadge.tsx`): ScoreBadge wrapped with Radix Tooltip showing a 1-line score rationale (High performance / On track / Developing / Needs attention / At risk) on hover. `cursor-help` styling.
-- **Card Hover Lift** (`src/index.css`): `.card-hover` utility class — `translateY(-2px)` + shadow on hover (0.18s ease). Applied to KpiTile in Reports and quarterly cards.
-- **Focus Mode** (`src/index.css`): `.focus-group` + `data-focus-item` CSS — hover over any item in a group dims all siblings to 0.38 opacity + light grayscale. Applied to quarterly cards grid in Reports.
-- **CSS Keyframes** (`src/index.css`): `slideUp`, `slideInLeft`, `growWidth`, `countUp`, `pulse-ring` — full animation foundation ready for use anywhere.
-
-## Notes
-
-- Migrated from Lovable to Replit (March 2026)
-- Removed `@lovable.dev/cloud-auth-js` and `lovable-tagger` — replaced with standard Supabase OAuth
-- CSS `@import` moved before `@tailwind` directives to fix build warning
-- UI/UX upgrade applied March 2026 per planning document
-- Onboarding: cinematic WelcomeScreen added before 4-step intake; industry selector replaced with searchable dropdown; "MARTIN" branding corrected to "Apphia"
-- Auth page: Google/Apple OAuth removed (providers not configured in Supabase); improved inline error messages
-- Backend (Supabase): added missing deleteInsight, deleteSopRecord, deleteGovernanceLog operations; added team_members table (schema, types, CRUD); added real-time Supabase channel subscriptions via useRealtimeSync() hook mounted in App.tsx root
-- Migration file: supabase/migrations/20260309000001_team_members.sql — must be applied via Supabase dashboard SQL editor
+- **Supabase**:
+    - **Project ID**: `okgpcsfqkshdzbfuigfq`
+    - **Environment Variables**: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`
+    - **Services Used**: Authentication, PostgreSQL Database (with various custom functions for data processing and aggregation), Realtime subscriptions.
+- **React**: Frontend UI library.
+- **Vite**: Build tool and development server.
+- **TypeScript**: Superset of JavaScript for type safety.
+- **Tailwind CSS**: Utility-first CSS framework.
+- **shadcn/ui**: Component library built on Radix UI primitives.
+- **React Router v6**: Declarative routing for React.
+- **React Query**: Data-fetching and state management library.
+- **Recharts**: Composable charting library built with React and D3.
