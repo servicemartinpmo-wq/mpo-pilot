@@ -7,6 +7,7 @@ import { useEffect, useState, useCallback } from "react";
 import AppLayout from "./components/AppLayout";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import VoiceCommand from "./components/VoiceCommand";
+import ApphiaPanel from "./components/ApphiaPanel";
 import CommandPalette from "./components/CommandPalette";
 import TopStatusBar from "./components/TopStatusBar";
 import Index from "./pages/Index";
@@ -211,6 +212,7 @@ const App = () => (
       <BrowserRouter>
         <ErrorBoundary>
           <AppRoutes />
+          <ApphiaPanel />
           <VoiceCommand />
         </ErrorBoundary>
       </BrowserRouter>

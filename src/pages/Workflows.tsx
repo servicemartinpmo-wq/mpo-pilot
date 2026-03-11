@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
-  Zap, Search, Filter, ChevronRight, ChevronDown, Play, CheckCircle,
+  Zap, Search, ChevronRight, ChevronDown, Play, CheckCircle,
   Building2, Target, Users, DollarSign, Shield, Cpu, BarChart3,
   Rocket, Layers, GitBranch, Clock, Lock, AlertTriangle,
   RefreshCw, Activity, X, MapPin, Sparkles, Send, Wand2,
-  FolderOpen, ListChecks
+  FolderOpen, ListChecks, Package, Plus, Trash2, ChevronLeft,
+  ArrowRight, Info, FileOutput, Settings2, Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { actionItems, initiatives } from "@/lib/pmoData";
+import { openApphia } from "@/components/ApphiaPanel";
 
-// ── Types ──────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────
 type WorkflowCategory =
   | "Strategic Planning" | "Organizational Design" | "Initiative & Program Management"
   | "Project Management" | "Task & Execution Management" | "Operational Process Management"
@@ -17,13 +20,10 @@ type WorkflowCategory =
   | "Organizational Health Monitoring" | "Administrative & Governance" | "Continuous Improvement";
 
 type DeployTarget = "Dashboard" | "Action Items" | "Diagnostics" | "Departments" | "Reports" | "Team" | "Systems";
-
 type BundleView = "system" | "department" | "project" | "admin";
 
 interface WorkflowItem {
-  id: string;
-  title: string;
-  category: WorkflowCategory;
+  id: string; title: string; category: WorkflowCategory;
   tier: "free" | "t1" | "t2" | "t3";
   status: "idle" | "running" | "complete";
   lastRun?: string;
@@ -32,27 +32,28 @@ interface WorkflowItem {
 }
 
 interface Bundle {
-  id: string;
-  title: string;
-  description: string;
-  workflowCount: number;
-  workflows: string[];
-  updates: string[];
-  status: "active" | "idle" | "partial";
-  tier: "free" | "t1" | "t2" | "t3";
-  bundleType: BundleView;
+  id: string; title: string; description: string; workflowCount: number;
+  workflows: string[]; updates: string[]; status: "active" | "idle" | "partial";
+  tier: "free" | "t1" | "t2" | "t3"; bundleType: BundleView;
 }
 
-interface GeneratedWorkflow {
-  id: string;
-  title: string;
-  steps: string[];
-  deployTargets: DeployTarget[];
-  updates: string;
-  rationale: string;
+interface UserPackage {
+  id: string; name: string; description: string;
+  purpose: "department" | "initiative" | "system" | "custom";
+  target: string;
+  workflowIds: string[];
+  status: "active" | "idle";
+  createdAt: string;
 }
 
-// ── Master Workflow Library (100) ──────────────────────────────────
+interface SuggestedPackage {
+  id: string; title: string; reason: string; urgency: "high" | "medium" | "low";
+  icon: React.ElementType; iconColor: string;
+  workflowNames: string[]; deployTargets: DeployTarget[];
+  category: string;
+}
+
+// ── Data ───────────────────────────────────────────────────────────────
 const WORKFLOW_CATEGORIES: { name: WorkflowCategory; icon: React.ElementType; color: string }[] = [
   { name: "Strategic Planning", icon: Target, color: "hsl(var(--electric-blue))" },
   { name: "Organizational Design", icon: Building2, color: "hsl(var(--teal))" },
@@ -175,7 +176,6 @@ const WORKFLOWS: WorkflowItem[] = [
 ];
 
 const ALL_BUNDLES: Bundle[] = [
-  // SYSTEM BUNDLES
   { id: "sb1", title: "Strategic Alignment System", description: "Continuously aligns goals, OKRs, and initiatives to your strategy.", workflowCount: 4, workflows: ["Strategic Goal Definition", "OKR Creation", "Initiative Prioritization", "Strategy Alignment Review"], updates: ["Strategy clarity score", "Initiative alignment"], status: "active", tier: "t1", bundleType: "system" },
   { id: "sb2", title: "Initiative Portfolio Management System", description: "Manages the full lifecycle of your initiative portfolio.", workflowCount: 4, workflows: ["Initiative Intake", "Initiative Prioritization", "Initiative Roadmap Creation", "Initiative Progress Review"], updates: ["Initiative portfolio", "Priority rankings", "Initiative health"], status: "active", tier: "t1", bundleType: "system" },
   { id: "sb3", title: "Project Delivery System", description: "Monitors project health, velocity, and delivery outcomes.", workflowCount: 5, workflows: ["Project Intake", "Project Charter Creation", "Resource Allocation", "Project Status Reporting", "Project Retrospective"], updates: ["Project health", "Delivery velocity"], status: "partial", tier: "t2", bundleType: "system" },
@@ -188,129 +188,156 @@ const ALL_BUNDLES: Bundle[] = [
   { id: "sb10", title: "Organizational Health Monitoring System", description: "Real-time org health score, risk indicators, and leadership bandwidth.", workflowCount: 4, workflows: ["Operational Health Assessment", "Strategic Alignment Check", "Initiative Load Analysis", "Leadership Bandwidth Check"], updates: ["Org health score", "Strategic risk indicators"], status: "active", tier: "t1", bundleType: "system" },
   { id: "sb11", title: "Knowledge Intelligence System", description: "Captures, classifies, and updates institutional knowledge.", workflowCount: 4, workflows: ["Knowledge Capture", "Lessons Learned Capture", "Document Classification", "Knowledge Base Update"], updates: ["Knowledge repository", "Institutional memory"], status: "idle", tier: "t2", bundleType: "system" },
   { id: "sb12", title: "Governance & Compliance System", description: "Manages policies, governance reviews, and audit readiness.", workflowCount: 4, workflows: ["Policy Creation", "Governance Review", "Compliance Checklist Execution", "Audit Preparation Workflow"], updates: ["Compliance status", "Governance maturity"], status: "idle", tier: "t3", bundleType: "system" },
-  // DEPARTMENT BUNDLES
   { id: "db1", title: "Finance Department Bundle", description: "Budget tracking, financial close, procurement approvals, and variance reporting.", workflowCount: 5, workflows: ["KPI Definition", "Process Standardization", "Metric Data Collection", "Executive Performance Summary", "Governance Review"], updates: ["Finance maturity", "Budget variance", "Approval throughput"], status: "idle", tier: "t1", bundleType: "department" },
   { id: "db2", title: "Human Capital Bundle", description: "Hiring pipelines, capacity planning, onboarding SOPs, and talent risk.", workflowCount: 5, workflows: ["Staffing Gap Identification", "Team Capacity Analysis", "Hiring Request Initiation", "Role Definition Workflow", "Lessons Learned Capture"], updates: ["Headcount gaps", "Onboarding status", "Talent risk score"], status: "idle", tier: "t1", bundleType: "department" },
   { id: "db3", title: "Operations Bundle", description: "Process documentation, bottleneck detection, and SOP adherence.", workflowCount: 5, workflows: ["Process Documentation", "SOP Creation", "Process Bottleneck Detection", "Process Improvement Review", "Process Standardization"], updates: ["SOP coverage", "Process maturity", "Bottleneck flags"], status: "partial", tier: "t1", bundleType: "department" },
   { id: "db4", title: "Sales & Marketing Bundle", description: "Pipeline velocity, GTM alignment, campaign ROI, and demand generation.", workflowCount: 4, workflows: ["KPI Definition", "KPI Alert Trigger", "Initiative Prioritization", "Stakeholder Communication Plan"], updates: ["Pipeline velocity", "Campaign performance", "Revenue alignment"], status: "active", tier: "t1", bundleType: "department" },
   { id: "db5", title: "Product & Engineering Bundle", description: "Sprint governance, dependency management, release planning, and technical debt.", workflowCount: 5, workflows: ["Work Breakdown Structure Creation", "Dependency Mapping", "Project Risk Review", "Process Improvement Review", "Knowledge Capture"], updates: ["Release health", "Technical debt log", "Dependency flags"], status: "idle", tier: "t2", bundleType: "department" },
   { id: "db6", title: "Customer Experience Bundle", description: "NPS recovery, escalation response, CX metrics, and service standards.", workflowCount: 4, workflows: ["KPI Alert Trigger", "Issue Escalation", "Meeting Summary Generation", "Stakeholder Communication Plan"], updates: ["NPS score", "Escalation status", "SLA compliance"], status: "idle", tier: "t2", bundleType: "department" },
-  // PROJECT BUNDLES
   { id: "pb1", title: "Project Launch Bundle", description: "From intake through charter, WBS, scheduling, and initial resource allocation.", workflowCount: 5, workflows: ["Project Intake", "Project Charter Creation", "Work Breakdown Structure Creation", "Project Scheduling", "Resource Allocation"], updates: ["Project registry", "Charter documents", "Initial schedule"], status: "idle", tier: "t1", bundleType: "project" },
   { id: "pb2", title: "Project Execution Bundle", description: "Ongoing status reporting, risk monitoring, dependency tracking, and escalation.", workflowCount: 4, workflows: ["Project Status Reporting", "Project Risk Review", "Dependency Mapping", "Issue Escalation"], updates: ["Project health", "Risk log", "Escalation flags"], status: "partial", tier: "t1", bundleType: "project" },
   { id: "pb3", title: "Project Closeout Bundle", description: "Retrospective, lessons captured, final reporting, and knowledge archiving.", workflowCount: 4, workflows: ["Project Retrospective", "Lessons Learned Capture", "Document Version Tracking", "Knowledge Base Update"], updates: ["Retro insights", "Lessons library", "Archive status"], status: "idle", tier: "t1", bundleType: "project" },
   { id: "pb4", title: "Multi-Initiative Governance Bundle", description: "Portfolio oversight with cross-functional coordination, roadmaps, and health reviews.", workflowCount: 5, workflows: ["Initiative Prioritization", "Initiative Roadmap Creation", "Cross-Functional Initiative Coordination", "Initiative Progress Review", "Initiative Closeout"], updates: ["Portfolio health", "Roadmap milestones", "Cross-dept handoffs"], status: "active", tier: "t2", bundleType: "project" },
-  // ADMIN / TASK & EXECUTION BUNDLES
   { id: "ab1", title: "Daily Execution Bundle", description: "Task creation, assignment, prioritization, and deadline monitoring — runs daily.", workflowCount: 4, workflows: ["Task Creation", "Task Assignment", "Task Prioritization", "Task Deadline Monitoring"], updates: ["Task queue", "Priority order", "Deadline alerts"], status: "active", tier: "free", bundleType: "admin" },
   { id: "ab2", title: "Weekly Governance Bundle", description: "Weekly cadence: performance review, meeting summaries, action tracking, and escalation.", workflowCount: 4, workflows: ["Weekly Performance Review", "Meeting Summary Generation", "Action Item Tracking", "Task Escalation"], updates: ["Weekly summary", "Meeting summaries", "Escalation log"], status: "active", tier: "t1", bundleType: "admin" },
   { id: "ab3", title: "Communication & Reporting Bundle", description: "Executive briefs, operational reports, initiative digests, and leadership alignment.", workflowCount: 4, workflows: ["Executive Brief Creation", "Weekly Operational Report", "Initiative Update Digest", "Leadership Alignment Report"], updates: ["Exec briefs", "Weekly report", "Alignment score"], status: "idle", tier: "t2", bundleType: "admin" },
   { id: "ab4", title: "Policy & Compliance Bundle", description: "Policy registry, governance reviews, compliance checklists, and audit preparation.", workflowCount: 4, workflows: ["Policy Creation", "Governance Review", "Compliance Checklist Execution", "Audit Preparation Workflow"], updates: ["Policy registry", "Compliance status", "Audit readiness"], status: "idle", tier: "t2", bundleType: "admin" },
 ];
 
-// ── Helpers ─────────────────────────────────────────────────────────
 const TIER_LABEL: Record<string, string> = { free: "Free", t1: "Tier 1", t2: "Tier 2", t3: "Tier 3" };
 const TIER_COLOR: Record<string, string> = {
   free: "hsl(var(--muted-foreground))", t1: "hsl(var(--electric-blue))", t2: "hsl(var(--teal))", t3: "hsl(var(--signal-purple))",
 };
-
 const STATUS_CONFIG = {
-  idle: { label: "Ready", color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))", dot: "hsl(var(--muted-foreground))" },
-  running: { label: "Running", color: "hsl(var(--electric-blue))", bg: "hsl(var(--electric-blue) / 0.1)", dot: "hsl(var(--electric-blue))" },
-  complete: { label: "Complete", color: "hsl(var(--signal-green))", bg: "hsl(var(--signal-green) / 0.1)", dot: "hsl(var(--signal-green))" },
+  idle:     { label: "Ready",    color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))",              dot: "hsl(var(--muted-foreground))" },
+  running:  { label: "Running",  color: "hsl(var(--electric-blue))",    bg: "hsl(var(--electric-blue) / 0.1)", dot: "hsl(var(--electric-blue))" },
+  complete: { label: "Complete", color: "hsl(var(--signal-green))",     bg: "hsl(var(--signal-green) / 0.1)",  dot: "hsl(var(--signal-green))" },
 };
-
 const BUNDLE_STATUS = {
-  active: { label: "Active", color: "hsl(var(--signal-green))", bg: "hsl(var(--signal-green) / 0.1)" },
-  idle: { label: "Idle", color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
+  active:  { label: "Active",  color: "hsl(var(--signal-green))",  bg: "hsl(var(--signal-green) / 0.1)" },
+  idle:    { label: "Idle",    color: "hsl(var(--muted-foreground))", bg: "hsl(var(--muted))" },
   partial: { label: "Partial", color: "hsl(var(--signal-yellow))", bg: "hsl(var(--signal-yellow) / 0.1)" },
 };
-
 const BUNDLE_TABS: { key: BundleView; label: string; icon: React.ElementType; count: number }[] = [
-  { key: "system", label: "System Bundles", icon: Layers, count: ALL_BUNDLES.filter(b => b.bundleType === "system").length },
-  { key: "department", label: "Department Bundles", icon: Building2, count: ALL_BUNDLES.filter(b => b.bundleType === "department").length },
-  { key: "project", label: "Project Bundles", icon: FolderOpen, count: ALL_BUNDLES.filter(b => b.bundleType === "project").length },
-  { key: "admin", label: "Admin & Execution", icon: ListChecks, count: ALL_BUNDLES.filter(b => b.bundleType === "admin").length },
+  { key: "system",     label: "System Bundles",    icon: Layers,     count: ALL_BUNDLES.filter(b => b.bundleType === "system").length },
+  { key: "department", label: "Department Bundles", icon: Building2,  count: ALL_BUNDLES.filter(b => b.bundleType === "department").length },
+  { key: "project",    label: "Project Bundles",    icon: FolderOpen, count: ALL_BUNDLES.filter(b => b.bundleType === "project").length },
+  { key: "admin",      label: "Admin & Execution",  icon: ListChecks, count: ALL_BUNDLES.filter(b => b.bundleType === "admin").length },
 ];
 
-// Mock AI-generated workflow templates
-const AI_SUGGESTIONS = [
-  "Onboard a new department head with role clarity and MOCHA assignments",
-  "Recover a delayed initiative with risk mitigation and stakeholder alignment",
-  "Build a quarterly planning cycle for a sales team of 15",
-  "Create a compliance audit trail for a governance review",
-  "Design a cross-functional product launch coordination workflow",
-];
+const DEPLOY_TARGET_DESCRIPTIONS: Record<DeployTarget, string> = {
+  "Dashboard":     "Sends output to your main command center — KPI tiles, status panels, and alerts.",
+  "Action Items":  "Creates or updates action items in your task queue. Owners are notified.",
+  "Diagnostics":   "Updates your org health score and surfaces new diagnostic insights.",
+  "Departments":   "Sends department-level data to the relevant team view.",
+  "Reports":       "Appends results to the Reports section for review and sharing.",
+  "Team":          "Updates team member records, capacity data, or role assignments.",
+  "Systems":       "Writes structured output to the Systems & Admin section.",
+};
 
-function generateMockWorkflow(prompt: string): GeneratedWorkflow {
-  const lowerPrompt = prompt.toLowerCase();
-  const isOnboarding = lowerPrompt.includes("onboard") || lowerPrompt.includes("new");
-  const isRisk = lowerPrompt.includes("risk") || lowerPrompt.includes("mitigation");
-  const isPlanning = lowerPrompt.includes("planning") || lowerPrompt.includes("quarterly");
+const PKG_KEY = "apphia_user_packages";
 
-  if (isOnboarding) {
-    return {
-      id: `gen-${Date.now()}`,
-      title: "New Leader Onboarding & Role Clarity",
-      steps: [
-        "Role Definition Workflow — define scope, authority, and deliverables",
-        "Responsibility Matrix Creation (RACI) — map reporting lines and accountabilities",
-        "Department Charter Creation — formalize team mandate and KPIs",
-        "Team Capacity Analysis — assess inherited workload and blockers",
-        "Stakeholder Communication Plan — announce and align key stakeholders",
-      ],
-      deployTargets: ["Team", "Departments", "Action Items"],
-      updates: "Role registry, RACI assignments, team charter",
-      rationale: "Detected onboarding pattern. Chained role definition → accountability mapping → charter creation to reduce ambiguity in the first 30 days.",
-    };
-  }
-  if (isRisk) {
-    return {
-      id: `gen-${Date.now()}`,
-      title: "Initiative Recovery & Risk Mitigation",
-      steps: [
-        "Risk Impact Analysis — score and rank active risks on the initiative",
-        "Risk Mitigation Planning — create action items for top 3 risks",
-        "Dependency Mapping — surface all blockers and upstream dependencies",
-        "Issue Escalation — route critical blockers to decision owners",
-        "Initiative Progress Review — recalibrate timeline and health scores",
-      ],
-      deployTargets: ["Action Items", "Dashboard", "Reports"],
-      updates: "Risk mitigation tasks, dependency flags, revised health score",
-      rationale: "Detected recovery pattern. Orchestrated risk scoring → mitigation → dependency unblocking → escalation → health recalibration.",
-    };
-  }
-  if (isPlanning) {
-    return {
-      id: `gen-${Date.now()}`,
-      title: "Quarterly Planning Cycle",
-      steps: [
-        "OKR Creation — define objectives and key results for the quarter",
-        "Initiative Prioritization — rank and select initiatives by impact/effort",
-        "Resource Allocation — assign team capacity to prioritized initiatives",
-        "KPI Definition — set measurable success criteria per initiative",
-        "Meeting Agenda Creation — schedule kick-off and review cadence",
-      ],
-      deployTargets: ["Dashboard", "Action Items", "Reports"],
-      updates: "OKR cascade, initiative priority stack, KPI registry, Q-plan calendar",
-      rationale: "Detected planning cycle pattern. Cascaded OKR → prioritization → resourcing → measurement → cadence setup.",
-    };
-  }
-  return {
-    id: `gen-${Date.now()}`,
-    title: "Custom Operational Workflow",
-    steps: [
-      "Process Documentation — document the current state process",
-      "Process Bottleneck Detection — identify constraints and delays",
-      "Root Cause Analysis — diagnose underlying causes",
-      "Process Improvement Proposal — design improved process",
-      "Change Implementation Plan — deploy with change management",
-    ],
-    deployTargets: ["Action Items", "Systems", "Diagnostics"],
-    updates: "Process map, bottleneck flags, improvement tasks",
-    rationale: "Applied default operational improvement chain based on your prompt.",
-  };
+function loadPackages(): UserPackage[] {
+  try {
+    const raw = localStorage.getItem(PKG_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
 }
 
+function savePackages(pkgs: UserPackage[]) {
+  try { localStorage.setItem(PKG_KEY, JSON.stringify(pkgs)); } catch { /* silent */ }
+}
+
+// ── Build suggested packages from live org data ────────────────────────
+function buildSuggestions(): SuggestedPackage[] {
+  const now   = new Date();
+  const overdue  = actionItems.filter(a => a.status !== "Completed" && new Date(a.dueDate) < now);
+  const blocked  = initiatives.filter(i => i.status === "Blocked");
+  const atRisk   = initiatives.filter(i => i.status === "At Risk");
+  const sugs: SuggestedPackage[] = [];
+
+  if (overdue.length > 0) {
+    sugs.push({
+      id: "sug-action",
+      title: "Action Item Recovery Package",
+      reason: `${overdue.length} overdue item${overdue.length !== 1 ? "s" : ""} detected — this package monitors deadlines and escalates automatically.`,
+      urgency: "high",
+      icon: AlertTriangle,
+      iconColor: "hsl(var(--signal-red))",
+      workflowNames: ["Action Item Tracking", "Task Deadline Monitoring", "Task Escalation"],
+      deployTargets: ["Action Items", "Dashboard"],
+      category: "Execution",
+    });
+  }
+
+  if (blocked.length > 0) {
+    sugs.push({
+      id: "sug-unblock",
+      title: "Initiative Unblocking Package",
+      reason: `${blocked.length} blocked initiative${blocked.length !== 1 ? "s" : ""} are stalling delivery — route blockers to decision owners fast.`,
+      urgency: "high",
+      icon: GitBranch,
+      iconColor: "hsl(var(--signal-red))",
+      workflowNames: ["Issue Escalation", "Dependency Mapping", "Risk Mitigation Planning"],
+      deployTargets: ["Action Items", "Dashboard"],
+      category: "Initiatives",
+    });
+  }
+
+  if (atRisk.length > 0) {
+    sugs.push({
+      id: "sug-risk",
+      title: "Initiative Risk Mitigation Package",
+      reason: `${atRisk.length} initiative${atRisk.length !== 1 ? "s" : ""} at risk — assess impact and build mitigation tasks before they deteriorate.`,
+      urgency: "medium",
+      icon: Shield,
+      iconColor: "hsl(var(--signal-yellow))",
+      workflowNames: ["Risk Impact Analysis", "Risk Mitigation Planning", "Initiative Progress Review"],
+      deployTargets: ["Dashboard", "Action Items", "Diagnostics"],
+      category: "Risk",
+    });
+  }
+
+  sugs.push({
+    id: "sug-governance",
+    title: "Weekly Governance Package",
+    reason: "A consistent weekly cadence — performance review, meeting summaries, and action tracking — is the backbone of operational discipline.",
+    urgency: "medium",
+    icon: Calendar,
+    iconColor: "hsl(var(--electric-blue))",
+    workflowNames: ["Weekly Performance Review", "Meeting Summary Generation", "Action Item Tracking", "Task Escalation"],
+    deployTargets: ["Reports", "Action Items"],
+    category: "Operations",
+  });
+
+  sugs.push({
+    id: "sug-health",
+    title: "Org Health Monitoring Package",
+    reason: "Continuously track your org health score, alignment index, and leadership bandwidth in real time.",
+    urgency: "low",
+    icon: Activity,
+    iconColor: "hsl(var(--teal))",
+    workflowNames: ["Operational Health Assessment", "Strategic Alignment Check", "Initiative Load Analysis", "Leadership Bandwidth Check"],
+    deployTargets: ["Dashboard", "Diagnostics"],
+    category: "Strategy",
+  });
+
+  sugs.push({
+    id: "sug-kpi",
+    title: "Performance Metrics Package",
+    reason: "Define, track, and alert on your key metrics. Auto-collect data and generate weekly performance summaries.",
+    urgency: "low",
+    icon: BarChart3,
+    iconColor: "hsl(var(--signal-green))",
+    workflowNames: ["KPI Definition", "Metric Data Collection", "KPI Alert Trigger", "Weekly Performance Review"],
+    deployTargets: ["Dashboard", "Reports"],
+    category: "Performance",
+  });
+
+  return sugs;
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────
 function TierBadge({ tier }: { tier: string }) {
   const locked = tier !== "free";
   return (
@@ -322,280 +349,956 @@ function TierBadge({ tier }: { tier: string }) {
   );
 }
 
-// ── Deploy Modal ─────────────────────────────────────────────────────
+// ── Improved Deploy Modal ──────────────────────────────────────────────
 function DeployModal({ workflow, onClose, onDeploy }: {
   workflow: WorkflowItem | null;
   onClose: () => void;
   onDeploy: (wf: WorkflowItem, target: DeployTarget) => void;
 }) {
+  const [tab, setTab]                   = useState<"overview" | "outputs" | "targets" | "run">("overview");
   const [selectedTarget, setSelectedTarget] = useState<DeployTarget | null>(null);
-  const [deploying, setDeploying] = useState(false);
-  const [done, setDone] = useState(false);
+  const [deploying, setDeploying]       = useState(false);
+  const [done, setDone]                 = useState(false);
 
   if (!workflow) return null;
 
   function handleDeploy() {
-    if (!selectedTarget) return;
+    if (!selectedTarget) { setTab("targets"); return; }
     setDeploying(true);
-    setTimeout(() => { setDone(true); setTimeout(() => { onDeploy(workflow!, selectedTarget); onClose(); }, 1000); }, 1200);
+    setTimeout(() => {
+      setDone(true);
+      setTimeout(() => { onDeploy(workflow!, selectedTarget); onClose(); }, 1200);
+    }, 1400);
   }
+
+  const catCfg = WORKFLOW_CATEGORIES.find(c => c.name === workflow.category);
+  const tabs = [
+    { key: "overview", label: "Overview",    icon: Info },
+    { key: "outputs",  label: "Outputs",     icon: FileOutput },
+    { key: "targets",  label: "Deploy To",   icon: MapPin },
+    { key: "run",      label: "Run",         icon: Play },
+  ] as const;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: "hsl(var(--background) / 0.85)", backdropFilter: "blur(8px)" }}>
-      <div className="w-full max-w-md rounded-2xl border-2 shadow-elevated overflow-hidden"
+      style={{ background: "hsl(var(--background) / 0.88)", backdropFilter: "blur(8px)" }}>
+      <div className="w-full max-w-lg rounded-2xl border-2 shadow-elevated overflow-hidden"
         style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--card))" }}>
+
+        {/* Header */}
         <div className="px-6 py-4 border-b flex items-start justify-between"
           style={{ borderColor: "hsl(var(--border))" }}>
-          <div>
-            <p className="text-[10px] font-mono text-muted-foreground mb-0.5 uppercase tracking-widest">Deploy Workflow</p>
-            <h2 className="text-sm font-bold text-foreground">{workflow.title}</h2>
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+              style={{ background: catCfg ? `${catCfg.color}15` : "hsl(var(--muted))" }}>
+              {catCfg && <catCfg.icon className="w-4 h-4" style={{ color: catCfg.color }} />}
+            </div>
+            <div>
+              <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">{workflow.category}</p>
+              <h2 className="text-sm font-bold text-foreground">{workflow.title}</h2>
+              <div className="flex items-center gap-1.5 mt-1">
+                <TierBadge tier={workflow.tier} />
+                <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
+                  style={{ background: STATUS_CONFIG[workflow.status].bg, color: STATUS_CONFIG[workflow.status].color }}>
+                  {STATUS_CONFIG[workflow.status].label}
+                </span>
+              </div>
+            </div>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
-        <div className="px-6 py-5 space-y-4">
-          <div>
-            <p className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5" style={{ color: "hsl(var(--electric-blue))" }} />
-              Select where to send output
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {workflow.deployTargets.map(target => (
-                <button key={target}
-                  onClick={() => setSelectedTarget(target)}
-                  className={cn("text-xs px-3 py-2.5 rounded-lg border-2 font-medium transition-all text-left")}
+
+        {/* Tab bar */}
+        <div className="flex border-b" style={{ borderColor: "hsl(var(--border))" }}>
+          {tabs.map(({ key, label, icon: Icon }) => (
+            <button key={key} onClick={() => setTab(key)}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2.5 text-xs font-semibold transition-all border-b-2"
+              style={{
+                borderColor: tab === key ? "hsl(var(--electric-blue))" : "transparent",
+                color: tab === key ? "hsl(var(--electric-blue))" : "hsl(var(--muted-foreground))",
+                background: tab === key ? "hsl(var(--electric-blue) / 0.06)" : "transparent",
+              }}>
+              <Icon className="w-3.5 h-3.5" />{label}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab content */}
+        <div className="px-6 py-5 min-h-[220px]">
+          {tab === "overview" && (
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs font-semibold text-foreground mb-2">What this workflow does</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  <strong className="text-foreground">{workflow.title}</strong> is a structured PMO workflow in the{" "}
+                  <span style={{ color: catCfg?.color }}>{workflow.category}</span> category. When deployed, it runs automatically
+                  against your org data and pushes results to your selected app section.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl p-3" style={{ background: "hsl(var(--muted))" }}>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Category</p>
+                  <p className="text-xs font-medium text-foreground">{workflow.category}</p>
+                </div>
+                <div className="rounded-xl p-3" style={{ background: "hsl(var(--muted))" }}>
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Tier Required</p>
+                  <TierBadge tier={workflow.tier} />
+                </div>
+              </div>
+              {workflow.lastRun && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Clock className="w-3.5 h-3.5" />
+                  Last run: {workflow.lastRun}
+                </div>
+              )}
+            </div>
+          )}
+
+          {tab === "outputs" && (
+            <div className="space-y-4">
+              <p className="text-xs font-semibold text-foreground">What this workflow produces</p>
+              <div className="rounded-xl border overflow-hidden"
+                style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+                <div className="flex items-center gap-2.5 px-4 py-3 border-b"
+                  style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--secondary) / 0.5)" }}>
+                  <FileOutput className="w-3.5 h-3.5" style={{ color: "hsl(var(--electric-blue))" }} />
+                  <span className="text-xs font-bold text-foreground">Primary Output</span>
+                </div>
+                <div className="px-4 py-3">
+                  <p className="text-sm font-semibold text-foreground">{workflow.updates}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Sent to: {workflow.deployTargets.join(", ")}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-foreground mb-2">Secondary effects</p>
+                <ul className="space-y-1.5">
+                  {[
+                    "Status updates propagated to linked modules",
+                    "Timestamp logged to audit trail",
+                    "Dashboard indicators refreshed",
+                  ].map(e => (
+                    <li key={e} className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(var(--electric-blue))" }} />
+                      {e}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {tab === "targets" && (
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                Select where this workflow sends its output. Only compatible targets are shown.
+              </p>
+              <div className="space-y-2">
+                {workflow.deployTargets.map(target => (
+                  <button key={target} onClick={() => setSelectedTarget(target)}
+                    className="w-full flex items-start gap-3 text-left px-4 py-3 rounded-xl border-2 transition-all"
+                    style={{
+                      borderColor: selectedTarget === target ? "hsl(var(--electric-blue))" : "hsl(var(--border))",
+                      background: selectedTarget === target ? "hsl(var(--electric-blue) / 0.08)" : "transparent",
+                    }}>
+                    <div className={cn("w-4 h-4 rounded-full border-2 mt-0.5 flex-shrink-0 transition-all",
+                      selectedTarget === target ? "border-electric-blue" : "border-muted-foreground/40")}
+                      style={{ borderColor: selectedTarget === target ? "hsl(var(--electric-blue))" : undefined }}>
+                      {selectedTarget === target && (
+                        <div className="w-full h-full rounded-full scale-50"
+                          style={{ background: "hsl(var(--electric-blue))" }} />
+                      )}
+                    </div>
+                    <div>
+                      <p className={cn("text-xs font-semibold", selectedTarget === target ? "text-foreground" : "text-foreground/80")}>
+                        → {target}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">
+                        {DEPLOY_TARGET_DESCRIPTIONS[target]}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tab === "run" && (
+            <div className="space-y-4">
+              <div className="rounded-xl p-4" style={{ background: "hsl(var(--muted))" }}>
+                <p className="text-xs font-semibold text-foreground mb-2">Deployment summary</p>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Workflow</span>
+                    <span className="font-medium text-foreground truncate max-w-[180px]">{workflow.title}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Output</span>
+                    <span className="font-medium text-foreground">{workflow.updates}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-muted-foreground">Deploy target</span>
+                    <span className="font-medium" style={{ color: selectedTarget ? "hsl(var(--electric-blue))" : "hsl(var(--signal-red))" }}>
+                      {selectedTarget ?? "Not selected"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {!selectedTarget && (
+                <div className="rounded-xl p-3 text-xs text-center"
+                  style={{ background: "hsl(var(--signal-yellow) / 0.08)", border: "1px solid hsl(var(--signal-yellow) / 0.25)", color: "hsl(var(--signal-yellow))" }}>
+                  Select a deploy target first (see the "Deploy To" tab).
+                </div>
+              )}
+              <button onClick={handleDeploy} disabled={!selectedTarget || deploying}
+                className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+                style={{ background: done ? "hsl(var(--signal-green))" : "hsl(var(--electric-blue))", color: "white" }}>
+                {done        ? <><CheckCircle className="w-4 h-4" /> Deployed!</>
+                 : deploying ? <><RefreshCw className="w-4 h-4 animate-spin" /> Deploying…</>
+                 : <><Play className="w-4 h-4" /> Deploy & Run</>}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Footer nav */}
+        <div className="px-6 pb-4 flex items-center justify-between">
+          <button onClick={() => {
+            const idx = tabs.findIndex(t => t.key === tab);
+            if (idx > 0) setTab(tabs[idx - 1].key);
+          }} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            disabled={tab === "overview"}>
+            <ChevronLeft className="w-3.5 h-3.5" /> Back
+          </button>
+          {tab !== "run" && (
+            <button onClick={() => {
+              const idx = tabs.findIndex(t => t.key === tab);
+              if (idx < tabs.length - 1) setTab(tabs[idx + 1].key);
+            }} className="flex items-center gap-1 text-xs font-semibold transition-colors"
+              style={{ color: "hsl(var(--electric-blue))" }}>
+              Next <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Suggested View ─────────────────────────────────────────────────────
+function SuggestedView({
+  onDeploy,
+  onSavePackage,
+}: {
+  onDeploy: (wf: WorkflowItem) => void;
+  onSavePackage: (pkg: Omit<UserPackage, "id" | "createdAt">) => void;
+}) {
+  const suggestions = useMemo(buildSuggestions, []);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+
+  function saveAsPkg(sug: SuggestedPackage) {
+    onSavePackage({
+      name: sug.title,
+      description: sug.reason,
+      purpose: "system",
+      target: sug.category,
+      workflowIds: WORKFLOWS.filter(w => sug.workflowNames.includes(w.title)).map(w => w.id),
+      status: "idle",
+    });
+    setSavedIds(s => new Set(s).add(sug.id));
+  }
+
+  return (
+    <div className="space-y-5">
+      {/* Apphia context bar */}
+      <div className="rounded-2xl p-4 flex items-start gap-3"
+        style={{ background: "linear-gradient(135deg, hsl(268 72% 52% / 0.08), hsl(183 62% 42% / 0.06))", border: "1px solid hsl(268 72% 52% / 0.18)" }}>
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: "linear-gradient(135deg, hsl(268 72% 52%), hsl(183 62% 42%))" }}>
+          <span className="text-white font-black text-sm">A</span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-bold text-foreground mb-0.5">Apphia's Workflow Recommendations</p>
+          <p className="text-xs text-muted-foreground">
+            Based on your live org data. You don't need to build anything — just link suggested packages to departments or initiatives.
+          </p>
+        </div>
+        <button onClick={openApphia}
+          className="flex-shrink-0 flex items-center gap-1 text-[11px] font-semibold px-3 py-1.5 rounded-xl transition-all hover:opacity-90"
+          style={{ background: "hsl(268 72% 52% / 0.15)", color: "hsl(268 72% 80%)", border: "1px solid hsl(268 72% 52% / 0.3)" }}>
+          Ask Apphia <ChevronRight className="w-3 h-3" />
+        </button>
+      </div>
+
+      {/* Suggested cards */}
+      <div className="space-y-3">
+        {suggestions.map(sug => {
+          const saved = savedIds.has(sug.id);
+          const wfs   = WORKFLOWS.filter(w => sug.workflowNames.includes(w.title));
+          return (
+            <div key={sug.id} className="rounded-2xl border-2 overflow-hidden"
+              style={{
+                borderColor: sug.urgency === "high"
+                  ? "hsl(var(--signal-red) / 0.30)"
+                  : sug.urgency === "medium"
+                  ? "hsl(var(--electric-blue) / 0.25)"
+                  : "hsl(var(--border))",
+                background: "hsl(var(--card))",
+              }}>
+              {/* Card header */}
+              <div className="px-5 pt-4 pb-3 border-b flex items-start justify-between gap-3"
+                style={{ borderColor: "hsl(var(--border))" }}>
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ background: `${sug.iconColor}18` }}>
+                    <sug.icon className="w-4 h-4" style={{ color: sug.iconColor }} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap mb-1">
+                      <h3 className="text-sm font-bold text-foreground">{sug.title}</h3>
+                      {sug.urgency === "high" && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          style={{ background: "hsl(var(--signal-red) / 0.12)", color: "hsl(var(--signal-red))" }}>
+                          Urgent
+                        </span>
+                      )}
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                        style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
+                        {sug.category}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{sug.reason}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Workflow chain */}
+              <div className="px-5 py-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">Workflow Chain</p>
+                <div className="flex items-center flex-wrap gap-1.5">
+                  {sug.workflowNames.map((name, i) => (
+                    <div key={name} className="flex items-center gap-1.5">
+                      <span className="text-[11px] font-medium px-2.5 py-1 rounded-lg border"
+                        style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))", background: "hsl(var(--secondary) / 0.4)" }}>
+                        {name}
+                      </span>
+                      {i < sug.workflowNames.length - 1 && (
+                        <ArrowRight className="w-3 h-3 flex-shrink-0 text-muted-foreground/50" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-2">
+                  Updates: {sug.deployTargets.join(" · ")}
+                </p>
+              </div>
+
+              {/* Actions */}
+              <div className="px-5 pb-4 flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => saveAsPkg(sug)}
+                  disabled={saved}
+                  className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-xl transition-all disabled:opacity-60"
                   style={{
-                    borderColor: selectedTarget === target ? "hsl(var(--electric-blue))" : "hsl(var(--border))",
-                    background: selectedTarget === target ? "hsl(var(--electric-blue) / 0.1)" : "transparent",
-                    color: selectedTarget === target ? "hsl(var(--electric-blue))" : "hsl(var(--muted-foreground))",
+                    background: saved ? "hsl(var(--signal-green) / 0.12)" : "hsl(var(--electric-blue))",
+                    color: saved ? "hsl(var(--signal-green))" : "white",
                   }}>
-                  → {target}
+                  {saved ? <><CheckCircle className="w-3.5 h-3.5" /> Saved to My Packages</> : <><Package className="w-3.5 h-3.5" /> Save as Package</>}
+                </button>
+                {wfs.slice(0, 1).map(wf => (
+                  <button key={wf.id}
+                    onClick={() => onDeploy(wf)}
+                    className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-xl border transition-all hover:bg-muted/40"
+                    style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
+                    <Play className="w-3 h-3" /> Deploy First Workflow
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Package Builder ────────────────────────────────────────────────────
+function PackageBuilder({ onClose, onSave }: {
+  onClose: () => void;
+  onSave: (pkg: Omit<UserPackage, "id" | "createdAt">) => void;
+}) {
+  const [name, setName]         = useState("");
+  const [desc, setDesc]         = useState("");
+  const [purpose, setPurpose]   = useState<UserPackage["purpose"]>("department");
+  const [target, setTarget]     = useState("");
+  const [search, setSearch]     = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const filtered = WORKFLOWS.filter(w =>
+    w.title.toLowerCase().includes(search.toLowerCase()) ||
+    w.category.toLowerCase().includes(search.toLowerCase())
+  );
+
+  function toggle(id: string) {
+    setSelected(s => {
+      const n = new Set(s);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+  }
+
+  function save() {
+    if (!name.trim() || selected.size === 0) return;
+    onSave({ name, description: desc, purpose, target, workflowIds: [...selected], status: "idle" });
+    onClose();
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: "hsl(var(--background) / 0.88)", backdropFilter: "blur(8px)" }}>
+      <div className="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl border-2 shadow-elevated overflow-hidden"
+        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--card))" }}>
+
+        <div className="px-6 py-4 border-b flex items-center justify-between flex-shrink-0"
+          style={{ borderColor: "hsl(var(--border))" }}>
+          <div>
+            <h2 className="text-sm font-bold text-foreground">Create a Package</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">Link workflows to build a system for a department or initiative</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">Package Name *</label>
+              <input value={name} onChange={e => setName(e.target.value)}
+                placeholder="e.g. Sales Ops Weekly Package"
+                className="w-full px-3 py-2 text-sm rounded-xl border bg-transparent text-foreground focus:outline-none"
+                style={{ borderColor: "hsl(var(--border))" }} />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">Purpose</label>
+              <select value={purpose} onChange={e => setPurpose(e.target.value as UserPackage["purpose"])}
+                className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none"
+                style={{ borderColor: "hsl(var(--border))" }}>
+                <option value="department">Department</option>
+                <option value="initiative">Initiative</option>
+                <option value="system">System / Ongoing</option>
+                <option value="custom">Custom</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">
+              Target ({purpose === "department" ? "Department name" : purpose === "initiative" ? "Initiative name" : "Label"})
+            </label>
+            <input value={target} onChange={e => setTarget(e.target.value)}
+              placeholder={purpose === "department" ? "e.g. Sales" : purpose === "initiative" ? "e.g. Customer Portal v2" : "e.g. Weekly Ops"}
+              className="w-full px-3 py-2 text-sm rounded-xl border bg-transparent text-foreground focus:outline-none"
+              style={{ borderColor: "hsl(var(--border))" }} />
+          </div>
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">Description</label>
+            <input value={desc} onChange={e => setDesc(e.target.value)}
+              placeholder="What does this package do?"
+              className="w-full px-3 py-2 text-sm rounded-xl border bg-transparent text-foreground focus:outline-none"
+              style={{ borderColor: "hsl(var(--border))" }} />
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                Link Workflows ({selected.size} linked)
+              </label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                <input value={search} onChange={e => setSearch(e.target.value)}
+                  placeholder="Search workflows…"
+                  className="pl-7 pr-3 py-1.5 text-xs rounded-lg border bg-transparent text-foreground focus:outline-none w-48"
+                  style={{ borderColor: "hsl(var(--border))" }} />
+              </div>
+            </div>
+            <div className="rounded-xl border overflow-hidden max-h-48 overflow-y-auto"
+              style={{ borderColor: "hsl(var(--border))" }}>
+              {filtered.slice(0, 30).map(wf => (
+                <button key={wf.id} onClick={() => toggle(wf.id)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left border-b last:border-b-0 transition-colors hover:bg-muted/30"
+                  style={{
+                    borderColor: "hsl(var(--border))",
+                    background: selected.has(wf.id) ? "hsl(var(--electric-blue) / 0.06)" : "transparent",
+                  }}>
+                  <div className={cn("w-3.5 h-3.5 rounded border-2 flex-shrink-0 flex items-center justify-center",
+                    selected.has(wf.id) ? "border-electric-blue bg-electric-blue/20" : "border-muted-foreground/40")}
+                    style={{ borderColor: selected.has(wf.id) ? "hsl(var(--electric-blue))" : undefined }}>
+                    {selected.has(wf.id) && <CheckCircle className="w-2.5 h-2.5" style={{ color: "hsl(var(--electric-blue))" }} />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-foreground truncate">{wf.title}</p>
+                    <p className="text-[10px] text-muted-foreground">{wf.category}</p>
+                  </div>
+                  <TierBadge tier={wf.tier} />
                 </button>
               ))}
             </div>
           </div>
-          <div className="rounded-lg p-3" style={{ background: "hsl(var(--muted))" }}>
-            <p className="text-[10px] font-semibold text-muted-foreground mb-1">Updates sent to app</p>
-            <p className="text-xs text-foreground">{workflow.updates}</p>
+        </div>
+
+        <div className="px-6 py-4 border-t flex items-center justify-between flex-shrink-0"
+          style={{ borderColor: "hsl(var(--border))" }}>
+          <p className="text-xs text-muted-foreground">{selected.size} workflow{selected.size !== 1 ? "s" : ""} linked</p>
+          <div className="flex gap-2">
+            <button onClick={onClose}
+              className="text-xs px-4 py-2 rounded-xl border text-muted-foreground hover:bg-muted transition-colors"
+              style={{ borderColor: "hsl(var(--border))" }}>
+              Cancel
+            </button>
+            <button onClick={save} disabled={!name.trim() || selected.size === 0}
+              className="text-xs font-bold px-5 py-2 rounded-xl transition-all disabled:opacity-50"
+              style={{ background: "hsl(var(--electric-blue))", color: "white" }}>
+              Save Package
+            </button>
           </div>
-          <button onClick={handleDeploy} disabled={!selectedTarget || deploying}
-            className="w-full py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-            style={{ background: done ? "hsl(var(--signal-green))" : "hsl(var(--electric-blue))", color: "white" }}>
-            {done ? <><CheckCircle className="w-4 h-4" /> Deployed!</> :
-              deploying ? <><RefreshCw className="w-4 h-4 animate-spin" /> Deploying…</> :
-                <><Play className="w-4 h-4" /> Deploy & Run</>}
-          </button>
         </div>
       </div>
     </div>
   );
 }
 
-// ── Generated Workflow Card ──────────────────────────────────────────
-function GeneratedWorkflowCard({ workflow, onDismiss }: { workflow: GeneratedWorkflow; onDismiss: () => void }) {
-  const [deployed, setDeployed] = useState(false);
-  return (
-    <div className="rounded-xl border-2 overflow-hidden"
-      style={{ borderColor: "hsl(var(--electric-blue) / 0.4)", background: "hsl(var(--electric-blue) / 0.04)" }}>
-      <div className="px-5 py-4 border-b flex items-start justify-between"
-        style={{ borderColor: "hsl(var(--electric-blue) / 0.2)" }}>
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{ background: "hsl(var(--electric-blue) / 0.15)" }}>
-            <Sparkles className="w-3.5 h-3.5" style={{ color: "hsl(var(--electric-blue))" }} />
-          </div>
+// ── Packages View ──────────────────────────────────────────────────────
+function PackagesView({
+  packages, onDelete, onToggle, onNewPackage, onDeploy,
+}: {
+  packages: UserPackage[];
+  onDelete: (id: string) => void;
+  onToggle: (id: string) => void;
+  onNewPackage: () => void;
+  onDeploy: (wf: WorkflowItem) => void;
+}) {
+  const [expanded, setExpanded] = useState<string | null>(null);
+
+  if (packages.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-2xl p-5 flex items-start gap-3"
+          style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
+          <Package className="w-5 h-5 flex-shrink-0 mt-0.5 text-muted-foreground" />
           <div>
-            <p className="text-[10px] font-mono uppercase tracking-widest mb-0.5"
-              style={{ color: "hsl(var(--electric-blue))" }}>Generated Workflow</p>
-            <h3 className="text-sm font-bold text-foreground">{workflow.title}</h3>
+            <p className="text-sm font-semibold text-foreground mb-1">No packages yet</p>
+            <p className="text-xs text-muted-foreground">
+              Go to the Suggested tab to save a recommended package, or create your own by linking workflows below.
+            </p>
           </div>
         </div>
-        <button onClick={onDismiss} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
-          <X className="w-3.5 h-3.5 text-muted-foreground" />
+        <button onClick={onNewPackage}
+          className="flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all"
+          style={{ background: "hsl(var(--electric-blue))", color: "white" }}>
+          <Plus className="w-4 h-4" /> Create Package
         </button>
       </div>
-      <div className="px-5 py-4 space-y-4">
-        <div>
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">Workflow Steps</p>
-          <ul className="space-y-1.5">
-            {workflow.steps.map((step, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs text-foreground">
-                <span className="flex-shrink-0 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center mt-0.5"
-                  style={{ background: "hsl(var(--electric-blue) / 0.15)", color: "hsl(var(--electric-blue))" }}>
-                  {i + 1}
-                </span>
-                {step}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="rounded-lg p-3 text-xs" style={{ background: "hsl(var(--muted))" }}>
-          <p className="font-semibold text-muted-foreground mb-0.5">Logic</p>
-          <p className="text-foreground">{workflow.rationale}</p>
-        </div>
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-1">
-            {workflow.deployTargets.map(t => (
-              <span key={t} className="text-[10px] px-1.5 py-0.5 rounded font-medium"
-                style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
-                → {t}
-              </span>
-            ))}
-          </div>
-          <button
-            onClick={() => setDeployed(true)}
-            className="flex-shrink-0 flex items-center gap-1.5 text-xs px-4 py-2 rounded-lg font-semibold transition-all"
-            style={{
-              background: deployed ? "hsl(var(--signal-green))" : "hsl(var(--electric-blue))",
-              color: "white",
-            }}>
-            {deployed ? <><CheckCircle className="w-3.5 h-3.5" /> Deployed</> : <><Play className="w-3.5 h-3.5" /> Deploy</>}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── AI Generate Panel ────────────────────────────────────────────────
-function AIGeneratePanel({ onGenerate }: { onGenerate: (wf: GeneratedWorkflow) => void }) {
-  const [prompt, setPrompt] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  function handleGenerate(text: string) {
-    if (!text.trim()) return;
-    setLoading(true);
-    setTimeout(() => {
-      onGenerate(generateMockWorkflow(text));
-      setPrompt("");
-      setLoading(false);
-    }, 1400);
+    );
   }
 
   return (
-    <div className="rounded-xl border-2 overflow-hidden"
-      style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--card))" }}>
-      <div className="px-5 py-4 border-b flex items-center gap-2"
-        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--secondary))" }}>
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-          style={{ background: "hsl(var(--electric-blue) / 0.15)" }}>
-          <Wand2 className="w-3.5 h-3.5" style={{ color: "hsl(var(--electric-blue))" }} />
-        </div>
-        <div>
-          <h3 className="text-sm font-bold text-foreground">Generate from Prompt</h3>
-          <p className="text-[10px] text-muted-foreground">Describe a challenge, goal, or situation — get a custom workflow</p>
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">{packages.length} package{packages.length !== 1 ? "s" : ""} — link workflows to create systems for departments or initiatives.</p>
+        <button onClick={onNewPackage}
+          className="flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-xl transition-all"
+          style={{ background: "hsl(var(--electric-blue))", color: "white" }}>
+          <Plus className="w-3.5 h-3.5" /> New Package
+        </button>
       </div>
-      <div className="px-5 py-4 space-y-3">
-        <div className="relative">
-          <textarea
-            className="w-full text-sm rounded-xl border-2 px-4 py-3 bg-background text-foreground resize-none focus:outline-none placeholder:text-muted-foreground"
-            style={{ borderColor: "hsl(var(--border))", minHeight: "80px" }}
-            placeholder="e.g. 'We need to onboard a new department head quickly' or 'Our Q3 initiative is 3 weeks behind schedule'"
-            value={prompt}
-            onChange={e => setPrompt(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter" && e.metaKey) handleGenerate(prompt); }}
-          />
-          <button
-            onClick={() => handleGenerate(prompt)}
-            disabled={!prompt.trim() || loading}
-            className="absolute bottom-3 right-3 flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold transition-all disabled:opacity-50"
-            style={{ background: "hsl(var(--electric-blue))", color: "white" }}>
-            {loading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-            {loading ? "Building…" : "Generate"}
-          </button>
-        </div>
-        <div>
-          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">Quick Prompts</p>
-          <div className="flex flex-wrap gap-1.5">
-            {AI_SUGGESTIONS.map(s => (
-              <button key={s}
-                onClick={() => handleGenerate(s)}
-                className="text-[11px] px-2.5 py-1 rounded-lg border font-medium transition-all hover:border-muted-foreground"
-                style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))", background: "transparent" }}>
-                {s}
-              </button>
-            ))}
+
+      {packages.map(pkg => {
+        const pkgWorkflows = WORKFLOWS.filter(w => pkg.workflowIds.includes(w.id));
+        const isOpen = expanded === pkg.id;
+        return (
+          <div key={pkg.id} className="rounded-2xl border-2 overflow-hidden"
+            style={{
+              borderColor: pkg.status === "active" ? "hsl(var(--signal-green) / 0.35)" : "hsl(var(--border))",
+              background: "hsl(var(--card))",
+            }}>
+            <button onClick={() => setExpanded(isOpen ? null : pkg.id)}
+              className="w-full flex items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-muted/20">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: "hsl(var(--electric-blue) / 0.1)" }}>
+                <Package className="w-4 h-4" style={{ color: "hsl(var(--electric-blue))" }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-bold text-foreground">{pkg.name}</p>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
+                    style={{
+                      background: pkg.status === "active" ? "hsl(var(--signal-green) / 0.12)" : "hsl(var(--muted))",
+                      color: pkg.status === "active" ? "hsl(var(--signal-green))" : "hsl(var(--muted-foreground))",
+                    }}>
+                    {pkg.status === "active" ? "Active" : "Idle"}
+                  </span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded border"
+                    style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}>
+                    {pkg.purpose}{pkg.target ? ` · ${pkg.target}` : ""}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">{pkg.workflowIds.length} workflows linked{pkg.description ? ` · ${pkg.description}` : ""}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button onClick={e => { e.stopPropagation(); onToggle(pkg.id); }}
+                  className="flex-shrink-0 w-9 h-5 rounded-full relative transition-all"
+                  style={{ background: pkg.status === "active" ? "hsl(var(--signal-green) / 0.3)" : "hsl(var(--muted))" }}>
+                  <div className="absolute top-0.5 rounded-full w-4 h-4 transition-all"
+                    style={{
+                      background: pkg.status === "active" ? "hsl(var(--signal-green))" : "hsl(var(--muted-foreground))",
+                      left: pkg.status === "active" ? "calc(100% - 18px)" : "2px",
+                    }} />
+                </button>
+                <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
+              </div>
+            </button>
+
+            {isOpen && (
+              <div className="px-5 pb-5 border-t space-y-3" style={{ borderColor: "hsl(var(--border))" }}>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground pt-3">Linked Workflows</p>
+                <div className="space-y-2">
+                  {pkgWorkflows.map(wf => (
+                    <div key={wf.id} className="flex items-center gap-3 px-3 py-2 rounded-xl"
+                      style={{ background: "hsl(var(--secondary) / 0.5)" }}>
+                      <GitBranch className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                      <span className="flex-1 text-xs font-medium text-foreground truncate">{wf.title}</span>
+                      <TierBadge tier={wf.tier} />
+                      <button onClick={() => onDeploy(wf)}
+                        className="text-[10px] font-bold px-2 py-1 rounded-lg transition-all hover:opacity-90"
+                        style={{ background: "hsl(var(--electric-blue))", color: "white" }}>
+                        Deploy
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button onClick={() => onDelete(pkg.id)}
+                    className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors px-3 py-1.5 rounded-xl hover:bg-destructive/10">
+                    <Trash2 className="w-3 h-3" /> Remove Package
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 }
 
-// ── Main Component ───────────────────────────────────────────────────
-export default function Workflows() {
-  const [viewMode, setViewMode] = useState<"library" | "generate" | "bundles" | "automation">("library");
-  const [bundleTab, setBundleTab] = useState<BundleView>("system");
-  const [search, setSearch] = useState("");
+// ── Library View ───────────────────────────────────────────────────────
+function LibraryView({ onDeploy }: { onDeploy: (wf: WorkflowItem) => void }) {
+  const [search, setSearch]       = useState("");
   const [catFilter, setCatFilter] = useState<WorkflowCategory | "All">("All");
-  const [expandedCat, setExpandedCat] = useState<string | null>("Strategic Planning");
-  const [deployingWorkflow, setDeployingWorkflow] = useState<WorkflowItem | null>(null);
-  const [workflowStates, setWorkflowStates] = useState<Record<string, WorkflowItem["status"]>>({});
-  const [expandedBundle, setExpandedBundle] = useState<string | null>(null);
-  const [generatedWorkflows, setGeneratedWorkflows] = useState<GeneratedWorkflow[]>([]);
+  const [expanded, setExpanded]   = useState<string | null>("Strategic Planning");
+  const [wfStates, setWfStates]   = useState<Record<string, WorkflowItem["status"]>>({});
 
-  const getStatus = (wf: WorkflowItem) => workflowStates[wf.id] || wf.status;
+  const getStatus = (wf: WorkflowItem) => wfStates[wf.id] || wf.status;
 
-  const filteredWorkflows = WORKFLOWS.filter(w =>
+  const filtered = WORKFLOWS.filter(w =>
     (catFilter === "All" || w.category === catFilter) &&
     w.title.toLowerCase().includes(search.toLowerCase())
   );
 
   const grouped = WORKFLOW_CATEGORIES.reduce<Record<string, WorkflowItem[]>>((acc, cat) => {
-    const items = filteredWorkflows.filter(w => w.category === cat.name);
+    const items = filtered.filter(w => w.category === cat.name);
     if (items.length > 0) acc[cat.name] = items;
     return acc;
   }, {});
 
+  return (
+    <div className="space-y-4">
+      {/* Search + filter */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <input value={search} onChange={e => setSearch(e.target.value)}
+            placeholder="Search 100 workflows…"
+            className="w-full pl-9 pr-4 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none"
+            style={{ borderColor: "hsl(var(--border))" }} />
+        </div>
+        <select value={catFilter} onChange={e => setCatFilter(e.target.value as WorkflowCategory | "All")}
+          className="px-3 py-2 text-xs rounded-xl border bg-card text-muted-foreground focus:outline-none"
+          style={{ borderColor: "hsl(var(--border))" }}>
+          <option value="All">All categories</option>
+          {WORKFLOW_CATEGORIES.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+        </select>
+      </div>
+
+      {/* Grouped list */}
+      <div className="space-y-2">
+        {Object.entries(grouped).map(([catName, wfs]) => {
+          const catCfg = WORKFLOW_CATEGORIES.find(c => c.name === catName);
+          const isOpen = expanded === catName;
+          return (
+            <div key={catName} className="rounded-xl border overflow-hidden"
+              style={{ borderColor: "hsl(var(--border))" }}>
+              <button onClick={() => setExpanded(isOpen ? null : catName)}
+                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/20 transition-colors">
+                {catCfg && <catCfg.icon className="w-4 h-4 flex-shrink-0" style={{ color: catCfg.color }} />}
+                <span className="flex-1 text-sm font-semibold text-foreground">{catName}</span>
+                <span className="text-[11px] px-2 py-0.5 rounded font-mono"
+                  style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
+                  {wfs.length}
+                </span>
+                <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
+              </button>
+              {isOpen && (
+                <div className="divide-y" style={{ borderColor: "hsl(var(--border))" }}>
+                  {wfs.map(wf => {
+                    const st = getStatus(wf);
+                    return (
+                      <div key={wf.id} className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/20 transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-semibold text-foreground">{wf.title}</span>
+                            <TierBadge tier={wf.tier} />
+                            <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
+                              style={{ background: STATUS_CONFIG[st].bg, color: STATUS_CONFIG[st].color }}>
+                              <span className="inline-block w-1.5 h-1.5 rounded-full mr-1"
+                                style={{ background: STATUS_CONFIG[st].dot, verticalAlign: "middle" }} />
+                              {STATUS_CONFIG[st].label}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            Updates: {wf.updates} · Targets: {wf.deployTargets.join(", ")}
+                          </p>
+                        </div>
+                        {wf.lastRun && (
+                          <span className="text-[10px] text-muted-foreground flex-shrink-0">{wf.lastRun}</span>
+                        )}
+                        <button onClick={() => onDeploy(wf)}
+                          className="flex-shrink-0 flex items-center gap-1 text-[11px] px-3 py-1.5 rounded-lg font-semibold transition-all hover:opacity-90"
+                          style={{ background: "hsl(var(--electric-blue))", color: "white" }}>
+                          <Play className="w-3 h-3" /> Deploy
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Bundles View ───────────────────────────────────────────────────────
+function BundlesView() {
+  const [bundleTab, setBundleTab]     = useState<BundleView>("system");
+  const [expandedBundle, setExpanded] = useState<string | null>(null);
+  const visible = ALL_BUNDLES.filter(b => b.bundleType === bundleTab);
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-1 p-1 rounded-xl w-fit overflow-x-auto" style={{ background: "hsl(var(--muted))" }}>
+        {BUNDLE_TABS.map(({ key, label, icon: Icon, count }) => (
+          <button key={key} onClick={() => { setBundleTab(key); setExpanded(null); }}
+            className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg font-semibold transition-all whitespace-nowrap"
+            style={{
+              background: bundleTab === key ? "hsl(var(--card))" : "transparent",
+              color: bundleTab === key ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
+              boxShadow: bundleTab === key ? "var(--shadow-card)" : "none",
+            }}>
+            <Icon className="w-3.5 h-3.5" />{label}
+            <span className="text-[10px] px-1.5 py-0.5 rounded font-mono"
+              style={{
+                background: bundleTab === key ? "hsl(var(--electric-blue) / 0.15)" : "hsl(var(--background))",
+                color: bundleTab === key ? "hsl(var(--electric-blue))" : "hsl(var(--muted-foreground))",
+              }}>
+              {count}
+            </span>
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {bundleTab === "system"     && "System bundles run continuously and update your organization profile inside the app."}
+        {bundleTab === "department" && "Department bundles group workflows for specific functional areas."}
+        {bundleTab === "project"    && "Project bundles orchestrate the full lifecycle from intake through closeout."}
+        {bundleTab === "admin"      && "Admin bundles handle daily tasks, weekly governance, and reporting cadences."}
+      </p>
+      <div className="space-y-3">
+        {visible.map(bundle => {
+          const bs = BUNDLE_STATUS[bundle.status];
+          const isOpen = expandedBundle === bundle.id;
+          const BundleIcon = BUNDLE_TABS.find(t => t.key === bundle.bundleType)?.icon || Layers;
+          return (
+            <div key={bundle.id} className="rounded-xl border-2 overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
+              <button onClick={() => setExpanded(isOpen ? null : bundle.id)}
+                className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-muted/20 transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{ background: "hsl(var(--electric-blue) / 0.1)" }}>
+                    <BundleIcon className="w-4 h-4" style={{ color: "hsl(var(--electric-blue))" }} />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <p className="text-sm font-bold text-foreground">{bundle.title}</p>
+                      <TierBadge tier={bundle.tier} />
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
+                        style={{ background: bs.bg, color: bs.color }}>{bs.label}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{bundle.description}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-[10px] text-muted-foreground">{bundle.workflowCount} workflows</span>
+                  <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
+                </div>
+              </button>
+              {isOpen && (
+                <div className="px-5 pb-5 border-t space-y-3" style={{ borderColor: "hsl(var(--border))" }}>
+                  <div className="grid grid-cols-2 gap-3 pt-3">
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">Workflow Chain</p>
+                      <ul className="space-y-1">
+                        {bundle.workflows.map(w => (
+                          <li key={w} className="flex items-center gap-2 text-xs text-foreground">
+                            <ArrowRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                            {w}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">App Updates</p>
+                      <ul className="space-y-1">
+                        {bundle.updates.map(u => (
+                          <li key={u} className="flex items-center gap-2 text-xs text-foreground">
+                            <Activity className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                            {u}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                  <button className="w-full py-2.5 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all"
+                    style={{
+                      background: bundle.status === "active" ? "hsl(var(--signal-green) / 0.12)" : "hsl(var(--electric-blue))",
+                      color: bundle.status === "active" ? "hsl(var(--signal-green))" : "white",
+                    }}>
+                    {bundle.status === "active"
+                      ? <><CheckCircle className="w-3.5 h-3.5" /> Bundle Active</>
+                      : <><Play className="w-3.5 h-3.5" /> Activate Bundle</>}
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Main Component ─────────────────────────────────────────────────────
+export default function Workflows() {
+  const [viewMode, setViewMode]         = useState<"suggested" | "packages" | "library" | "bundles" | "automation">("suggested");
+  const [deployingWf, setDeployingWf]   = useState<WorkflowItem | null>(null);
+  const [wfStates, setWfStates]         = useState<Record<string, WorkflowItem["status"]>>({});
+  const [packages, setPackages]         = useState<UserPackage[]>(loadPackages);
+  const [showBuilder, setShowBuilder]   = useState(false);
+
   function handleDeploy(wf: WorkflowItem, _target: DeployTarget) {
-    setWorkflowStates(s => ({ ...s, [wf.id]: "running" }));
-    setTimeout(() => setWorkflowStates(s => ({ ...s, [wf.id]: "complete" })), 3000);
+    setWfStates(s => ({ ...s, [wf.id]: "running" }));
+    setTimeout(() => setWfStates(s => ({ ...s, [wf.id]: "complete" })), 3000);
   }
 
-  const runningCount = WORKFLOWS.filter(w => getStatus(w) === "running").length;
-  const completeCount = WORKFLOWS.filter(w => getStatus(w) === "complete").length;
+  function savePackage(pkg: Omit<UserPackage, "id" | "createdAt">) {
+    const newPkg: UserPackage = { ...pkg, id: `pkg-${Date.now()}`, createdAt: new Date().toISOString() };
+    setPackages(prev => {
+      const next = [newPkg, ...prev];
+      savePackages(next);
+      return next;
+    });
+  }
 
-  const visibleBundles = ALL_BUNDLES.filter(b => b.bundleType === bundleTab);
+  function deletePackage(id: string) {
+    setPackages(prev => {
+      const next = prev.filter(p => p.id !== id);
+      savePackages(next);
+      return next;
+    });
+  }
+
+  function togglePackage(id: string) {
+    setPackages(prev => {
+      const next = prev.map(p => p.id === id ? { ...p, status: p.status === "active" ? "idle" as const : "active" as const } : p);
+      savePackages(next);
+      return next;
+    });
+  }
+
+  const runningCount  = WORKFLOWS.filter(w => (wfStates[w.id] || w.status) === "running").length;
+  const completeCount = WORKFLOWS.filter(w => (wfStates[w.id] || w.status) === "complete").length;
+  const activePackages = packages.filter(p => p.status === "active").length;
+
+  const TABS = [
+    { key: "suggested",  label: "Suggested",       icon: Sparkles,   badge: null },
+    { key: "packages",   label: "My Packages",     icon: Package,    badge: packages.length > 0 ? packages.length : null },
+    { key: "library",    label: "Workflow Library", icon: GitBranch,  badge: null },
+    { key: "bundles",    label: "System Bundles",   icon: Layers,     badge: null },
+    { key: "automation", label: "Automation Rules", icon: Zap,        badge: null },
+  ] as const;
 
   return (
     <div className="p-6 space-y-5 max-w-none">
-      {deployingWorkflow && (
-        <DeployModal workflow={deployingWorkflow} onClose={() => setDeployingWorkflow(null)} onDeploy={handleDeploy} />
+      {deployingWf && (
+        <DeployModal workflow={deployingWf} onClose={() => setDeployingWf(null)} onDeploy={handleDeploy} />
+      )}
+      {showBuilder && (
+        <PackageBuilder onClose={() => setShowBuilder(false)} onSave={savePackage} />
       )}
 
       {/* Header */}
-      <div className="relative flex items-center justify-center">
-        <div className="text-center">
-          <div className="flex items-center gap-2 mb-0.5 justify-center">
-            <h1 className="text-xl font-bold text-foreground">Prebuilt Workflows</h1>
+      <div className="relative flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2.5 mb-0.5">
+            <h1 className="text-xl font-bold text-foreground">Workflows</h1>
             <span className="text-[10px] px-2 py-0.5 rounded font-semibold"
               style={{ background: "hsl(var(--electric-blue) / 0.12)", color: "hsl(var(--electric-blue))", border: "1px solid hsl(var(--electric-blue) / 0.3)" }}>
               {WORKFLOWS.length} WORKFLOWS
             </span>
           </div>
           <p className="text-sm text-muted-foreground">
-            Select, generate, or bundle workflows. Deploy to any app module. System bundles run continuously.
+            Apphia suggests workflow packages. Link them to departments or initiatives — no manual setup needed.
           </p>
         </div>
-        <div className="absolute right-0 flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="font-mono font-bold" style={{ color: "hsl(var(--electric-blue))" }}>{runningCount}</span> running
-          <span className="font-mono font-bold" style={{ color: "hsl(var(--signal-green))" }}>{completeCount}</span> complete
+        <div className="flex items-center gap-3 text-xs text-muted-foreground flex-shrink-0">
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold" style={{ color: "hsl(var(--electric-blue))" }}>{runningCount}</span> running
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold" style={{ color: "hsl(var(--signal-green))" }}>{completeCount}</span> complete
+          </div>
+          {activePackages > 0 && (
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold" style={{ color: "hsl(var(--teal))" }}>{activePackages}</span> packages active
+            </div>
+          )}
+          <button onClick={openApphia}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-semibold text-[11px] transition-all hover:opacity-90"
+            style={{ background: "linear-gradient(135deg, hsl(268 72% 52% / 0.15), hsl(183 62% 42% / 0.12))", color: "hsl(268 72% 72%)", border: "1px solid hsl(268 72% 52% / 0.25)" }}>
+            <Sparkles className="w-3.5 h-3.5" /> Ask Apphia
+          </button>
         </div>
       </div>
 
       {/* View toggle */}
-      <div className="flex items-center gap-1 p-1 rounded-xl w-fit" style={{ background: "hsl(var(--muted))" }}>
-        {[
-          { key: "library", label: "Workflow Library", icon: GitBranch },
-          { key: "generate", label: "Generate", icon: Sparkles },
-          { key: "bundles", label: "Bundles", icon: Layers },
-          { key: "automation", label: "Automation Rules", icon: Zap },
-        ].map(({ key, label, icon: Icon }) => (
-          <button key={key} onClick={() => setViewMode(key as typeof viewMode)}
-            className={cn("flex items-center gap-2 text-xs px-4 py-2 rounded-lg font-semibold transition-all")}
+      <div className="flex items-center gap-1 p-1 rounded-xl w-fit overflow-x-auto" style={{ background: "hsl(var(--muted))" }}>
+        {TABS.map(({ key, label, icon: Icon, badge }) => (
+          <button key={key} onClick={() => setViewMode(key)}
+            className="flex items-center gap-2 text-xs px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap"
             style={{
               background: viewMode === key ? "hsl(var(--card))" : "transparent",
               color: viewMode === key ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
@@ -603,349 +1306,75 @@ export default function Workflows() {
             }}>
             <Icon className="w-3.5 h-3.5" />
             {label}
-            {key === "generate" && (
-              <span className="text-[9px] px-1 py-0.5 rounded font-bold uppercase"
-                style={{ background: "hsl(var(--electric-blue) / 0.2)", color: "hsl(var(--electric-blue))" }}>
-                NEW
+            {badge !== null && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+                style={{
+                  background: viewMode === key ? "hsl(var(--electric-blue) / 0.15)" : "hsl(var(--background))",
+                  color: viewMode === key ? "hsl(var(--electric-blue))" : "hsl(var(--muted-foreground))",
+                }}>
+                {badge}
               </span>
             )}
           </button>
         ))}
       </div>
 
-      {/* ── LIBRARY VIEW ── */}
+      {/* Views */}
+      {viewMode === "suggested" && (
+        <SuggestedView
+          onDeploy={wf => setDeployingWf(wf)}
+          onSavePackage={savePackage}
+        />
+      )}
+      {viewMode === "packages" && (
+        <PackagesView
+          packages={packages}
+          onDelete={deletePackage}
+          onToggle={togglePackage}
+          onNewPackage={() => setShowBuilder(true)}
+          onDeploy={wf => setDeployingWf(wf)}
+        />
+      )}
       {viewMode === "library" && (
-        <>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-              <input
-                className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl border-2 bg-card text-foreground focus:outline-none"
-                style={{ borderColor: "hsl(var(--border))" }}
-                placeholder="Search workflows…"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-            </div>
-            <div className="flex items-center gap-1.5 overflow-x-auto">
-              <Filter className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
-              <button onClick={() => setCatFilter("All")}
-                className="text-xs px-2.5 py-1.5 rounded-lg border font-medium flex-shrink-0 transition-all"
-                style={{
-                  borderColor: catFilter === "All" ? "hsl(var(--electric-blue))" : "hsl(var(--border))",
-                  background: catFilter === "All" ? "hsl(var(--electric-blue) / 0.1)" : "transparent",
-                  color: catFilter === "All" ? "hsl(var(--electric-blue))" : "hsl(var(--muted-foreground))",
-                }}>All</button>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            {Object.entries(grouped).map(([catName, items]) => {
-              const catMeta = WORKFLOW_CATEGORIES.find(c => c.name === catName);
-              const Icon = catMeta?.icon || Zap;
-              const color = catMeta?.color || "hsl(var(--electric-blue))";
-              const isOpen = expandedCat === catName;
-              return (
-                <div key={catName} className="rounded-xl border-2 border-border overflow-hidden">
-                  <button
-                    className="w-full flex items-center justify-between px-5 py-3.5 text-left transition-colors hover:bg-muted/30"
-                    onClick={() => setExpandedCat(isOpen ? null : catName)}>
-                    <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ background: `${color}18` }}>
-                        <Icon className="w-3.5 h-3.5" style={{ color }} />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{catName}</p>
-                        <p className="text-[10px] text-muted-foreground">{items.length} workflows</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {items.filter(w => getStatus(w) === "running").length > 0 && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
-                          style={{ background: "hsl(var(--electric-blue) / 0.1)", color: "hsl(var(--electric-blue))" }}>
-                          {items.filter(w => getStatus(w) === "running").length} running
-                        </span>
-                      )}
-                      <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
-                    </div>
-                  </button>
-
-                  {isOpen && (
-                    <div className="border-t divide-y" style={{ borderColor: "hsl(var(--border))" }}>
-                      {items.map(wf => {
-                        const st = getStatus(wf);
-                        const sc = STATUS_CONFIG[st];
-                        const locked = wf.tier !== "free" && wf.tier !== "t1";
-                        return (
-                          <div key={wf.id}
-                            className="flex items-center justify-between px-5 py-3 gap-4 transition-colors hover:bg-muted/20">
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <span className="relative flex-shrink-0 h-2 w-2 rounded-full"
-                                style={{ background: sc.dot }}>
-                                {st === "running" && (
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-                                    style={{ background: sc.dot }} />
-                                )}
-                              </span>
-                              <p className="text-sm text-foreground truncate">{wf.title}</p>
-                            </div>
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                              <span className="text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold"
-                                style={{ background: sc.bg, color: sc.color }}>
-                                {sc.label}
-                              </span>
-                              {wf.lastRun && <span className="text-[10px] text-muted-foreground hidden sm:block">Last: {wf.lastRun}</span>}
-                              <TierBadge tier={wf.tier} />
-                              <button
-                                onClick={() => !locked && setDeployingWorkflow(wf)}
-                                disabled={locked}
-                                className={cn("flex items-center gap-1.5 text-[11px] px-3 py-1.5 rounded-lg font-semibold transition-all",
-                                  locked ? "opacity-40 cursor-not-allowed" : "hover:opacity-90"
-                                )}
-                                style={{ background: "hsl(var(--electric-blue))", color: "white" }}>
-                                <Play className="w-3 h-3" /> Deploy
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </>
+        <LibraryView onDeploy={wf => setDeployingWf(wf)} />
       )}
-
-      {/* ── GENERATE VIEW ── */}
-      {viewMode === "generate" && (
-        <div className="space-y-4">
-          <AIGeneratePanel onGenerate={(wf) => setGeneratedWorkflows(prev => [wf, ...prev])} />
-          {generatedWorkflows.length > 0 && (
-            <div className="space-y-3">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Generated Workflows</p>
-              {generatedWorkflows.map(wf => (
-                <GeneratedWorkflowCard
-                  key={wf.id}
-                  workflow={wf}
-                  onDismiss={() => setGeneratedWorkflows(prev => prev.filter(w => w.id !== wf.id))}
-                />
-              ))}
-            </div>
-          )}
-          {generatedWorkflows.length === 0 && (
-            <div className="text-center py-16">
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3"
-                style={{ background: "hsl(var(--electric-blue) / 0.1)" }}>
-                <Wand2 className="w-6 h-6" style={{ color: "hsl(var(--electric-blue))" }} />
-              </div>
-              <p className="text-sm font-semibold text-foreground mb-1">Describe a challenge or goal</p>
-              <p className="text-xs text-muted-foreground">The engine will build a custom workflow chain with logic and deployment targets.</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── BUNDLES VIEW ── */}
-      {viewMode === "bundles" && (
-        <div className="space-y-4">
-          {/* Bundle type tabs */}
-          <div className="flex items-center gap-1 p-1 rounded-xl w-fit overflow-x-auto" style={{ background: "hsl(var(--muted))" }}>
-            {BUNDLE_TABS.map(({ key, label, icon: Icon, count }) => (
-              <button key={key} onClick={() => { setBundleTab(key); setExpandedBundle(null); }}
-                className={cn("flex items-center gap-2 text-xs px-3 py-2 rounded-lg font-semibold transition-all whitespace-nowrap")}
-                style={{
-                  background: bundleTab === key ? "hsl(var(--card))" : "transparent",
-                  color: bundleTab === key ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
-                  boxShadow: bundleTab === key ? "var(--shadow-card)" : "none",
-                }}>
-                <Icon className="w-3.5 h-3.5" />
-                {label}
-                <span className="text-[10px] px-1.5 py-0.5 rounded font-mono"
-                  style={{
-                    background: bundleTab === key ? "hsl(var(--electric-blue) / 0.15)" : "hsl(var(--background))",
-                    color: bundleTab === key ? "hsl(var(--electric-blue))" : "hsl(var(--muted-foreground))",
-                  }}>
-                  {count}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          <p className="text-xs text-muted-foreground">
-            {bundleTab === "system" && "System bundles run continuously and update your organization profile inside the app."}
-            {bundleTab === "department" && "Department bundles group workflows for specific functional areas. Activate to run department-level diagnostics."}
-            {bundleTab === "project" && "Project bundles orchestrate the full lifecycle from intake through closeout."}
-            {bundleTab === "admin" && "Admin and execution bundles handle daily tasks, weekly governance, and reporting cadences."}
-          </p>
-
-          <div className="space-y-3">
-            {visibleBundles.map(bundle => {
-              const bs = BUNDLE_STATUS[bundle.status];
-              const isOpen = expandedBundle === bundle.id;
-              const BundleIcon = BUNDLE_TABS.find(t => t.key === bundle.bundleType)?.icon || Layers;
-              return (
-                <div key={bundle.id} className="rounded-xl border-2 border-border overflow-hidden">
-                  <button
-                    className="w-full flex items-center justify-between px-5 py-4 text-left transition-colors hover:bg-muted/20"
-                    onClick={() => setExpandedBundle(isOpen ? null : bundle.id)}>
-                    <div className="flex items-center gap-4">
-                      <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style={{ background: "hsl(var(--electric-blue) / 0.1)" }}>
-                        <BundleIcon className="w-4 h-4" style={{ color: "hsl(var(--electric-blue))" }} />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <p className="text-sm font-bold text-foreground">{bundle.title}</p>
-                          <TierBadge tier={bundle.tier} />
-                        </div>
-                        <p className="text-xs text-muted-foreground">{bundle.description}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
-                        style={{ background: bs.bg, color: bs.color }}>
-                        {bs.label}
-                      </span>
-                      <ChevronDown className={cn("w-4 h-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
-                    </div>
-                  </button>
-
-                  {isOpen && (
-                    <div className="border-t px-5 pb-5 pt-4" style={{ borderColor: "hsl(var(--border))" }}>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">Workflows</p>
-                          <ul className="space-y-1">
-                            {bundle.workflows.map(wf => (
-                              <li key={wf} className="flex items-center gap-2 text-xs text-foreground">
-                                <ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-                                {wf}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2">Updates to App</p>
-                          <ul className="space-y-1 mb-4">
-                            {bundle.updates.map(u => (
-                              <li key={u} className="flex items-center gap-2 text-xs text-foreground">
-                                <Activity className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(var(--electric-blue))" }} />
-                                {u}
-                              </li>
-                            ))}
-                          </ul>
-                          <button className="w-full py-2.5 rounded-lg font-semibold text-xs flex items-center justify-center gap-2 transition-all"
-                            style={{
-                              background: bundle.status === "active" ? "hsl(var(--signal-green) / 0.12)" : "hsl(var(--electric-blue))",
-                              color: bundle.status === "active" ? "hsl(var(--signal-green))" : "white",
-                            }}>
-                            {bundle.status === "active"
-                              ? <><CheckCircle className="w-3.5 h-3.5" /> Bundle Active</>
-                              : <><Play className="w-3.5 h-3.5" /> Activate Bundle</>}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* ── AUTOMATION RULES VIEW ── */}
+      {viewMode === "bundles" && <BundlesView />}
       {viewMode === "automation" && <AutomationRulesView />}
     </div>
   );
 }
 
-// ── Automation Rules View ─────────────────────────────────────────────
+// ── Automation Rules View (unchanged) ─────────────────────────────────
 type AutoTrigger = "task_overdue" | "kpi_drop" | "project_delay" | "approaching_deadline" | "blocked_task" | "capacity_exceeded";
 type AutoAction = "notify" | "create_action_item" | "escalate" | "update_status";
 type AutoConditionType = "threshold" | "department" | "priority" | "date_range";
 
 interface AutoRule {
-  id: string;
-  name: string;
-  trigger: AutoTrigger;
+  id: string; name: string; trigger: AutoTrigger;
   conditions: { type: AutoConditionType; value: string }[];
-  action: AutoAction;
-  actionDetail: string;
-  enabled: boolean;
-  lastFired?: string;
-  fireCount: number;
+  action: AutoAction; actionDetail: string;
+  enabled: boolean; lastFired?: string; fireCount: number;
 }
 
 interface AutoLog {
-  id: string;
-  ruleId: string;
-  ruleName: string;
-  firedAt: string;
-  context: string;
-  result: "success" | "failed";
+  id: string; ruleId: string; ruleName: string; firedAt: string; context: string; result: "success" | "failed";
 }
 
 const TRIGGER_LABELS: Record<AutoTrigger, string> = {
-  task_overdue: "Task overdue",
-  kpi_drop: "KPI threshold drop",
-  project_delay: "Project delay",
-  approaching_deadline: "Approaching deadline",
-  blocked_task: "Task blocked",
-  capacity_exceeded: "Capacity exceeded",
+  task_overdue: "Task overdue", kpi_drop: "KPI threshold drop", project_delay: "Project delay",
+  approaching_deadline: "Approaching deadline", blocked_task: "Task blocked", capacity_exceeded: "Capacity exceeded",
 };
-
 const ACTION_LABELS: Record<AutoAction, string> = {
-  notify: "Send notification",
-  create_action_item: "Create action item",
-  escalate: "Escalate to lead",
-  update_status: "Update status",
+  notify: "Send notification", create_action_item: "Create action item",
+  escalate: "Escalate to lead", update_status: "Update status",
 };
 
 const SAMPLE_RULES: AutoRule[] = [
-  {
-    id: "r1", name: "Escalate overdue critical tasks",
-    trigger: "task_overdue",
-    conditions: [{ type: "priority", value: "High / Critical" }],
-    action: "escalate",
-    actionDetail: "Notify department lead and create escalation action item",
-    enabled: true, lastFired: "2026-03-10", fireCount: 4,
-  },
-  {
-    id: "r2", name: "Alert on KPI drop below target",
-    trigger: "kpi_drop",
-    conditions: [{ type: "threshold", value: "< 70% of target" }],
-    action: "notify",
-    actionDetail: "Send dashboard notification and tag in briefing",
-    enabled: true, lastFired: "2026-03-08", fireCount: 2,
-  },
-  {
-    id: "r3", name: "Create action item for blocked initiatives",
-    trigger: "blocked_task",
-    conditions: [{ type: "department", value: "All departments" }],
-    action: "create_action_item",
-    actionDetail: "Auto-create unblock action item assigned to initiative owner",
-    enabled: false, fireCount: 0,
-  },
-  {
-    id: "r4", name: "Deadline reminder — 3 days out",
-    trigger: "approaching_deadline",
-    conditions: [{ type: "date_range", value: "≤ 3 days remaining" }],
-    action: "notify",
-    actionDetail: "Send 3-day reminder to task owner and project lead",
-    enabled: true, lastFired: "2026-03-11", fireCount: 7,
-  },
-  {
-    id: "r5", name: "Capacity overload alert",
-    trigger: "capacity_exceeded",
-    conditions: [{ type: "threshold", value: "> 90% capacity" }],
-    action: "escalate",
-    actionDetail: "Flag to COO and suggest reallocation in daily briefing",
-    enabled: true, lastFired: "2026-03-09", fireCount: 1,
-  },
+  { id: "r1", name: "Escalate overdue critical tasks", trigger: "task_overdue", conditions: [{ type: "priority", value: "High / Critical" }], action: "escalate", actionDetail: "Notify department lead and create escalation action item", enabled: true, lastFired: "2026-03-10", fireCount: 4 },
+  { id: "r2", name: "Alert on KPI drop below target", trigger: "kpi_drop", conditions: [{ type: "threshold", value: "< 70% of target" }], action: "notify", actionDetail: "Send dashboard notification and tag in briefing", enabled: true, lastFired: "2026-03-08", fireCount: 2 },
+  { id: "r3", name: "Create action item for blocked initiatives", trigger: "blocked_task", conditions: [{ type: "department", value: "All departments" }], action: "create_action_item", actionDetail: "Auto-create unblock action item assigned to initiative owner", enabled: false, fireCount: 0 },
+  { id: "r4", name: "Deadline reminder — 3 days out", trigger: "approaching_deadline", conditions: [{ type: "date_range", value: "≤ 3 days remaining" }], action: "notify", actionDetail: "Send 3-day reminder to task owner and project lead", enabled: true, lastFired: "2026-03-11", fireCount: 7 },
+  { id: "r5", name: "Capacity overload alert", trigger: "capacity_exceeded", conditions: [{ type: "threshold", value: "> 90% capacity" }], action: "escalate", actionDetail: "Flag to COO and suggest reallocation in daily briefing", enabled: true, lastFired: "2026-03-09", fireCount: 1 },
 ];
 
 const SAMPLE_LOGS: AutoLog[] = [
@@ -957,33 +1386,16 @@ const SAMPLE_LOGS: AutoLog[] = [
 ];
 
 function AutomationRulesView() {
-  const [rules, setRules] = useState<AutoRule[]>(SAMPLE_RULES);
-  const [logTab, setLogTab] = useState<"rules" | "log">("rules");
+  const [rules, setRules]       = useState<AutoRule[]>(SAMPLE_RULES);
+  const [logTab, setLogTab]     = useState<"rules" | "log">("rules");
   const [showBuilder, setShowBuilder] = useState(false);
-  const [newRule, setNewRule] = useState({
-    name: "",
-    trigger: "task_overdue" as AutoTrigger,
-    conditionValue: "",
-    action: "notify" as AutoAction,
-    actionDetail: "",
-  });
+  const [newRule, setNewRule]   = useState({ name: "", trigger: "task_overdue" as AutoTrigger, conditionValue: "", action: "notify" as AutoAction, actionDetail: "" });
 
-  function toggleRule(id: string) {
-    setRules(prev => prev.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r));
-  }
+  function toggleRule(id: string) { setRules(prev => prev.map(r => r.id === id ? { ...r, enabled: !r.enabled } : r)); }
 
   function addRule() {
     if (!newRule.name.trim()) return;
-    const rule: AutoRule = {
-      id: `r${Date.now()}`,
-      name: newRule.name,
-      trigger: newRule.trigger,
-      conditions: newRule.conditionValue ? [{ type: "threshold", value: newRule.conditionValue }] : [],
-      action: newRule.action,
-      actionDetail: newRule.actionDetail,
-      enabled: true,
-      fireCount: 0,
-    };
+    const rule: AutoRule = { id: `r${Date.now()}`, name: newRule.name, trigger: newRule.trigger, conditions: newRule.conditionValue ? [{ type: "threshold", value: newRule.conditionValue }] : [], action: newRule.action, actionDetail: newRule.actionDetail, enabled: true, fireCount: 0 };
     setRules(prev => [rule, ...prev]);
     setShowBuilder(false);
     setNewRule({ name: "", trigger: "task_overdue", conditionValue: "", action: "notify", actionDetail: "" });
@@ -994,25 +1406,16 @@ function AutomationRulesView() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-base font-bold text-foreground">Automation Rules</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Define triggers, conditions, and actions that run automatically when events occur.
-          </p>
+          <p className="text-xs text-muted-foreground mt-0.5">Define triggers, conditions, and actions that run automatically when events occur.</p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-            <span className="font-bold" style={{ color: "hsl(var(--signal-green))" }}>
-              {rules.filter(r => r.enabled).length}
-            </span> active
+            <span className="font-bold" style={{ color: "hsl(var(--signal-green))" }}>{rules.filter(r => r.enabled).length}</span> active
           </div>
-          <button
-            onClick={() => setShowBuilder(v => !v)}
+          <button onClick={() => setShowBuilder(v => !v)}
             className="flex items-center gap-2 text-xs font-semibold px-4 py-2 rounded-xl transition-all"
-            style={{
-              background: showBuilder ? "hsl(var(--electric-blue) / 0.15)" : "hsl(var(--electric-blue))",
-              color: showBuilder ? "hsl(var(--electric-blue))" : "white",
-            }}>
-            <Zap className="w-3.5 h-3.5" />
-            {showBuilder ? "Cancel" : "New Rule"}
+            style={{ background: showBuilder ? "hsl(var(--electric-blue) / 0.15)" : "hsl(var(--electric-blue))", color: showBuilder ? "hsl(var(--electric-blue))" : "white" }}>
+            <Zap className="w-3.5 h-3.5" />{showBuilder ? "Cancel" : "New Rule"}
           </button>
         </div>
       </div>
@@ -1021,76 +1424,37 @@ function AutomationRulesView() {
         <div className="rounded-2xl border-2 p-5 space-y-4"
           style={{ borderColor: "hsl(var(--electric-blue) / 0.3)", background: "hsl(var(--electric-blue) / 0.04)" }}>
           <div className="text-sm font-bold text-foreground flex items-center gap-2">
-            <Zap className="w-4 h-4 text-electric-blue" />
-            New Automation Rule
+            <Zap className="w-4 h-4" style={{ color: "hsl(var(--electric-blue))" }} /> New Automation Rule
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="section-label mb-1.5 block">Rule Name</label>
-              <input
-                value={newRule.name}
-                onChange={e => setNewRule(p => ({ ...p, name: e.target.value }))}
-                placeholder="e.g. Alert on high-priority overdue tasks"
-                className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none focus:border-electric-blue/50"
-                style={{ borderColor: "hsl(var(--border))" }}
-              />
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">Rule Name</label>
+              <input value={newRule.name} onChange={e => setNewRule(p => ({ ...p, name: e.target.value }))} placeholder="e.g. Alert on high-priority overdue tasks" className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none" style={{ borderColor: "hsl(var(--border))" }} />
             </div>
             <div>
-              <label className="section-label mb-1.5 block">Trigger</label>
-              <select
-                value={newRule.trigger}
-                onChange={e => setNewRule(p => ({ ...p, trigger: e.target.value as AutoTrigger }))}
-                className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none"
-                style={{ borderColor: "hsl(var(--border))" }}>
-                {(Object.entries(TRIGGER_LABELS) as [AutoTrigger, string][]).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">Trigger</label>
+              <select value={newRule.trigger} onChange={e => setNewRule(p => ({ ...p, trigger: e.target.value as AutoTrigger }))} className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none" style={{ borderColor: "hsl(var(--border))" }}>
+                {(Object.entries(TRIGGER_LABELS) as [AutoTrigger, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </div>
             <div>
-              <label className="section-label mb-1.5 block">Condition / Threshold</label>
-              <input
-                value={newRule.conditionValue}
-                onChange={e => setNewRule(p => ({ ...p, conditionValue: e.target.value }))}
-                placeholder="e.g. priority = High, capacity > 85%"
-                className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none"
-                style={{ borderColor: "hsl(var(--border))" }}
-              />
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">Condition / Threshold</label>
+              <input value={newRule.conditionValue} onChange={e => setNewRule(p => ({ ...p, conditionValue: e.target.value }))} placeholder="e.g. priority = High, capacity > 85%" className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none" style={{ borderColor: "hsl(var(--border))" }} />
             </div>
             <div>
-              <label className="section-label mb-1.5 block">Action</label>
-              <select
-                value={newRule.action}
-                onChange={e => setNewRule(p => ({ ...p, action: e.target.value as AutoAction }))}
-                className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none"
-                style={{ borderColor: "hsl(var(--border))" }}>
-                {(Object.entries(ACTION_LABELS) as [AutoAction, string][]).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
-                ))}
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">Action</label>
+              <select value={newRule.action} onChange={e => setNewRule(p => ({ ...p, action: e.target.value as AutoAction }))} className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none" style={{ borderColor: "hsl(var(--border))" }}>
+                {(Object.entries(ACTION_LABELS) as [AutoAction, string][]).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </div>
             <div className="md:col-span-2">
-              <label className="section-label mb-1.5 block">Action Detail</label>
-              <input
-                value={newRule.actionDetail}
-                onChange={e => setNewRule(p => ({ ...p, actionDetail: e.target.value }))}
-                placeholder="Describe what this action does..."
-                className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none"
-                style={{ borderColor: "hsl(var(--border))" }}
-              />
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">Action Detail</label>
+              <input value={newRule.actionDetail} onChange={e => setNewRule(p => ({ ...p, actionDetail: e.target.value }))} placeholder="Describe what this action does..." className="w-full px-3 py-2 text-sm rounded-xl border bg-card text-foreground focus:outline-none" style={{ borderColor: "hsl(var(--border))" }} />
             </div>
           </div>
           <div className="flex justify-end gap-3">
-            <button onClick={() => setShowBuilder(false)}
-              className="text-xs px-4 py-2 rounded-xl border text-muted-foreground hover:bg-secondary transition-colors"
-              style={{ borderColor: "hsl(var(--border))" }}>
-              Cancel
-            </button>
-            <button onClick={addRule}
-              className="text-xs font-bold px-5 py-2 rounded-xl transition-all"
-              style={{ background: "hsl(var(--electric-blue))", color: "white" }}>
-              Save Rule
-            </button>
+            <button onClick={() => setShowBuilder(false)} className="text-xs px-4 py-2 rounded-xl border text-muted-foreground hover:bg-secondary transition-colors" style={{ borderColor: "hsl(var(--border))" }}>Cancel</button>
+            <button onClick={addRule} className="text-xs font-bold px-5 py-2 rounded-xl transition-all" style={{ background: "hsl(var(--electric-blue))", color: "white" }}>Save Rule</button>
           </div>
         </div>
       )}
@@ -1099,19 +1463,14 @@ function AutomationRulesView() {
         {[{ key: "rules", label: "Rules" }, { key: "log", label: "Execution Log" }].map(({ key, label }) => (
           <button key={key} onClick={() => setLogTab(key as "rules" | "log")}
             className="text-xs px-4 py-2 rounded-lg font-semibold transition-all"
-            style={{
-              background: logTab === key ? "hsl(var(--card))" : "transparent",
-              color: logTab === key ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
-              boxShadow: logTab === key ? "var(--shadow-card)" : "none",
-            }}>
+            style={{ background: logTab === key ? "hsl(var(--card))" : "transparent", color: logTab === key ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))", boxShadow: logTab === key ? "var(--shadow-card)" : "none" }}>
             {label}
           </button>
         ))}
       </div>
 
       {logTab === "rules" && (
-        <div className="rounded-2xl border overflow-hidden"
-          style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+        <div className="rounded-2xl border overflow-hidden" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
           <div className="divide-y" style={{ borderColor: "hsl(var(--border))" }}>
             {rules.map(rule => (
               <div key={rule.id} className="flex items-start gap-4 px-5 py-4 hover:bg-secondary/20 transition-colors">
@@ -1119,43 +1478,26 @@ function AutomationRulesView() {
                   className="flex-shrink-0 mt-0.5 w-9 h-5 rounded-full relative transition-all"
                   style={{ background: rule.enabled ? "hsl(var(--signal-green) / 0.3)" : "hsl(var(--muted))" }}>
                   <div className="absolute top-0.5 rounded-full w-4 h-4 transition-all"
-                    style={{
-                      background: rule.enabled ? "hsl(var(--signal-green))" : "hsl(var(--muted-foreground))",
-                      left: rule.enabled ? "calc(100% - 18px)" : "2px",
-                    }} />
+                    style={{ background: rule.enabled ? "hsl(var(--signal-green))" : "hsl(var(--muted-foreground))", left: rule.enabled ? "calc(100% - 18px)" : "2px" }} />
                 </button>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <span className="text-sm font-semibold text-foreground">{rule.name}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded border font-medium"
-                      style={{ background: "hsl(var(--electric-blue) / 0.08)", color: "hsl(var(--electric-blue))", borderColor: "hsl(var(--electric-blue) / 0.2)" }}>
-                      {TRIGGER_LABELS[rule.trigger]}
-                    </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded border font-medium"
-                      style={{ background: "hsl(var(--signal-purple) / 0.08)", color: "hsl(var(--signal-purple))", borderColor: "hsl(var(--signal-purple) / 0.2)" }}>
-                      {ACTION_LABELS[rule.action]}
-                    </span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded border font-medium" style={{ background: "hsl(var(--electric-blue) / 0.08)", color: "hsl(var(--electric-blue))", borderColor: "hsl(var(--electric-blue) / 0.2)" }}>{TRIGGER_LABELS[rule.trigger]}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded border font-medium" style={{ background: "hsl(var(--signal-purple) / 0.08)", color: "hsl(var(--signal-purple))", borderColor: "hsl(var(--signal-purple) / 0.2)" }}>{ACTION_LABELS[rule.action]}</span>
                   </div>
                   <p className="text-xs text-muted-foreground mb-1.5">{rule.actionDetail}</p>
                   {rule.conditions.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                       {rule.conditions.map((c, i) => (
-                        <span key={i} className="text-[10px] px-2 py-0.5 rounded-full"
-                          style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
-                          {c.value}
-                        </span>
+                        <span key={i} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>{c.value}</span>
                       ))}
                     </div>
                   )}
                 </div>
                 <div className="flex-shrink-0 text-right">
-                  <div className="text-xs font-mono font-bold"
-                    style={{ color: rule.fireCount > 0 ? "hsl(var(--signal-green))" : "hsl(var(--muted-foreground))" }}>
-                    {rule.fireCount}×
-                  </div>
-                  <div className="text-[10px] text-muted-foreground">
-                    {rule.lastFired ? `Last: ${rule.lastFired}` : "Never fired"}
-                  </div>
+                  <div className="text-xs font-mono font-bold" style={{ color: rule.fireCount > 0 ? "hsl(var(--signal-green))" : "hsl(var(--muted-foreground))" }}>{rule.fireCount}×</div>
+                  <div className="text-[10px] text-muted-foreground">{rule.lastFired ? `Last: ${rule.lastFired}` : "Never fired"}</div>
                 </div>
               </div>
             ))}
@@ -1164,10 +1506,8 @@ function AutomationRulesView() {
       )}
 
       {logTab === "log" && (
-        <div className="rounded-2xl border overflow-hidden"
-          style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
-          <div className="px-5 py-3 border-b flex items-center gap-2"
-            style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--secondary) / 0.5)" }}>
+        <div className="rounded-2xl border overflow-hidden" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
+          <div className="px-5 py-3 border-b flex items-center gap-2" style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--secondary) / 0.5)" }}>
             <Activity className="w-3.5 h-3.5 text-muted-foreground" />
             <span className="text-xs font-bold text-foreground">Recent Automation Executions</span>
             <span className="ml-auto text-[10px] text-muted-foreground">{SAMPLE_LOGS.length} recent events</span>
@@ -1175,8 +1515,7 @@ function AutomationRulesView() {
           <div className="divide-y" style={{ borderColor: "hsl(var(--border))" }}>
             {SAMPLE_LOGS.map(log => (
               <div key={log.id} className="flex items-start gap-3 px-5 py-3.5 hover:bg-secondary/20 transition-colors">
-                <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
-                  style={{ background: log.result === "success" ? "hsl(var(--signal-green))" : "hsl(var(--signal-red))" }} />
+                <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ background: log.result === "success" ? "hsl(var(--signal-green))" : "hsl(var(--signal-red))" }} />
                 <div className="flex-1 min-w-0">
                   <div className="text-xs font-semibold text-foreground mb-0.5">{log.ruleName}</div>
                   <div className="text-xs text-muted-foreground">{log.context}</div>
