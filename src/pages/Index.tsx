@@ -977,33 +977,14 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Exec Capacity & Delegation Meter */}
+          {/* Exec Capacity — compact snippet */}
           {(() => {
             const depts = [...data.departments].sort((a, b) => b.capacityUsed - a.capacityUsed);
             const overloaded = depts.filter(d => d.capacityUsed >= 80);
-            const available  = depts.filter(d => d.capacityUsed < 65);
             const avgLoad    = depts.length ? Math.round(depts.reduce((s, d) => s + d.capacityUsed, 0) / depts.length) : 0;
-
-            const delegationRecs: { action: string; from: string; to: string; toCapacity: number }[] = [];
-            if (overloaded.length > 0 && available.length > 0 && nbaItems.length > 0) {
-              nbaItems.slice(0, 3).forEach((item, i) => {
-                const receiver = available[i % available.length];
-                const sender   = overloaded[i % overloaded.length];
-                if (receiver && sender) {
-                  delegationRecs.push({
-                    action: item.title,
-                    from:   sender.head.split(" ").pop() ?? sender.head,
-                    to:     receiver.head,
-                    toCapacity: 100 - receiver.capacityUsed,
-                  });
-                }
-              });
-            }
-
             return (
               <div className="rounded-2xl border overflow-hidden"
                 style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-                {/* Header */}
                 <div className="relative overflow-hidden flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
                   <img src={diagBg5} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.15, mixBlendMode: "luminosity" }} />
                   <div className="relative z-10 flex items-center gap-2.5">
@@ -1019,75 +1000,29 @@ export default function Dashboard() {
                     </span>
                   )}
                 </div>
-
-                {/* Capacity bars */}
                 <div>
-                  {depts.slice(0, 4).map((d) => {
+                  {depts.slice(0, 3).map((d) => {
                     const load = d.capacityUsed;
                     const loadColor = load >= 90 ? "hsl(350 72% 46%)" : load >= 80 ? "hsl(38 82% 44%)" : "hsl(160 56% 36%)";
-                    const isOverloaded = load >= 80;
                     return (
-                      <div key={d.head} className="px-5 py-3 border-b" style={{ borderColor: "hsl(var(--border))" }}>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <div className="text-xs font-semibold text-foreground truncate">{d.head}</div>
-                            <div className="text-[10px] text-muted-foreground hidden sm:block">{d.name.split(" ")[0]}</div>
-                          </div>
-                          <div className="flex items-center gap-1.5 flex-shrink-0">
-                            {d.blockedTasks > 0 && (
-                              <span className="text-[10px] text-amber bg-amber/10 px-1.5 py-0.5 rounded font-semibold">
-                                {d.blockedTasks} blocked
-                              </span>
-                            )}
-                            {isOverloaded && (
-                              <span className="text-[10px] font-bold text-rose bg-rose/10 px-1.5 py-0.5 rounded">Overloaded</span>
-                            )}
-                            <span className="text-xs font-black font-mono" style={{ color: loadColor }}>{load}%</span>
-                          </div>
+                      <div key={d.head} className="px-5 py-2.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-semibold text-foreground truncate">{d.head.split(" ").pop()}</span>
+                          <span className="text-xs font-black font-mono flex-shrink-0" style={{ color: loadColor }}>{load}%</span>
                         </div>
-                        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted))" }}>
-                          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${load}%`, background: loadColor }} />
+                        <div className="h-1 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted))" }}>
+                          <div className="h-full rounded-full" style={{ width: `${load}%`, background: loadColor }} />
                         </div>
                       </div>
                     );
                   })}
                 </div>
-
-                {/* Auto-Recommended Delegations */}
-                {delegationRecs.length > 0 && (
-                  <div className="px-5 py-4">
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <ArrowRight className="w-3 h-3 text-electric-blue" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-electric-blue">Auto-Recommended Delegations</span>
-                    </div>
-                    <div className="space-y-2.5">
-                      {delegationRecs.map((rec, i) => (
-                        <div key={i} className="rounded-xl px-3 py-2.5 border flex items-start gap-2.5"
-                          style={{ background: "hsl(222 70% 46% / 0.04)", borderColor: "hsl(222 70% 50% / 0.14)" }}>
-                          <div className="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 mt-0.5"
-                            style={{ background: "hsl(222 70% 46% / 0.12)" }}>
-                            <ArrowRight className="w-2.5 h-2.5 text-electric-blue" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-foreground leading-snug line-clamp-1 mb-1">{rec.action}</p>
-                            <div className="flex items-center gap-1 flex-wrap">
-                              <span className="text-[10px] text-muted-foreground">from {rec.from}</span>
-                              <span className="text-[10px] text-muted-foreground">→</span>
-                              <span className="text-[10px] font-semibold text-electric-blue">{rec.to}</span>
-                              <span className="text-[10px] text-muted-foreground">· {rec.toCapacity}% available</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {delegationRecs.length === 0 && (
-                  <div className="px-5 py-4 text-center">
-                    <p className="text-xs text-muted-foreground">All executives within capacity. No delegations needed.</p>
-                  </div>
-                )}
+                <div className="px-5 py-3 flex items-center justify-between">
+                  <span className="text-[10px] text-muted-foreground">{depts.length - 3} more departments</span>
+                  <Link to="/diagnostics" className="text-[11px] font-semibold text-electric-blue hover:underline flex items-center gap-0.5">
+                    Full capacity report <ChevronRight className="w-3 h-3" />
+                  </Link>
+                </div>
               </div>
             );
           })()}
