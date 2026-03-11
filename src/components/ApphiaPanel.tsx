@@ -29,7 +29,7 @@ const PAGE_CHIPS: Record<string, string[]> = {
   "/":                  ["What needs my attention?", "Summarize my day", "What's blocked?", "Suggest workflows for today"],
   "/action-items":      ["What's overdue?", "Read my top 3 items", "What's most critical?", "Mark items by department"],
   "/initiatives":       ["What's blocked?", "Summarize initiative health", "What's at risk?", "Which initiative needs a push?"],
-  "/diagnostics":       ["How's our org health?", "What should I fix first?", "What's our weakest area?", "Show gaps"],
+  "/diagnostics":       ["How's our operational health?", "What should I fix first?", "What's our weakest area?", "Show gaps"],
   "/departments":       ["Which department needs help?", "Summarize team capacity", "Where are the bottlenecks?"],
   "/workflows":         ["What workflows should I run?", "Build a package for Sales", "What's suggested for today?"],
   "/decisions":         ["What decisions are pending?", "Help me frame a decision", "What's overdue?"],
@@ -76,9 +76,9 @@ function apphiaRespond(input: string, page: string): Omit<ApphiaMsg, "id" | "tim
     const urgency = overdue.length > 0 || blocked.length > 0;
     return {
       role: "apphia",
-      text: `Hey${profile.userName ? ` ${profile.userName}` : ""}! I'm Apphia — your PMO intelligence layer. ${urgency
+      text: `Hey${profile.userName ? ` ${profile.userName}` : ""}! I'm Apphia — your executive intelligence engine. Pattern recognition, decision-making, efficiency. ${urgency
         ? `There's some urgency to address: ${overdue.length > 0 ? `${overdue.length} overdue action item${overdue.length !== 1 ? "s" : ""}` : ""}${overdue.length > 0 && blocked.length > 0 ? " and " : ""}${blocked.length > 0 ? `${blocked.length} blocked initiative${blocked.length !== 1 ? "s" : ""}` : ""}.`
-        : `${org} looks stable right now — org health is at ${healthScore}.`} What can I help you with?`,
+        : `${org} looks stable right now — operational health is at ${healthScore}.`} What can I help you with?`,
     };
   }
 
@@ -93,7 +93,7 @@ function apphiaRespond(input: string, page: string): Omit<ApphiaMsg, "id" | "tim
     if (lines.length === 0) {
       return {
         role: "apphia",
-        text: `${org} is looking healthy today. No overdue items, no blocked initiatives. Org health score: ${healthScore}. A good day to make progress on strategic priorities.`,
+        text: `${org} is looking healthy today. No overdue items, no blocked initiatives. Operational health: ${healthScore}. A good day to make progress on strategic priorities.`,
         actions: [{ label: "View Dashboard", href: "/" }],
       };
     }
@@ -191,7 +191,7 @@ function apphiaRespond(input: string, page: string): Omit<ApphiaMsg, "id" | "tim
     const lines: string[] = [];
     if (topItem)    lines.push(`Clear your most overdue item: "${topItem.title}"`);
     if (topBlocked) lines.push(`Unblock "${topBlocked.title}" — review dependencies and escalate if needed`);
-    if (healthScore < 50) lines.push("Review diagnostics — org health is below 50. Quick wins are available.");
+    if (healthScore < 50) lines.push("Review diagnostics — operational health is below 50. Quick wins are available.");
     if (lines.length === 0) lines.push("Strategic planning and OKR review — no urgent fires burning right now.");
 
     return {
@@ -250,14 +250,14 @@ function apphiaRespond(input: string, page: string): Omit<ApphiaMsg, "id" | "tim
   if (/help|what.*can.*you|how.*work|capability|feature|what.*do/i.test(lower)) {
     return {
       role: "apphia",
-      text: "I'm Apphia — the intelligence engine behind your PMO. Here's what I can do:",
+      text: "I'm Apphia — your executive AI engine. I specialize in pattern recognition, decision intelligence, and operational efficiency. Here's what I do:",
       list: [
-        "Read and summarize your overdue action items",
-        "Surface blocked or at-risk initiatives",
-        "Report on org health and diagnostics",
-        "Suggest workflows based on your org state",
-        "Advise on strategy, decisions, and priorities",
-        "Navigate any section — just ask",
+        "Recognize patterns across tasks, initiatives, and KPIs — before they become problems",
+        "Frame and prioritize executive decisions with structured intelligence",
+        "Diagnose operational bottlenecks and surface efficiency gaps",
+        "Translate your org data into strategic recommendations",
+        "Surface the highest-leverage actions for right now",
+        "Navigate any section of your command center — just ask",
       ],
     };
   }
@@ -291,9 +291,9 @@ function apphiaRespond(input: string, page: string): Omit<ApphiaMsg, "id" | "tim
 
   // ── Default fallback ──────────────────────────────────────────────
   const fallbacks = [
-    `I'm reading your org data in real time. Try asking "what's overdue", "what's blocked", "how's our health score", or "what should I focus on today".`,
-    `Not sure what you're looking for. I can summarize your action items, surface blocked initiatives, suggest workflows, or walk you through any section of the app.`,
-    `Let me know what you need. I'm connected to your action items, initiatives, departments, and org health data — just ask.`,
+    `I'm reading your org data in real time and looking for patterns. Try asking "what's overdue", "what's blocked", "how's our operational health", or "what should I focus on today".`,
+    `I specialize in recognizing patterns and surfacing executive decisions. Ask me "what's overdue", "what's blocked", or "what workflows should I run" — I'll give you a direct, actionable answer.`,
+    `Let me know what you need. I'm connected to your action items, initiatives, departments, and operational health data — and I'm built to help you make better decisions, faster.`,
   ];
   return {
     role: "apphia",

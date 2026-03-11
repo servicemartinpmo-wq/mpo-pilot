@@ -76,7 +76,7 @@ export default function TopStatusBar({ onOpenCommandPalette }: Props) {
           <>
             <div className="flex items-center gap-1.5">
               <Activity className="w-3 h-3" style={{ color: healthColor }} />
-              <span className="text-[10px] font-bold" style={{ color: "hsl(0 0% 100% / 0.40)" }}>Org Health</span>
+              <span className="text-[10px] font-bold" style={{ color: "hsl(0 0% 100% / 0.40)" }}>Ops Health</span>
               <Link to="/diagnostics" className="text-[11px] font-black font-mono transition-opacity hover:opacity-80"
                 style={{ color: healthColor }}>
                 {healthDisplay}

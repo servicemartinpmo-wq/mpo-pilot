@@ -662,12 +662,12 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
   );
 }
 
-// ── Creative Dashboard ────────────────────────────────────────────────────────
-const CREATIVE_PROJECTS = [
-  { id: "cp1", title: "Brand Refresh", client: "Meridian Co.", status: "Active", img: "/banner-tiger.png", tileColor: "hsl(340 72% 52%)" },
-  { id: "cp2", title: "Campaign Strategy", client: "Apex Studios", status: "Review", img: "/banner-mountain.png", tileColor: "hsl(212 80% 52%)" },
-  { id: "cp3", title: "Editorial Design", client: "Novo Press", status: "Active", img: "/banner-city.png", tileColor: "hsl(174 68% 38%)" },
-  { id: "cp4", title: "Social Content", client: "Solaris Health", status: "Draft", img: "/banner-lake2.png", tileColor: "hsl(258 68% 58%)" },
+// ── Creative Dashboard — Editorial Portfolio Style ────────────────────────────
+const C_PROJECTS = [
+  { id: "cp1", title: "Brand Refresh",      client: "Meridian Co.",   status: "Active",  gradient: "linear-gradient(135deg, hsl(174 72% 12%) 0%, hsl(183 80% 22%) 100%)", accent: "hsl(174 72% 52%)" },
+  { id: "cp2", title: "Campaign Strategy",  client: "Apex Studios",   status: "Review",  gradient: "linear-gradient(135deg, hsl(268 68% 14%) 0%, hsl(280 72% 26%) 100%)", accent: "hsl(268 65% 65%)" },
+  { id: "cp3", title: "Editorial Design",   client: "Novo Press",     status: "Active",  gradient: "linear-gradient(135deg, hsl(350 60% 14%) 0%, hsl(0 68% 26%) 100%)",   accent: "hsl(350 72% 62%)" },
+  { id: "cp4", title: "Social Content",     client: "Solaris Health", status: "Draft",   gradient: "linear-gradient(135deg, hsl(212 72% 12%) 0%, hsl(225 80% 22%) 100%)", accent: "hsl(212 80% 62%)" },
 ];
 
 function CreativeDashboard({ firstName, nbaItems, projects }: {
@@ -675,124 +675,140 @@ function CreativeDashboard({ firstName, nbaItems, projects }: {
   nbaItems: { title: string; description?: string; priority?: string }[];
   projects: { name: string; status: string }[];
 }) {
-  const activeCount = projects.filter(p => p.status === "In Progress" || p.status === "Active" || p.status === "On Track").length;
-  const draftCount  = projects.filter(p => p.status === "Draft" || p.status === "Planning").length;
-  const doneCount   = projects.filter(p => p.status === "Completed" || p.status === "Done").length;
+  const activeCount = projects.filter(p => ["In Progress","Active","On Track"].includes(p.status)).length;
+  const draftCount  = projects.filter(p => ["Draft","Planning"].includes(p.status)).length;
+  const doneCount   = projects.filter(p => ["Completed","Done"].includes(p.status)).length;
 
-  const tilePanels = [
-    { bg: "hsl(152 60% 40%)", label: "Active", value: activeCount, icon: Rocket, sub: "projects in flight" },
-    { bg: "hsl(258 68% 58%)", label: "Drafts", value: draftCount,  icon: FileText, sub: "in planning" },
-    { bg: "hsl(38 88% 50%)",  label: "Tasks",  value: nbaItems.length, icon: ListChecks, sub: "open to-dos" },
-    { bg: "hsl(340 72% 52%)", label: "Done",   value: doneCount,   icon: CheckCircle, sub: "completed" },
+  const statTiles = [
+    { gradient: "linear-gradient(135deg, hsl(174 72% 14%), hsl(183 80% 22%))", label: "Active",  value: activeCount,    icon: Rocket,    sub: "in flight" },
+    { gradient: "linear-gradient(135deg, hsl(268 68% 14%), hsl(280 72% 22%))", label: "Drafts",  value: draftCount,     icon: FileText,  sub: "planning" },
+    { gradient: "linear-gradient(135deg, hsl(38 70% 16%),  hsl(38 80% 28%))",  label: "Tasks",   value: nbaItems.length, icon: ListChecks, sub: "open" },
+    { gradient: "linear-gradient(135deg, hsl(160 60% 12%), hsl(160 72% 22%))", label: "Done",    value: doneCount,      icon: CheckCircle, sub: "completed" },
   ];
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "hsl(36 25% 97%)" }}>
-
-      {/* ── Top greeting bar ── */}
-      <div className="px-7 py-5 border-b flex items-center gap-4" style={{ background: "white", borderColor: "hsl(30 20% 90%)" }}>
-        <div className="flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-0.5" style={{ color: "hsl(340 72% 52%)" }}>Creative Studio</p>
-          <h1 className="text-xl font-black" style={{ color: "hsl(20 25% 12%)" }}>
-            {firstName ? `Good to see you, ${firstName}.` : "Welcome back."}
+    <div className="flex flex-col min-h-screen" style={{ background: "hsl(222 22% 6%)" }}>
+      {/* ── Header ── */}
+      <div className="px-7 pt-6 pb-5 flex items-center justify-between border-b" style={{ borderColor: "hsl(220 14% 14%)" }}>
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-[0.28em] mb-1" style={{ color: "hsl(174 72% 52%)" }}>
+            Creative Studio
+          </p>
+          <h1 className="text-2xl font-black tracking-tight" style={{ color: "hsl(220 14% 92%)" }}>
+            {firstName ? `${firstName}'s Studio` : "Creative Studio"}
           </h1>
         </div>
-        <div className="flex items-center gap-3 text-xs" style={{ color: "hsl(20 15% 45%)" }}>
-          <span className="flex items-center gap-1.5"><FolderOpen className="w-3.5 h-3.5" /> {activeCount} active</span>
-          <span className="w-px h-4 bg-border" />
-          <span className="flex items-center gap-1.5"><ListChecks className="w-3.5 h-3.5" /> {nbaItems.length} tasks</span>
+        <div className="flex items-center gap-4 text-[11px]" style={{ color: "hsl(220 10% 48%)" }}>
+          <span><span className="font-black text-white">{activeCount}</span> active</span>
+          <span className="w-px h-4" style={{ background: "hsl(220 14% 18%)" }} />
+          <span><span className="font-black text-white">{nbaItems.length}</span> tasks</span>
         </div>
       </div>
 
       <div className="flex-1 p-5 max-w-[1440px] mx-auto w-full">
+        <div className="grid grid-cols-12 gap-4">
 
-        {/* ── Bento grid ── */}
-        <div className="grid grid-cols-12 gap-4" style={{ gridAutoRows: "minmax(120px, auto)" }}>
-
-          {/* Featured project – large image tile (col 1–7, row 1–2) */}
+          {/* ── Featured hero tile — vivid editorial gradient ── */}
           <Link to="/initiatives"
-            className="col-span-12 lg:col-span-7 relative rounded-3xl overflow-hidden group"
-            style={{ minHeight: 260, display: "block" }}>
-            <img src="/banner-mountain.png" className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt="Featured" />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(8,6,18,0.82) 0%, rgba(8,6,18,0.22) 70%, transparent 100%)" }} />
-            <div className="absolute inset-0 p-7 flex flex-col justify-between">
+            className="col-span-12 lg:col-span-7 relative rounded-3xl overflow-hidden group cursor-pointer"
+            style={{ minHeight: 260, display: "block", background: "linear-gradient(135deg, hsl(220 80% 10%) 0%, hsl(174 72% 16%) 40%, hsl(268 68% 20%) 100%)" }}>
+            {/* Geometric art lines */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <div className="absolute" style={{ top: -60, right: -60, width: 280, height: 280, borderRadius: "50%", border: "1px solid hsl(174 72% 52% / 0.12)" }} />
+              <div className="absolute" style={{ top: -20, right: -20, width: 180, height: 180, borderRadius: "50%", border: "1px solid hsl(174 72% 52% / 0.08)" }} />
+              <div className="absolute" style={{ bottom: -40, left: "30%", width: 200, height: 200, borderRadius: "50%", border: "1px solid hsl(268 68% 65% / 0.08)" }} />
+            </div>
+            <div className="absolute inset-0 p-7 flex flex-col justify-between relative z-10">
               <div>
-                <span className="text-[9px] font-bold uppercase tracking-[0.24em]" style={{ color: "rgba(255,255,255,0.48)" }}>Featured Project</span>
-                <h2 className="text-2xl font-black text-white mt-1.5 leading-tight">Campaign Strategy</h2>
-                <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.55)" }}>Apex Studios · In review</p>
+                <span className="text-[9px] font-bold uppercase tracking-[0.28em]" style={{ color: "hsl(174 72% 52% / 0.70)" }}>Featured Project</span>
+                <h2 className="text-2xl font-black mt-2 leading-tight" style={{ color: "hsl(220 14% 94%)" }}>Campaign Strategy</h2>
+                <p className="text-sm mt-1.5" style={{ color: "hsl(220 10% 58%)" }}>Apex Studios · In review</p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="px-3 py-1 rounded-full text-[10px] font-bold" style={{ background: "hsl(212 80% 52% / 0.22)", color: "hsl(212 80% 80%)", border: "1px solid hsl(212 80% 52% / 0.3)" }}>
-                  Review
+                <span className="px-3 py-1 rounded-full text-[10px] font-bold"
+                  style={{ background: "hsl(268 68% 50% / 0.20)", color: "hsl(268 65% 80%)", border: "1px solid hsl(268 68% 50% / 0.30)" }}>
+                  In Review
                 </span>
-                <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.45)" }}>View project →</span>
+                <span className="text-xs font-semibold" style={{ color: "hsl(174 72% 52%)" }}>View initiative →</span>
               </div>
             </div>
           </Link>
 
-          {/* Stat tiles column (col 8–12, stacked) */}
+          {/* ── Stat tiles ── */}
           <div className="col-span-12 lg:col-span-5 grid grid-cols-2 gap-4">
-            {tilePanels.map(({ bg, label, value, icon: Icon, sub }) => (
-              <div key={label} className="rounded-3xl p-5 flex flex-col justify-between" style={{ background: bg, minHeight: 118 }}>
+            {statTiles.map(({ gradient, label, value, icon: Icon, sub }) => (
+              <div key={label} className="rounded-3xl p-5 flex flex-col justify-between" style={{ background: gradient, minHeight: 118 }}>
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/70">{label}</span>
-                  <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.16)" }}>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.55)" }}>{label}</span>
+                  <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.12)" }}>
                     <Icon className="w-3.5 h-3.5 text-white" />
                   </div>
                 </div>
                 <div>
                   <div className="text-4xl font-black text-white leading-none">{value}</div>
-                  <div className="text-[11px] mt-1 text-white/60">{sub}</div>
+                  <div className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>{sub}</div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Project cards row */}
-          {CREATIVE_PROJECTS.map((p) => (
+          {/* ── Project cards — no photos, vivid gradient art tiles ── */}
+          {C_PROJECTS.map((p) => (
             <Link key={p.id} to="/initiatives"
               className="col-span-6 lg:col-span-3 relative rounded-3xl overflow-hidden group"
-              style={{ height: 160, display: "block" }}>
-              <img src={p.img} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt={p.title} />
-              <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(6,4,14,0.88) 0%, transparent 65%)" }} />
-              <div className="absolute top-3 right-3">
+              style={{ height: 170, display: "block", background: p.gradient }}>
+              {/* Abstract circle art */}
+              <div className="absolute" style={{
+                top: -30, right: -30, width: 120, height: 120, borderRadius: "50%",
+                border: `1px solid ${p.accent}25`, opacity: 0.6,
+              }} />
+              <div className="absolute" style={{
+                bottom: -20, left: -20, width: 80, height: 80, borderRadius: "50%",
+                background: `${p.accent}10`,
+              }} />
+              <div className="absolute top-3 right-3 z-10">
                 <span className="px-2 py-0.5 rounded-full text-[9px] font-bold"
-                  style={{ background: "rgba(255,255,255,0.14)", color: "white", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.18)" }}>
+                  style={{ background: "rgba(0,0,0,0.35)", color: "white", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.14)" }}>
                   {p.status}
                 </span>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <div className="text-white font-bold text-sm leading-snug">{p.title}</div>
-                <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.48)" }}>{p.client}</div>
+              <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
+                <div className="text-sm font-bold leading-snug" style={{ color: "rgba(255,255,255,0.95)" }}>{p.title}</div>
+                <div className="text-[10px] mt-0.5" style={{ color: p.accent }}>{p.client}</div>
               </div>
-              <div className="absolute top-0 left-0 w-1 h-full rounded-l-3xl" style={{ background: p.tileColor }} />
+              <div className="absolute top-0 left-0 w-0.5 h-full" style={{ background: p.accent, opacity: 0.7 }} />
             </Link>
           ))}
 
-          {/* Tasks tile */}
-          <div className="col-span-12 lg:col-span-5 rounded-3xl p-5 overflow-hidden" style={{ background: "white", border: "1px solid hsl(30 20% 90%)" }}>
+          {/* ── Open tasks ── */}
+          <div className="col-span-12 lg:col-span-5 rounded-3xl p-5 overflow-hidden"
+            style={{ background: "hsl(222 18% 9%)", border: "1px solid hsl(220 14% 15%)" }}>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-xl flex items-center justify-center" style={{ background: "hsl(340 72% 52% / 0.12)" }}>
-                  <ListChecks className="w-3.5 h-3.5" style={{ color: "hsl(340 72% 52%)" }} />
+                <div className="w-6 h-6 rounded-xl flex items-center justify-center"
+                  style={{ background: "hsl(174 72% 52% / 0.14)" }}>
+                  <ListChecks className="w-3.5 h-3.5" style={{ color: "hsl(174 72% 52%)" }} />
                 </div>
-                <span className="text-sm font-bold" style={{ color: "hsl(20 25% 12%)" }}>Open Tasks</span>
+                <span className="text-sm font-bold" style={{ color: "hsl(220 14% 88%)" }}>Open Tasks</span>
               </div>
-              <Link to="/action-items" className="text-[11px] font-semibold hover:underline" style={{ color: "hsl(340 72% 52%)" }}>
-                All →
-              </Link>
+              <Link to="/action-items" className="text-[11px] font-semibold hover:underline"
+                style={{ color: "hsl(174 72% 52%)" }}>All →</Link>
             </div>
             {nbaItems.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-4 text-center">All tasks are clear.</p>
+              <p className="text-xs py-4 text-center" style={{ color: "hsl(220 10% 48%)" }}>All tasks are clear.</p>
             ) : (
               <div className="space-y-2">
                 {nbaItems.slice(0, 4).map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl" style={{ background: "hsl(36 28% 97%)" }}>
-                    <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: CREATIVE_PROJECTS[i % 4].tileColor }} />
-                    <p className="text-xs font-medium flex-1 min-w-0 truncate" style={{ color: "hsl(20 25% 14%)" }}>{item.title}</p>
+                  <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl"
+                    style={{ background: "hsl(222 16% 12%)" }}>
+                    <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: C_PROJECTS[i % 4].accent }} />
+                    <p className="text-xs font-medium flex-1 min-w-0 truncate" style={{ color: "hsl(220 14% 82%)" }}>{item.title}</p>
                     {item.priority && (
                       <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
-                        style={{ background: item.priority?.toLowerCase() === "high" ? "hsl(340 72% 96%)" : "hsl(36 28% 94%)", color: item.priority?.toLowerCase() === "high" ? "hsl(340 72% 48%)" : "hsl(20 15% 48%)" }}>
+                        style={{
+                          background: item.priority?.toLowerCase() === "high" ? "hsl(350 72% 52% / 0.14)" : "hsl(220 14% 18%)",
+                          color: item.priority?.toLowerCase() === "high" ? "hsl(350 72% 70%)" : "hsl(220 10% 52%)",
+                        }}>
                         {item.priority}
                       </span>
                     )}
@@ -802,22 +818,23 @@ function CreativeDashboard({ firstName, nbaItems, projects }: {
             )}
           </div>
 
-          {/* Quick nav tiles */}
+          {/* ── Quick nav ── */}
           <div className="col-span-12 lg:col-span-7 grid grid-cols-3 gap-4">
             {[
-              { to: "/crm",         label: "Portfolio",  sub: "Clients",   bg: "hsl(212 80% 52%)", icon: Users },
-              { to: "/marketing",   label: "Outreach",   sub: "Campaigns", bg: "hsl(174 68% 38%)", icon: TrendingUp },
-              { to: "/action-items",label: "My Work",    sub: "Actions",   bg: "hsl(258 68% 58%)", icon: Zap },
-            ].map(({ to, label, sub, bg, icon: Icon }) => (
+              { to: "/crm",          label: "Portfolio", sub: "Clients",   gradient: "linear-gradient(135deg, hsl(212 72% 14%), hsl(225 80% 22%))", icon: Users },
+              { to: "/marketing",    label: "Outreach",  sub: "Campaigns", gradient: "linear-gradient(135deg, hsl(174 72% 12%), hsl(183 80% 22%))", icon: TrendingUp },
+              { to: "/action-items", label: "My Work",   sub: "Actions",   gradient: "linear-gradient(135deg, hsl(268 68% 14%), hsl(280 72% 22%))", icon: Zap },
+            ].map(({ to, label, sub, gradient, icon: Icon }) => (
               <Link key={to} to={to}
                 className="rounded-3xl p-5 flex flex-col gap-2 transition-all hover:opacity-90"
-                style={{ background: bg }}>
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.18)" }}>
+                style={{ background: gradient }}>
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  style={{ background: "rgba(255,255,255,0.14)" }}>
                   <Icon className="w-4 h-4 text-white" />
                 </div>
                 <div className="mt-auto">
                   <div className="text-sm font-black text-white">{label}</div>
-                  <div className="text-[11px] text-white/55">{sub}</div>
+                  <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.50)" }}>{sub}</div>
                 </div>
               </Link>
             ))}
@@ -858,7 +875,7 @@ function ExecutiveDashboard({
   const topKpis = [
     { label: "On Track",       value: kpis.onTrack,        clr: "hsl(152 60% 50%)", unit: "" },
     { label: "At Risk",        value: kpis.atRisk + kpis.blocked, clr: "hsl(38 90% 56%)", unit: "" },
-    { label: "Org Health",     value: orgHealth,            clr: "hsl(213 90% 62%)", unit: "%" },
+    { label: "Ops Health",      value: orgHealth,            clr: "hsl(213 90% 62%)", unit: "%" },
     { label: "Budget Used",    value: budgetPct,            clr: budgetPct > 90 ? "hsl(0 72% 58%)" : "hsl(38 90% 56%)", unit: "%" },
   ];
 
