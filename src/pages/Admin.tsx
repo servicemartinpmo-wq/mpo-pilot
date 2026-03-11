@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BANNER_THEMES } from "@/components/PageBanner";
+import { BusinessMode, MODE_KITS } from "@/pages/Knowledge";
 import {
   Settings, Database, Cpu, Users, FileText, Shield, Building2,
   AlertTriangle, CheckCircle, Clock, Target, GitBranch, BarChart3,
@@ -67,6 +68,10 @@ export default function Admin() {
   };
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile>(loadProfile());
   const [expandedRole, setExpandedRole] = useState<string | null>(null);
+  const [businessMode, setBusinessMode] = useState<BusinessMode | null>(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem("apphia_knowledge_mode") : null;
+    return (saved as BusinessMode) || null;
+  });
 
   function saveCustomize() {
     saveProfile(companyProfile);
@@ -565,37 +570,95 @@ export default function Admin() {
       {/* ═══ CUSTOMIZE TAB ═══ */}
       {activeTab === "customize" && (
         <Block title="Customize Command Center" icon={Settings} accent="blue">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              {[
-                { label: "User Name", key: "userName" as keyof CompanyProfile, type: "text" },
-                { label: "Organization Name", key: "orgName" as keyof CompanyProfile, type: "text" },
-                { label: "Industry", key: "industry" as keyof CompanyProfile, type: "text" },
-              ].map(({ label, key, type }) => (
-                <div key={key}>
-                  <label className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 block">{label}</label>
-                  <input type={type} value={String(companyProfile[key] || "")}
-                    onChange={e => setCompanyProfile({ ...companyProfile, [key]: e.target.value })}
-                    className="w-full px-3 py-2.5 text-sm rounded-xl border-2 bg-card text-foreground focus:outline-none transition-all"
-                    style={{ borderColor: "hsl(var(--border))" }} />
-                </div>
-              ))}
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 block">Accent Hue ({companyProfile.accentHue}°)</label>
-                <input type="range" min="0" max="360" value={companyProfile.accentHue}
-                  onChange={e => setCompanyProfile({ ...companyProfile, accentHue: parseInt(e.target.value) })}
-                  className="w-full" />
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                {[
+                  { label: "User Name", key: "userName" as keyof CompanyProfile, type: "text" },
+                  { label: "Organization Name", key: "orgName" as keyof CompanyProfile, type: "text" },
+                  { label: "Industry", key: "industry" as keyof CompanyProfile, type: "text" },
+                ].map(({ label, key, type }) => (
+                  <div key={key}>
+                    <label className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 block">{label}</label>
+                    <input type={type} value={String(companyProfile[key] || "")}
+                      onChange={e => setCompanyProfile({ ...companyProfile, [key]: e.target.value })}
+                      className="w-full px-3 py-2.5 text-sm rounded-xl border-2 bg-card text-foreground focus:outline-none transition-all"
+                      style={{ borderColor: "hsl(var(--border))" }} />
+                  </div>
+                ))}
               </div>
-              <button onClick={saveCustomize}
-                className="w-full text-sm font-bold py-3 px-4 rounded-xl border-2 border-electric-blue text-electric-blue hover:bg-electric-blue/10 transition-colors">
-                Save Changes
-              </button>
-              <button onClick={() => { if (confirm("Reset onboarding? This will restart the setup wizard.")) { resetOnboarding(); window.location.reload(); } }}
-                className="w-full text-sm font-semibold py-2.5 px-4 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
-                Reset Onboarding
-              </button>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 block">Accent Hue ({companyProfile.accentHue}°)</label>
+                  <input type="range" min="0" max="360" value={companyProfile.accentHue}
+                    onChange={e => setCompanyProfile({ ...companyProfile, accentHue: parseInt(e.target.value) })}
+                    className="w-full" />
+                </div>
+                <button onClick={saveCustomize}
+                  className="w-full text-sm font-bold py-3 px-4 rounded-xl border-2 border-electric-blue text-electric-blue hover:bg-electric-blue/10 transition-colors">
+                  Save Changes
+                </button>
+                <button onClick={() => { if (confirm("Reset onboarding? This will restart the setup wizard.")) { resetOnboarding(); window.location.reload(); } }}
+                  className="w-full text-sm font-semibold py-2.5 px-4 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
+                  Reset Onboarding
+                </button>
+              </div>
+            </div>
+
+            {/* ── Business Mode + Experience Style ── */}
+            <div className="pt-4 border-t" style={{ borderColor: "hsl(var(--border))" }}>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-bold text-foreground uppercase tracking-wide">Resource Hub Mode</p>
+                {businessMode && (
+                  <span className="text-[10px] text-muted-foreground italic">Click active mode to deselect</span>
+                )}
+              </div>
+
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2">Business Type</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                {(["freelance", "startup", "smb", "enterprise"] as BusinessMode[]).map(key => {
+                  const kit = MODE_KITS[key];
+                  const active = businessMode === key;
+                  return (
+                    <button key={key}
+                      onClick={() => {
+                        const next = active ? null : key;
+                        setBusinessMode(next);
+                        if (next) localStorage.setItem("apphia_knowledge_mode", next);
+                        else localStorage.removeItem("apphia_knowledge_mode");
+                      }}
+                      className="rounded-xl p-3 border-2 text-left transition-all hover:opacity-90 active:scale-[0.98]"
+                      style={{ background: active ? kit.bg : "transparent", borderColor: active ? kit.color : "hsl(var(--border))" }}>
+                      <div className="text-lg mb-1">{kit.emoji}</div>
+                      <div className="text-xs font-bold text-foreground mb-0.5">{kit.label}</div>
+                      <div className="text-[10px] text-muted-foreground leading-snug">{kit.tagline}</div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2">Experience Style</p>
+              <div className="grid grid-cols-2 gap-2">
+                {(["creative", "guided"] as BusinessMode[]).map(key => {
+                  const kit = MODE_KITS[key];
+                  const active = businessMode === key;
+                  return (
+                    <button key={key}
+                      onClick={() => {
+                        const next = active ? null : key;
+                        setBusinessMode(next);
+                        if (next) localStorage.setItem("apphia_knowledge_mode", next);
+                        else localStorage.removeItem("apphia_knowledge_mode");
+                      }}
+                      className="rounded-xl p-3 border-2 text-left transition-all hover:opacity-90 active:scale-[0.98]"
+                      style={{ background: active ? kit.bg : "transparent", borderColor: active ? kit.color : "hsl(var(--border))" }}>
+                      <div className="text-lg mb-1">{kit.emoji}</div>
+                      <div className="text-xs font-bold text-foreground mb-0.5">{kit.label}</div>
+                      <div className="text-[10px] text-muted-foreground leading-snug">{kit.tagline}</div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </Block>

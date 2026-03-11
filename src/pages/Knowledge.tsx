@@ -5,15 +5,14 @@ import {
   Building2, Target, Users, DollarSign, Shield, Cpu, BarChart3,
   Rocket, BookMarked, Plus, Lock, Save, X, Edit3, FolderOpen,
   ThumbsUp, AlertTriangle, Sparkles, Layers, Database,
-  FlaskConical, TrendingUp, Hash, Activity, ChevronDown,
+  TrendingUp, Hash, Activity, ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────
 type TemplateCategory = "RACI" | "SOP" | "Charter" | "OKR" | "Review" | "MOCHA" | "Risk" | "Proposal" | "Finance";
 type Dept = "All" | "Executive" | "Finance" | "HR" | "Product" | "Operations" | "Sales" | "IT" | "Legal" | "Strategy";
-type HubTab = "templates" | "documents" | "sops" | "lessons" | "frameworks" | "formulas";
-type BusinessMode = "freelance" | "startup" | "smb" | "enterprise" | "creative" | "guided";
+type HubTab = "templates" | "documents" | "sops" | "lessons" | "frameworks";
 
 interface Template {
   id: string;
@@ -268,8 +267,9 @@ const TEMPLATES: Template[] = [
   },
 ];
 
-// ── Business Mode Kits ────────────────────────────────────────────────
-const MODE_KITS: Record<BusinessMode, {
+// ── Business Mode Kits (exported for use in Admin/Systems) ────────────
+export type BusinessMode = "freelance" | "startup" | "smb" | "enterprise" | "creative" | "guided";
+export const MODE_KITS: Record<BusinessMode, {
   label: string;
   tagline: string;
   description: string;
@@ -900,12 +900,6 @@ export default function Knowledge() {
   const [userLessons, setUserLessons] = useState<typeof LESSONS>([]);
   const [showAddLesson, setShowAddLesson] = useState(false);
   const [newLesson, setNewLesson] = useState({ title: "", dept: "All" as Dept, outcome: "positive" as "positive" | "negative", impact: "Medium" as "High" | "Medium", summary: "", tags: "" });
-  const [expandedFormula, setExpandedFormula] = useState<string | null>(null);
-  const [fwCategoryFilter, setFwCategoryFilter] = useState<string>("All");
-  const [businessMode, setBusinessMode] = useState<BusinessMode | null>(() => {
-    const saved = localStorage.getItem("apphia_knowledge_mode");
-    return (saved as BusinessMode) || null;
-  });
 
   function downloadDocument(doc: SavedDocument) {
     const lines = [
@@ -947,7 +941,6 @@ export default function Knowledge() {
     { key: "sops" as HubTab, label: "SOP Library", icon: BookMarked, count: SOPS.length },
     { key: "lessons" as HubTab, label: "Lessons Learned", icon: Lightbulb, count: userLessons.length + LESSONS.length },
     { key: "frameworks" as HubTab, label: "Frameworks", icon: Database, count: PMO_FRAMEWORKS.length },
-    { key: "formulas" as HubTab, label: "Formulas", icon: FlaskConical, count: FORMULA_CATEGORIES.reduce((a, c) => a + c.formulas.length, 0) },
   ];
 
   const filteredTemplates = TEMPLATES.filter(t =>
@@ -996,339 +989,6 @@ export default function Knowledge() {
         </div>
       </div>
 
-      {/* ── Business Mode Selector ── */}
-      <div>
-        {/* ── Creative kit panel — rendered ABOVE selector when active ── */}
-        {businessMode === "creative" && (() => {
-          const kit = MODE_KITS.creative;
-          const kitTemplates = kit.starterTemplates.map(id => TEMPLATES.find(t => t.id === id)).filter(Boolean) as typeof TEMPLATES;
-          const CARD_COLORS = [
-            { bg: "hsl(300 65% 55% / 0.12)", border: "hsl(300 65% 55% / 0.5)", color: "hsl(300 65% 55%)" },
-            { bg: "hsl(222 88% 62% / 0.12)", border: "hsl(222 88% 62% / 0.5)", color: "hsl(222 88% 62%)" },
-            { bg: "hsl(38 92% 52% / 0.12)", border: "hsl(38 92% 52% / 0.5)", color: "hsl(38 92% 52%)" },
-            { bg: "hsl(160 56% 42% / 0.12)", border: "hsl(160 56% 42% / 0.5)", color: "hsl(160 56% 42%)" },
-          ];
-          const FW_COLORS = ["hsl(300 65% 55%)", "hsl(222 88% 62%)", "hsl(38 92% 52%)", "hsl(160 56% 42%)"];
-          return (
-            <div className="mb-3 rounded-2xl p-5 relative overflow-hidden"
-              style={{ background: "linear-gradient(135deg, hsl(300 65% 55% / 0.13), hsl(222 88% 62% / 0.10), hsl(38 92% 52% / 0.08))", border: "2px solid hsl(300 65% 55% / 0.35)" }}>
-              <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full blur-2xl pointer-events-none" style={{ background: "linear-gradient(135deg, hsl(300 65% 55% / 0.3), hsl(222 88% 62% / 0.25))" }} />
-              <div className="absolute -bottom-4 left-12 w-20 h-20 rounded-full blur-2xl pointer-events-none" style={{ background: "hsl(38 92% 52% / 0.25)" }} />
-              <div className="relative">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <div className="text-base font-bold mb-0.5" style={{ background: "linear-gradient(90deg, hsl(300 65% 55%), hsl(222 88% 62%), hsl(38 92% 52%))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                      🎨 Creative Studio Starter Kit
-                    </div>
-                    <p className="text-xs text-muted-foreground max-w-xl">{kit.description}</p>
-                  </div>
-                  <button onClick={() => { setBusinessMode(null); localStorage.removeItem("apphia_knowledge_mode"); }} className="text-muted-foreground hover:text-foreground flex-shrink-0">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-4">
-                  {kitTemplates.map((t, i) => {
-                    const c = CARD_COLORS[i % CARD_COLORS.length];
-                    return (
-                      <button key={t.id} onClick={() => setActiveTemplate(t)}
-                        className="rounded-xl border-2 p-3 text-left hover:opacity-90 transition-all"
-                        style={{ background: c.bg, borderColor: c.border }}>
-                        <div className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: c.color }}>{t.category}</div>
-                        <div className="text-xs font-semibold text-foreground leading-snug mb-1">{t.title}</div>
-                        <div className="text-[10px] text-muted-foreground">{t.pages}p · {t.framework}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {kit.topFrameworks.map((f, i) => {
-                    const c = FW_COLORS[i % FW_COLORS.length];
-                    return (
-                      <span key={f} className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
-                        style={{ background: `${c.slice(0, -1)} / 0.1)`, color: c, border: `1px solid ${c.slice(0, -1)} / 0.35)` }}>
-                        {f}
-                      </span>
-                    );
-                  })}
-                </div>
-                <div className="mt-4 pt-3 border-t border-white/10">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-2">Quick Wins</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5">
-                    {kit.quickWins.map((w, i) => (
-                      <div key={i} className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <span style={{ color: FW_COLORS[i % FW_COLORS.length] }}>✦</span> {w}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Business Mode</p>
-          {businessMode && <span className="text-[10px] text-muted-foreground italic">Click active mode to deselect</span>}
-        </div>
-
-        {/* Business Type row */}
-        <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-1.5">Business Type</p>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-          {(["freelance", "startup", "smb", "enterprise"] as BusinessMode[]).map(key => {
-            const kit = MODE_KITS[key];
-            const active = businessMode === key;
-            return (
-              <button key={key}
-                onClick={() => { const next = active ? null : key; setBusinessMode(next); if (next) localStorage.setItem("apphia_knowledge_mode", next); else localStorage.removeItem("apphia_knowledge_mode"); }}
-                className="rounded-xl p-3.5 border-2 text-left transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{ background: active ? kit.bg : "transparent", borderColor: active ? kit.color : "hsl(var(--border))" }}>
-                <div className="text-lg mb-1">{kit.emoji}</div>
-                <div className="text-xs font-bold text-foreground mb-0.5">{kit.label}</div>
-                <div className="text-[10px] text-muted-foreground leading-snug">{kit.tagline}</div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Experience Style row */}
-        <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-1.5">Experience Style</p>
-        <div className="grid grid-cols-2 gap-2">
-          {(["creative", "guided"] as BusinessMode[]).map(key => {
-            const kit = MODE_KITS[key];
-            const active = businessMode === key;
-            return (
-              <button key={key}
-                onClick={() => { const next = active ? null : key; setBusinessMode(next); if (next) localStorage.setItem("apphia_knowledge_mode", next); else localStorage.removeItem("apphia_knowledge_mode"); }}
-                className="rounded-xl p-3.5 border-2 text-left transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{ background: active ? kit.bg : "transparent", borderColor: active ? kit.color : "hsl(var(--border))" }}>
-                <div className="text-lg mb-1">{kit.emoji}</div>
-                <div className="text-xs font-bold text-foreground mb-0.5">{kit.label}</div>
-                <div className="text-[10px] text-muted-foreground leading-snug">{kit.tagline}</div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Mode Kit Panels — all except creative (handled above) */}
-        {businessMode && businessMode !== "creative" && (() => {
-          const kit = MODE_KITS[businessMode];
-          const kitTemplates = kit.starterTemplates.map(id => TEMPLATES.find(t => t.id === id)).filter(Boolean) as typeof TEMPLATES;
-
-          /* ── Guided Mode ── accessible, large-text, step-by-step */
-          if (businessMode === "guided") {
-            return (
-              <div className="mt-3 rounded-2xl border-2 p-6 space-y-6" style={{ borderColor: kit.border, background: "hsl(var(--card))" }}>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-xl font-bold text-foreground mb-1.5">🧭 Getting Started — Step by Step</div>
-                    <p className="text-sm text-muted-foreground max-w-xl leading-relaxed">{kit.description}</p>
-                  </div>
-                  <button onClick={() => { setBusinessMode(null); localStorage.removeItem("apphia_knowledge_mode"); }}
-                    title="Close this guide and return to the full mode list"
-                    className="text-muted-foreground hover:text-foreground p-1 flex-shrink-0">
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Step 1 */}
-                <div>
-                  <div className="flex items-center gap-2.5 mb-2">
-                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0" style={{ background: kit.color }}>1</span>
-                    <p className="text-base font-bold text-foreground">Pick a Template to Start With</p>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed pl-9">
-                    A template is a ready-made document you fill in — like a form. Click any card below to open it. You'll answer a few questions and save it as your own document. Don't worry about getting it perfect — you can always edit it later.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-9">
-                    {kitTemplates.map(t => (
-                      <button key={t.id} onClick={() => setActiveTemplate(t)}
-                        title={`Click to open and fill out: ${t.title}. ${t.description}`}
-                        className="rounded-xl border-2 p-4 text-left hover:opacity-90 transition-all"
-                        style={{ borderColor: kit.border, background: kit.bg }}>
-                        <div className="text-xs font-bold uppercase tracking-wide mb-1.5" style={{ color: kit.color }}>{t.category}</div>
-                        <div className="text-sm font-semibold text-foreground leading-snug mb-2">{t.title}</div>
-                        <div className="text-xs text-muted-foreground leading-relaxed">{t.description}</div>
-                        <div className="text-xs font-medium mt-2.5" style={{ color: kit.color }}>📄 {t.pages} page{t.pages > 1 ? "s" : ""} · {t.framework}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Step 2 */}
-                <div>
-                  <div className="flex items-center gap-2.5 mb-2">
-                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0" style={{ background: kit.color }}>2</span>
-                    <p className="text-base font-bold text-foreground">Learn One Method at a Time</p>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed pl-9">
-                    These are proven ways to organize your team and work. You don't need to learn all of them — just start with whichever one sounds most useful to you right now.
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pl-9">
-                    {kit.topFrameworks.map(f => (
-                      <div key={f} title={`${f} — a structured method to help you stay organized and on track`}
-                        className="flex items-center gap-3 rounded-xl border p-3.5" style={{ borderColor: kit.border, background: "hsl(var(--card))" }}>
-                        <span className="text-xl flex-shrink-0">📘</span>
-                        <div>
-                          <div className="text-sm font-semibold text-foreground">{f}</div>
-                          <div className="text-xs text-muted-foreground mt-0.5">A structured method to organize your work</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Step 3 */}
-                <div>
-                  <div className="flex items-center gap-2.5 mb-2">
-                    <span className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0" style={{ background: kit.color }}>3</span>
-                    <p className="text-base font-bold text-foreground">Try One Quick Win This Week</p>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed pl-9">
-                    These are small, practical actions that will have a noticeable impact quickly. Pick just one and try it this week — progress beats perfection.
-                  </p>
-                  <ul className="space-y-2.5 pl-9">
-                    {kit.quickWins.map((w, i) => (
-                      <li key={i} title="A small action you can take right away to start making progress"
-                        className="flex items-start gap-3 p-3.5 rounded-xl border" style={{ borderColor: kit.border, background: kit.bg }}>
-                        <span className="text-base font-bold flex-shrink-0" style={{ color: kit.color }}>{i + 1}.</span>
-                        <span className="text-sm text-foreground leading-relaxed">{w}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            );
-          }
-
-          /* ── Freelance Mode ── horizontal scrolling card strip */
-          if (businessMode === "freelance") {
-            return (
-              <div className="mt-3 rounded-xl border-2 p-5" style={{ borderColor: kit.border, background: kit.bg }}>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-2xl">⚡</span>
-                    <div>
-                      <div className="text-sm font-bold text-foreground">Freelance / Solo Starter Kit</div>
-                      <div className="text-[10px] text-muted-foreground">{kit.tagline}</div>
-                    </div>
-                  </div>
-                  <button onClick={() => { setBusinessMode(null); localStorage.removeItem("apphia_knowledge_mode"); }} className="text-muted-foreground hover:text-foreground"><X className="w-4 h-4" /></button>
-                </div>
-                <div className="flex gap-2.5 overflow-x-auto pb-1 mb-3 snap-x">
-                  {kitTemplates.map(t => (
-                    <button key={t.id} onClick={() => setActiveTemplate(t)}
-                      className="flex-shrink-0 w-44 snap-start rounded-xl border-2 p-3 text-left hover:opacity-90 transition-all bg-card"
-                      style={{ borderColor: kit.border }}>
-                      <div className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: kit.color }}>{t.category}</div>
-                      <div className="text-xs font-semibold text-foreground leading-snug mb-1">{t.title}</div>
-                      <div className="text-[10px] text-muted-foreground">{t.pages}p · {t.framework}</div>
-                    </button>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {kit.quickWins.map((w, i) => (
-                    <span key={i} className="text-[10px] font-medium px-2.5 py-1 rounded-lg border"
-                      style={{ background: "hsl(var(--card))", borderColor: kit.border, color: "hsl(var(--muted-foreground))" }}>
-                      ✓ {w}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            );
-          }
-
-          /* ── Enterprise Mode ── formal table layout */
-          if (businessMode === "enterprise") {
-            return (
-              <div className="mt-3 rounded-xl border-2 p-5" style={{ borderColor: kit.border, background: kit.bg }}>
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <div>
-                    <div className="text-sm font-bold text-foreground mb-0.5">🏛 Enterprise PMO Starter Kit</div>
-                    <p className="text-xs text-muted-foreground max-w-xl">{kit.description}</p>
-                  </div>
-                  <button onClick={() => { setBusinessMode(null); localStorage.removeItem("apphia_knowledge_mode"); }} className="text-muted-foreground hover:text-foreground flex-shrink-0"><X className="w-4 h-4" /></button>
-                </div>
-                <div className="rounded-xl overflow-hidden border mb-4" style={{ borderColor: kit.border }}>
-                  <table className="w-full text-xs border-collapse">
-                    <thead>
-                      <tr style={{ background: kit.bg }}>
-                        <th className="text-left py-2 px-3 text-muted-foreground font-semibold text-[10px] uppercase tracking-wide border-b" style={{ borderColor: kit.border }}>Template</th>
-                        <th className="text-left py-2 px-3 text-muted-foreground font-semibold text-[10px] uppercase tracking-wide border-b" style={{ borderColor: kit.border }}>Category</th>
-                        <th className="text-left py-2 px-3 text-muted-foreground font-semibold text-[10px] uppercase tracking-wide border-b" style={{ borderColor: kit.border }}>Framework</th>
-                        <th className="text-left py-2 px-3 text-muted-foreground font-semibold text-[10px] uppercase tracking-wide border-b" style={{ borderColor: kit.border }}>Pages</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {kitTemplates.map((t, i) => (
-                        <tr key={t.id} onClick={() => setActiveTemplate(t)}
-                          className="cursor-pointer hover:opacity-80 transition-opacity border-b last:border-b-0 bg-card"
-                          style={{ borderColor: kit.border }}>
-                          <td className="py-2.5 px-3 font-semibold text-foreground">{t.title}</td>
-                          <td className="py-2.5 px-3"><span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase" style={{ background: kit.bg, color: kit.color }}>{t.category}</span></td>
-                          <td className="py-2.5 px-3 text-muted-foreground">{t.framework}</td>
-                          <td className="py-2.5 px-3 text-muted-foreground">{t.pages}p</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-2">Governance Frameworks</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {kit.topFrameworks.map(f => (<span key={f} className="text-[10px] font-semibold px-2 py-0.5 rounded-md" style={{ background: kit.bg, color: kit.color, border: `1px solid ${kit.border}` }}>{f}</span>))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-2">PMO Quick Wins</p>
-                    <ul className="space-y-1">
-                      {kit.quickWins.map((w, i) => (<li key={i} className="flex items-start gap-1.5"><CheckCircle className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: kit.color }} /><span className="text-[11px] text-muted-foreground">{w}</span></li>))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            );
-          }
-
-          /* ── Startup / SMB default panel ── standard grid */
-          return (
-            <div className="mt-3 rounded-xl border-2 p-5" style={{ borderColor: kit.border, background: kit.bg }}>
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <div>
-                  <div className="text-sm font-bold text-foreground mb-0.5">{kit.emoji} {kit.label} Starter Kit</div>
-                  <p className="text-xs text-muted-foreground max-w-xl">{kit.description}</p>
-                </div>
-                <button onClick={() => { setBusinessMode(null); localStorage.removeItem("apphia_knowledge_mode"); }} className="text-muted-foreground hover:text-foreground flex-shrink-0"><X className="w-4 h-4" /></button>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-4">
-                {kitTemplates.map(t => (
-                  <button key={t.id} onClick={() => setActiveTemplate(t)}
-                    className="rounded-xl border p-3 text-left hover:opacity-90 transition-all bg-card"
-                    style={{ borderColor: kit.border }}>
-                    <div className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: kit.color }}>{t.category}</div>
-                    <div className="text-xs font-semibold text-foreground leading-snug mb-1">{t.title}</div>
-                    <div className="text-[10px] text-muted-foreground">{t.pages}p · {t.framework}</div>
-                  </button>
-                ))}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-2">Top Frameworks</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {kit.topFrameworks.map(f => (<span key={f} className="text-[10px] font-semibold px-2 py-0.5 rounded-md" style={{ background: kit.bg, color: kit.color, border: `1px solid ${kit.border}` }}>{f}</span>))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-2">Quick Wins for This Mode</p>
-                  <ul className="space-y-1">
-                    {kit.quickWins.map((w, i) => (<li key={i} className="flex items-start gap-1.5"><CheckCircle className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: kit.color }} /><span className="text-[11px] text-muted-foreground">{w}</span></li>))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-      </div>
 
       {/* Diagnostic Recommendations Banner */}
       <div className="rounded-xl border-2 p-4 flex items-start gap-3"
@@ -1842,101 +1502,6 @@ export default function Knowledge() {
         </div>
       )}
 
-      {/* ── FORMULAS TAB ── */}
-      {tab === "formulas" && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              Every calculation behind your Command Center — from org health scoring to financial modelling.
-            </p>
-            <span className="text-xs font-mono text-muted-foreground">
-              {FORMULA_CATEGORIES.reduce((a, c) => a + c.formulas.length, 0)} formulas
-            </span>
-          </div>
-
-          {FORMULA_CATEGORIES.map(cat => {
-            const CatIcon = cat.icon;
-            return (
-              <div key={cat.id}>
-                {/* Category header */}
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ background: `${cat.color}18`, border: `1px solid ${cat.color}30` }}>
-                    <CatIcon className="w-3.5 h-3.5" style={{ color: cat.color }} />
-                  </div>
-                  <span className="text-sm font-bold text-foreground">{cat.label}</span>
-                  <div className="h-px flex-1" style={{ background: "hsl(var(--border))" }} />
-                  <span className="text-[10px] font-mono text-muted-foreground">{cat.formulas.length} formula{cat.formulas.length !== 1 ? "s" : ""}</span>
-                </div>
-
-                {/* Formula cards */}
-                <div className="space-y-2">
-                  {cat.formulas.map(f => {
-                    const isOpen = expandedFormula === f.id;
-                    return (
-                      <div key={f.id}
-                        className="rounded-xl border-2 overflow-hidden transition-all"
-                        style={{ borderColor: isOpen ? `${cat.color}40` : "hsl(var(--border))", background: "hsl(var(--card))" }}>
-                        <button
-                          className="w-full flex items-start justify-between gap-4 px-4 py-3 text-left hover:bg-muted/20 transition-colors"
-                          onClick={() => setExpandedFormula(isOpen ? null : f.id)}>
-                          <div className="flex items-start gap-3 min-w-0">
-                            <code className="mt-0.5 text-xs font-mono font-bold px-2 py-0.5 rounded flex-shrink-0 whitespace-nowrap"
-                              style={{ background: `${cat.color}12`, color: cat.color, border: `1px solid ${cat.color}25` }}>
-                              {f.notation}
-                            </code>
-                            <div>
-                              <p className="text-sm font-semibold text-foreground leading-snug">{f.name}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{f.description}</p>
-                            </div>
-                          </div>
-                          <ChevronDown className={cn("w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5 transition-transform", isOpen && "rotate-180")} />
-                        </button>
-                        {isOpen && (
-                          <div className="px-4 pb-4 border-t space-y-3" style={{ borderColor: "hsl(var(--border))" }}>
-                            <p className="text-xs text-muted-foreground leading-relaxed pt-3">{f.description}</p>
-
-                            {f.variables && f.variables.length > 0 && (
-                              <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">Variables</p>
-                                <div className="space-y-1">
-                                  {f.variables.map(v => (
-                                    <div key={v.symbol} className="flex items-start gap-3">
-                                      <code className="text-xs font-mono font-bold flex-shrink-0 w-20"
-                                        style={{ color: cat.color }}>
-                                        {v.symbol}
-                                      </code>
-                                      <span className="text-xs text-muted-foreground">{v.meaning}</span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {f.example && (
-                              <div className="rounded-lg p-3 space-y-1.5"
-                                style={{ background: "hsl(var(--muted))", border: "1px solid hsl(var(--border))" }}>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Example</p>
-                                <p className="text-xs text-foreground font-mono">{f.example}</p>
-                                {f.result && (
-                                  <div className="flex items-center gap-2 pt-1" style={{ borderTop: "1px solid hsl(var(--border))" }}>
-                                    <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: cat.color }}>Result</span>
-                                    <span className="text-xs font-mono font-bold text-foreground">{f.result}</span>
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }
