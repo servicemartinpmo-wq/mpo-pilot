@@ -39,7 +39,9 @@ export type FrameworkDomain =
   | "Systems Thinking & Complexity"
   | "Behavioral & Decision Psychology"
   | "Innovation & Product Development"
-  | "IT & Governance";
+  | "IT & Governance"
+  | "Sales & Revenue Operations"
+  | "Data & Analytics";
 
 export type TemporalContext =
   | "Continuous"
@@ -229,6 +231,66 @@ const strategyFrameworks: FrameworkRecord[] = [
     notes:
       "General Electric / McKinsey nine-cell matrix. More nuanced than BCG for multi-department portfolio prioritization. Powers Initiative Prioritization for orgs with 5+ concurrent initiatives.",
   },
+  {
+    id: "ansoffMatrix",
+    name: "Ansoff Matrix",
+    domain: "Strategy & Organizational Alignment",
+    executionModule: "Advisory",
+    outputsTo: ["Initiatives"],
+    statusRelevance: "Growth direction classification, risk-return profile of growth strategy",
+    temporalContext: "Annual",
+    dependencies: ["porterFiveForces", "vrio"],
+    notes:
+      "Igor Ansoff (Strategies for Diversification, HBR 1957). Four growth strategies: Market Penetration, Market Development, Product Development, Diversification. Used in Advisory for strategic growth path selection.",
+  },
+  {
+    id: "strategyDiamond",
+    name: "Strategy Diamond",
+    domain: "Strategy & Organizational Alignment",
+    executionModule: "Advisory",
+    outputsTo: ["Initiatives"],
+    statusRelevance: "Strategy coherence across five facets",
+    temporalContext: "Annual",
+    dependencies: ["strategicChoiceCascade", "bsc"],
+    notes:
+      "Hambrick & Fredrickson (Are You Sure You Have a Strategy?, 2001). Five elements: Arenas, Vehicles, Differentiators, Staging, Economic Logic. Used in Advisory to test strategic completeness and internal consistency.",
+  },
+  {
+    id: "coreCompetencyModel",
+    name: "Core Competency Model",
+    domain: "Strategy & Organizational Alignment",
+    executionModule: "Diagnostics",
+    outputsTo: ["Initiatives", "Advisory"],
+    statusRelevance: "Competitive differentiation basis, capability leverage",
+    temporalContext: "Annual",
+    dependencies: ["vrio", "porterFiveForces"],
+    notes:
+      "C.K. Prahalad & Gary Hamel (The Core Competence of the Corporation, HBR 1990). Identifies core competencies that provide access to markets, contribute to customer benefits, and are difficult to imitate. Used in strategic capability assessment.",
+  },
+  {
+    id: "valueChainAnalysis",
+    name: "Value Chain Analysis",
+    domain: "Strategy & Organizational Alignment",
+    executionModule: "Diagnostics",
+    outputsTo: ["Departments", "Advisory"],
+    statusRelevance: "Activity-level value creation, margin contribution mapping",
+    temporalContext: "Quarterly",
+    dependencies: ["porterFiveForces", "activityBasedCosting"],
+    notes:
+      "Michael Porter (Competitive Advantage, 1985). Maps primary and support activities to identify value-creating and cost-driving activities. Distinct from Porter Five Forces — focuses on internal activities rather than industry structure.",
+  },
+  {
+    id: "strategicGroupMapping",
+    name: "Strategic Group Mapping",
+    domain: "Strategy & Organizational Alignment",
+    executionModule: "Diagnostics",
+    outputsTo: ["Advisory"],
+    statusRelevance: "Competitive positioning relative to peer clusters",
+    temporalContext: "Annual",
+    dependencies: ["porterFiveForces"],
+    notes:
+      "Michael Porter (Competitive Strategy, 1980). Clusters competitors by strategic dimensions (e.g., scope vs. resource commitment). Used in Advisory to identify mobility barriers and competitive repositioning opportunities.",
+  },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -371,6 +433,18 @@ const projectFrameworks: FrameworkRecord[] = [
     dependencies: [],
     notes:
       "Operations research technique. Scores alternatives across weighted criteria. Used in Initiative Prioritization and resource allocation decisions.",
+  },
+  {
+    id: "raciMatrix",
+    name: "RACI Responsibility Matrix",
+    domain: "Initiative & Project Management",
+    executionModule: "Tools",
+    outputsTo: ["Initiatives", "Team"],
+    statusRelevance: "Role clarity, accountability gaps, responsibility overlap",
+    temporalContext: "On-Demand",
+    dependencies: ["pmbok", "wbs"],
+    notes:
+      "PMI/PMBOK standard. Responsible, Accountable, Consulted, Informed. Distinct from RAID Log — RACI maps roles and accountability per deliverable or decision. Used in Initiative Setup and Team Alignment workflows.",
   },
 ];
 
@@ -517,6 +591,66 @@ const operationsFrameworks: FrameworkRecord[] = [
     notes:
       "Shewhart control charts (X-bar, R, P, C charts). Distinguish special cause from common cause variation. Exported to Reports for quality monitoring.",
     systemChains: ["Operational Bottleneck Detection System"],
+  },
+  {
+    id: "scorModel",
+    name: "SCOR Model",
+    domain: "Operations & Process Management",
+    executionModule: "Diagnostics",
+    outputsTo: ["Departments", "Reports"],
+    statusRelevance: "Supply chain performance across plan, source, make, deliver, return",
+    temporalContext: "Quarterly",
+    dependencies: ["lean", "valueStreamMapping"],
+    notes:
+      "Supply Chain Council (now ASCM, 1996). Supply Chain Operations Reference model. Five processes: Plan, Source, Make, Deliver, Return. Standard diagnostic for end-to-end supply chain performance benchmarking.",
+  },
+  {
+    id: "demandPlanning",
+    name: "Demand Planning Framework",
+    domain: "Operations & Process Management",
+    executionModule: "Tools",
+    outputsTo: ["Departments", "Dashboard"],
+    statusRelevance: "Forecast accuracy, demand signal reliability",
+    temporalContext: "Monthly",
+    dependencies: ["scorModel", "statisticalProcessControl"],
+    notes:
+      "APICS / IBF best practice. Statistical and judgment-based forecasting methods. Measures MAPE (Mean Absolute Percentage Error) and forecast bias. Powers inventory and capacity planning decisions.",
+  },
+  {
+    id: "salesOperationsPlanning",
+    name: "Sales & Operations Planning",
+    domain: "Operations & Process Management",
+    executionModule: "Systems",
+    outputsTo: ["Departments", "Initiatives"],
+    statusRelevance: "Cross-functional demand-supply alignment, plan adherence",
+    temporalContext: "Monthly",
+    dependencies: ["demandPlanning", "scorModel"],
+    notes:
+      "Oliver Wight (1980s). S&OP integrates demand, supply, and financial plans into a single operating plan. Monthly executive review cycle. Powers cross-functional alignment between sales, operations, and finance.",
+  },
+  {
+    id: "inventoryOptimization",
+    name: "Inventory Optimization Models",
+    domain: "Operations & Process Management",
+    executionModule: "Tools",
+    outputsTo: ["Departments", "Dashboard"],
+    statusRelevance: "Inventory holding cost, stockout risk, service level",
+    temporalContext: "Weekly",
+    dependencies: ["demandPlanning", "lean"],
+    notes:
+      "EOQ (Harris, 1913), Safety Stock models, ABC Analysis. Balances inventory investment against service level targets. Monitors days of inventory, carrying costs, and fill rates on Dashboard.",
+  },
+  {
+    id: "taktTime",
+    name: "Takt Time",
+    domain: "Operations & Process Management",
+    executionModule: "Diagnostics",
+    outputsTo: ["Departments", "Dashboard"],
+    statusRelevance: "Production pacing, demand-capacity synchronization",
+    temporalContext: "Continuous",
+    dependencies: ["lean", "toc"],
+    notes:
+      "Toyota Production System. Takt Time = Available Production Time / Customer Demand Rate. Sets the pace of production to match customer demand. Used in Diagnostics to detect over- or under-production and line balancing issues.",
   },
 ];
 
@@ -742,6 +876,42 @@ const riskFrameworks: FrameworkRecord[] = [
     notes:
       "Stewart Myers (MIT, 1977). Extension of financial options theory to strategic investments. Values flexibility (defer, expand, abandon options). Used for high-uncertainty initiatives.",
   },
+  {
+    id: "oodaLoop",
+    name: "OODA Loop",
+    domain: "Risk & Decision Science",
+    executionModule: "Advisory",
+    outputsTo: ["Initiatives", "Action Items"],
+    statusRelevance: "Decision speed, competitive tempo advantage",
+    temporalContext: "Continuous",
+    dependencies: ["cynefin"],
+    notes:
+      "Col. John Boyd (USAF, 1976). Observe, Orient, Decide, Act. Rapid decision-cycle framework for competitive environments. Used in Advisory when speed of strategic response is critical.",
+  },
+  {
+    id: "bayesianDecisionAnalysis",
+    name: "Bayesian Decision Analysis",
+    domain: "Risk & Decision Science",
+    executionModule: "Tools",
+    outputsTo: ["Advisory"],
+    statusRelevance: "Evidence-weighted probability updating, prior-posterior shifts",
+    temporalContext: "On-Demand",
+    dependencies: ["monteCarlo", "sensitivityAnalysis"],
+    notes:
+      "Rev. Thomas Bayes (1763), modern decision-analytic formulation by Howard Raiffa (Decision Analysis, 1968). Updates decision probabilities as new evidence arrives. Used for sequential decision problems under uncertainty.",
+  },
+  {
+    id: "gameTheory",
+    name: "Game Theory",
+    domain: "Risk & Decision Science",
+    executionModule: "Advisory",
+    outputsTo: ["Initiatives"],
+    statusRelevance: "Competitive interaction modeling, Nash equilibrium identification",
+    temporalContext: "On-Demand",
+    dependencies: ["porterFiveForces", "scenarioPlanning"],
+    notes:
+      "John von Neumann & Oskar Morgenstern (Theory of Games and Economic Behavior, 1944); John Nash (1950). Models strategic interactions between rational agents. Used in Advisory for competitive response planning and negotiation strategy.",
+  },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -820,6 +990,54 @@ const financeFrameworks: FrameworkRecord[] = [
     dependencies: ["valueStreamMapping"],
     notes:
       "Robin Cooper & Robert Kaplan (1987). Assigns overhead costs to specific activities. Reveals true cost of departments and processes hidden by traditional costing.",
+  },
+  {
+    id: "dupontAnalysis",
+    name: "DuPont Analysis",
+    domain: "Finance & Investment Decisioning",
+    executionModule: "Diagnostics",
+    outputsTo: ["Dashboard", "Reports"],
+    statusRelevance: "ROE decomposition into margin, turnover, and leverage components",
+    temporalContext: "Quarterly",
+    dependencies: ["bsc", "eva"],
+    notes:
+      "DuPont Corporation (1920s). Decomposes ROE = Net Margin × Asset Turnover × Equity Multiplier. Identifies which financial lever is driving or dragging return on equity. Used in financial health diagnostics.",
+  },
+  {
+    id: "wacc",
+    name: "Weighted Average Cost of Capital",
+    domain: "Finance & Investment Decisioning",
+    executionModule: "Tools",
+    outputsTo: ["Initiatives", "Advisory"],
+    statusRelevance: "Hurdle rate for capital allocation, investment threshold",
+    temporalContext: "Quarterly",
+    dependencies: ["npv", "irr"],
+    notes:
+      "Modigliani & Miller (1958), CAPM-derived. WACC = (E/V × Re) + (D/V × Rd × (1−T)). Minimum acceptable return for initiative investment decisions. Core input for NPV and EVA calculations.",
+  },
+  {
+    id: "raroc",
+    name: "Risk-Adjusted Return on Capital",
+    domain: "Finance & Investment Decisioning",
+    executionModule: "Tools",
+    outputsTo: ["Reports", "Advisory"],
+    statusRelevance: "Return adequacy relative to risk exposure",
+    temporalContext: "Quarterly",
+    dependencies: ["wacc", "erm"],
+    notes:
+      "Bankers Trust (1970s), adopted broadly in financial services. RAROC = Risk-Adjusted Return / Economic Capital. Used for comparing risk-return profiles across initiatives and business units.",
+  },
+  {
+    id: "cvpAnalysis",
+    name: "Cost-Volume-Profit Analysis",
+    domain: "Finance & Investment Decisioning",
+    executionModule: "Tools",
+    outputsTo: ["Advisory", "Reports"],
+    statusRelevance: "Break-even point, contribution margin, operating leverage",
+    temporalContext: "Quarterly",
+    dependencies: ["activityBasedCosting"],
+    notes:
+      "Classic managerial accounting technique. Analyzes how changes in costs and volume affect profit. Determines break-even units, target profit volume, and margin of safety. Used in Advisory for pricing and capacity decisions.",
   },
 ];
 
@@ -913,6 +1131,18 @@ const teamFrameworks: FrameworkRecord[] = [
     dependencies: [],
     notes:
       "Rob Cross & Andrew Parker (The Hidden Power of Social Networks). Maps informal communication and influence networks. Identifies collaboration bottlenecks and knowledge silos.",
+  },
+  {
+    id: "decisionRightsFramework",
+    name: "Decision Rights Framework",
+    domain: "Team & Organizational Behavior",
+    executionModule: "Advisory",
+    outputsTo: ["Departments", "Team"],
+    statusRelevance: "Decision authority clarity, escalation path health",
+    temporalContext: "Quarterly",
+    dependencies: ["raciMatrix", "galbraithStar"],
+    notes:
+      "Bain & Company (Decide & Deliver, 2010). Clarifies who has input, who decides, and who executes. Addresses decision bottlenecks caused by ambiguous authority. Used in Advisory when decision latency or escalation loops are detected.",
   },
 ];
 
@@ -1049,6 +1279,162 @@ const productFrameworks: FrameworkRecord[] = [
     dependencies: ["porterFiveForces"],
     notes:
       "E. Jerome McCarthy (Basic Marketing, 1960). Product, Price, Place, Promotion. Used in Advisory for GTM initiative validation and market approach coherence.",
+  },
+  {
+    id: "businessModelCanvas",
+    name: "Business Model Canvas",
+    domain: "Product / Customer / Marketing",
+    executionModule: "Advisory",
+    outputsTo: ["Initiatives"],
+    statusRelevance: "Business model completeness, revenue model clarity",
+    temporalContext: "Quarterly",
+    dependencies: ["valuePropositionCanvas", "jtbd"],
+    notes:
+      "Alexander Osterwalder & Yves Pigneur (Business Model Generation, 2010). Nine building blocks: Key Partners, Key Activities, Key Resources, Value Propositions, Customer Relationships, Channels, Customer Segments, Cost Structure, Revenue Streams. Used in Advisory for business model validation.",
+  },
+  {
+    id: "leanCanvas",
+    name: "Lean Canvas",
+    domain: "Product / Customer / Marketing",
+    executionModule: "Advisory",
+    outputsTo: ["Initiatives"],
+    statusRelevance: "Startup business model risk identification",
+    temporalContext: "On-Demand",
+    dependencies: ["businessModelCanvas", "leanStartup"],
+    notes:
+      "Ash Maurya (Running Lean, 2012). Adaptation of Business Model Canvas for lean startup context. Replaces Partners/Resources with Problem/Solution/Unfair Advantage. Used for early-stage initiative validation.",
+  },
+  {
+    id: "northStarMetric",
+    name: "North Star Metric Framework",
+    domain: "Product / Customer / Marketing",
+    executionModule: "Diagnostics",
+    outputsTo: ["Dashboard"],
+    statusRelevance: "Single metric alignment, product-value delivery signal",
+    temporalContext: "Weekly",
+    dependencies: ["kpiTree", "aarrr"],
+    notes:
+      "Sean Ellis / Growth Hackers. Identifies the single metric that best captures the core value delivered to customers. Used on Dashboard as the primary growth health signal for product-led organizations.",
+  },
+  {
+    id: "productLedGrowth",
+    name: "Product-Led Growth Model",
+    domain: "Product / Customer / Marketing",
+    executionModule: "Advisory",
+    outputsTo: ["Initiatives", "Dashboard"],
+    statusRelevance: "Self-serve conversion, activation rate, expansion revenue",
+    temporalContext: "Monthly",
+    dependencies: ["aarrr", "northStarMetric"],
+    notes:
+      "Wes Bush (Product-Led Growth, 2019). Growth model where the product itself drives acquisition, conversion, and expansion. Used in Advisory for GTM strategy when product is the primary growth lever.",
+  },
+  {
+    id: "hookedModel",
+    name: "Hooked Model",
+    domain: "Product / Customer / Marketing",
+    executionModule: "Advisory",
+    outputsTo: ["Initiatives"],
+    statusRelevance: "Habit formation strength, engagement loop health",
+    temporalContext: "On-Demand",
+    dependencies: ["foggBehaviorModel", "jtbd"],
+    notes:
+      "Nir Eyal (Hooked: How to Build Habit-Forming Products, 2014). Four phases: Trigger, Action, Variable Reward, Investment. Used in Advisory for product engagement and retention strategy.",
+  },
+  {
+    id: "flywheelGrowth",
+    name: "Flywheel Growth Model",
+    domain: "Product / Customer / Marketing",
+    executionModule: "Advisory",
+    outputsTo: ["Initiatives", "Dashboard"],
+    statusRelevance: "Growth compounding velocity, flywheel friction reduction",
+    temporalContext: "Quarterly",
+    dependencies: ["aarrr", "nps"],
+    notes:
+      "Jim Collins (Good to Great, 2001), adapted by HubSpot for growth. Self-reinforcing growth loop: attract → engage → delight → referral. Used in Advisory for sustainable growth strategy vs. linear funnel thinking.",
+  },
+  {
+    id: "platformEcosystem",
+    name: "Platform Ecosystem Model",
+    domain: "Product / Customer / Marketing",
+    executionModule: "Advisory",
+    outputsTo: ["Initiatives"],
+    statusRelevance: "Network effects strength, platform-side balance",
+    temporalContext: "Quarterly",
+    dependencies: ["businessModelCanvas", "porterFiveForces"],
+    notes:
+      "Parker, Van Alstyne & Choudary (Platform Revolution, 2016). Multi-sided platform dynamics: producers, consumers, network effects, governance. Used in Advisory when business model relies on ecosystem or marketplace dynamics.",
+  },
+  {
+    id: "cac",
+    name: "Customer Acquisition Cost",
+    domain: "Product / Customer / Marketing",
+    executionModule: "Diagnostics",
+    outputsTo: ["Dashboard"],
+    statusRelevance: "Acquisition efficiency, channel cost-effectiveness",
+    temporalContext: "Monthly",
+    dependencies: ["aarrr", "kpiTree"],
+    notes:
+      "Standard SaaS/growth metric. CAC = Total Sales & Marketing Spend / New Customers Acquired. Used on Dashboard to monitor acquisition efficiency and payback period health.",
+  },
+  {
+    id: "ltv",
+    name: "Customer Lifetime Value",
+    domain: "Product / Customer / Marketing",
+    executionModule: "Diagnostics",
+    outputsTo: ["Dashboard", "Advisory"],
+    statusRelevance: "Customer economic value, LTV:CAC ratio health",
+    temporalContext: "Monthly",
+    dependencies: ["cac", "nps"],
+    notes:
+      "Standard SaaS/growth metric. LTV = ARPU × Gross Margin × (1 / Churn Rate). LTV:CAC ratio > 3:1 is healthy. Used on Dashboard for unit economics health and in Advisory for investment prioritization.",
+  },
+  {
+    id: "nrr",
+    name: "Net Revenue Retention",
+    domain: "Product / Customer / Marketing",
+    executionModule: "Diagnostics",
+    outputsTo: ["Dashboard"],
+    statusRelevance: "Revenue expansion from existing customers, cohort health",
+    temporalContext: "Monthly",
+    dependencies: ["ltv", "aarrr"],
+    notes:
+      "Standard SaaS metric. NRR = (Beginning MRR + Expansion − Contraction − Churn) / Beginning MRR. NRR > 100% indicates net expansion. Powers Dashboard revenue health signal.",
+  },
+  {
+    id: "saasMagicNumber",
+    name: "SaaS Magic Number",
+    domain: "Product / Customer / Marketing",
+    executionModule: "Diagnostics",
+    outputsTo: ["Dashboard"],
+    statusRelevance: "Sales efficiency, GTM spend effectiveness",
+    temporalContext: "Quarterly",
+    dependencies: ["cac", "nrr"],
+    notes:
+      "Scale Venture Partners. Magic Number = Net New ARR / Prior Quarter Sales & Marketing Spend. > 0.75 indicates efficient growth. Used on Dashboard for GTM efficiency monitoring.",
+  },
+  {
+    id: "roas",
+    name: "Return on Advertising Spend",
+    domain: "Product / Customer / Marketing",
+    executionModule: "Diagnostics",
+    outputsTo: ["Dashboard", "Reports"],
+    statusRelevance: "Advertising channel profitability, spend efficiency",
+    temporalContext: "Weekly",
+    dependencies: ["cac", "kpiTree"],
+    notes:
+      "Standard digital marketing metric. ROAS = Revenue Attributable to Ads / Ad Spend. Used on Dashboard for marketing spend efficiency and in Reports for channel-level performance analysis.",
+  },
+  {
+    id: "cpa",
+    name: "Cost Per Acquisition",
+    domain: "Product / Customer / Marketing",
+    executionModule: "Diagnostics",
+    outputsTo: ["Dashboard"],
+    statusRelevance: "Per-conversion cost, campaign-level efficiency",
+    temporalContext: "Weekly",
+    dependencies: ["cac", "roas"],
+    notes:
+      "Standard marketing metric. CPA = Total Campaign Cost / Number of Acquisitions. More granular than CAC — measures cost at the campaign or channel level. Used on Dashboard for campaign optimization signals.",
   },
 ];
 
@@ -1266,6 +1652,18 @@ const innovationFrameworks: FrameworkRecord[] = [
     notes:
       "Clayton Christensen (The Innovator's Dilemma, 1997). Explains how smaller companies displace incumbents. Used in Advisory when competitive signals indicate disruptive threat.",
   },
+  {
+    id: "trl",
+    name: "Technology Readiness Levels",
+    domain: "Innovation & Product Development",
+    executionModule: "Diagnostics",
+    outputsTo: ["Initiatives", "Reports"],
+    statusRelevance: "Technology maturity assessment, development stage gating",
+    temporalContext: "On-Demand",
+    dependencies: ["stageGate", "horizon123"],
+    notes:
+      "NASA (1974), formalized by John C. Mankins (1995). Nine levels from basic principles observed (TRL 1) to flight-proven (TRL 9). Used in Diagnostics for technology investment decisions and innovation initiative readiness assessment.",
+  },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1328,6 +1726,128 @@ const itGovernanceFrameworks: FrameworkRecord[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
+// SALES & REVENUE OPERATIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+const salesFrameworks: FrameworkRecord[] = [
+  {
+    id: "meddicc",
+    name: "MEDDICC",
+    domain: "Sales & Revenue Operations",
+    executionModule: "Diagnostics",
+    outputsTo: ["Dashboard", "Reports"],
+    statusRelevance: "Deal qualification rigor, pipeline accuracy",
+    temporalContext: "Continuous",
+    dependencies: ["kpiTree"],
+    notes:
+      "Jack Napoli / PTC (1990s). Metrics, Economic Buyer, Decision Criteria, Decision Process, Identify Pain, Champion, Competition. Enterprise sales qualification methodology. Used in Diagnostics for pipeline health and forecast accuracy.",
+  },
+  {
+    id: "bant",
+    name: "BANT",
+    domain: "Sales & Revenue Operations",
+    executionModule: "Diagnostics",
+    outputsTo: ["Dashboard"],
+    statusRelevance: "Lead qualification efficiency, pipeline quality",
+    temporalContext: "Continuous",
+    dependencies: ["meddicc"],
+    notes:
+      "IBM (1960s). Budget, Authority, Need, Timeline. Foundational lead qualification framework. Used in Diagnostics for early-stage pipeline quality and sales velocity monitoring.",
+  },
+  {
+    id: "spicedFramework",
+    name: "SPICED Framework",
+    domain: "Sales & Revenue Operations",
+    executionModule: "Advisory",
+    outputsTo: ["Initiatives", "Reports"],
+    statusRelevance: "Deal discovery quality, customer outcome alignment",
+    temporalContext: "On-Demand",
+    dependencies: ["meddicc", "jtbd"],
+    notes:
+      "Winning by Design. Situation, Pain, Impact, Critical Event, Decision. Customer-centric discovery framework for recurring revenue businesses. Used in Advisory for sales methodology optimization.",
+  },
+  {
+    id: "commandOfTheMessage",
+    name: "Command of the Message",
+    domain: "Sales & Revenue Operations",
+    executionModule: "Advisory",
+    outputsTo: ["Team", "Reports"],
+    statusRelevance: "Value messaging consistency, competitive differentiation clarity",
+    temporalContext: "Quarterly",
+    dependencies: ["valuePropositionCanvas"],
+    notes:
+      "Force Management. Value-based messaging framework that aligns sales conversations to customer business outcomes. Used in Advisory for sales enablement and competitive positioning.",
+  },
+  {
+    id: "spinSelling",
+    name: "SPIN Selling",
+    domain: "Sales & Revenue Operations",
+    executionModule: "Advisory",
+    outputsTo: ["Team"],
+    statusRelevance: "Consultative selling effectiveness, needs-development quality",
+    temporalContext: "On-Demand",
+    dependencies: ["jtbd"],
+    notes:
+      "Neil Rackham (SPIN Selling, 1988). Situation, Problem, Implication, Need-Payoff. Research-backed consultative selling methodology for complex B2B sales. Used in Advisory for sales team capability development.",
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DATA & ANALYTICS
+// ─────────────────────────────────────────────────────────────────────────────
+
+const dataAnalyticsFrameworks: FrameworkRecord[] = [
+  {
+    id: "crispDm",
+    name: "CRISP-DM",
+    domain: "Data & Analytics",
+    executionModule: "Systems",
+    outputsTo: ["Reports", "Diagnostics"],
+    statusRelevance: "Data project lifecycle stage, methodology compliance",
+    temporalContext: "Continuous",
+    dependencies: ["pdca"],
+    notes:
+      "Cross-Industry Standard Process for Data Mining (1996). Six phases: Business Understanding, Data Understanding, Data Preparation, Modeling, Evaluation, Deployment. Standard methodology for analytics and ML project execution.",
+  },
+  {
+    id: "dataMaturityModel",
+    name: "Data Maturity Model",
+    domain: "Data & Analytics",
+    executionModule: "Diagnostics",
+    outputsTo: ["Dashboard", "Reports"],
+    statusRelevance: "Organizational data capability level, analytics readiness",
+    temporalContext: "Quarterly",
+    dependencies: ["cmmi", "crispDm"],
+    notes:
+      "Based on DMM (CMMI Institute) and Gartner analytics maturity. Five levels: Aware → Reactive → Proactive → Managed → Optimized. Used in Diagnostics to assess data infrastructure, literacy, and analytics adoption.",
+  },
+  {
+    id: "dataGovernanceFramework",
+    name: "Data Governance Framework",
+    domain: "Data & Analytics",
+    executionModule: "Systems",
+    outputsTo: ["Reports", "Departments"],
+    statusRelevance: "Data quality, stewardship compliance, policy adherence",
+    temporalContext: "Monthly",
+    dependencies: ["dataMaturityModel", "iso31000"],
+    notes:
+      "DAMA-DMBOK (Data Management Body of Knowledge). Covers data quality, metadata, security, privacy, master data, and reference data management. Used in Systems for data governance policy enforcement and compliance monitoring.",
+  },
+  {
+    id: "dataValueChain",
+    name: "Data Value Chain",
+    domain: "Data & Analytics",
+    executionModule: "Diagnostics",
+    outputsTo: ["Advisory", "Dashboard"],
+    statusRelevance: "Data-to-insight conversion efficiency, value realization",
+    temporalContext: "Quarterly",
+    dependencies: ["dataGovernanceFramework", "valueChainAnalysis"],
+    notes:
+      "Adapted from Porter's Value Chain for data assets. Maps data lifecycle: Collection → Storage → Processing → Analysis → Action → Value. Used in Diagnostics to identify data pipeline bottlenecks and unrealized data value.",
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
 // MASTER FRAMEWORK REGISTRY
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1345,6 +1865,8 @@ export const ALL_FRAMEWORKS: FrameworkRecord[] = [
   ...behavioralFrameworks,
   ...innovationFrameworks,
   ...itGovernanceFrameworks,
+  ...salesFrameworks,
+  ...dataAnalyticsFrameworks,
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
