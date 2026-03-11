@@ -255,17 +255,21 @@ interface HeroBannerProps {
   reactedTo: Record<string, string>;
   onReact: (winId: string, emoji: string) => void;
 }
-const BANNER_PHOTOS = [
-  { src: "/banner-lake.png",   label: "Mountain Lake" },
-  { src: "/banner-fields.png", label: "Tuscan Fields" },
+export const BANNER_PHOTOS = [
+  { src: "/banner-lake2.png",  label: "Alpine Lake",      category: "Nature" },
+  { src: "/banner-lake.png",   label: "Mountain Lake",    category: "Nature" },
+  { src: "/banner-fields.png", label: "Tuscan Fields",    category: "Nature" },
+  { src: "/banner-hex.png",    label: "Dark Hex Grid",    category: "Abstract" },
+  { src: "/banner-art.png",    label: "Bold Brushwork",   category: "Creative" },
+  { src: "/banner-space.png",  label: "Deep Space",       category: "Cosmos" },
 ];
+const DEFAULT_HERO_PHOTO = 0;
 
 function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCount, atRiskCount, criticalCount, pendingActions, nbaItems, winItems, winReactions, reactedTo, onReact }: HeroBannerProps) {
   const [slide, setSlide] = useState(0);
-  const [photo, setPhoto] = useState(0);
-  const [clock, setClock] = useState(() => {
-    const n = new Date();
-    return n.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false });
+  const [photo, setPhoto] = useState(() => {
+    const saved = typeof window !== "undefined" ? parseInt(localStorage.getItem("apphia_hero_photo") ?? "") : NaN;
+    return isNaN(saved) || saved >= BANNER_PHOTOS.length ? DEFAULT_HERO_PHOTO : saved;
   });
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const total = 4;
@@ -275,13 +279,14 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
     timerRef.current = setInterval(() => setSlide(s => (s + 1) % total), 6000);
   };
 
+  const changePhoto = (i: number) => {
+    setPhoto(i);
+    localStorage.setItem("apphia_hero_photo", String(i));
+  };
+
   useEffect(() => {
     resetTimer();
-    const clockTick = setInterval(() => {
-      const n = new Date();
-      setClock(n.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }));
-    }, 1000);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); clearInterval(clockTick); };
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
   const goTo = (i: number) => { setSlide(i); resetTimer(); };
@@ -334,10 +339,10 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
             </div>
           </div>
 
-          {/* Live clock — Windows lock screen style */}
+          {/* Greeting — Windows lock screen style */}
           <div className="flex-shrink-0 mb-2">
-            <div className="text-[3.8rem] font-black text-white leading-none tracking-tight font-mono" style={{ textShadow: "0 2px 16px rgba(0,0,0,0.4)" }}>
-              {clock}
+            <div className="text-[2.6rem] font-black text-white leading-tight tracking-tight" style={{ textShadow: "0 2px 16px rgba(0,0,0,0.4)" }}>
+              {greeting}{firstName ? `, ${firstName}` : ""}.
             </div>
             <div className="text-[11px] font-medium mt-1" style={{ color: "rgba(255,255,255,0.60)" }}>{dateStr}</div>
           </div>
@@ -437,9 +442,9 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
             </div>
 
             {/* Photo switcher thumbnails */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
               {BANNER_PHOTOS.map((p, i) => (
-                <button key={i} onClick={() => setPhoto(i)}
+                <button key={i} onClick={() => changePhoto(i)}
                   className="rounded-lg overflow-hidden transition-all duration-200 flex-shrink-0"
                   style={{
                     width: 32, height: 22,

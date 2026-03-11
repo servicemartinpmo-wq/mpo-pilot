@@ -43,7 +43,27 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState<"system" | "org" | "frameworks" | "authority" | "sops" | "access" | "customize" | "banner">("system");
   const [bannerTheme, setBannerTheme] = useState(
     typeof window !== "undefined" ? (localStorage.getItem("apphia_banner_theme") || "deep-space") : "deep-space"
-  );
+  )
+  const HERO_PHOTOS = [
+    { src: "/banner-lake2.png",  label: "Alpine Lake",    category: "Nature" },
+    { src: "/banner-lake.png",   label: "Mountain Lake",  category: "Nature" },
+    { src: "/banner-fields.png", label: "Tuscan Fields",  category: "Nature" },
+    { src: "/banner-hex.png",    label: "Dark Hex Grid",  category: "Abstract" },
+    { src: "/banner-art.png",    label: "Bold Brushwork", category: "Creative" },
+    { src: "/banner-space.png",  label: "Deep Space",     category: "Cosmos" },
+  ];
+  const [heroPhoto, setHeroPhoto] = useState(() => {
+    const saved = typeof window !== "undefined" ? parseInt(localStorage.getItem("apphia_hero_photo") ?? "") : NaN;
+    return isNaN(saved) || saved >= 6 ? 0 : saved;
+  });
+  const changeHeroPhoto = (i: number) => {
+    setHeroPhoto(i);
+    localStorage.setItem("apphia_hero_photo", String(i));
+  };
+  const resetHeroPhoto = () => {
+    setHeroPhoto(0);
+    localStorage.removeItem("apphia_hero_photo");
+  };
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile>(loadProfile());
   const [expandedRole, setExpandedRole] = useState<string | null>(null);
 
@@ -612,6 +632,44 @@ export default function Admin() {
                   )}
                 </button>
               ))}
+            </div>
+          </Block>
+
+          <Block title="Hero Lockscreen Wallpaper" icon={Layout} accent="teal">
+            <p className="text-sm text-muted-foreground mb-5">
+              Choose your dashboard lockscreen background. Your selection is saved to your browser and persists across sessions. Pick from nature, abstract, creative, or cosmos themes.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-5">
+              {HERO_PHOTOS.map((p, i) => (
+                <button key={i} onClick={() => changeHeroPhoto(i)}
+                  className={cn(
+                    "group relative rounded-2xl overflow-hidden h-28 border-2 transition-all hover:scale-[1.02]",
+                    heroPhoto === i ? "border-electric-blue shadow-elevated" : "border-border"
+                  )}>
+                  <img src={p.src} alt={p.label} className="absolute inset-0 w-full h-full object-cover" />
+                  <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)" }} />
+                  <div className="absolute bottom-0 left-0 right-0 px-3 pb-2 flex items-end justify-between">
+                    <div>
+                      <div className="text-[11px] font-bold text-white drop-shadow">{p.label}</div>
+                      <div className="text-[9px] text-white/60 uppercase tracking-wide">{p.category}</div>
+                    </div>
+                    {heroPhoto === i && (
+                      <div className="w-5 h-5 rounded-full bg-electric-blue flex items-center justify-center flex-shrink-0">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground">Active: <strong className="text-foreground">{HERO_PHOTOS[heroPhoto]?.label ?? "Alpine Lake"}</strong></span>
+              {heroPhoto !== 0 && (
+                <button onClick={resetHeroPhoto}
+                  className="text-xs px-3 py-1.5 rounded-lg border border-border hover:bg-secondary/60 transition-colors text-muted-foreground">
+                  Reset to default
+                </button>
+              )}
             </div>
           </Block>
 
