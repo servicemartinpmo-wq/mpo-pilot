@@ -62,8 +62,13 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
+    // Hard safety net: if Supabase never responds (hanging fetch, unreachable DB),
+    // force loading=false after 5 seconds so the user is never stuck on the spinner.
+    const safetyTimer = setTimeout(() => setLoading(false), 5000);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
+        clearTimeout(safetyTimer);
         setSession(newSession);
         setUser(newSession?.user ?? null);
         try {
@@ -84,6 +89,7 @@ export function useAuth() {
     // fires with a stale null before the real INITIAL_SESSION resolves
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       if (s?.user) {
+        clearTimeout(safetyTimer);
         setSession(s);
         setUser(s.user);
         loadProfile(s.user.id).catch(() => {}).finally(() => setLoading(false));
@@ -91,7 +97,10 @@ export function useAuth() {
       // else: onAuthStateChange will fire with null INITIAL_SESSION and set loading=false
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(safetyTimer);
+      subscription.unsubscribe();
+    };
   }, [loadProfile]);
 
   const signUp = useCallback(async (email: string, password: string) => {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { X, Bell, CheckCheck, AlertTriangle, Info, CheckCircle, Zap, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getNotifications, markAllNotificationsRead } from "@/lib/supabaseDataService";
+import { playAlertSound, playSuccessSound, playPingSound } from "@/lib/notificationSound";
 
 interface DbNotification {
   id: string;
@@ -55,8 +56,19 @@ export default function NotificationsPanel({ userId, open, onClose, onUnreadChan
     getNotifications(userId, 30)
       .then((data) => {
         setNotifications(data as DbNotification[]);
-        const unread = data.filter((n: any) => !n.read).length;
-        onUnreadChange?.(unread);
+        const unreadItems = data.filter((n: any) => !n.read);
+        onUnreadChange?.(unreadItems.length);
+        if (unreadItems.length === 0) return;
+        const types = unreadItems.map((n: any) => (n.type ?? "").toLowerCase());
+        const hasUrgent = types.some((t: string) =>
+          t.includes("risk") || t.includes("alert") || t.includes("critical") || t.includes("urgent")
+        );
+        const hasWin = types.some((t: string) =>
+          t.includes("success") || t.includes("complete") || t.includes("win")
+        );
+        if (hasUrgent) playAlertSound();
+        else if (hasWin) playSuccessSound();
+        else playPingSound();
       })
       .catch(() => setNotifications([]))
       .finally(() => setLoading(false));

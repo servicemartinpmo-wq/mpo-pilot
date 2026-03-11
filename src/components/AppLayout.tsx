@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   LayoutDashboard, Rocket, Activity, Building2,
   Settings, Zap, ChevronRight, FileText, CheckSquare,
@@ -15,6 +15,8 @@ import { saveProfile } from "@/lib/companyStore";
 import { runOrgHealthScoring, runMaturityScoring } from "@/lib/engine/maturity";
 import NotificationsPanel from "./NotificationsPanel";
 import { useAuth } from "@/hooks/useAuth";
+import { getNotifications } from "@/lib/supabaseDataService";
+import { playAlertSound, playSuccessSound, playPingSound } from "@/lib/notificationSound";
 
 const navItems = [
   { to: "/",             label: "Dashboard",    icon: LayoutDashboard, group: "command" },
@@ -61,6 +63,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   const [snoozeOpen, setSnoozeOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const prevUnreadRef = useRef(0);
   const [snooze, setSnooze] = useState<SnoozeState>(() => {
     try {
       const raw = localStorage.getItem("apphia_snooze");
@@ -85,6 +88,38 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
     }, 30);
     return () => clearInterval(interval);
   }, []);
+
+  // Background notification poll — checks every 90 seconds, plays sound when new items arrive
+  useEffect(() => {
+    if (!user?.id) return;
+    const poll = async () => {
+      try {
+        const data = await getNotifications(user.id, 30);
+        const unreadItems = (data as any[]).filter((n) => !n.read);
+        const count = unreadItems.length;
+        const prev = prevUnreadRef.current;
+        prevUnreadRef.current = count;
+        setUnreadCount(count);
+        if (count > prev && !snooze.active) {
+          const types = unreadItems.map((n: any) => (n.type ?? "").toLowerCase());
+          const hasUrgent = types.some((t: string) =>
+            t.includes("risk") || t.includes("alert") || t.includes("critical") || t.includes("urgent")
+          );
+          const hasWin = types.some((t: string) =>
+            t.includes("success") || t.includes("complete") || t.includes("win")
+          );
+          if (hasUrgent) playAlertSound();
+          else if (hasWin) playSuccessSound();
+          else playPingSound();
+        }
+      } catch {
+        // silent — network issues shouldn't crash the sidebar
+      }
+    };
+    poll();
+    const pollInterval = setInterval(poll, 90_000);
+    return () => clearInterval(pollInterval);
+  }, [user?.id, snooze.active]);
 
   function activateSnooze(duration: SnoozeDuration, label: string) {
     const now = new Date();
