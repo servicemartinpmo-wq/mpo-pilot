@@ -10,9 +10,10 @@ import {
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────
-type TemplateCategory = "RACI" | "SOP" | "Charter" | "OKR" | "Review" | "MOCHA" | "Risk";
+type TemplateCategory = "RACI" | "SOP" | "Charter" | "OKR" | "Review" | "MOCHA" | "Risk" | "Proposal" | "Finance";
 type Dept = "All" | "Executive" | "Finance" | "HR" | "Product" | "Operations" | "Sales" | "IT" | "Legal" | "Strategy";
 type HubTab = "templates" | "documents" | "sops" | "lessons" | "frameworks" | "formulas";
+type BusinessMode = "freelance" | "startup" | "smb" | "enterprise";
 
 interface Template {
   id: string;
@@ -171,7 +172,189 @@ const TEMPLATES: Template[] = [
       { id: "approver", label: "Change Approver", placeholder: "CTO / IT Director" },
     ],
   },
+  // ── Freelance Mode Templates ─────────────────────────────────────────
+  {
+    id: "fl1", title: "Client Proposal Template", category: "Proposal",
+    dept: ["All"], description: "Professional proposal covering scope, timeline, deliverables, rate, and terms — ready to send to any client.",
+    pages: 3, framework: "Freelance Standard", tier: "free",
+    fields: [
+      { id: "client", label: "Client Name / Company", placeholder: "e.g. Acme Corp" },
+      { id: "project", label: "Project Title", placeholder: "e.g. Website Redesign" },
+      { id: "scope", label: "Scope of Work", placeholder: "What you will deliver…", multiline: true },
+      { id: "timeline", label: "Timeline", placeholder: "e.g. 4 weeks · Start: March 15" },
+      { id: "rate", label: "Rate / Price", placeholder: "e.g. $4,500 flat or $125/hr" },
+      { id: "payment_terms", label: "Payment Terms", placeholder: "e.g. 50% upfront, 50% on delivery" },
+      { id: "exclusions", label: "Not Included", placeholder: "What is out of scope…" },
+    ],
+  },
+  {
+    id: "fl2", title: "Statement of Work (SOW)", category: "Charter",
+    dept: ["All"], description: "Legally clear project agreement — scope, milestones, acceptance criteria, and revision policy.",
+    pages: 4, framework: "Freelance Standard", tier: "free",
+    fields: [
+      { id: "client", label: "Client", placeholder: "Full legal name / company" },
+      { id: "freelancer", label: "Freelancer / Consultant", placeholder: "Your name / business" },
+      { id: "project", label: "Project Description", placeholder: "What is being built or delivered…", multiline: true },
+      { id: "milestones", label: "Milestones", placeholder: "e.g. M1: wireframes · M2: draft · M3: final", multiline: true },
+      { id: "acceptance", label: "Acceptance Criteria", placeholder: "How will 'done' be defined?", multiline: true },
+      { id: "revisions", label: "Revision Policy", placeholder: "e.g. 2 rounds of revisions included" },
+      { id: "rate", label: "Total Fee", placeholder: "e.g. $6,000" },
+    ],
+  },
+  {
+    id: "fl3", title: "Client Onboarding Checklist", category: "SOP",
+    dept: ["All"], description: "Structured first-week process for new clients — intake questionnaire, access setup, kickoff agenda.",
+    pages: 2, framework: "Freelance Standard", tier: "free",
+    fields: [
+      { id: "client", label: "Client Name", placeholder: "Name / Company" },
+      { id: "project_type", label: "Project Type", placeholder: "e.g. Brand identity, web build, consulting" },
+      { id: "kickoff_date", label: "Kickoff Date", placeholder: "MM-DD-YYYY" },
+      { id: "tools", label: "Tools / Access Needed", placeholder: "e.g. Figma, Notion, Google Drive…" },
+      { id: "primary_contact", label: "Primary Contact", placeholder: "Name · email · preferred comms channel" },
+      { id: "success_metric", label: "Success Metric", placeholder: "How does the client define a win?" },
+    ],
+  },
+  {
+    id: "fl4", title: "Freelance Cash Flow Tracker SOP", category: "Finance",
+    dept: ["Finance"], description: "Monthly income/expense tracking, invoice status, and 90-day cash runway projection for solopreneurs.",
+    pages: 2, framework: "Lean", tier: "free",
+    fields: [
+      { id: "month", label: "Month", placeholder: "e.g. March 2026" },
+      { id: "income", label: "Expected Income (this month)", placeholder: "Projects billed + retainers" },
+      { id: "expenses", label: "Monthly Expenses", placeholder: "Tools, taxes, insurance, contractors…" },
+      { id: "outstanding", label: "Outstanding Invoices", placeholder: "Client · amount · due date" },
+      { id: "runway", label: "Cash Runway (months)", placeholder: "Savings ÷ monthly burn" },
+    ],
+  },
+  // ── Startup Mode Templates ───────────────────────────────────────────
+  {
+    id: "st1", title: "Monthly Investor Update", category: "Review",
+    dept: ["Executive"], description: "Concise monthly update for investors — traction, financials, key hires, risks, and ask.",
+    pages: 2, framework: "Lean Startup", tier: "free",
+    fields: [
+      { id: "month", label: "Month", placeholder: "e.g. March 2026" },
+      { id: "mrr", label: "MRR / ARR", placeholder: "Current vs last month" },
+      { id: "traction", label: "Key Traction Highlights", placeholder: "Users, revenue, partnerships…", multiline: true },
+      { id: "hires", label: "Key Hires / Team Updates", placeholder: "New roles filled or pipeline" },
+      { id: "risks", label: "Risks & Challenges", placeholder: "What's slowing you down?", multiline: true },
+      { id: "ask", label: "Ask / How Investors Can Help", placeholder: "Intros, advice, or resources needed" },
+    ],
+  },
+  {
+    id: "st2", title: "MVP Feature Scope", category: "Charter",
+    dept: ["Product"], description: "Define your v1 scope — must-haves vs nice-to-haves, success metric, and ship deadline.",
+    pages: 2, framework: "Lean Startup", tier: "free",
+    fields: [
+      { id: "product", label: "Product / Feature Name", placeholder: "e.g. Client Portal MVP" },
+      { id: "problem", label: "Problem Being Solved", placeholder: "Who has this problem and why does it matter?", multiline: true },
+      { id: "must_have", label: "Must-Have Features (v1)", placeholder: "Core scope — non-negotiable", multiline: true },
+      { id: "nice_to_have", label: "Nice-to-Have (v2+)", placeholder: "Deferred scope", multiline: true },
+      { id: "success_metric", label: "Success Metric", placeholder: "e.g. 100 active users in 30 days" },
+      { id: "ship_date", label: "Target Ship Date", placeholder: "MM-DD-YYYY" },
+    ],
+  },
+  {
+    id: "st3", title: "Founding Team Agreement", category: "MOCHA",
+    dept: ["Executive"], description: "Equity split, roles, vesting schedule, and decision-making rights — before you build.",
+    pages: 3, framework: "Startup Governance", tier: "free",
+    fields: [
+      { id: "founders", label: "Founders", placeholder: "Names and roles" },
+      { id: "equity", label: "Equity Split", placeholder: "e.g. 50/50 or 60/25/15" },
+      { id: "vesting", label: "Vesting Schedule", placeholder: "e.g. 4 years, 1-year cliff" },
+      { id: "ceo_authority", label: "CEO Decision Authority", placeholder: "What can the CEO decide alone?" },
+      { id: "board_triggers", label: "Board Vote Required For", placeholder: "Fundraising, pivots, key hires…" },
+      { id: "exit_clause", label: "Departure Clause", placeholder: "What happens if a founder leaves?" },
+    ],
+  },
 ];
+
+// ── Business Mode Kits ────────────────────────────────────────────────
+const MODE_KITS: Record<BusinessMode, {
+  label: string;
+  tagline: string;
+  description: string;
+  color: string;
+  bg: string;
+  border: string;
+  emoji: string;
+  starterTemplates: string[];
+  starterSops: string[];
+  topFrameworks: string[];
+  quickWins: string[];
+}> = {
+  freelance: {
+    label: "Freelance / Solo",
+    tagline: "Solo execution. Professional delivery.",
+    description: "Templates and SOPs built for independent consultants, contractors, and solopreneurs. Client-first, cash-flow aware, and built for one.",
+    color: "hsl(160 56% 42%)",
+    bg: "hsl(160 56% 42% / 0.08)",
+    border: "hsl(160 56% 42% / 0.3)",
+    emoji: "⚡",
+    starterTemplates: ["fl1", "fl2", "fl3", "fl4"],
+    starterSops: ["s2"],
+    topFrameworks: ["Eisenhower Matrix", "Time Blocking", "PARA Method"],
+    quickWins: [
+      "Send a proposal within 24 hrs of inquiry",
+      "Always get 50% deposit before starting",
+      "Review your pipeline every Monday morning",
+      "Set a monthly invoice date — same day every month",
+    ],
+  },
+  startup: {
+    label: "Startup",
+    tagline: "Move fast. Track what matters.",
+    description: "Lean templates for fast-moving product teams and early-stage companies. OKR-driven, investor-ready, and built to iterate.",
+    color: "hsl(222 88% 62%)",
+    bg: "hsl(222 88% 62% / 0.08)",
+    border: "hsl(222 88% 62% / 0.3)",
+    emoji: "🚀",
+    starterTemplates: ["st1", "st2", "st3", "t4"],
+    starterSops: ["s1"],
+    topFrameworks: ["Lean Startup", "OKR (Lite)", "Jobs-to-be-Done", "Sprint Cadence"],
+    quickWins: [
+      "Define your north star metric before building",
+      "Send investor updates even when things aren't perfect",
+      "Kill features that don't serve your core user",
+      "Ship weekly — imperfect beats unshipped",
+    ],
+  },
+  smb: {
+    label: "Small Business",
+    tagline: "Structure that scales without enterprise overhead.",
+    description: "Operational playbooks for growing teams. Accountability frameworks, financial controls, and review cadences built for 5–100 people.",
+    color: "hsl(38 92% 52%)",
+    bg: "hsl(38 92% 52% / 0.08)",
+    border: "hsl(38 92% 52% / 0.3)",
+    emoji: "🏢",
+    starterTemplates: ["t1", "t2", "t4", "t6"],
+    starterSops: ["s1", "s2"],
+    topFrameworks: ["Balanced Scorecard (Lite)", "PDCA", "RACI + MOCHA", "Lean Ops"],
+    quickWins: [
+      "Run a monthly leadership sync — 60 min, structured agenda",
+      "Set 3 OKRs per quarter max — focus beats coverage",
+      "Assign one owner to every recurring process",
+      "Document your top 5 SOPs before headcount doubles",
+    ],
+  },
+  enterprise: {
+    label: "Enterprise",
+    tagline: "Full PMO governance for complex organizations.",
+    description: "The complete suite — CMMI maturity scoring, ITIL operations, Six Sigma controls, full BSC, and multi-department accountability structures.",
+    color: "hsl(272 60% 52%)",
+    bg: "hsl(272 60% 52% / 0.08)",
+    border: "hsl(272 60% 52% / 0.3)",
+    emoji: "🏛",
+    starterTemplates: ["t8", "t9", "t10", "t1"],
+    starterSops: ["s1", "s2"],
+    topFrameworks: ["CMMI", "ITIL 4", "Six Sigma", "Balanced Scorecard", "PRINCE2"],
+    quickWins: [
+      "Define tiered approval authority before the next fiscal year",
+      "Run a governance audit — find unowned processes",
+      "Align every initiative to a strategic pillar",
+      "Implement WIP limits — cap concurrent initiatives per PM",
+    ],
+  },
+};
 
 const LESSONS = [
   { id: "l1", title: "Initiative Scope Creep Prevention", dept: "All", outcome: "positive", impact: "High", date: "2025-02", summary: "Adding explicit scope-freeze gates to the intake workflow reduced mid-initiative scope changes by 60%.", tags: ["PMO", "Scope", "Governance"] },
@@ -681,6 +864,10 @@ export default function Knowledge() {
   const [newLesson, setNewLesson] = useState({ title: "", dept: "All" as Dept, outcome: "positive" as "positive" | "negative", impact: "Medium" as "High" | "Medium", summary: "", tags: "" });
   const [expandedFormula, setExpandedFormula] = useState<string | null>(null);
   const [fwCategoryFilter, setFwCategoryFilter] = useState<string>("All");
+  const [businessMode, setBusinessMode] = useState<BusinessMode | null>(() => {
+    const saved = localStorage.getItem("apphia_knowledge_mode");
+    return (saved as BusinessMode) || null;
+  });
 
   function downloadDocument(doc: SavedDocument) {
     const lines = [
@@ -769,6 +956,91 @@ export default function Knowledge() {
             <Upload className="w-3.5 h-3.5" /> Upload SOP
           </button>
         </div>
+      </div>
+
+      {/* ── Business Mode Selector ── */}
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-muted-foreground mb-2.5">Business Mode</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+          {(Object.entries(MODE_KITS) as [BusinessMode, typeof MODE_KITS[BusinessMode]][]).map(([key, kit]) => {
+            const active = businessMode === key;
+            return (
+              <button key={key}
+                onClick={() => {
+                  const next = active ? null : key;
+                  setBusinessMode(next);
+                  if (next) localStorage.setItem("apphia_knowledge_mode", next);
+                  else localStorage.removeItem("apphia_knowledge_mode");
+                }}
+                className="rounded-xl p-3.5 border-2 text-left transition-all hover:opacity-90 active:scale-[0.98]"
+                style={{
+                  background: active ? kit.bg : "transparent",
+                  borderColor: active ? kit.color : "hsl(var(--border))",
+                }}>
+                <div className="text-lg mb-1">{kit.emoji}</div>
+                <div className="text-xs font-bold text-foreground mb-0.5">{kit.label}</div>
+                <div className="text-[10px] text-muted-foreground leading-snug">{kit.tagline}</div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Mode Kit Panel */}
+        {businessMode && (() => {
+          const kit = MODE_KITS[businessMode];
+          const kitTemplates = kit.starterTemplates.map(id => TEMPLATES.find(t => t.id === id)).filter(Boolean) as typeof TEMPLATES;
+          return (
+            <div className="mt-3 rounded-xl border-2 p-5" style={{ borderColor: kit.border, background: kit.bg }}>
+              <div className="flex items-start justify-between gap-3 mb-4">
+                <div>
+                  <div className="text-sm font-bold text-foreground mb-0.5">{kit.emoji} {kit.label} Starter Kit</div>
+                  <p className="text-xs text-muted-foreground max-w-xl">{kit.description}</p>
+                </div>
+                <button onClick={() => { setBusinessMode(null); localStorage.removeItem("apphia_knowledge_mode"); }}
+                  className="text-muted-foreground hover:text-foreground flex-shrink-0">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-4">
+                {kitTemplates.map(t => (
+                  <button key={t.id} onClick={() => setActiveTemplate(t)}
+                    className="rounded-xl border p-3 text-left hover:opacity-90 transition-all bg-card"
+                    style={{ borderColor: kit.border }}>
+                    <div className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: kit.color }}>{t.category}</div>
+                    <div className="text-xs font-semibold text-foreground leading-snug mb-1">{t.title}</div>
+                    <div className="text-[10px] text-muted-foreground">{t.pages}p · {t.framework}</div>
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-2">Top Frameworks</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {kit.topFrameworks.map(f => (
+                      <span key={f} className="text-[10px] font-semibold px-2 py-0.5 rounded-md"
+                        style={{ background: kit.bg, color: kit.color, border: `1px solid ${kit.border}` }}>
+                        {f}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-2">Quick Wins for This Mode</p>
+                  <ul className="space-y-1">
+                    {kit.quickWins.map((w, i) => (
+                      <li key={i} className="flex items-start gap-1.5">
+                        <CheckCircle className="w-3 h-3 flex-shrink-0 mt-0.5" style={{ color: kit.color }} />
+                        <span className="text-[11px] text-muted-foreground">{w}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Diagnostic Recommendations Banner */}

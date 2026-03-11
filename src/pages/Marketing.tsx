@@ -126,7 +126,7 @@ export default function Marketing() {
   const avgMega = Math.round(CAMPAIGNS.reduce((s, c) => s + c.megaScore, 0) / CAMPAIGNS.length);
 
   return (
-    <div className="min-h-screen p-6 space-y-6">
+    <div className="min-h-screen p-6 space-y-6" style={{ background: "hsl(224 22% 10%)" }}>
 
       {/* Header */}
       <div className="flex items-start justify-between">
