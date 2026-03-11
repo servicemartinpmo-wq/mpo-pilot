@@ -22,6 +22,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { getNextBestActions } from "@/lib/supabaseDataService";
 import { useStrategyScores } from "@/hooks/useStrategyScores";
 import { useUserMode } from "@/hooks/useUserMode";
+import IndustrySnapshot from "@/components/IndustrySnapshot";
 
 // ── Day / time helpers ──────────────────────────────────
 function getTimeOfDay(): "morning" | "afternoon" | "evening" | "night" {
@@ -1378,6 +1379,11 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
+
+        {/* ════════════════════════════════════════
+            INDUSTRY SNAPSHOT
+            ════════════════════════════════════════ */}
+        <IndustrySnapshot industry={data.industry ?? ""} />
 
         {/* ════════════════════════════════════════
             LAYER 2: Next Best Actions (full-width)
