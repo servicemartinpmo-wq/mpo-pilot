@@ -56,6 +56,78 @@ function PulseTrace({ color }: { color: string }) {
   );
 }
 
+interface ModeTheme {
+  sidebarBg: string;
+  topGlow: string;
+  bottomGlow: string;
+  accent: string;
+  accentBg: string;
+  accentShadow: string;
+  accentIcon: string;
+  accentDot: string;
+  cssVars: Record<string, string>;
+}
+
+const MODE_THEMES: Record<string, ModeTheme> = {
+  executive: {
+    sidebarBg: "linear-gradient(160deg, hsl(222 32% 13%) 0%, hsl(222 28% 9%) 50%, hsl(220 30% 7%) 100%)",
+    topGlow: "hsl(222 88% 65% / 0.10)",
+    bottomGlow: "hsl(38 92% 52% / 0.08)",
+    accent: "hsl(38 92% 52%)", accentBg: "hsl(38 92% 52% / 0.12)",
+    accentShadow: "inset 2px 0 0 hsl(38 92% 52% / 0.7)", accentIcon: "hsl(38 92% 62%)", accentDot: "hsl(38 92% 52%)",
+    cssVars: {},
+  },
+  founder: {
+    sidebarBg: "linear-gradient(160deg, hsl(230 42% 11%) 0%, hsl(228 38% 8%) 50%, hsl(228 44% 6%) 100%)",
+    topGlow: "hsl(46 88% 58% / 0.12)",
+    bottomGlow: "hsl(42 82% 44% / 0.09)",
+    accent: "hsl(44 82% 50%)", accentBg: "hsl(44 82% 50% / 0.12)",
+    accentShadow: "inset 2px 0 0 hsl(44 82% 50% / 0.7)", accentIcon: "hsl(44 82% 62%)", accentDot: "hsl(44 82% 50%)",
+    cssVars: {
+      "--primary": "44 80% 50%", "--amber": "44 80% 50%",
+      "--electric-blue": "44 80% 50%", "--chart-1": "44 80% 50%",
+      "--signal-yellow": "44 80% 50%", "--background": "228 24% 8%",
+      "--card": "228 22% 11%",
+    },
+  },
+  startup: {
+    sidebarBg: "linear-gradient(160deg, hsl(268 40% 13%) 0%, hsl(270 36% 9%) 50%, hsl(272 44% 7%) 100%)",
+    topGlow: "hsl(272 80% 68% / 0.12)",
+    bottomGlow: "hsl(186 90% 50% / 0.08)",
+    accent: "hsl(186 90% 48%)", accentBg: "hsl(186 90% 48% / 0.10)",
+    accentShadow: "inset 2px 0 0 hsl(186 90% 48% / 0.7)", accentIcon: "hsl(186 90% 58%)", accentDot: "hsl(186 90% 48%)",
+    cssVars: {
+      "--primary": "272 78% 65%", "--electric-blue": "272 78% 65%",
+      "--chart-1": "272 78% 65%", "--chart-2": "186 90% 48%",
+      "--background": "268 24% 8%", "--card": "268 22% 11%",
+    },
+  },
+  freelance: {
+    sidebarBg: "linear-gradient(160deg, hsl(20 42% 11%) 0%, hsl(18 38% 8%) 50%, hsl(16 42% 6%) 100%)",
+    topGlow: "hsl(28 90% 58% / 0.12)",
+    bottomGlow: "hsl(15 84% 50% / 0.08)",
+    accent: "hsl(25 88% 52%)", accentBg: "hsl(25 88% 52% / 0.12)",
+    accentShadow: "inset 2px 0 0 hsl(25 88% 52% / 0.7)", accentIcon: "hsl(25 88% 62%)", accentDot: "hsl(25 88% 52%)",
+    cssVars: {
+      "--primary": "25 88% 52%", "--amber": "25 88% 52%",
+      "--chart-1": "25 88% 52%", "--signal-yellow": "25 88% 52%",
+      "--background": "20 22% 8%", "--card": "20 20% 11%",
+    },
+  },
+  simple: {
+    sidebarBg: "linear-gradient(160deg, hsl(248 36% 14%) 0%, hsl(248 32% 10%) 50%, hsl(248 40% 8%) 100%)",
+    topGlow: "hsl(258 72% 72% / 0.10)",
+    bottomGlow: "hsl(272 58% 56% / 0.07)",
+    accent: "hsl(258 68% 64%)", accentBg: "hsl(258 68% 64% / 0.12)",
+    accentShadow: "inset 2px 0 0 hsl(258 68% 64% / 0.7)", accentIcon: "hsl(258 68% 74%)", accentDot: "hsl(258 68% 64%)",
+    cssVars: {
+      "--primary": "258 68% 64%", "--electric-blue": "258 68% 64%",
+      "--chart-1": "258 68% 64%", "--chart-5": "280 65% 65%",
+      "--background": "248 24% 8%", "--card": "248 22% 11%",
+    },
+  },
+};
+
 type SnoozeDuration = "off" | "1h" | "3h" | "tonight" | "weekend";
 
 interface SnoozeState {
@@ -169,6 +241,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   const growthNav = navItems.filter((n) => n.group === "growth");
   const toolsNav = navItems.filter((n) => n.group === "tools");
   const { mode, setMode, label: modeLabel, allModes } = useUserMode();
+  const theme = MODE_THEMES[mode] ?? MODE_THEMES.executive;
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
   const location = useLocation();
   const isOnWorkMgmt = workMgmtItems.some(i => location.pathname.startsWith(i.to));
@@ -202,18 +275,153 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
 
   const sidebarWidth = collapsed ? 58 : 234;
 
+  if (mode === "creative") {
+    return (
+      <div
+        className="min-h-screen flex flex-col"
+        style={{
+          ...Object.fromEntries(Object.entries({
+            "--background": "36 35% 97%", "--foreground": "20 25% 14%",
+            "--card": "0 0% 100%", "--card-foreground": "20 25% 14%",
+            "--popover": "0 0% 100%", "--popover-foreground": "20 25% 14%",
+            "--primary": "350 52% 55%", "--primary-foreground": "0 0% 100%",
+            "--muted": "33 28% 92%", "--muted-foreground": "20 15% 48%",
+            "--secondary": "33 22% 90%", "--secondary-foreground": "20 20% 20%",
+            "--accent": "350 38% 88%", "--accent-foreground": "350 52% 38%",
+            "--border": "30 22% 86%", "--input": "30 20% 82%",
+            "--amber": "30 65% 58%", "--teal": "174 55% 38%",
+            "--signal-green": "160 52% 38%", "--signal-red": "350 65% 52%",
+            "--signal-yellow": "30 65% 52%", "--signal-purple": "268 52% 55%",
+            "--chart-1": "350 52% 55%", "--chart-2": "174 55% 38%",
+            "--chart-3": "30 65% 58%", "--chart-4": "268 52% 55%",
+          })) as React.CSSProperties,
+          background: "hsl(36 35% 97%)",
+        }}
+      >
+        {/* ── Creative top bar ── */}
+        <header className="sticky top-0 z-50 flex-shrink-0" style={{ boxShadow: "0 1px 0 hsl(30 22% 84%)" }}>
+          {/* Thin announcement bar */}
+          <div className="flex items-center justify-center py-1 text-[9px] font-bold tracking-[0.25em] uppercase"
+            style={{ background: "hsl(30 55% 80%)", color: "hsl(20 30% 38%)" }}>
+            PMO-Ops Command Center &nbsp;·&nbsp; Creative Studio
+          </div>
+
+          {/* Main nav row */}
+          <div className="flex items-center gap-0 px-6 bg-white border-b" style={{ borderColor: "hsl(30 22% 88%)", height: 52 }}>
+            {/* Brand */}
+            <div className="flex items-center gap-2.5 mr-6 flex-shrink-0">
+              <div className="w-7 h-7 rounded-xl flex items-center justify-center"
+                style={{ background: "linear-gradient(135deg, hsl(350 52% 58%), hsl(15 65% 55%))" }}>
+                <Tag className="w-3.5 h-3.5 text-white" />
+              </div>
+              <span className="text-[15px] font-black tracking-tight italic" style={{ color: "hsl(20 25% 14%)" }}>
+                Martin PMO
+              </span>
+            </div>
+
+            {/* Horizontal nav links */}
+            <nav className="flex items-center flex-1 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+              {commandNav.map(({ to, label, icon: Icon }) => (
+                <NavLink key={to} to={to} end={to === "/"}
+                  className="flex items-center gap-1.5 px-3 h-[52px] text-[12px] font-medium whitespace-nowrap transition-colors border-b-2 flex-shrink-0"
+                  style={({ isActive }) => ({
+                    color: isActive ? "hsl(350 52% 48%)" : "hsl(20 15% 44%)",
+                    borderBottomColor: isActive ? "hsl(350 52% 55%)" : "transparent",
+                    background: isActive ? "hsl(350 52% 55% / 0.05)" : "transparent",
+                  })}>
+                  {({ isActive }) => <><Icon className="w-3.5 h-3.5 flex-shrink-0 mr-1.5" />{label}</>}
+                </NavLink>
+              ))}
+              <div className="w-px h-5 mx-1 flex-shrink-0" style={{ background: "hsl(30 22% 86%)" }} />
+              {workMgmtItems.map(({ to, label, icon: Icon }) => (
+                <NavLink key={to} to={to}
+                  className="flex items-center gap-1.5 px-3 h-[52px] text-[12px] font-medium whitespace-nowrap transition-colors border-b-2 flex-shrink-0"
+                  style={({ isActive }) => ({
+                    color: isActive ? "hsl(350 52% 48%)" : "hsl(20 15% 44%)",
+                    borderBottomColor: isActive ? "hsl(350 52% 55%)" : "transparent",
+                    background: isActive ? "hsl(350 52% 55% / 0.05)" : "transparent",
+                  })}>
+                  {({ isActive }) => <><Icon className="w-3.5 h-3.5 flex-shrink-0 mr-1.5" />{label}</>}
+                </NavLink>
+              ))}
+              <div className="w-px h-5 mx-1 flex-shrink-0" style={{ background: "hsl(30 22% 86%)" }} />
+              {growthNav.map(({ to, label, icon: Icon }) => (
+                <NavLink key={to} to={to}
+                  className="flex items-center gap-1.5 px-3 h-[52px] text-[12px] font-medium whitespace-nowrap transition-colors border-b-2 flex-shrink-0"
+                  style={({ isActive }) => ({
+                    color: isActive ? "hsl(174 52% 38%)" : "hsl(20 15% 44%)",
+                    borderBottomColor: isActive ? "hsl(174 52% 42%)" : "transparent",
+                    background: isActive ? "hsl(174 52% 42% / 0.05)" : "transparent",
+                  })}>
+                  {({ isActive }) => <><Icon className="w-3.5 h-3.5 flex-shrink-0 mr-1.5" />{label}</>}
+                </NavLink>
+              ))}
+            </nav>
+
+            {/* Right controls */}
+            <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+              <div className="relative">
+                <button onClick={() => setModeMenuOpen(o => !o)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
+                  style={{ background: "hsl(350 40% 92%)", color: "hsl(350 52% 44%)" }}>
+                  <UserCircle className="w-3.5 h-3.5" />
+                  Creative
+                </button>
+                {modeMenuOpen && (
+                  <div className="absolute top-full mt-1 right-0 rounded-xl border overflow-hidden shadow-lg z-50 min-w-[160px]"
+                    style={{ background: "white", borderColor: "hsl(30 22% 86%)" }}>
+                    {allModes.map(({ key, label }) => (
+                      <button key={key} onClick={() => { setMode(key); setModeMenuOpen(false); }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[12px] transition-all hover:bg-gray-50"
+                        style={{ color: mode === key ? "hsl(350 52% 48%)" : "hsl(20 15% 35%)" }}>
+                        <UserCircle className="w-3.5 h-3.5 flex-shrink-0" style={{ color: mode === key ? "hsl(350 52% 48%)" : "hsl(20 15% 55%)" }} />
+                        {label}
+                        {mode === key && <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ background: "hsl(350 52% 55%)" }} />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <button onClick={() => setNotifOpen(true)} className="relative p-2 rounded-lg transition-colors hover:bg-black/5"
+                style={{ color: "hsl(20 15% 40%)" }}>
+                <Bell className="w-4 h-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: "hsl(350 65% 52%)" }} />
+                )}
+              </button>
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-bold"
+                style={{ background: "hsl(33 28% 92%)", color: scoreColor }}>
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: scoreColor }} />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: scoreColor }} />
+                </span>
+                Health: {animatedScore}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-auto" style={{ background: "hsl(36 35% 97%)" }}>
+          {children}
+        </main>
+
+        {user?.id && (
+          <NotificationsPanel userId={user.id} open={notifOpen} onClose={() => setNotifOpen(false)} onUnreadChange={setUnreadCount} />
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className="pmo-grid" style={{ gridTemplateColumns: `${sidebarWidth}px 1fr` }}>
+    <div className="pmo-grid" style={{ gridTemplateColumns: `${sidebarWidth}px 1fr`, ...(theme.cssVars as React.CSSProperties) }}>
 
       {/* ── Sidebar ── */}
       <aside
         className="flex flex-col h-screen sticky top-0 overflow-hidden transition-all duration-300 relative"
         style={{ width: sidebarWidth }}>
 
-        {/* Base background — rich layered gradient */}
-        <div className="absolute inset-0 z-0" style={{
-          background: "linear-gradient(160deg, hsl(222 32% 13%) 0%, hsl(222 28% 9%) 50%, hsl(220 30% 7%) 100%)"
-        }} />
+        {/* Base background — mode-themed gradient */}
+        <div className="absolute inset-0 z-0" style={{ background: theme.sidebarBg }} />
 
         {/* Laminated sheen — diagonal gloss */}
         <div className="absolute inset-0 z-0 pointer-events-none" style={{
@@ -230,14 +438,14 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           background: "linear-gradient(90deg, transparent, hsl(0 0% 100% / 0.16) 20%, hsl(0 0% 100% / 0.16) 80%, transparent)"
         }} />
 
-        {/* Top glow */}
+        {/* Top glow — mode-colored */}
         <div className="absolute top-0 left-0 right-0 h-44 z-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse 150% 80% at 50% -10%, hsl(222 88% 65% / 0.10) 0%, transparent 70%)"
+          background: `radial-gradient(ellipse 150% 80% at 50% -10%, ${theme.topGlow} 0%, transparent 70%)`
         }} />
 
-        {/* Bottom amber warmth */}
+        {/* Bottom warmth glow — mode-colored */}
         <div className="absolute bottom-0 left-0 right-0 h-36 z-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse 120% 80% at 50% 115%, hsl(38 92% 52% / 0.08) 0%, transparent 70%)"
+          background: `radial-gradient(ellipse 120% 80% at 50% 115%, ${theme.bottomGlow} 0%, transparent 70%)`
         }} />
 
         {/* Right edge separator */}
@@ -326,14 +534,14 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                 }
                 style={({ isActive }) => ({
                   color: isActive ? "#fff" : undefined,
-                  background: isActive ? "hsl(38 92% 52% / 0.12)" : undefined,
-                  boxShadow: isActive ? "inset 2px 0 0 hsl(38 92% 52% / 0.7)" : undefined,
+                  background: isActive ? theme.accentBg : undefined,
+                  boxShadow: isActive ? theme.accentShadow : undefined,
                 })}>
                 {({ isActive }) => (
                   <>
                     <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
                       <Icon className="w-4 h-4"
-                        style={{ color: isActive ? "hsl(38 92% 62%)" : "hsl(0 0% 100% / 0.38)" }} />
+                        style={{ color: isActive ? theme.accentIcon : "hsl(0 0% 100% / 0.38)" }} />
                       {navTrace(to) && <PulseTrace color={navTrace(to)!} />}
                     </div>
                     {!collapsed && (
@@ -342,7 +550,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                           style={{ color: isActive ? "hsl(38 10% 96%)" : "hsl(0 0% 100% / 0.58)" }}>
                           {label}
                         </span>
-                        {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(38 92% 52%)" }} />}
+                        {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: theme.accentDot }} />}
                       </>
                     )}
                   </>
@@ -379,14 +587,14 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                         )
                       }
                       style={({ isActive }) => ({
-                        background: isActive ? "hsl(38 92% 52% / 0.10)" : undefined,
-                        boxShadow: isActive ? "inset 2px 0 0 hsl(38 92% 52% / 0.5)" : undefined,
+                        background: isActive ? theme.accentBg : undefined,
+                        boxShadow: isActive ? theme.accentShadow : undefined,
                       })}>
                       {({ isActive }) => (
                         <>
                           <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
                             <Icon className="w-3.5 h-3.5"
-                              style={{ color: isActive ? "hsl(38 92% 62%)" : "hsl(0 0% 100% / 0.30)" }} />
+                              style={{ color: isActive ? theme.accentIcon : "hsl(0 0% 100% / 0.30)" }} />
                             {navTrace(to) && <PulseTrace color={navTrace(to)!} />}
                           </div>
                           {!collapsed && (
@@ -498,11 +706,11 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                 <button
                   onClick={() => setModeMenuOpen(o => !o)}
                   className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/[0.04] transition-all">
-                  <UserCircle className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(38 92% 52% / 0.6)" }} />
-                  <span className="text-[10px] font-semibold flex-1 truncate text-left" style={{ color: "hsl(38 92% 52% / 0.7)" }}>
+                  <UserCircle className="w-3 h-3 flex-shrink-0" style={{ color: theme.accentIcon, opacity: 0.7 }} />
+                  <span className="text-[10px] font-semibold flex-1 truncate text-left" style={{ color: theme.accentIcon }}>
                     {modeLabel} Mode
                   </span>
-                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(160 56% 46%)" }} />
+                  <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: theme.accent }} />
                 </button>
                 {modeMenuOpen && (
                   <div className="absolute bottom-full mb-1 left-0 right-0 rounded-xl border overflow-hidden shadow-deep z-50"
