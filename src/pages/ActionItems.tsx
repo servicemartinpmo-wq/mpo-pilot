@@ -5,7 +5,7 @@ import {
   Flag, ChevronDown, Filter, Star, Mail, MessageSquare,
   Video, Target, X, ChevronRight, Plus,
   FileText, Link as LinkIcon, Paperclip, Info, ArrowRight,
-  Repeat, Zap
+  Repeat, Zap, Users
 } from "lucide-react";
 import { useState } from "react";
 
@@ -224,6 +224,43 @@ export default function ActionItems() {
           </div>
         </div>
       </div>
+
+      {/* ── Owner / Founder Capacity ── */}
+      {(() => {
+        const ownerLoad = 94;
+        const ownerName = "Sarah Chen";
+        const ownerRole = "CEO / Founder";
+        const openTier1 = enriched.filter(a => (a.tier === "1+" || a.tier === "1") && a.displayStatus !== "Completed").length;
+        const barColor = ownerLoad >= 90 ? "bg-signal-red" : ownerLoad >= 75 ? "bg-signal-orange" : "bg-signal-yellow";
+        const statusLabel = ownerLoad >= 90 ? "Over Capacity" : ownerLoad >= 75 ? "Near Limit" : "Healthy";
+        const statusColor = ownerLoad >= 90 ? "text-signal-red" : ownerLoad >= 75 ? "text-signal-orange" : "text-signal-green";
+        return (
+          <div className="bg-card rounded-xl shadow-card p-4 border-l-4" style={{ borderLeftColor: "hsl(222 88% 62%)" }}>
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-electric-blue/15 flex items-center justify-center text-sm font-black text-electric-blue flex-shrink-0">
+                {ownerName.split(" ").map(n => n[0]).join("")}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                  <span className="text-sm font-bold text-foreground">{ownerName}</span>
+                  <span className="text-xs text-muted-foreground">{ownerRole}</span>
+                  <span className={cn("text-xs font-black", statusColor)}>{ownerLoad}% · {statusLabel}</span>
+                </div>
+                <div className="w-full bg-border rounded-full h-1.5 mb-1.5">
+                  <div className={cn("h-1.5 rounded-full transition-all", barColor)} style={{ width: `${ownerLoad}%` }} />
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-snug">
+                  Owner is over capacity — Tier 1/1+ items require immediate delegation or deadline relief to prevent bottleneck.
+                </p>
+              </div>
+              <div className="flex-shrink-0 text-right ml-2">
+                <div className="text-2xl font-black font-mono text-signal-orange">{openTier1}</div>
+                <div className="text-[10px] text-muted-foreground font-medium">Tier 1+ open</div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Category tabs ── */}
       <div className="flex gap-1 border-b-2 border-border overflow-x-auto">

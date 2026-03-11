@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import {
   Users, ChevronDown, Target, Clock, Star, Building2,
+  AlertTriangle, ArrowRight,
 } from "lucide-react";
 
 type MOCHARole = "M" | "O" | "C" | "H" | "A";
@@ -139,6 +140,55 @@ export default function Team() {
           ))}
         </div>
       </div>
+
+      {/* Recommended Delegations */}
+      {(() => {
+        const overloaded = TEAM_MEMBERS.filter(m => m.load >= 85);
+        const available  = TEAM_MEMBERS.filter(m => m.load <= 75);
+        const pairs: { from: TeamMember; to: TeamMember; task: string }[] = [];
+        const usedTo = new Set<string>();
+        for (const from of overloaded) {
+          const to = available.find(a => !usedTo.has(a.id));
+          if (to) { pairs.push({ from, to, task: from.assignments[0]?.project ?? "Unassigned task" }); usedTo.add(to.id); }
+        }
+        if (pairs.length === 0) return null;
+        return (
+          <div className="bg-card rounded-xl shadow-card p-5 border-l-4" style={{ borderLeftColor: "hsl(272 60% 52%)" }}>
+            <div className="flex items-center gap-2 mb-4">
+              <AlertTriangle className="w-4 h-4" style={{ color: "hsl(272 60% 52%)" }} />
+              <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">Recommended Delegations</h2>
+              <span className="ml-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "hsl(272 60% 52% / 0.12)", color: "hsl(272 60% 52%)" }}>
+                {pairs.length} suggestion{pairs.length !== 1 ? "s" : ""}
+              </span>
+              <span className="ml-auto text-[11px] text-muted-foreground">Team members at ≥85% capacity with available bandwidth matches</span>
+            </div>
+            <div className="space-y-2.5">
+              {pairs.map(({ from, to, task }) => {
+                const fromLoad = from.load;
+                const toLoad   = to.load;
+                const loadColor = fromLoad >= 90 ? "text-signal-red" : "text-signal-orange";
+                return (
+                  <div key={from.id + "-" + to.id} className="flex items-center gap-4 bg-secondary/40 rounded-xl px-4 py-3 border border-border">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-sm font-bold text-foreground">{from.name}</span>
+                        <span className="text-[10px] text-muted-foreground font-medium">{from.role}</span>
+                        <span className={cn("text-xs font-black ml-1", loadColor)}>{fromLoad}%</span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-snug truncate">{task}</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    <div className="flex-shrink-0 text-right min-w-[120px]">
+                      <div className="text-sm font-bold text-foreground">{to.name}</div>
+                      <div className="text-[11px] text-signal-green font-semibold">{toLoad}% · has capacity</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* MOCHA Key */}
       <div className="bg-card rounded-xl border-2 border-border shadow-card p-5">
