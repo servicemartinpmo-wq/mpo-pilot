@@ -128,6 +128,38 @@ const MODE_THEMES: Record<string, ModeTheme> = {
   },
 };
 
+// ── Semantic icon colors per route ─────────────────────────────────────────
+// Each icon has a functional hue: blue=command, amber=judgment, teal=structure,
+// green=people/flow, purple=analysis, orange=growth/momentum, etc.
+const NAV_ICON_HSL: Record<string, string> = {
+  "/":             "222 88% 65%",   // electric blue — command center
+  "/decisions":    "38 92% 54%",    // warm amber — judgment / decisioning
+  "/departments":  "174 68% 44%",   // teal — structure & org
+  "/team":         "160 56% 48%",   // green — people & wellness
+  "/diagnostics":  "268 68% 64%",   // purple — health analysis
+  "/crm":          "186 90% 50%",   // cyan — commercial pipeline
+  "/marketing":    "28 94% 60%",    // orange — growth & momentum
+  "/pricing":      "44 82% 54%",    // gold — upgrade
+  "/reports":      "258 68% 66%",   // lavender — data & analysis
+  "/knowledge":    "174 72% 50%",   // teal — knowledge
+  "/graph":        "210 90% 62%",   // sky blue — relational view
+  "/workflows":    "160 62% 50%",   // green — process flow
+  "/advisory":     "38 85% 60%",    // warm amber — guidance
+  "/integrations": "272 68% 64%",   // purple — connections
+  "/admin":        "214 58% 54%",   // steel blue — systems
+};
+const WORK_ICON_HSL: Record<string, string> = {
+  "/initiatives":  "28 94% 60%",    // orange — strategic momentum
+  "/projects":     "222 88% 65%",   // blue — project execution
+  "/action-items": "350 82% 64%",   // red — urgency & tasks
+  "/agile":        "268 68% 64%",   // purple — sprint / agile
+};
+// Returns an hsl() string with optional opacity
+function ihsl(hsl: string, opacity = 1): string {
+  return opacity < 1 ? `hsl(${hsl} / ${opacity})` : `hsl(${hsl})`;
+}
+// ───────────────────────────────────────────────────────────────────────────
+
 type SnoozeDuration = "off" | "1h" | "3h" | "tonight" | "weekend";
 
 interface SnoozeState {
@@ -537,24 +569,46 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                   background: isActive ? theme.accentBg : undefined,
                   boxShadow: isActive ? theme.accentShadow : undefined,
                 })}>
-                {({ isActive }) => (
-                  <>
-                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
-                      <Icon className="w-4 h-4"
-                        style={{ color: isActive ? theme.accentIcon : "hsl(0 0% 100% / 0.38)" }} />
-                      {navTrace(to) && <PulseTrace color={navTrace(to)!} />}
-                    </div>
-                    {!collapsed && (
-                      <>
-                        <span className="flex-1 truncate"
-                          style={{ color: isActive ? "hsl(38 10% 96%)" : "hsl(0 0% 100% / 0.58)" }}>
-                          {label}
-                        </span>
-                        {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: theme.accentDot }} />}
-                      </>
-                    )}
-                  </>
-                )}
+                {({ isActive }) => {
+                  const sem  = NAV_ICON_HSL[to];
+                  const trace = navTrace(to);
+                  const needsAttention = !isActive && trace === TRACE_RED;
+                  const iconCol = isActive
+                    ? theme.accentIcon
+                    : trace
+                      ? trace
+                      : sem ? ihsl(sem, 0.55) : "hsl(0 0% 100% / 0.38)";
+                  return (
+                    <>
+                      <div className="flex flex-col items-center gap-0.5 flex-shrink-0 relative">
+                        {/* Ambient glow ring behind icon when active */}
+                        {isActive && sem && (
+                          <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                            style={{ background: `radial-gradient(circle, ${ihsl(sem, 0.22)} 0%, transparent 70%)` }} />
+                        )}
+                        {/* Attention halo when route needs action */}
+                        {needsAttention && (
+                          <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                            style={{ background: `radial-gradient(circle, hsl(350 82% 62% / 0.14) 0%, transparent 70%)` }} />
+                        )}
+                        <Icon
+                          className={cn("w-4 h-4 relative z-10", needsAttention && "nav-icon-nudge")}
+                          style={{ color: iconCol }}
+                        />
+                        {trace && <PulseTrace color={trace} />}
+                      </div>
+                      {!collapsed && (
+                        <>
+                          <span className="flex-1 truncate"
+                            style={{ color: isActive ? "hsl(38 10% 96%)" : "hsl(0 0% 100% / 0.58)" }}>
+                            {label}
+                          </span>
+                          {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: theme.accentDot }} />}
+                        </>
+                      )}
+                    </>
+                  );
+                }}
               </NavLink>
             ))}
 
@@ -590,21 +644,40 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                         background: isActive ? theme.accentBg : undefined,
                         boxShadow: isActive ? theme.accentShadow : undefined,
                       })}>
-                      {({ isActive }) => (
-                        <>
-                          <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
-                            <Icon className="w-3.5 h-3.5"
-                              style={{ color: isActive ? theme.accentIcon : "hsl(0 0% 100% / 0.30)" }} />
-                            {navTrace(to) && <PulseTrace color={navTrace(to)!} />}
-                          </div>
-                          {!collapsed && (
-                            <span className="flex-1 truncate"
-                              style={{ color: isActive ? "hsl(38 10% 96%)" : "hsl(0 0% 100% / 0.50)" }}>
-                              {label}
-                            </span>
-                          )}
-                        </>
-                      )}
+                      {({ isActive }) => {
+                        const sem   = WORK_ICON_HSL[to];
+                        const trace = navTrace(to);
+                        const needsAttention = !isActive && trace === TRACE_RED;
+                        const iconCol = isActive
+                          ? theme.accentIcon
+                          : trace ? trace
+                          : sem ? ihsl(sem, 0.52) : "hsl(0 0% 100% / 0.30)";
+                        return (
+                          <>
+                            <div className="flex flex-col items-center gap-0.5 flex-shrink-0 relative">
+                              {isActive && sem && (
+                                <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                                  style={{ background: `radial-gradient(circle, ${ihsl(sem, 0.20)} 0%, transparent 70%)` }} />
+                              )}
+                              {needsAttention && (
+                                <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                                  style={{ background: `radial-gradient(circle, hsl(350 82% 62% / 0.14) 0%, transparent 70%)` }} />
+                              )}
+                              <Icon
+                                className={cn("w-3.5 h-3.5 relative z-10", needsAttention && "nav-icon-nudge")}
+                                style={{ color: iconCol }}
+                              />
+                              {trace && <PulseTrace color={trace} />}
+                            </div>
+                            {!collapsed && (
+                              <span className="flex-1 truncate"
+                                style={{ color: isActive ? "hsl(38 10% 96%)" : "hsl(0 0% 100% / 0.50)" }}>
+                                {label}
+                              </span>
+                            )}
+                          </>
+                        );
+                      }}
                     </NavLink>
                   ))}
                 </div>
@@ -633,21 +706,32 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                     background: isActive ? "hsl(160 56% 42% / 0.1)" : undefined,
                     boxShadow: isActive ? "inset 2px 0 0 hsl(160 56% 42% / 0.6)" : undefined,
                   })}>
-                  {({ isActive }) => (
-                    <>
-                      <Icon className="w-4 h-4 flex-shrink-0"
-                        style={{ color: isActive ? "hsl(160 56% 52%)" : "hsl(0 0% 100% / 0.38)" }} />
-                      {!collapsed && (
-                        <>
-                          <span className="flex-1 truncate"
-                            style={{ color: isActive ? "#fff" : "hsl(0 0% 100% / 0.58)" }}>
-                            {label}
-                          </span>
-                          {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(160 56% 42%)" }} />}
-                        </>
-                      )}
-                    </>
-                  )}
+                  {({ isActive }) => {
+                    const sem = NAV_ICON_HSL[to];
+                    const iconCol = isActive
+                      ? "hsl(160 56% 54%)"
+                      : sem ? ihsl(sem, 0.55) : "hsl(0 0% 100% / 0.38)";
+                    return (
+                      <>
+                        <div className="relative flex-shrink-0">
+                          {isActive && sem && (
+                            <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                              style={{ background: `radial-gradient(circle, ${ihsl(sem, 0.20)} 0%, transparent 70%)` }} />
+                          )}
+                          <Icon className="w-4 h-4 relative z-10" style={{ color: iconCol }} />
+                        </div>
+                        {!collapsed && (
+                          <>
+                            <span className="flex-1 truncate"
+                              style={{ color: isActive ? "#fff" : "hsl(0 0% 100% / 0.58)" }}>
+                              {label}
+                            </span>
+                            {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(160 56% 42%)" }} />}
+                          </>
+                        )}
+                      </>
+                    );
+                  }}
                 </NavLink>
               ))}
             </div>
@@ -677,21 +761,32 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                     background: isActive ? "hsl(272 60% 52% / 0.14)" : undefined,
                     boxShadow: isActive ? "inset 2px 0 0 hsl(272 60% 52% / 0.65)" : undefined,
                   })}>
-                  {({ isActive }) => (
-                    <>
-                      <Icon className="w-4 h-4 flex-shrink-0"
-                        style={{ color: isActive ? "hsl(272 60% 68%)" : "hsl(220 50% 92% / 0.45)" }} />
-                      {!collapsed && (
-                        <>
-                          <span className="flex-1 truncate"
-                            style={{ color: isActive ? "#fff" : "hsl(220 20% 88% / 0.65)" }}>
-                            {label}
-                          </span>
-                          {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(272 60% 52%)" }} />}
-                        </>
-                      )}
-                    </>
-                  )}
+                  {({ isActive }) => {
+                    const sem = NAV_ICON_HSL[to];
+                    const iconCol = isActive
+                      ? "hsl(272 60% 70%)"
+                      : sem ? ihsl(sem, 0.52) : "hsl(220 50% 92% / 0.45)";
+                    return (
+                      <>
+                        <div className="relative flex-shrink-0">
+                          {isActive && sem && (
+                            <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                              style={{ background: `radial-gradient(circle, ${ihsl(sem, 0.20)} 0%, transparent 70%)` }} />
+                          )}
+                          <Icon className="w-4 h-4 relative z-10" style={{ color: iconCol }} />
+                        </div>
+                        {!collapsed && (
+                          <>
+                            <span className="flex-1 truncate"
+                              style={{ color: isActive ? "#fff" : "hsl(220 20% 88% / 0.65)" }}>
+                              {label}
+                            </span>
+                            {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(272 60% 52%)" }} />}
+                          </>
+                        )}
+                      </>
+                    );
+                  }}
                 </NavLink>
               ))}
             </div>

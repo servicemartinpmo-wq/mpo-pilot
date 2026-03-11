@@ -214,8 +214,9 @@
 
   .dark body {
     background-image:
-      radial-gradient(ellipse 80% 50% at 20% -10%, hsl(222 88% 65% / 0.06) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 110%, hsl(38 92% 52% / 0.04) 0%, transparent 60%);
+      radial-gradient(ellipse 90% 55% at 18% -8%,  hsl(222 88% 65% / 0.08) 0%, transparent 55%),
+      radial-gradient(ellipse 70% 45% at 85% 108%, hsl(38 92% 52% / 0.055) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 30% at 62% 52%,  hsl(174 68% 42% / 0.025) 0%, transparent 60%);
   }
 
   code, .mono, pre {
@@ -418,6 +419,46 @@
   .status-dot-amber { background: hsl(var(--amber)); }
   .status-dot-red   { background: hsl(var(--signal-red)); }
   .status-dot-blue  { background: hsl(var(--electric-blue)); }
+
+  /* ── Nav icon nudge — attention glow pulse ── */
+  .nav-icon-nudge {
+    animation: nav-icon-nudge 2.6s ease-in-out infinite;
+  }
+
+  /* ── Card shimmer depth ── */
+  .dark .bg-card {
+    background-image:
+      linear-gradient(
+        135deg,
+        hsl(0 0% 100% / 0.028) 0%,
+        transparent 42%,
+        hsl(0 0% 0% / 0.018) 100%
+      );
+  }
+
+  /* ── Enhanced card shadow in dark — adds inner top-edge highlight ── */
+  .dark .shadow-card {
+    box-shadow:
+      0 1px 3px 0 hsl(222 30% 5% / 0.55),
+      0 1px 2px -1px hsl(222 30% 5% / 0.35),
+      inset 0 1px 0 hsl(0 0% 100% / 0.048);
+  }
+}
+
+/* ── Nav icon nudge keyframe ── */
+@keyframes nav-icon-nudge {
+  0%, 78%, 100% {
+    filter: drop-shadow(0 0 0px currentColor);
+    transform: scale(1);
+  }
+  88% {
+    filter: drop-shadow(0 0 4px currentColor);
+    transform: scale(1.10);
+  }
+  94% {
+    filter: drop-shadow(0 0 2px currentColor);
+    transform: scale(0.96);
+  }
 }
 
 /* ─────────────────────────────────────────────
