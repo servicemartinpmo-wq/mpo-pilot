@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 
 export type UserMode = "founder" | "executive" | "startup" | "creative" | "freelance" | "simple";
+export type ToneMode = "executive" | "smb" | "simple";
+
+export function toToneMode(mode: UserMode): ToneMode {
+  if (mode === "executive") return "executive";
+  if (mode === "simple") return "simple";
+  return "smb";
+}
 
 const MODE_LABELS: Record<UserMode, string> = {
   founder: "Founder",
@@ -12,20 +19,20 @@ const MODE_LABELS: Record<UserMode, string> = {
 };
 
 const MODE_DESCRIPTIONS: Record<UserMode, string> = {
-  founder: "Growth strategy, runway, and company-wide oversight",
-  executive: "High-level operational intelligence and decision support",
-  startup: "Product launches, growth metrics, and team velocity",
-  creative: "Creative workflows, project pipelines, and client delivery",
-  freelance: "Client management, task tracking, and deliverable timelines",
-  simple: "Plain-language guidance with step-by-step support — no jargon",
+  founder: "Run your whole business — priorities, team, and growth",
+  executive: "Big-picture decisions and keeping operations on track",
+  startup: "Ship fast, track what's working, and grow your team",
+  creative: "Manage projects, clients, and creative output",
+  freelance: "Stay on top of clients, tasks, and deadlines",
+  simple: "Step-by-step guidance in plain language — no jargon",
 };
 
 const MODE_GREETING: Record<UserMode, string> = {
-  founder: "Here's your company at a glance",
-  executive: "Your operational priorities for today",
-  startup: "Growth signals and execution status",
-  creative: "Your active projects and upcoming deliverables",
-  freelance: "Your client work and upcoming deadlines",
+  founder: "Here's what matters most in your business right now",
+  executive: "Here's what needs your attention today",
+  startup: "Here's how your team and product are tracking",
+  creative: "Here's where your projects stand",
+  freelance: "Here's your client work and what's coming up",
   simple: "Welcome — here's what needs your attention today",
 };
 
@@ -39,7 +46,7 @@ export function useUserMode() {
         return stored as UserMode;
       }
     } catch {}
-    return "executive";
+    return "founder";
   });
 
   const setMode = (newMode: UserMode) => {
@@ -52,10 +59,12 @@ export function useUserMode() {
   return {
     mode,
     setMode,
+    tone: toToneMode(mode),
     label: MODE_LABELS[mode],
     description: MODE_DESCRIPTIONS[mode],
     greeting: MODE_GREETING[mode],
     isSimpleMode: mode === "simple",
+    isExecutiveMode: mode === "executive",
     allModes: Object.entries(MODE_LABELS).map(([key, label]) => ({
       key: key as UserMode,
       label,

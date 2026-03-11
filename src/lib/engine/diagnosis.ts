@@ -100,16 +100,16 @@ const ROOT_CAUSE_MAP: Record<SignalCategory, RootCauseCategory> = {
 // Root cause descriptions generated from canonical framework logic
 function buildRootCauseDescription(signal: DetectedSignal, rootCause: RootCauseCategory): string {
   const descMap: Record<RootCauseCategory, string> = {
-    "Process Bottleneck": `${signal.source} shows measurable flow disruption. Lean Value Stream Mapping identifies non-value-added handoffs. Six Sigma DMAIC measurement phase confirms process variation exceeding control limits.`,
-    "Strategic Misalignment": `Balanced Scorecard analysis reveals divergence between stated strategy and resource allocation patterns. OKR cascade shows broken linkage between executive objectives and team-level key results.`,
-    "Resource Constraint": `Theory of Constraints identifies a binding constraint in ${signal.source}. System throughput is limited below potential capacity. CCPM buffer analysis confirms schedule pressure from resource unavailability.`,
-    "Dependency Conflict": `Critical Path Method exposes a task dependency chain with zero float. RAID Log tracking indicates an unresolved dependency blocking parallel workstreams. Cascading risk across 2+ initiatives detected.`,
-    "Leadership Span Overload": `Mintzberg Organizational Configuration analysis flags span of control exceeding recommended limits. McKinsey 7S coherence check reveals staff-structure misalignment creating decision bottlenecks.`,
-    "Financial Pressure": `Financial Ratio Analysis (Subramanyam) identifies cost structure pressure. Activity-Based Costing reveals hidden overhead concentration in ${signal.source}.`,
-    "Capability Gap": `Galbraith Star Model People element shows skills-strategy misfit. CMMI assessment scores below threshold in key process areas. Leadership Pipeline analysis confirms succession risk.`,
-    "Governance Failure": `ISO 31000 risk framework audit identifies missing risk controls. FMEA analysis shows high-severity failure modes with no mitigation in place. Escalation path undefined for ${signal.source}.`,
-    "Market Signal": `PESTEL environmental scan detects macro-level shifts affecting the competitive position. Porter Five Forces signals increased competitive pressure in relevant market segments.`,
-    "System Complexity": `Systems Thinking Causal Loop Diagrams reveal reinforcing feedback loops creating unintended consequences. Cynefin Framework classifies this as Complex domain requiring probe-sense-respond approach.`,
+    "Process Bottleneck": `Work is getting stuck or piling up around ${signal.source}. There are unnecessary handoffs and wait times slowing things down. A process mapping exercise (like Lean value stream mapping) confirms the flow is broken and needs to be streamlined.`,
+    "Strategic Misalignment": `Your team's daily work isn't lined up with your top business priorities. When you look at where time and resources are actually going, there's a gap between your goals and what people are working on.`,
+    "Resource Constraint": `One part of your workflow is backing everything else up. A bottleneck analysis (Theory of Constraints) shows the constraint is in ${signal.source} — until it's cleared, the rest of the team stays stuck.`,
+    "Dependency Conflict": `A task or project is blocked because it depends on something that hasn't been delivered yet. There's no slack in the schedule, so every day this stays unresolved pushes other work back too.`,
+    "Leadership Span Overload": `Someone on your team is stretched too thin — managing too many people or too many responsibilities. Decisions are slowing down because everything has to go through one person.`,
+    "Financial Pressure": `Costs are building up in ${signal.source} in ways that aren't sustainable. When you break down where the money is actually going, there's hidden overhead that needs to be addressed.`,
+    "Capability Gap": `Your team doesn't yet have the skills or processes needed to handle what's being asked of them. There's a gap between the current capability level and what your business goals require.`,
+    "Governance Failure": `There are risks in ${signal.source} that don't have a clear owner or a plan to handle them. If something goes wrong, there's no defined path for who steps in or how it gets escalated.`,
+    "Market Signal": `External market conditions are shifting in ways that affect your competitive position. New pressures — from competitors, regulations, or customer behavior — are changing the landscape.`,
+    "System Complexity": `Multiple parts of your operation are tangled together in ways that create unexpected side effects. Fixing one thing makes another worse because the pieces are too tightly connected. This kind of situation requires small experiments to find what works, not big sweeping changes.`,
   };
   return descMap[rootCause] || "Root cause analysis in progress.";
 }
@@ -125,17 +125,17 @@ function buildFrameworkFindings(signal: DetectedSignal, fwIds: string[], fwMap: 
     let finding = "";
     const cat = signal.category;
 
-    if (id === "toc") finding = `Constraint identified in ${signal.source}. Five Focusing Steps: exploit current constraint before adding capacity. Throughput below system potential.`;
-    else if (id === "lean") finding = `Waste analysis: overproduction and waiting detected. WIP accumulation above optimal. Value stream requires redesign to restore flow.`;
-    else if (id === "bsc") finding = `Four-perspective analysis: ${cat === "Strategic Misalignment" ? "Financial-Customer linkage broken. Internal Process perspective shows execution gap." : "Dashboard scorecard signals deviation from strategic targets."}`;
-    else if (id === "okr") finding = `Key Result completion rate below threshold. OKR cascade integrity compromised — departmental objectives not contributing to org-level outcomes.`;
-    else if (id === "ccpm") finding = `Project buffer consumption rate critical. Resource dependency chain causing schedule compression. Buffer management protocol required.`;
-    else if (id === "criticalPath") finding = `Critical path float at zero or negative. Schedule risk is high. Parallel-pathing or scope reduction required to restore delivery confidence.`;
-    else if (id === "sixSigmaDMAIC") finding = `DMAIC Measure phase: process sigma level below 3σ. Define phase identifies clear defect: ${signal.title}. Analyze phase pending.`;
-    else if (id === "mckinsey7s") finding = `7S coherence check: Strategy-Structure-Systems triangle shows misalignment. Hard element gaps creating soft element friction.`;
-    else if (id === "riskHeatMap") finding = `Risk heat map entry: probability × impact score places this in high-priority quadrant. Immediate mitigation action required.`;
-    else if (id === "iso31000") finding = `ISO 31000 Risk Treatment: risk level exceeds acceptable threshold. Risk owner must implement treatment plan within defined timeframe.`;
-    else if (id === "kpiTree") finding = `KPI Tree decomposition shows driver metric degradation causing lagging KPI underperformance. Root driver requires direct intervention.`;
+    if (id === "toc") finding = `There's a bottleneck in ${signal.source} that's limiting your overall output. The fix is to focus on clearing this specific constraint before adding more resources elsewhere.`;
+    else if (id === "lean") finding = `There's waste building up in the process — things are being done too early, sitting idle, or piling up. The workflow needs to be simplified to get things moving again.`;
+    else if (id === "bsc") finding = `${cat === "Strategic Misalignment" ? "Your goals and your day-to-day execution are out of sync. The work being done isn't connecting back to business results." : "Key metrics are drifting away from where they need to be. Time to check what's changed and course-correct."}`;
+    else if (id === "okr") finding = `Your team's progress on key goals is falling behind. Individual work isn't adding up to the outcomes you set at the company level — the connection is broken somewhere.`;
+    else if (id === "ccpm") finding = `Project timelines are getting squeezed because of resource conflicts. The schedule buffer is nearly gone, so any new delay will push the deadline.`;
+    else if (id === "criticalPath") finding = `The project timeline has zero room for slippage. If anything else goes wrong, the deadline will slip. Consider running tasks in parallel or cutting scope to create breathing room.`;
+    else if (id === "sixSigmaDMAIC") finding = `The process quality is below acceptable levels. The specific problem area is: ${signal.title}. Next step is to dig into the root cause and fix it systematically.`;
+    else if (id === "mckinsey7s") finding = `Your strategy, team structure, and systems aren't in sync. The mismatch between how your business is set up and what you're trying to achieve is creating friction.`;
+    else if (id === "riskHeatMap") finding = `This risk scores high on both likelihood and potential damage. It needs to be dealt with now, not just monitored.`;
+    else if (id === "iso31000") finding = `This risk has crossed the threshold where it needs active mitigation, not just tracking. Someone needs to own the fix and execute within a clear timeline.`;
+    else if (id === "kpiTree") finding = `An upstream metric is dragging down your overall performance numbers. Fixing the root driver will have a cascading positive effect on the KPIs that matter.`;
     else finding = `${fw.name} analysis activated. Signal maps to ${fw.statusRelevance}. ${fw.notes.split(".")[0]}.`;
 
     findings.push({
@@ -169,16 +169,16 @@ function getAdvisoryTriggers(rootCause: RootCauseCategory): string[] {
 
 function getStructuralFlags(rootCause: RootCauseCategory): string[] {
   const map: Record<RootCauseCategory, string[]> = {
-    "Process Bottleneck":       ["Implement process governance", "Define flow standards"],
-    "Strategic Misalignment":   ["Establish Strategy-Execution bridge", "Implement OKR governance"],
-    "Resource Constraint":      ["Build capacity planning system", "Implement WIP limits"],
-    "Dependency Conflict":      ["Create dependency SLA framework", "Implement RAID governance"],
-    "Leadership Span Overload": ["Review organizational spans", "Define delegation matrix"],
-    "Financial Pressure":       ["Implement activity-based budgeting", "Build financial controls"],
-    "Capability Gap":           ["Launch capability building program", "Revise succession plan"],
-    "Governance Failure":       ["Establish governance committee", "Implement escalation protocols"],
-    "Market Signal":            ["Commission market intelligence function", "Review strategic positioning"],
-    "System Complexity":        ["Implement systems thinking protocols", "Reduce organizational complexity"],
+    "Process Bottleneck":       ["Document your process steps and cut unnecessary ones", "Set clear rules for how work flows between people"],
+    "Strategic Misalignment":   ["Write down your top 3 priorities and share them with the team", "Check that every active project ties back to a real goal"],
+    "Resource Constraint":      ["Map out who's working on what so you can spot overload", "Limit the number of projects running at the same time"],
+    "Dependency Conflict":      ["Agree on response-time expectations between teams or roles", "Track blockers in one shared place and review them weekly"],
+    "Leadership Span Overload": ["Write down who owns which decisions", "Pick one or two things to delegate this week"],
+    "Financial Pressure":       ["Break down costs by activity to find hidden waste", "Set spending limits and review them monthly"],
+    "Capability Gap":           ["Identify the top skill your team is missing and create a plan to build it", "Cross-train at least one person on every critical task"],
+    "Governance Failure":       ["Assign a clear owner for every major risk", "Set a weekly check-in rhythm to review open issues"],
+    "Market Signal":            ["Set up a simple way to track competitor and market changes monthly", "Revisit your positioning and pricing quarterly"],
+    "System Complexity":        ["Map out how your key processes connect and find the tangles", "Simplify by removing one unnecessary dependency or handoff"],
   };
   return map[rootCause] || [];
 }

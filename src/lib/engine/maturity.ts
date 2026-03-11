@@ -102,11 +102,11 @@ function calcRiskManagement(dept: Department): number {
 
 function generateMaturityInsights(dept: Department, dims: MaturityScore["dimensions"]): string[] {
   const notes: string[] = [];
-  if (dims.strategicAlignment < 60) notes.push("Strategic alignment below threshold — OKR cascade review required.");
-  if (dims.executionDiscipline < 60) notes.push(`Execution discipline weak (${dept.blockedTasks} blocked tasks). CMMI Level 2 process areas need reinforcement.`);
-  if (dims.operationalCapacity > 85 || dept.capacityUsed > 85) notes.push(`Capacity overload detected at ${dept.capacityUsed}% — Lean WIP limits should be applied.`);
-  if (dims.processStructure < 50) notes.push("Process structure below APQC baseline — SOP documentation required.");
-  if (dims.riskManagement < 50) notes.push("Risk management posture below ISO 31000 minimum — risk register review needed.");
+  if (dims.strategicAlignment < 60) notes.push("Your team's day-to-day work isn't lining up with your main goals — take an hour to review priorities and make sure everyone's pointed in the same direction.");
+  if (dims.executionDiscipline < 60) notes.push(`Execution needs more structure — there are ${dept.blockedTasks} blocked tasks right now. Start by defining who owns each recurring task and checking in on blockers daily.`);
+  if (dims.operationalCapacity > 85 || dept.capacityUsed > 85) notes.push(`Your team is running at ${dept.capacityUsed}% capacity, which is too hot. Limit the number of active projects so people have room to do quality work.`);
+  if (dims.processStructure < 50) notes.push("Your processes need to be written down — right now too much depends on people just knowing what to do. Start with your top 3 most repeated tasks and document the steps.");
+  if (dims.riskManagement < 50) notes.push("You don't have a clear way to track and handle risks. Start a simple risk list: what could go wrong, how bad it would be, and who's watching it.");
   if (notes.length === 0) notes.push("All dimensions within healthy operating range.");
   return notes;
 }
