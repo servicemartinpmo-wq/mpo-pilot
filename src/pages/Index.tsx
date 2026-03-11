@@ -665,239 +665,327 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
 const C_PROJECTS = [
   {
     id: "cp1", title: "Brand Refresh", client: "Meridian Co.", status: "Active",
-    photo: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&h=1000&fit=crop&auto=format&q=85",
+    photo: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1600&h=2000&fit=crop&auto=format&q=95",
     accent: "#00ffe0", accentRgb: "0,255,224",
   },
   {
     id: "cp2", title: "Campaign Strategy", client: "Apex Studios", status: "Review",
-    photo: "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=800&h=1000&fit=crop&auto=format&q=85",
+    photo: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=1600&h=2000&fit=crop&auto=format&q=95",
     accent: "#bf80ff", accentRgb: "191,128,255",
   },
   {
     id: "cp3", title: "Editorial Design", client: "Novo Press", status: "Active",
-    photo: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=1000&fit=crop&auto=format&q=85",
+    photo: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1600&h=2000&fit=crop&auto=format&q=95",
     accent: "#ff6b35", accentRgb: "255,107,53",
   },
   {
     id: "cp4", title: "Social Content", client: "Solaris Health", status: "Draft",
-    photo: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&h=1000&fit=crop&auto=format&q=85",
+    photo: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&h=2000&fit=crop&auto=format&q=95",
     accent: "#ffdd00", accentRgb: "255,221,0",
+  },
+  {
+    id: "cp5", title: "Visual Identity", client: "Fleur Studio", status: "Active",
+    photo: "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1600&h=2000&fit=crop&auto=format&q=95",
+    accent: "#ff80ab", accentRgb: "255,128,171",
+  },
+  {
+    id: "cp6", title: "Motion Direction", client: "Neon Works", status: "In Progress",
+    photo: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1600&h=2000&fit=crop&auto=format&q=95",
+    accent: "#40c4ff", accentRgb: "64,196,255",
   },
 ];
 
-function CreativeDashboard({ firstName, nbaItems, projects }: {
+function CreativeDashboard({ firstName }: {
   firstName: string;
   nbaItems: { title: string; description?: string; priority?: string }[];
   projects: { name: string; status: string }[];
 }) {
-  const [activeCard, setActiveCard] = useState(1);
-
-  const activeCount = projects.filter(p => ["In Progress","Active","On Track"].includes(p.status)).length;
-  const draftCount  = projects.filter(p => ["Draft","Planning"].includes(p.status)).length;
-  const doneCount   = projects.filter(p => ["Completed","Done"].includes(p.status)).length;
+  const [activeCard, setActiveCard] = useState(0);
+  const [hoveredGallery, setHoveredGallery] = useState<number | null>(null);
+  const [paused, setPaused] = useState(false);
 
   const featured = C_PROJECTS[activeCard];
 
+  // Auto-advance carousel every 4 s
+  useEffect(() => {
+    if (paused) return;
+    const t = setInterval(() => {
+      setActiveCard(i => (i + 1) % C_PROJECTS.length);
+    }, 4000);
+    return () => clearInterval(t);
+  }, [paused]);
+
   const cardOffset = (i: number) => {
     const diff = i - activeCard;
-    if (diff === 0)  return { translateX: "0px",    scale: 1,    z: 30, opacity: 1,    rotate: "0deg" };
-    if (diff === -1) return { translateX: "-70px",   scale: 0.88, z: 20, opacity: 0.55, rotate: "-4deg" };
-    if (diff === 1)  return { translateX: "70px",    scale: 0.88, z: 20, opacity: 0.55, rotate: "4deg" };
-    if (diff === -2) return { translateX: "-130px",  scale: 0.76, z: 10, opacity: 0.30, rotate: "-8deg" };
-    if (diff === 2)  return { translateX: "130px",   scale: 0.76, z: 10, opacity: 0.30, rotate: "8deg" };
-    return { translateX: diff < 0 ? "-180px" : "180px", scale: 0.65, z: 0, opacity: 0.12, rotate: diff < 0 ? "-12deg" : "12deg" };
+    const wrap = C_PROJECTS.length;
+    const d = ((diff + wrap) % wrap) <= wrap / 2
+      ? ((diff + wrap) % wrap)
+      : ((diff + wrap) % wrap) - wrap;
+    if (d === 0)  return { x: "0px",     scale: 1,    z: 40, op: 1,    rot: "0deg"  };
+    if (d === -1) return { x: "-80px",   scale: 0.86, z: 30, op: 0.55, rot: "-5deg" };
+    if (d === 1)  return { x: "80px",    scale: 0.86, z: 30, op: 0.55, rot: "5deg"  };
+    if (d === -2) return { x: "-148px",  scale: 0.72, z: 20, op: 0.28, rot: "-10deg"};
+    if (d === 2)  return { x: "148px",   scale: 0.72, z: 20, op: 0.28, rot: "10deg" };
+    return { x: d < 0 ? "-200px" : "200px", scale: 0.6, z: 0, op: 0.08, rot: d < 0 ? "-14deg" : "14deg" };
   };
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "#080808" }}>
+    <div className="flex flex-col" style={{ background: "#080808", minHeight: "100vh" }}>
 
-      {/* ── Header bar ── */}
-      <div className="px-7 pt-5 pb-4 flex items-center justify-between border-b" style={{ borderColor: "#1a1a1a" }}>
+      {/* ── Minimal header ── */}
+      <div className="px-8 pt-6 pb-5 flex items-end justify-between"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] mb-0.5" style={{ color: "#00ffe0" }}>
-            Creative Studio
+          <p className="text-[9px] font-bold uppercase tracking-[0.4em] mb-1.5"
+            style={{ color: "rgba(255,255,255,0.28)" }}>
+            Portfolio Studio
           </p>
-          <h1 className="text-[22px] font-black tracking-tight text-white">
-            {firstName ? `${firstName}'s Studio` : "Creative Studio"}
+          <h1 className="text-[28px] font-black tracking-[-0.02em] text-white leading-none">
+            {firstName ? `${firstName}'s Work` : "Creative Work"}
           </h1>
         </div>
-        <div className="flex items-center gap-5 text-[11px]" style={{ color: "#555" }}>
-          <span><span className="font-black text-white text-sm">{activeCount}</span> active</span>
-          <span className="w-px h-4 bg-[#222]" />
-          <span><span className="font-black text-white text-sm">{nbaItems.length}</span> tasks</span>
-          <span className="w-px h-4 bg-[#222]" />
-          <span><span className="font-black text-white text-sm">{doneCount}</span> done</span>
+        <div className="flex items-center gap-6 pb-1">
+          {[
+            { to: "/crm",       label: "Clients" },
+            { to: "/projects",  label: "Projects" },
+            { to: "/marketing", label: "Campaigns" },
+          ].map(({ to, label }) => (
+            <Link key={to} to={to}
+              className="text-[11px] font-semibold uppercase tracking-[0.18em] transition-colors hover:text-white"
+              style={{ color: "rgba(255,255,255,0.32)" }}>
+              {label}
+            </Link>
+          ))}
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto">
-        {/* ── Featured hero + carousel ── */}
-        <div className="flex flex-col lg:flex-row gap-0" style={{ minHeight: 440 }}>
+      {/* ── Cinematic hero + Carousel ── */}
+      <div className="flex flex-col lg:flex-row" style={{ height: "68vh", minHeight: 500 }}>
 
-          {/* Left: large featured photo card */}
-          <Link to="/initiatives" className="relative flex-1 overflow-hidden group"
-            style={{ minHeight: 380, display: "block" }}>
-            <img
-              src={featured.photo}
-              alt={featured.title}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            {/* Dark overlay */}
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #000000ee 0%, #00000055 50%, transparent 100%)" }} />
-            {/* Electric glow line at top */}
-            <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: featured.accent, boxShadow: `0 0 20px ${featured.accent}` }} />
-            <div className="absolute inset-0 p-8 flex flex-col justify-end z-10">
-              <span className="text-[9px] font-bold uppercase tracking-[0.32em] mb-2" style={{ color: featured.accent }}>
-                Featured Project
+        {/* Left: full-bleed hero image */}
+        <Link to="/initiatives"
+          className="relative overflow-hidden group flex-1"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}>
+
+          {/* Photo transition */}
+          {C_PROJECTS.map((p, i) => (
+            <img key={p.id} src={p.photo} alt={p.title}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                opacity: i === activeCard ? 1 : 0,
+                transition: "opacity 0.9s ease-in-out, transform 6s ease",
+                transform: i === activeCard ? "scale(1.04)" : "scale(1.0)",
+              }} />
+          ))}
+
+          {/* Layered gradients */}
+          <div className="absolute inset-0"
+            style={{ background: "linear-gradient(to right, rgba(0,0,0,0.55) 0%, transparent 50%)" }} />
+          <div className="absolute inset-0"
+            style={{ background: "linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.2) 45%, transparent 100%)" }} />
+
+          {/* Accent glow line — bottom */}
+          <div className="absolute bottom-0 left-0 right-0 h-px"
+            style={{
+              background: featured.accent,
+              boxShadow: `0 0 40px 6px ${featured.accent}80`,
+              transition: "background 0.6s, box-shadow 0.6s",
+            }} />
+
+          {/* Text — bottom left, cinematic */}
+          <div className="absolute inset-0 flex flex-col justify-end p-10 z-10">
+            <div className="mb-3 flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full"
+                style={{ background: featured.accent, boxShadow: `0 0 10px ${featured.accent}` }} />
+              <span className="text-[9px] font-bold uppercase tracking-[0.45em]"
+                style={{ color: featured.accent }}>
+                {featured.status}
               </span>
-              <h2 className="text-3xl font-black text-white leading-tight mb-1.5">{featured.title}</h2>
-              <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.55)" }}>{featured.client}</p>
-              <div className="flex items-center gap-3">
-                <span className="px-3 py-1 rounded-full text-[10px] font-bold border"
-                  style={{ borderColor: `${featured.accent}55`, color: featured.accent, background: `rgba(${featured.accentRgb},0.10)` }}>
-                  {featured.status}
-                </span>
-                <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.40)" }}>View initiative →</span>
-              </div>
             </div>
-          </Link>
+            <h2 className="text-white font-black leading-none mb-2"
+              style={{ fontSize: "clamp(2.4rem, 5vw, 4rem)", letterSpacing: "-0.03em" }}>
+              {featured.title}
+            </h2>
+            <p className="text-[13px] font-light tracking-[0.12em] uppercase"
+              style={{ color: "rgba(255,255,255,0.4)" }}>
+              {featured.client}
+            </p>
+            <div className="mt-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+              <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.6)" }}>
+                View project
+              </span>
+              <ArrowRight className="w-3.5 h-3.5" style={{ color: "rgba(255,255,255,0.6)" }} />
+            </div>
+          </div>
 
-          {/* Right: 3D carousel */}
-          <div className="relative flex items-center justify-center overflow-hidden"
-            style={{ width: "100%", maxWidth: 460, minHeight: 380, background: "#0a0a0a" }}>
+          {/* Project counter — top right */}
+          <div className="absolute top-8 right-8 text-right z-10">
+            <span className="text-[10px] font-black tabular-nums" style={{ color: featured.accent }}>
+              {String(activeCard + 1).padStart(2, "0")}
+            </span>
+            <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.18)" }}>
+              /{String(C_PROJECTS.length).padStart(2, "0")}
+            </span>
+          </div>
+        </Link>
 
-            {/* Ambient glow behind active card */}
-            <div className="absolute inset-0 pointer-events-none"
-              style={{ background: `radial-gradient(ellipse 60% 60% at 50% 50%, rgba(${featured.accentRgb},0.08) 0%, transparent 70%)`, transition: "background 0.5s" }} />
+        {/* Right: 3D fan carousel — enlarged, dramatic */}
+        <div
+          className="relative flex flex-col items-center justify-center overflow-hidden"
+          style={{ width: "100%", maxWidth: 420, background: "#050505" }}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}>
 
-            {/* Cards fan */}
-            <div className="relative flex items-center justify-center" style={{ height: 300, width: "100%", perspective: "900px" }}>
-              {C_PROJECTS.map((p, i) => {
-                const pos = cardOffset(i);
-                return (
-                  <button key={p.id} onClick={() => setActiveCard(i)}
-                    className="absolute rounded-2xl overflow-hidden cursor-pointer border-2"
-                    style={{
-                      width: 160, height: 240,
-                      transform: `translateX(${pos.translateX}) scale(${pos.scale}) rotate(${pos.rotate})`,
-                      zIndex: pos.z,
-                      opacity: pos.opacity,
-                      transition: "all 0.45s cubic-bezier(.4,0,.2,1)",
-                      borderColor: i === activeCard ? p.accent : "transparent",
-                      boxShadow: i === activeCard ? `0 0 32px rgba(${p.accentRgb},0.45), 0 0 8px rgba(${p.accentRgb},0.25)` : "0 8px 40px rgba(0,0,0,0.8)",
-                    }}>
-                    <img src={p.photo} alt={p.title} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #000000cc 0%, transparent 55%)" }} />
-                    <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
-                      <div className="text-[11px] font-black text-white leading-tight">{p.title}</div>
-                      <div className="text-[9px] mt-0.5" style={{ color: p.accent }}>{p.client}</div>
+          {/* Ambient colour wash */}
+          <div className="absolute inset-0 pointer-events-none transition-all duration-700"
+            style={{
+              background: `radial-gradient(ellipse 70% 70% at 50% 48%, rgba(${featured.accentRgb},0.10) 0%, transparent 72%)`,
+            }} />
+
+          {/* Fan cards */}
+          <div className="relative flex items-center justify-center"
+            style={{ height: 340, width: "100%", perspective: "1100px" }}>
+            {C_PROJECTS.map((p, i) => {
+              const pos = cardOffset(i);
+              return (
+                <button key={p.id}
+                  onClick={() => { setActiveCard(i); setPaused(true); setTimeout(() => setPaused(false), 6000); }}
+                  className="absolute rounded-xl overflow-hidden cursor-pointer border"
+                  style={{
+                    width: 175, height: 265,
+                    transform: `translateX(${pos.x}) scale(${pos.scale}) rotate(${pos.rot})`,
+                    zIndex: pos.z,
+                    opacity: pos.op,
+                    transition: "all 0.5s cubic-bezier(.4,0,.2,1)",
+                    borderColor: i === activeCard ? p.accent : "rgba(255,255,255,0.05)",
+                    boxShadow: i === activeCard
+                      ? `0 0 48px rgba(${p.accentRgb},0.5), 0 0 12px rgba(${p.accentRgb},0.3), 0 24px 60px rgba(0,0,0,0.9)`
+                      : "0 12px 48px rgba(0,0,0,0.85)",
+                  }}>
+                  <img src={p.photo} alt={p.title} className="w-full h-full object-cover" />
+                  {/* Overlay */}
+                  <div className="absolute inset-0"
+                    style={{ background: "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)" }} />
+                  {/* Active accent bar */}
+                  {i === activeCard && (
+                    <div className="absolute top-0 left-0 right-0 h-0.5"
+                      style={{ background: p.accent, boxShadow: `0 0 12px ${p.accent}` }} />
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
+                    <div className="text-[12px] font-black text-white leading-tight truncate">{p.title}</div>
+                    <div className="text-[9px] mt-0.5 font-medium tracking-wide truncate" style={{ color: p.accent }}>
+                      {p.client}
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
 
+          {/* Progress bar + dots */}
+          <div className="absolute bottom-10 flex flex-col items-center gap-3 w-full px-8">
+            {/* Animated progress bar */}
+            <div className="w-full h-px rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+              <div className="h-full rounded-full transition-all duration-500"
+                style={{
+                  width: `${((activeCard + 1) / C_PROJECTS.length) * 100}%`,
+                  background: featured.accent,
+                  boxShadow: `0 0 8px ${featured.accent}`,
+                }} />
+            </div>
             {/* Dot indicators */}
-            <div className="absolute bottom-5 flex items-center gap-2">
+            <div className="flex items-center gap-2">
               {C_PROJECTS.map((p, i) => (
                 <button key={i} onClick={() => setActiveCard(i)}
-                  className="rounded-full transition-all duration-300"
+                  className="rounded-full transition-all duration-400"
                   style={{
-                    width: i === activeCard ? 20 : 6, height: 6,
-                    background: i === activeCard ? featured.accent : "#333",
-                    boxShadow: i === activeCard ? `0 0 8px ${featured.accent}` : "none",
+                    width: i === activeCard ? 22 : 5,
+                    height: 5,
+                    background: i === activeCard ? featured.accent : "rgba(255,255,255,0.18)",
+                    boxShadow: i === activeCard ? `0 0 10px ${featured.accent}` : "none",
                   }} />
               ))}
             </div>
-
-            {/* Prev / Next */}
-            <button onClick={() => setActiveCard(i => Math.max(0, i - 1))}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:bg-white/10"
-              style={{ background: "#111", border: "1px solid #2a2a2a" }}>
-              <ChevronLeft className="w-4 h-4 text-white" />
-            </button>
-            <button onClick={() => setActiveCard(i => Math.min(C_PROJECTS.length - 1, i + 1))}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:bg-white/10"
-              style={{ background: "#111", border: "1px solid #2a2a2a" }}>
-              <ChevronRight className="w-4 h-4 text-white" />
-            </button>
           </div>
+
+          {/* Prev / Next — minimal */}
+          <button
+            onClick={() => setActiveCard(i => (i - 1 + C_PROJECTS.length) % C_PROJECTS.length)}
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:bg-white/10"
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <ChevronLeft className="w-4 h-4 text-white" />
+          </button>
+          <button
+            onClick={() => setActiveCard(i => (i + 1) % C_PROJECTS.length)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:bg-white/10"
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <ChevronRight className="w-4 h-4 text-white" />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Gallery grid — editorial, asymmetric ── */}
+      <div className="px-0 py-0">
+        {/* Section label */}
+        <div className="px-8 pt-8 pb-5 flex items-center justify-between">
+          <p className="text-[9px] font-bold uppercase tracking-[0.42em]"
+            style={{ color: "rgba(255,255,255,0.22)" }}>
+            Selected Works
+          </p>
+          <Link to="/projects"
+            className="text-[10px] font-semibold uppercase tracking-[0.2em] transition-opacity hover:opacity-100"
+            style={{ color: "rgba(255,255,255,0.28)" }}>
+            All Projects →
+          </Link>
         </div>
 
-        {/* ── Bottom row: stats + tasks + nav ── */}
-        <div className="p-5 grid grid-cols-12 gap-4">
-
-          {/* Stat strip */}
-          {[
-            { label: "Active",  value: activeCount,     accent: "#00ffe0", icon: Rocket },
-            { label: "Drafts",  value: draftCount,      accent: "#bf80ff", icon: FileText },
-            { label: "Tasks",   value: nbaItems.length, accent: "#ff6b35", icon: ListChecks },
-            { label: "Done",    value: doneCount,        accent: "#ffdd00", icon: CheckCircle },
-          ].map(({ label, value, accent, icon: Icon }) => (
-            <div key={label} className="col-span-6 lg:col-span-3 rounded-2xl p-4 flex items-center gap-3"
-              style={{ background: "#111", border: "1px solid #1e1e1e" }}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: `${accent}18` }}>
-                <Icon className="w-4 h-4" style={{ color: accent }} />
-              </div>
-              <div>
-                <div className="text-2xl font-black leading-none" style={{ color: accent }}>{value}</div>
-                <div className="text-[10px] font-medium mt-0.5" style={{ color: "#555" }}>{label}</div>
-              </div>
-            </div>
-          ))}
-
-          {/* Open tasks */}
-          <div className="col-span-12 lg:col-span-5 rounded-2xl p-4 overflow-hidden"
-            style={{ background: "#111", border: "1px solid #1e1e1e" }}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-sm font-bold text-white">Open Tasks</span>
-              <Link to="/action-items" className="text-[11px] font-semibold" style={{ color: "#00ffe0" }}>All →</Link>
-            </div>
-            {nbaItems.length === 0
-              ? <p className="text-xs py-3 text-center" style={{ color: "#444" }}>All tasks are clear.</p>
-              : <div className="space-y-1.5">
-                  {nbaItems.slice(0, 4).map((item, i) => (
-                    <div key={i} className="flex items-center gap-2.5 px-3 py-2 rounded-xl" style={{ background: "#161616" }}>
-                      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: C_PROJECTS[i % 4].accent }} />
-                      <p className="text-xs flex-1 min-w-0 truncate" style={{ color: "#ccc" }}>{item.title}</p>
-                      {item.priority && (
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
-                          style={{
-                            background: item.priority?.toLowerCase() === "high" ? "#ff6b3520" : "#1e1e1e",
-                            color: item.priority?.toLowerCase() === "high" ? "#ff6b35" : "#555",
-                          }}>
-                          {item.priority}
-                        </span>
-                      )}
-                    </div>
-                  ))}
+        {/* Asymmetric CSS grid */}
+        <div
+          className="grid px-4 pb-8 gap-3"
+          style={{ gridTemplateColumns: "repeat(4, 1fr)", gridAutoRows: "200px" }}>
+          {C_PROJECTS.map((p, i) => {
+            const layouts = [
+              "col-span-2 row-span-2",  // 0: large square
+              "col-span-1 row-span-1",  // 1: small
+              "col-span-1 row-span-1",  // 2: small
+              "col-span-1 row-span-2",  // 3: portrait
+              "col-span-2 row-span-1",  // 4: landscape
+              "col-span-1 row-span-1",  // 5: small
+            ];
+            return (
+              <button key={p.id}
+                className={cn("relative overflow-hidden rounded-xl group cursor-pointer", layouts[i])}
+                onClick={() => { setActiveCard(i); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                onMouseEnter={() => setHoveredGallery(i)}
+                onMouseLeave={() => setHoveredGallery(null)}>
+                <img src={p.photo} alt={p.title}
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                />
+                {/* Default dim overlay */}
+                <div className="absolute inset-0 transition-opacity duration-400"
+                  style={{ background: "rgba(0,0,0,0.25)", opacity: hoveredGallery === i ? 0 : 1 }} />
+                {/* Hover overlay — full info reveal */}
+                <div className="absolute inset-0 flex flex-col justify-end p-5 transition-opacity duration-400"
+                  style={{
+                    background: `linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.4) 55%, transparent 100%)`,
+                    opacity: hoveredGallery === i ? 1 : 0,
+                  }}>
+                  <div className="w-6 h-px mb-3 rounded-full" style={{ background: p.accent }} />
+                  <p className="text-white font-black text-sm leading-tight mb-1">{p.title}</p>
+                  <p className="text-[10px] font-medium tracking-[0.12em] uppercase"
+                    style={{ color: p.accent }}>
+                    {p.client}
+                  </p>
                 </div>
-            }
-          </div>
-
-          {/* Quick nav */}
-          <div className="col-span-12 lg:col-span-7 grid grid-cols-3 gap-3">
-            {[
-              { to: "/crm",          label: "Portfolio", sub: "Clients",   accent: "#00ffe0", icon: Users },
-              { to: "/marketing",    label: "Outreach",  sub: "Campaigns", accent: "#bf80ff", icon: TrendingUp },
-              { to: "/action-items", label: "My Work",   sub: "Actions",   accent: "#ff6b35", icon: Zap },
-            ].map(({ to, label, sub, accent, icon: Icon }) => (
-              <Link key={to} to={to}
-                className="rounded-2xl p-4 flex flex-col gap-2 transition-all hover:opacity-80 group"
-                style={{ background: "#111", border: "1px solid #1e1e1e" }}>
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-                  style={{ background: `${accent}18` }}>
-                  <Icon className="w-4 h-4" style={{ color: accent }} />
-                </div>
-                <div className="mt-auto">
-                  <div className="text-sm font-black text-white">{label}</div>
-                  <div className="text-[11px] mt-0.5" style={{ color: "#555" }}>{sub}</div>
-                </div>
-                <div className="h-px w-8 group-hover:w-full transition-all duration-300 rounded-full" style={{ background: accent }} />
-              </Link>
-            ))}
-          </div>
+                {/* Always-visible accent corner dot on active */}
+                {i === activeCard && (
+                  <div className="absolute top-3 right-3 w-2 h-2 rounded-full"
+                    style={{ background: p.accent, boxShadow: `0 0 8px ${p.accent}` }} />
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

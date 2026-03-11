@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "wS-o4-2o5z-CVW6FnDQsH"
+uri = "file://public/martin-pmo-readiness-report.md"
+type = "text"
+title = "Martin PMO — Product Readiness Report"

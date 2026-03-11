@@ -1,26 +1,19 @@
 /**
  * Auth — Sign in / Sign up / Forgot password
- * Email + password only. OAuth buttons removed (providers not configured in Supabase).
+ * Google OAuth (primary) + Microsoft SSO + email/password fallback
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Tag, CheckCircle, AlertCircle } from "lucide-react";
-import { SiReplit } from "react-icons/si";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Tag, CheckCircle, AlertCircle, Building2 } from "lucide-react";
+import { SiGoogle } from "react-icons/si";
 
 type Mode = "signin" | "signup" | "forgot";
 
 export default function AuthPage() {
   const navigate = useNavigate();
-  const { signIn, signUp, resetPassword } = useAuth();
-  const { signInWithReplit: authSignInWithReplit } = useAuth();
-  
-  // Use the local wrapper for better error handling/logging
-  const handleReplitSignIn = () => {
-    console.log("Replit login button clicked");
-    authSignInWithReplit();
-  };
+  const { signIn, signUp, resetPassword, signInWithGoogle } = useAuth();
 
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
@@ -28,18 +21,30 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const signInWithReplit = () => {
-    try {
-      console.log("Initiating Replit Auth...");
-      const domain = window.location.host;
-      window.location.href = `https://replit.com/auth_with_repl_site?domain=${domain}`;
-    } catch (err) {
-      console.error("Replit Auth redirect failed:", err);
-      setError("Could not redirect to Replit Auth. Ensure you are viewing this through a Replit domain.");
+  const handleGoogleSignIn = async () => {
+    setError(null);
+    setOauthLoading("google");
+    const { error: err } = await signInWithGoogle();
+    if (err) {
+      setError("Google sign-in failed. Please try email login or contact support.");
+      setOauthLoading(null);
     }
+    // On success, Supabase redirects — no need to do anything
+  };
+
+  const handleMicrosoftSignIn = () => {
+    setError(null);
+    setOauthLoading("microsoft");
+    // Placeholder — Microsoft/SAML SSO requires Azure AD app registration
+    // and Supabase Enterprise SSO configuration
+    setTimeout(() => {
+      setError("Microsoft SSO is available on the Command & Enterprise plans. Contact us at sso@martinpmo.com to configure your tenant.");
+      setOauthLoading(null);
+    }, 600);
   };
 
   async function handleSubmit(e: React.FormEvent) {
@@ -57,9 +62,14 @@ export default function AuthPage() {
     }
 
     if (mode === "signup") {
-      const { error: err } = await signUp(email, password);
+      const { data, error: err } = await signUp(email, password);
       if (err) { setError(err.message); setLoading(false); return; }
-      setSuccess("Account created! Check your email to confirm, then come back to sign in. Check spam if you don't see it.");
+      // If session returned immediately, Supabase has email confirmation disabled
+      if ((data as any)?.session) {
+        navigate("/");
+        return;
+      }
+      setSuccess("Check your inbox for a confirmation link — then come back to sign in. (Check spam if it doesn't arrive.)");
       setMode("signin");
       setLoading(false);
       return;
@@ -68,9 +78,9 @@ export default function AuthPage() {
     const { error: err } = await signIn(email, password);
     if (err) {
       if (err.message.toLowerCase().includes("email not confirmed")) {
-        setError("Please confirm your email first. Check your inbox (and spam folder) for the confirmation link.");
+        setError("Please confirm your email first. Check your inbox (and spam) for the confirmation link.");
       } else if (err.message.toLowerCase().includes("invalid login")) {
-        setError("Incorrect email or password. Please try again.");
+        setError("Incorrect email or password.");
       } else {
         setError(err.message);
       }
@@ -146,20 +156,51 @@ export default function AuthPage() {
             </div>
           )}
 
-          <div className="p-6 space-y-4">
-            {/* Replit Auth Button */}
-            <div className="grid grid-cols-1 gap-3 mb-2">
+          <div className="p-6 space-y-3">
+
+            {/* ── OAuth buttons ── */}
+            <div className="space-y-2.5">
+              {/* Google */}
               <button
                 type="button"
-                onClick={handleReplitSignIn}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-border bg-background hover:bg-secondary transition-all font-semibold text-sm group"
+                onClick={handleGoogleSignIn}
+                disabled={oauthLoading !== null}
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-border bg-background hover:bg-secondary transition-all font-semibold text-sm group disabled:opacity-60"
               >
-                <SiReplit className="w-5 h-5 text-[#F26207] group-hover:scale-110 transition-transform" />
-                Continue with Replit
+                {oauthLoading === "google" ? (
+                  <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+                ) : (
+                  <SiGoogle className="w-4 h-4 text-[#EA4335] group-hover:scale-110 transition-transform" />
+                )}
+                Continue with Google
+              </button>
+
+              {/* Microsoft / SSO */}
+              <button
+                type="button"
+                onClick={handleMicrosoftSignIn}
+                disabled={oauthLoading !== null}
+                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-border bg-background hover:bg-secondary transition-all font-semibold text-sm group disabled:opacity-60"
+              >
+                {oauthLoading === "microsoft" ? (
+                  <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+                ) : (
+                  <svg width="16" height="16" viewBox="0 0 21 21" className="flex-shrink-0 group-hover:scale-110 transition-transform">
+                    <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
+                    <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                    <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
+                    <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                  </svg>
+                )}
+                <span>Continue with Microsoft</span>
+                <span className="ml-auto text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
+                  style={{ background: "hsl(var(--electric-blue) / 0.12)", color: "hsl(var(--electric-blue))" }}>
+                  SSO / SAML
+                </span>
               </button>
             </div>
 
-            <div className="relative mb-4">
+            <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-border" />
               </div>
@@ -184,7 +225,7 @@ export default function AuthPage() {
               </div>
             )}
 
-            {/* Form */}
+            {/* Email/password form */}
             <form onSubmit={handleSubmit} className="space-y-3">
               {mode === "signup" && (
                 <div className="relative">
@@ -235,7 +276,7 @@ export default function AuthPage() {
 
               {mode === "signup" && (
                 <p className="text-[11px] text-muted-foreground px-1 leading-relaxed">
-                  After signing up, check your email for a confirmation link. Check your spam folder if it doesn't arrive within a minute.
+                  Prefer instant access? Use Google sign-in above — no email confirmation needed.
                 </p>
               )}
 
@@ -274,6 +315,15 @@ export default function AuthPage() {
                 ← Back to sign in
               </button>
             )}
+
+            {/* Enterprise SSO note */}
+            <div className="flex items-center gap-2 rounded-xl px-3 py-2.5 mt-1"
+              style={{ background: "hsl(var(--electric-blue) / 0.04)", border: "1px solid hsl(var(--electric-blue) / 0.12)" }}>
+              <Building2 className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "hsl(var(--electric-blue))" }} />
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                <span className="font-semibold text-foreground">Enterprise SAML/SSO</span> — Okta, Azure AD, and custom IdP available on Command+ plans.
+              </p>
+            </div>
           </div>
         </div>
 
