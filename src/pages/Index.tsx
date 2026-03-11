@@ -484,14 +484,14 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
       <UpgradeBanner storageKey="dash_upgrade_banner" />
       <div className="flex-1 p-6 max-w-3xl mx-auto w-full space-y-6">
         <div className="rounded-2xl border p-6" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
-          <div className="flex items-center justify-between mb-4">
-            <div>
+          <div className="relative flex items-center justify-center mb-4">
+            <div className="text-center">
               <h1 className="text-2xl font-black text-foreground mb-1">
                 {firstName ? `Welcome back, ${firstName}.` : "Welcome back."}
               </h1>
               <p className="text-sm text-muted-foreground">Here's what needs your attention today.</p>
             </div>
-            <div className="w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--electric-blue) / 0.1)" }}>
+            <div className="absolute right-0 w-11 h-11 rounded-2xl flex items-center justify-center" style={{ background: "hsl(var(--electric-blue) / 0.1)" }}>
               <Zap className="w-5 h-5 text-electric-blue" />
             </div>
           </div>

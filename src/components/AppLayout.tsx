@@ -405,10 +405,14 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
               ))}
             </div>
 
-            <div className="mt-3">
+            <div className="mt-3 rounded-2xl p-1.5" style={{
+              background: "hsl(220 55% 97% / 0.07)",
+              border: "1px solid hsl(220 60% 95% / 0.09)",
+              boxShadow: "inset 0 1px 0 hsl(0 0% 100% / 0.06), 0 1px 3px hsl(220 40% 5% / 0.2)"
+            }}>
               {!collapsed && (
-                <p className="text-[9px] font-bold uppercase tracking-[0.22em] px-2 pb-1 pt-2"
-                  style={{ color: "hsl(0 0% 100% / 0.18)" }}>
+                <p className="text-[9px] font-bold uppercase tracking-[0.22em] px-2 pb-1 pt-1.5"
+                  style={{ color: "hsl(220 60% 90% / 0.45)" }}>
                   Tools
                 </p>
               )}
@@ -419,21 +423,21 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                   className={({ isActive }) =>
                     cn(
                       "flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 group relative",
-                      !isActive && "hover:bg-white/[0.04]"
+                      !isActive && "hover:bg-white/[0.07]"
                     )
                   }
                   style={({ isActive }) => ({
-                    background: isActive ? "hsl(272 60% 52% / 0.12)" : undefined,
+                    background: isActive ? "hsl(272 60% 52% / 0.14)" : undefined,
                     boxShadow: isActive ? "inset 2px 0 0 hsl(272 60% 52% / 0.65)" : undefined,
                   })}>
                   {({ isActive }) => (
                     <>
                       <Icon className="w-4 h-4 flex-shrink-0"
-                        style={{ color: isActive ? "hsl(272 60% 68%)" : "hsl(0 0% 100% / 0.38)" }} />
+                        style={{ color: isActive ? "hsl(272 60% 68%)" : "hsl(220 50% 92% / 0.45)" }} />
                       {!collapsed && (
                         <>
                           <span className="flex-1 truncate"
-                            style={{ color: isActive ? "#fff" : "hsl(0 0% 100% / 0.58)" }}>
+                            style={{ color: isActive ? "#fff" : "hsl(220 20% 88% / 0.65)" }}>
                             {label}
                           </span>
                           {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(272 60% 52%)" }} />}

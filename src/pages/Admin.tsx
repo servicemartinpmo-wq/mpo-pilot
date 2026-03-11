@@ -103,14 +103,14 @@ export default function Admin() {
     <div className="p-6 space-y-6 max-w-none">
 
       {/* ── Header ── */}
-      <div className="flex items-start justify-between">
-        <div>
+      <div className="relative flex items-center justify-center">
+        <div className="text-center">
           <h1 className="text-2xl font-black text-foreground mb-1 tracking-tight">Systems</h1>
           <p className="text-sm text-muted-foreground font-medium">
             Operational nerve center · Analytics · Authority Matrix · Signal Detection · Quality Control
           </p>
         </div>
-        <div className="flex gap-2 text-xs">
+        <div className="absolute right-0 flex gap-2 text-xs">
           <span className="bg-signal-yellow/10 text-signal-yellow border border-signal-yellow/30 px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" />{pendingActions} Pending
           </span>
