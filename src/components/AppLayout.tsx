@@ -462,6 +462,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
       <div
         className="min-h-screen flex flex-col"
         style={{
+          paddingTop: 28,
           ...Object.fromEntries(Object.entries({
             "--background": "36 35% 97%", "--foreground": "20 25% 14%",
             "--card": "0 0% 100%", "--card-foreground": "20 25% 14%",
@@ -595,7 +596,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   }
 
   return (
-    <div className="pmo-grid" style={{ gridTemplateColumns: `${sidebarWidth}px 1fr`, ...(theme.cssVars as React.CSSProperties) }}>
+    <div className="pmo-grid" style={{ gridTemplateColumns: `${sidebarWidth}px 1fr`, paddingTop: 28, ...(theme.cssVars as React.CSSProperties) }}>
 
       {/* ── Sidebar ── */}
       <aside

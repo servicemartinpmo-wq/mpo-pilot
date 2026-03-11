@@ -3,10 +3,12 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import AppLayout from "./components/AppLayout";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import VoiceCommand from "./components/VoiceCommand";
+import CommandPalette from "./components/CommandPalette";
+import TopStatusBar from "./components/TopStatusBar";
 import Index from "./pages/Index";
 import Initiatives from "./pages/Initiatives";
 import Diagnostics from "./pages/Diagnostics";
@@ -47,6 +49,21 @@ function AppRoutes() {
   const { user, profile, loading, updateProfile } = useAuth();
   const [seeded, setSeeded] = useState(false);
   const [onboardingDone, setOnboardingDone] = useState(false);
+  const [cmdOpen, setCmdOpen] = useState(false);
+
+  const openCmd = useCallback(() => setCmdOpen(true), []);
+  const closeCmd = useCallback(() => setCmdOpen(false), []);
+
+  useEffect(() => {
+    const handle = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setCmdOpen(v => !v);
+      }
+    };
+    window.addEventListener("keydown", handle);
+    return () => window.removeEventListener("keydown", handle);
+  }, []);
 
   // Keep all live data in sync via Supabase realtime channels
   useRealtimeSync(user?.id);
@@ -141,7 +158,10 @@ function AppRoutes() {
   };
 
   return (
-    <Routes>
+    <>
+      <TopStatusBar onOpenCommandPalette={openCmd} />
+      <CommandPalette open={cmdOpen} onClose={closeCmd} />
+      <Routes>
       <Route path="/auth" element={<Navigate to="/" replace />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/*" element={
@@ -179,6 +199,7 @@ function AppRoutes() {
         </AppLayout>
       } />
     </Routes>
+    </>
   );
 }
 

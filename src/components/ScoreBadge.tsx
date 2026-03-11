@@ -1,5 +1,16 @@
 import { cn } from "@/lib/utils";
 import type { SignalLevel, MaturityTier } from "@/lib/pmoData";
+import {
+  Tooltip, TooltipContent, TooltipTrigger
+} from "@/components/ui/tooltip";
+
+function scoreReason(score: number): string {
+  if (score >= 85) return "High performance — operating above expectations in this area.";
+  if (score >= 75) return "On track — performing within healthy range with room to grow.";
+  if (score >= 60) return "Developing — some gaps exist, worth monitoring closely.";
+  if (score >= 45) return "Needs attention — meaningful gaps that should be addressed soon.";
+  return "At risk — immediate focus required to prevent further decline.";
+}
 
 interface ScoreBadgeProps {
   score: number;
@@ -25,10 +36,17 @@ const barClasses: Record<SignalLevel, string> = {
 export function ScoreBadge({ score, signal, size = "md", showLabel = false }: ScoreBadgeProps) {
   const sizeClass = size === "sm" ? "text-xs px-1.5 py-0.5" : size === "lg" ? "text-lg px-3 py-1" : "text-sm px-2 py-0.5";
   return (
-    <span className={cn("rounded border font-mono font-semibold", sizeClass, signalClasses[signal])}>
-      {score}
-      {showLabel && <span className="text-xs font-normal ml-0.5 opacity-70">/100</span>}
-    </span>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className={cn("rounded border font-mono font-semibold cursor-help relative", sizeClass, signalClasses[signal])}>
+          {score}
+          {showLabel && <span className="text-xs font-normal ml-0.5 opacity-70">/100</span>}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-[200px] text-center text-xs">
+        {scoreReason(score)}
+      </TooltipContent>
+    </Tooltip>
   );
 }
 

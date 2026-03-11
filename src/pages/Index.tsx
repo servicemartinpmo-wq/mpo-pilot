@@ -3,6 +3,8 @@ import { insights, actionItems, initiatives } from "@/lib/pmoData";
 import pmoLogoLight from "@/assets/pmo-logo-light.png";
 import onboardNetwork from "@/assets/onboard-network.png";
 import InsightCard from "@/components/InsightCard";
+import ProgressRing from "@/components/ProgressRing";
+import DeltaPill from "@/components/DeltaPill";
 import CompanyHealthScore from "@/components/CompanyHealthScore";
 import StrategyScoreCard from "@/components/StrategyScoreCard";
 import UpgradeBanner from "@/components/UpgradeBanner";
@@ -913,14 +915,12 @@ function ExecutiveDashboard({
           </div>
           {/* Big score */}
           <div className="px-5 py-5 flex items-center gap-5 border-b" style={{ borderColor: border }}>
-            <div className="relative w-20 h-20 flex-shrink-0">
-              <div className="absolute inset-0 rounded-full" style={{
-                background: `conic-gradient(hsl(213 90% 62%) ${orgHealth * 3.6}deg, hsl(224 20% 22%) 0deg)`,
-              }} />
-              <div className="absolute inset-2 rounded-full flex items-center justify-center" style={{ background: card }}>
-                <span className="text-lg font-black font-mono" style={{ color: "hsl(213 90% 62%)" }}>{orgHealth}</span>
-              </div>
-            </div>
+            <ProgressRing
+              value={orgHealth} size={88} strokeWidth={8}
+              color="hsl(213 90% 62%)"
+              trackColor="hsl(224 20% 22%)"
+              animDelay={200}
+            />
             <div>
               <div className="text-2xl font-black" style={{ color: white }}>{orgHealth}%</div>
               <div className="text-xs mt-0.5" style={{ color: muted }}>Overall organizational health</div>

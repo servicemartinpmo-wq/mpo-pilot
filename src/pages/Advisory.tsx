@@ -3,6 +3,7 @@
  */
 import { useState, useMemo, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { useTypewriter } from "@/hooks/useTypewriter";
 import {
   Brain, Cog, Rocket, Shield, GitBranch, DollarSign, BarChart3,
   Cpu, Headphones, Target, ChevronRight, X, Upload, MessageSquare,
@@ -17,6 +18,11 @@ import { useAuth } from "@/hooks/useAuth";
 
 type AdvisorCategory = "core" | "optional";
 type RequestStatus = "idle" | "submitting" | "submitted";
+
+function TypewriterText({ text, delay = 0 }: { text: string; delay?: number }) {
+  const { text: displayed } = useTypewriter(text, { speed: 14, delay });
+  return <>{displayed}</>;
+}
 
 interface Advisor {
   id: string;
@@ -311,7 +317,9 @@ export default function Advisory() {
                           <span className="text-sm font-bold text-foreground">{rec.title}</span>
                           <span className="text-[10px] text-muted-foreground font-mono bg-secondary px-1.5 py-0.5 rounded flex-shrink-0">{rec.timeToImpact}</span>
                         </div>
-                        <p className="text-xs text-muted-foreground leading-relaxed mb-2">{rec.action}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                          <TypewriterText text={rec.action} delay={200} />
+                        </p>
                         <div className="flex items-center justify-between text-[10px]">
                           <span className="text-muted-foreground">Owner: <span className="font-semibold text-foreground">{rec.owner}</span></span>
                           <span className="text-muted-foreground">{rec.category}</span>

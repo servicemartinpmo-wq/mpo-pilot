@@ -515,3 +515,36 @@
 .animate-slide-in-left {
   animation: slideInLeft 0.35s cubic-bezier(0.4,0,0.2,1) both;
 }
+
+/* ── Card hover lift ── */
+.card-hover {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px hsl(0 0% 0% / 0.10), 0 2px 8px hsl(0 0% 0% / 0.06);
+}
+
+/* ── Focus mode — hover a group to dim siblings ── */
+.focus-group [data-focus-item] {
+  transition: opacity 0.25s ease, filter 0.25s ease;
+}
+.focus-group:has([data-focus-item]:hover) [data-focus-item]:not(:hover) {
+  opacity: 0.38;
+  filter: grayscale(0.25);
+}
+
+/* ── Score tooltip pulse ring ── */
+@keyframes pulse-ring {
+  0%   { transform: scale(0.95); opacity: 0.6; }
+  70%  { transform: scale(1.15); opacity: 0;   }
+  100% { transform: scale(1.15); opacity: 0;   }
+}
+.score-pulse::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  border: 1px solid currentColor;
+  animation: pulse-ring 2.5s cubic-bezier(0.4,0,0.6,1) infinite;
+}

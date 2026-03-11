@@ -4,6 +4,8 @@ import { formatCurrency, getScoreSignal } from "@/lib/pmoData";
 import { ScoreBadge } from "@/components/ScoreBadge";
 import { cn } from "@/lib/utils";
 import { useState, useRef, useCallback } from "react";
+import DeltaPill from "@/components/DeltaPill";
+import ActivityHeatmap from "@/components/ActivityHeatmap";
 import { Paperclip } from "lucide-react";
 import {
   FileText, TrendingUp, AlertTriangle, CheckCircle, BarChart3,
@@ -77,10 +79,13 @@ function SectionCard({ title, icon: Icon, children, accent }: {
   );
 }
 
-function KpiTile({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color: string }) {
+function KpiTile({ label, value, sub, color, delta }: { label: string; value: string | number; sub?: string; color: string; delta?: number }) {
   return (
-    <div className="bg-secondary rounded-xl p-4 border border-border">
-      <div className={cn("text-2xl font-black font-mono mb-1", color)}>{value}</div>
+    <div className="bg-secondary rounded-xl p-4 border border-border card-hover">
+      <div className="flex items-start justify-between gap-1 mb-1">
+        <div className={cn("text-2xl font-black font-mono", color)}>{value}</div>
+        {delta !== undefined && <DeltaPill delta={delta} size="xs" />}
+      </div>
       <div className="text-xs font-semibold text-foreground">{label}</div>
       {sub && <div className="text-[11px] text-muted-foreground mt-0.5">{sub}</div>}
     </div>
@@ -526,12 +531,16 @@ export default function Reports() {
           </div>
 
           {/* Quarter cards */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 focus-group">
             {QUARTERS.map((q, i) => {
               const isCurrentQ = i === QUARTERS.length - 1;
+              const prevQ = i > 0 ? QUARTERS[i - 1] : null;
+              const revDelta = prevQ ? Math.round((q.revenue - prevQ.revenue) * 10) / 10 : undefined;
+              const healthDelta = prevQ ? q.health - prevQ.health : undefined;
+              const completedDelta = prevQ ? q.completed - prevQ.completed : undefined;
               return (
-                <div key={q.q}
-                  className={cn("bg-card rounded-xl border-2 shadow-card overflow-hidden"
+                <div key={q.q} data-focus-item
+                  className={cn("bg-card rounded-xl border-2 shadow-card overflow-hidden card-hover"
                     , isCurrentQ ? "border-electric-blue/30" : "border-border")}
                   style={{ animation: `slideUp 0.45s cubic-bezier(0.4,0,0.2,1) both`, animationDelay: `${i * 80}ms` }}>
                   <div className={cn(
@@ -546,9 +555,9 @@ export default function Reports() {
                   </div>
                   <div className="p-5">
                     <div className="grid grid-cols-3 gap-3 mb-4">
-                      <KpiTile label="Revenue" value={`$${q.revenue}M`} sub="Quarterly" color="text-signal-green" />
-                      <KpiTile label="Org Health" value={q.health} sub="/ 100" color={q.health >= 70 ? "text-signal-green" : q.health >= 55 ? "text-signal-yellow" : "text-signal-red"} />
-                      <KpiTile label="Completed" value={q.completed} sub="Initiatives" color="text-electric-blue" />
+                      <KpiTile label="Revenue" value={`$${q.revenue}M`} sub="Quarterly" color="text-signal-green" delta={revDelta} />
+                      <KpiTile label="Org Health" value={q.health} sub="/ 100" color={q.health >= 70 ? "text-signal-green" : q.health >= 55 ? "text-signal-yellow" : "text-signal-red"} delta={healthDelta} />
+                      <KpiTile label="Completed" value={q.completed} sub="Initiatives" color="text-electric-blue" delta={completedDelta} />
                     </div>
                     <div className="mb-3">
                       <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
@@ -574,6 +583,11 @@ export default function Reports() {
               );
             })}
           </div>
+
+          {/* Activity Heatmap */}
+          <SectionCard title="Execution Activity" icon={Calendar}>
+            <ActivityHeatmap weeks={26} label="Daily action & milestone completions" />
+          </SectionCard>
 
           {/* Quarterly comparison chart */}
           <SectionCard title="Quarterly Performance Comparison" icon={BarChart3}>

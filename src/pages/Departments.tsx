@@ -6,6 +6,16 @@ import { useState } from "react";
 import { X, Target, Shield, FileText, Users, ChevronRight, AlertTriangle, BarChart3, Activity, Loader2 } from "lucide-react";
 import { getScoreSignal } from "@/lib/pmoData";
 import type { MaturityTier } from "@/lib/pmoData";
+import MiniSparkline from "@/components/MiniSparkline";
+
+function mockTrend(current: number, seed: number): number[] {
+  const base = Math.max(current - 12, 10);
+  const step = (current - base) / 5;
+  return [0, 1, 2, 3, 4, 5].map(i => {
+    const noise = ((seed * (i + 7) * 13) % 9) - 4;
+    return Math.min(100, Math.max(10, Math.round(base + step * i + noise)));
+  });
+}
 
 const tiers: MaturityTier[] = ["Foundational", "Developing", "Structured", "Managed", "Optimized"];
 type SortKey = "maturity_score" | "execution_health" | "risk_score" | "capacity_used";
@@ -376,6 +386,9 @@ export default function Departments() {
                   <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide cursor-pointer hover:text-foreground hidden lg:table-cell" onClick={() => toggleSort("risk_score")}>
                     Risk Score {sortKey === "risk_score" ? (sortDir === "desc" ? "↓" : "↑") : ""}
                   </th>
+                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide hidden xl:table-cell">
+                    6-Mo Trend
+                  </th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Lead</th>
                 </tr>
               </thead>
@@ -402,6 +415,14 @@ export default function Departments() {
                       <span className={cn("text-xs font-mono font-bold",
                         (dept.risk_score ?? 0) > 70 ? "text-signal-red" : (dept.risk_score ?? 0) > 50 ? "text-signal-yellow" : "text-signal-green"
                       )}>{dept.risk_score ?? 0}</span>
+                    </td>
+                    <td className="px-3 py-3 hidden xl:table-cell">
+                      <div className="flex items-center justify-center">
+                        <MiniSparkline
+                          values={mockTrend(dept.maturity_score ?? 50, (dept.maturity_score ?? 50) + (dept.execution_health ?? 50))}
+                          color="auto"
+                        />
+                      </div>
                     </td>
                     <td className="px-3 py-3 text-xs text-muted-foreground">{dept.head ?? "—"}</td>
                   </tr>

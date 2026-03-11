@@ -148,6 +148,20 @@ Supabase project: `okgpcsfqkshdzbfuigfq`. Migrations in `supabase/migrations/`.
 - **Knowledge Hub — Document download**: Documents tab download button generates a `.txt` file from saved template fields and triggers browser download.
 - **Reports — Lessons Learned tab**: Full Lessons Learned tab in Reports with Add Lesson form and complete card view. Seed data contains 5 real-world PMO lessons.
 
+## Next-Gen UI Enhancements (March 2026)
+
+- **Command Palette** (`src/components/CommandPalette.tsx`): ⌘K / Ctrl+K global keyboard-driven search and navigation. Covers all 18 app pages + quick actions. Fuzzy search with score-ranked results. Arrow key navigation, Enter to open, Esc to close. Recent pages remembered in `localStorage("apphia_cmd_recent")`. Wired into `App.tsx` with keyboard shortcut handler.
+- **Top Status Bar** (`src/components/TopStatusBar.tsx`): Fixed 28px bar at the very top of every authenticated page. Shows live org health score (animated count-up), critical alert count, pending action items, today's date, and a ⌘K search trigger. Height compensated via `paddingTop: 28` in both AppLayout layout modes.
+- **Progress Ring** (`src/components/ProgressRing.tsx`): SVG circular fill ring with animated stroke-dashoffset draw-on effect + center count-up number. Used in Dashboard org health gauge (replacing conic-gradient). Respects `prefers-reduced-motion`.
+- **Delta Pill** (`src/components/DeltaPill.tsx`): +3 / −7 change badge with TrendingUp/TrendingDown icon and green/red/neutral coloring. Used in Reports quarterly card KpiTiles to show quarter-over-quarter change.
+- **Mini Sparkline** (`src/components/MiniSparkline.tsx`): Inline 48×20px SVG sparkline with stroke-dashoffset draw animation. Auto color (green/red/neutral based on trend direction). Added as "6-Mo Trend" column in Departments table.
+- **Activity Heatmap** (`src/components/ActivityHeatmap.tsx`): GitHub-style 26-week × 7-day execution activity calendar. 5-level intensity coloring, hover tooltip, month labels, legend. Added to Reports → Quarterly tab as "Execution Activity" section.
+- **Typewriter Effect** (`src/hooks/useTypewriter.ts`): Streams text character-by-character (configurable speed + delay + cursor). Applied to recommendation `action` text in Advisory page via `TypewriterText` component. Respects `prefers-reduced-motion`.
+- **Score Tooltip** (`src/components/ScoreBadge.tsx`): ScoreBadge wrapped with Radix Tooltip showing a 1-line score rationale (High performance / On track / Developing / Needs attention / At risk) on hover. `cursor-help` styling.
+- **Card Hover Lift** (`src/index.css`): `.card-hover` utility class — `translateY(-2px)` + shadow on hover (0.18s ease). Applied to KpiTile in Reports and quarterly cards.
+- **Focus Mode** (`src/index.css`): `.focus-group` + `data-focus-item` CSS — hover over any item in a group dims all siblings to 0.38 opacity + light grayscale. Applied to quarterly cards grid in Reports.
+- **CSS Keyframes** (`src/index.css`): `slideUp`, `slideInLeft`, `growWidth`, `countUp`, `pulse-ring` — full animation foundation ready for use anywhere.
+
 ## Notes
 
 - Migrated from Lovable to Replit (March 2026)
