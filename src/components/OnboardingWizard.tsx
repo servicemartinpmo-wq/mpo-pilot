@@ -15,6 +15,8 @@ import {
 import type { CompanyProfile } from "@/lib/companyStore";
 import { saveProfile } from "@/lib/companyStore";
 import collageImage from "@/assets/onboard-collage.jpg";
+import onboardHero from "@/assets/onboard-hero.jpg";
+import onboardNetwork from "@/assets/onboard-network.jpg";
 import slideBg1 from "@/assets/diag-slide-bg-1.jpg";
 import slideBg2 from "@/assets/diag-slide-bg-2.jpg";
 import slideBg3 from "@/assets/diag-slide-bg-3.jpg";
@@ -867,134 +869,190 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
     {
       icon: Activity,
       title: "Real-Time Org Health",
-      desc: "7 diagnostic dimensions continuously monitored — execution, strategy, risk, governance, capacity, maturity, and alignment.",
-      color: "hsl(233 72% 65%)",
-      bg: "hsl(233 72% 58% / 0.10)",
-      border: "hsl(233 72% 58% / 0.25)",
+      desc: "Seven diagnostic dimensions continuously monitored — execution, strategy, risk, governance, capacity, maturity, and alignment.",
+      accent: "hsl(222 80% 58%)",
     },
     {
-      icon: Network,
-      title: "Framework-Driven Analysis",
-      desc: "Porter, OKRs, Lean, Balanced Scorecard, Six Sigma, Theory of Constraints, and Rumelt — all working together, automatically.",
-      color: "hsl(183 62% 50%)",
-      bg: "hsl(183 62% 30% / 0.12)",
-      border: "hsl(183 62% 30% / 0.28)",
+      icon: TrendingUp,
+      title: "Operational Clarity",
+      desc: "Blocked initiatives, capacity overload, and execution gaps — surfaced, prioritized, and routed to the right people before they escalate.",
+      accent: "hsl(183 62% 42%)",
     },
     {
-      icon: Eye,
-      title: "Intelligent Signal Detection",
-      desc: "Blocked initiatives, capacity overflow, OKR misalignment, dependency risks — surfaced and prioritized before they escalate.",
-      color: "hsl(148 52% 50%)",
-      bg: "hsl(148 52% 36% / 0.10)",
-      border: "hsl(148 52% 36% / 0.25)",
+      icon: Shield,
+      title: "Built for Leaders",
+      desc: "Designed for overwhelmed executives, founders, and operators who need structure, guidance, and confidence across every initiative.",
+      accent: "hsl(148 52% 42%)",
     },
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col overflow-hidden"
-      style={{ background: "linear-gradient(160deg, hsl(225 52% 7%) 0%, hsl(226 46% 10%) 50%, hsl(228 42% 12%) 100%)" }}>
+    <div className="fixed inset-0 z-50 overflow-hidden"
+      style={{ background: "hsl(225 48% 9%)" }}>
 
-      {/* Background grid */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        backgroundImage: `linear-gradient(hsl(233 72% 58% / 0.04) 1px, transparent 1px), linear-gradient(90deg, hsl(233 72% 58% / 0.04) 1px, transparent 1px)`,
-        backgroundSize: "48px 48px",
+      {/* Full-bleed background image — low opacity for texture */}
+      <img
+        src={onboardNetwork}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        style={{ opacity: 0.10, mixBlendMode: "luminosity" }}
+      />
+
+      {/* Ambient colour orbs */}
+      <div className="absolute pointer-events-none" style={{
+        top: "-15%", right: "-8%", width: 700, height: 700, borderRadius: "50%",
+        background: "radial-gradient(circle, hsl(222 80% 58% / 0.13) 0%, transparent 65%)",
+      }} />
+      <div className="absolute pointer-events-none" style={{
+        bottom: "-18%", left: "-10%", width: 600, height: 600, borderRadius: "50%",
+        background: "radial-gradient(circle, hsl(183 62% 42% / 0.11) 0%, transparent 65%)",
+      }} />
+      <div className="absolute pointer-events-none" style={{
+        top: "35%", left: "5%", width: 320, height: 320, borderRadius: "50%",
+        background: "radial-gradient(circle, hsl(148 52% 42% / 0.07) 0%, transparent 65%)",
       }} />
 
-      {/* Top radial glow */}
-      <div className="absolute top-0 inset-x-0 h-80 pointer-events-none" style={{
-        background: "radial-gradient(ellipse 80% 80% at 50% -10%, hsl(233 65% 58% / 0.18) 0%, transparent 70%)",
-      }} />
+      {/* Subtle diagonal accent line — top-right */}
+      <div className="absolute top-0 right-0 pointer-events-none overflow-hidden" style={{ width: 400, height: 400 }}>
+        <div style={{
+          position: "absolute", top: -40, right: -40, width: 3, height: 520,
+          background: "linear-gradient(to bottom, transparent 0%, hsl(222 80% 65% / 0.18) 40%, transparent 100%)",
+          transform: "rotate(-30deg)", transformOrigin: "top right",
+        }} />
+        <div style={{
+          position: "absolute", top: -40, right: 40, width: 1.5, height: 420,
+          background: "linear-gradient(to bottom, transparent 0%, hsl(222 80% 65% / 0.10) 50%, transparent 100%)",
+          transform: "rotate(-30deg)", transformOrigin: "top right",
+        }} />
+      </div>
 
-      {/* Bottom teal glow */}
-      <div className="absolute bottom-0 inset-x-0 h-72 pointer-events-none" style={{
-        background: "radial-gradient(ellipse 70% 70% at 50% 110%, hsl(183 55% 35% / 0.14) 0%, transparent 70%)",
-      }} />
+      {/* ── Central framed card ── */}
+      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-10">
+        <div className="w-full max-w-3xl">
 
-      {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center flex-1 px-6 py-16 text-center max-w-4xl mx-auto w-full">
+          {/* Navy frame wrapper */}
+          <div className="rounded-[28px] p-[6px]" style={{
+            background: "hsl(225 50% 14%)",
+            boxShadow: "0 40px 100px hsl(225 50% 4% / 0.70), 0 0 0 1px hsl(225 48% 22% / 0.45)",
+          }}>
 
-        {/* Logo mark */}
-        <div className="mb-8 flex flex-col items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center"
-            style={{ background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})`, boxShadow: `0 0 40px hsl(var(--electric-blue) / 0.35)` }}>
-            <Zap className="w-8 h-8 text-white" />
-          </div>
-          <div>
-            <div className="text-xs font-black uppercase tracking-[0.3em] text-white/50 mb-0.5">Martin PMO</div>
-            <div className="text-xl font-black uppercase tracking-[0.22em] text-white">PMO-Ops Command Center</div>
-          </div>
-        </div>
+            {/* Off-white inner card */}
+            <div className="relative rounded-[23px] overflow-hidden px-8 py-10 lg:px-12 lg:py-12"
+              style={{ background: "hsl(220 18% 97%)" }}>
 
-        {/* Hero headline */}
-        <div className="mb-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold mb-5"
-            style={{ background: "hsl(var(--electric-blue) / 0.12)", border: "1px solid hsl(var(--electric-blue) / 0.28)", color: "hsl(var(--electric-blue))" }}>
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: ACCENT }} />
-            Built for executives and operators who demand performance
-          </div>
-          <h1 className="text-4xl lg:text-5xl xl:text-6xl font-black text-white leading-[1.1] tracking-[-0.02em] mb-5">
-            Your organization,<br />
-            <span style={{ background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              fully understood.
-            </span>
-          </h1>
-          <p className="text-base lg:text-lg font-medium max-w-2xl mx-auto leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.6)" }}>
-            PMO-Ops Command Center gives executives and operators total visibility — surfacing risks, diagnosing execution gaps, and driving strategic alignment across every department.
-          </p>
-        </div>
+              {/* Subtle inner dot pattern */}
+              <div className="absolute inset-0 pointer-events-none" style={{
+                backgroundImage: "radial-gradient(hsl(225 50% 18% / 0.045) 1px, transparent 1px)",
+                backgroundSize: "22px 22px",
+              }} />
 
-        {/* 3 value pillars */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-10 mt-8">
-          {pillars.map(({ icon: Icon, title, desc, color, bg, border }) => (
-            <div key={title} className="rounded-2xl p-5 text-left"
-              style={{ background: bg, border: `1px solid ${border}`, backdropFilter: "blur(12px)" }}>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3 flex-shrink-0"
-                style={{ background: `${color}18`, border: `1px solid ${color}30` }}>
-                <Icon className="w-4.5 h-4.5" style={{ color }} />
+              {/* Corner accent — top-right */}
+              <div className="absolute top-0 right-0 pointer-events-none" style={{
+                width: 180, height: 180,
+                background: "radial-gradient(circle at top right, hsl(222 80% 58% / 0.06) 0%, transparent 70%)",
+              }} />
+              {/* Corner accent — bottom-left */}
+              <div className="absolute bottom-0 left-0 pointer-events-none" style={{
+                width: 160, height: 160,
+                background: "radial-gradient(circle at bottom left, hsl(183 62% 42% / 0.06) 0%, transparent 70%)",
+              }} />
+
+              {/* Content */}
+              <div className="relative z-10 flex flex-col items-center text-center">
+
+                {/* Brand mark */}
+                <div className="mb-8 flex flex-col items-center gap-3">
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+                    style={{
+                      background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})`,
+                      boxShadow: `0 6px 28px hsl(var(--electric-blue) / 0.30)`,
+                    }}>
+                    <Zap className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-[0.3em] mb-0.5"
+                      style={{ color: "hsl(225 30% 45%)" }}>Martin PMO</div>
+                    <div className="text-base font-black uppercase tracking-[0.18em]"
+                      style={{ color: "hsl(225 48% 14%)" }}>PMO-Ops Command Center</div>
+                  </div>
+                </div>
+
+                {/* Tagline */}
+                <h1 className="text-3xl lg:text-4xl xl:text-[2.7rem] font-black leading-[1.15] tracking-[-0.02em] mb-3"
+                  style={{ color: "hsl(225 48% 13%)" }}>
+                  Know What Matters.
+                </h1>
+                <p className="text-lg lg:text-xl font-semibold mb-5" style={{ color: "hsl(222 60% 48%)" }}>
+                  We Support Leaders Who Do It All.
+                </p>
+
+                {/* Purpose */}
+                <p className="text-sm lg:text-base leading-relaxed max-w-xl mb-10"
+                  style={{ color: "hsl(225 20% 40%)" }}>
+                  The app designed for overwhelmed executives, founders, and operators who need clarity, guidance, and structure across initiatives, tasks, and organizational performance. Built on deep expertise, designed to help you act with confidence.
+                </p>
+
+                {/* 3 pillars */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-10">
+                  {pillars.map(({ icon: Icon, title, desc, accent }) => (
+                    <div key={title} className="rounded-2xl p-5 text-left" style={{
+                      background: "hsl(225 48% 13%)",
+                      border: "1px solid hsl(225 40% 20%)",
+                    }}>
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-3"
+                        style={{ background: `${accent}22`, border: `1px solid ${accent}40` }}>
+                        <Icon className="w-4 h-4" style={{ color: accent }} />
+                      </div>
+                      <div className="text-sm font-bold text-white mb-1.5">{title}</div>
+                      <p className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.52)" }}>{desc}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA */}
+                <button
+                  onClick={onStart}
+                  className="flex items-center gap-3 px-10 py-4 rounded-2xl text-base font-black text-white transition-all duration-200 mb-3"
+                  style={{
+                    background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})`,
+                    boxShadow: `0 8px 32px hsl(var(--electric-blue) / 0.35)`,
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)";
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 14px 44px hsl(var(--electric-blue) / 0.45)`;
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLButtonElement).style.transform = "";
+                    (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 8px 32px hsl(var(--electric-blue) / 0.35)`;
+                  }}>
+                  Set Up My Command Center
+                  <ArrowRight className="w-5 h-5" />
+                </button>
+                <p className="text-xs" style={{ color: "hsl(225 20% 55%)" }}>
+                  Takes 3–5 minutes · No credit card required
+                </p>
+
               </div>
-              <div className="text-sm font-bold text-white mb-1.5">{title}</div>
-              <p className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.55)" }}>{desc}</p>
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* CTA */}
-        <div className="flex flex-col items-center gap-3">
-          <button
-            onClick={onStart}
-            className="flex items-center gap-3 px-10 py-4 rounded-2xl text-base font-black text-white transition-all duration-200"
-            style={{
-              background: `linear-gradient(135deg, ${ACCENT}, ${TEAL})`,
-              boxShadow: `0 8px 32px hsl(var(--electric-blue) / 0.38)`,
-            }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 12px 40px hsl(var(--electric-blue) / 0.45)`; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = ""; (e.currentTarget as HTMLButtonElement).style.boxShadow = `0 8px 32px hsl(var(--electric-blue) / 0.38)`; }}>
-            Set Up My Command Center
-            <ArrowRight className="w-5 h-5" />
-          </button>
-          <p className="text-xs" style={{ color: "hsl(0 0% 100% / 0.3)" }}>
-            Takes 3–5 minutes · No credit card required
-          </p>
+          {/* Below-card stat strip */}
+          <div className="flex items-center justify-center gap-8 flex-wrap mt-6 px-2">
+            {[
+              { label: "Diagnostic Dimensions", value: "7" },
+              { label: "Signal Types Monitored", value: "25+" },
+              { label: "Departments Covered", value: "14" },
+              { label: "Setup Time", value: "< 5 min" },
+            ].map(({ label, value }) => (
+              <div key={label} className="text-center">
+                <div className="text-sm font-black font-mono" style={{ color: ACCENT }}>{value}</div>
+                <div className="text-[10px] font-medium" style={{ color: "hsl(0 0% 100% / 0.32)" }}>{label}</div>
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
-
-      {/* Bottom stats bar */}
-      <div className="relative z-10 border-t flex-shrink-0" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
-        <div className="flex items-center justify-center gap-8 px-6 py-4 flex-wrap">
-          {[
-            { label: "Diagnostic Dimensions", value: "7" },
-            { label: "Management Frameworks", value: "100+" },
-            { label: "Signal Types Detected", value: "25+" },
-            { label: "Setup Time", value: "< 5 min" },
-          ].map(({ label, value }) => (
-            <div key={label} className="text-center">
-              <div className="text-sm font-black font-mono" style={{ color: ACCENT }}>{value}</div>
-              <div className="text-[10px] font-medium" style={{ color: "hsl(0 0% 100% / 0.35)" }}>{label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-
     </div>
   );
 }

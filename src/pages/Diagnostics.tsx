@@ -6,7 +6,7 @@ import {
   Activity, AlertCircle, GitBranch, Layers, Target, Shield, Clock,
   CheckCircle, Eye, Zap, ChevronDown, ChevronUp, X, Users,
   ChevronRight, ArrowRightCircle, Database, Brain, Network, TrendingUp,
-  FlaskConical, AlertTriangle, BarChart3, Cpu, ClipboardList, Building2, Search
+  FlaskConical, AlertTriangle, BarChart3, Cpu, ClipboardList, Building2, Search, Lock
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import type { InsightType } from "@/lib/pmoData";
@@ -102,6 +102,9 @@ export default function Diagnostics() {
 
   // Run engine once (memoized)
   const engine = useMemo(() => getEngineState(), []);
+
+  // Tier check — defaults to paid
+  const isPaidTier = localStorage.getItem("apphia_tier") !== "free";
 
   function startAudit(type: AuditType) {
     setAuditType(type);
@@ -270,38 +273,44 @@ export default function Diagnostics() {
                 </div>
               ))}
             </div>
-            <div className="divide-y max-h-80 overflow-y-auto">
-              {engine.signals.map(sig => (
-                <div key={sig.id} className="px-4 py-3 flex items-start gap-3 hover:bg-secondary/20 transition-colors">
-                  <span className={cn("w-2 h-2 rounded-full flex-shrink-0 mt-1.5", severityDot(sig.severity))} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className={cn("text-xs font-medium px-1.5 py-0.5 rounded border", severityColor(sig.severity))}>
-                        {sig.severity}
-                      </span>
-                      <span className="text-xs font-medium text-foreground">{sig.title}</span>
-                      <span className="text-xs text-muted-foreground">{sig.source}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground leading-snug line-clamp-2">{sig.description}</p>
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {sig.recommendedFrameworks.slice(0, 3).map(fw => (
-                        <span key={fw} className="text-xs px-1.5 py-0.5 bg-electric-blue/8 text-electric-blue rounded border border-electric-blue/20">
-                          {fw}
+            <div className="divide-y max-h-80 overflow-y-auto relative">
+              {engine.signals.map((sig, idx) => {
+                const locked = !isPaidTier && idx > 0;
+                return (
+                  <div key={sig.id} className={cn("px-4 py-3 flex items-start gap-3 hover:bg-secondary/20 transition-colors", locked && "select-none")}
+                    style={locked ? { filter: "blur(4px)", pointerEvents: "none", opacity: 0.45 } : undefined}>
+                    <span className={cn("w-2 h-2 rounded-full flex-shrink-0 mt-1.5", severityDot(sig.severity))} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className={cn("text-xs font-medium px-1.5 py-0.5 rounded border", severityColor(sig.severity))}>
+                          {sig.severity}
                         </span>
-                      ))}
-                      {sig.recommendedFrameworks.length > 3 && (
-                        <span className="text-xs text-muted-foreground">+{sig.recommendedFrameworks.length - 3} more</span>
-                      )}
+                        <span className="text-xs font-medium text-foreground">{sig.title}</span>
+                        <span className="text-xs text-muted-foreground">{sig.source}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground leading-snug line-clamp-2">{sig.description}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className={cn("text-lg font-bold font-mono",
+                        sig.score >= 85 ? "text-signal-red" : sig.score >= 70 ? "text-signal-yellow" : "text-signal-green"
+                      )}>{sig.score}</div>
+                      <div className="text-xs text-muted-foreground">score</div>
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className={cn("text-lg font-bold font-mono",
-                      sig.score >= 85 ? "text-signal-red" : sig.score >= 70 ? "text-signal-yellow" : "text-signal-green"
-                    )}>{sig.score}</div>
-                    <div className="text-xs text-muted-foreground">score</div>
+                );
+              })}
+              {!isPaidTier && engine.signals.length > 1 && (
+                <div className="absolute bottom-0 inset-x-0 flex flex-col items-center justify-end pb-4 pt-16 pointer-events-auto"
+                  style={{ background: "linear-gradient(to bottom, transparent 0%, hsl(var(--card) / 0.97) 55%)" }}>
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <Lock className="w-3.5 h-3.5 text-electric-blue" />
+                    <span className="text-xs font-bold text-foreground">
+                      {engine.signals.length - 1} more signal{engine.signals.length - 1 !== 1 ? "s" : ""} available on paid plans
+                    </span>
                   </div>
+                  <p className="text-xs text-muted-foreground">Free tier shows one signal area. Upgrade for full diagnostic depth.</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         )}
@@ -312,11 +321,15 @@ export default function Diagnostics() {
             {engine.diagnoses.length === 0 && (
               <div className="px-4 py-8 text-center text-sm text-muted-foreground">No diagnoses generated yet.</div>
             )}
-            {engine.diagnoses.map(diag => (
-              <div key={diag.signalId} className="hover:bg-secondary/20 transition-colors">
+            <div className="relative">
+            {engine.diagnoses.map((diag, idx) => {
+              const locked = !isPaidTier && idx > 0;
+              return (
+              <div key={diag.signalId} className="hover:bg-secondary/20 transition-colors"
+                style={locked ? { filter: "blur(4px)", pointerEvents: "none", opacity: 0.45, userSelect: "none" } : undefined}>
                 <button
                   className="w-full px-4 py-3 flex items-start gap-3 text-left"
-                  onClick={() => setExpandedDiag(expandedDiag === diag.signalId ? null : diag.signalId)}
+                  onClick={() => !locked && setExpandedDiag(expandedDiag === diag.signalId ? null : diag.signalId)}
                 >
                   <FlaskConical className="w-4 h-4 text-teal mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -324,9 +337,6 @@ export default function Diagnostics() {
                       <span className="text-xs font-semibold text-foreground">{diag.rootCause}</span>
                       <span className="text-xs px-1.5 py-0.5 bg-teal/10 text-teal border border-teal/30 rounded">
                         {diag.signalCategory}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {diag.firedFrameworks.length} frameworks fired
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-2">{diag.rootCauseDescription}</p>
@@ -341,7 +351,7 @@ export default function Diagnostics() {
                   </div>
                 </button>
 
-                {expandedDiag === diag.signalId && (
+                {expandedDiag === diag.signalId && !locked && (
                   <div className="px-4 pb-4 space-y-3 border-t border-border/50 bg-secondary/10">
                     <div className="pt-3">
                       <div className="text-xs font-semibold text-foreground mb-2 uppercase tracking-wide">Framework Findings</div>
@@ -396,7 +406,21 @@ export default function Diagnostics() {
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
+            {!isPaidTier && engine.diagnoses.length > 1 && (
+              <div className="absolute bottom-0 inset-x-0 flex flex-col items-center justify-end pb-4 pt-16 pointer-events-auto"
+                style={{ background: "linear-gradient(to bottom, transparent 0%, hsl(var(--card) / 0.97) 55%)" }}>
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Lock className="w-3.5 h-3.5 text-electric-blue" />
+                  <span className="text-xs font-bold text-foreground">
+                    {engine.diagnoses.length - 1} more diagnosis{engine.diagnoses.length - 1 !== 1 ? "es" : ""} available on paid plans
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">Free tier shows one sub-area diagnosis. Upgrade for full depth across all departments.</p>
+              </div>
+            )}
+            </div>
           </div>
         )}
 
