@@ -20,6 +20,8 @@ import Integrations from "./pages/Integrations";
 import Advisory from "./pages/Advisory";
 import Team from "./pages/Team";
 import CreatorLab from "./pages/CreatorLab";
+import Projects from "./pages/Projects";
+import Decisions from "./pages/Decisions";
 import AuthPage from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
@@ -159,6 +161,8 @@ function AppRoutes() {
             <Route path="/team" element={<Team />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/creator-lab" element={<CreatorLab />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/decisions" element={<Decisions />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>

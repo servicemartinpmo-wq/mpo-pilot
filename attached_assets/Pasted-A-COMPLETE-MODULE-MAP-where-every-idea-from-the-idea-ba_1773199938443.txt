@@ -1,0 +1,207 @@
+A COMPLETE MODULE MAP
+where every idea from the idea bank is either:
+captured directly as a feature
+consolidated into a module
+mapped to a database component
+This is exactly how enterprise platforms (like Palantir or Salesforce) are designed.
+Below is the clean system architecture.
+MASTER PLATFORM MODULE MAP
+Your entire idea bank consolidates into 11 major modules.
+Each module can be turned into a Replit build prompt.
+1. Identity & Organization Module
+Core system structure.
+Tables
+companies
+users
+teams
+roles
+permissions
+team_members
+Features
+• multi-tenant architecture
+• company workspaces
+• role based access
+• enterprise security
+Purpose
+Foundation of the platform.
+2. Work Management Module
+This replaces Asana / Monday / Jira.
+Tables
+projects
+tasks
+task_dependencies
+epics
+stories
+bugs
+sprints
+task_comments
+task_attachments
+Features
+• kanban boards
+• scrum boards
+• roadmap views
+• dependencies
+• issue tracking
+3. Operations Intelligence Module
+Tracks operational health.
+Tables
+company_health_metrics
+company_health_history
+operational_signals
+team_velocity
+task_completion_rates
+Features
+• company health score
+• operational bottleneck detection
+• team productivity metrics
+4. KPI & Metrics Engine
+Core analytics system.
+Tables
+kpis
+kpi_history
+metric_definitions
+metric_calculations
+revenue_metrics
+Features
+• KPI tracking
+• auto KPI discovery
+• benchmarking
+• trend analysis
+5. Recommendation Engine
+Your Next Best Action AI layer.
+Tables
+recommendations
+next_best_actions
+company_signals
+recommendation_scores
+Features
+• prioritize tasks automatically
+• detect risks
+• suggest actions
+This is the brain of the system.
+6. Strategic Advisory Engine
+This is where your consulting idea bank lives.
+Tables
+advisories
+framework_results
+strategic_assessments
+diagnostic_results
+Features
+Built-in frameworks:
+• SWOT
+• Porter Five Forces
+• Growth diagnostics
+• Operational maturity
+Purpose
+Turns the platform into a consulting advisor.
+7. Decision Intelligence Module
+Corporate memory system.
+Tables
+decisions
+decision_outcomes
+decision_accuracy
+decision_tags
+Features
+• decision log
+• outcome tracking
+• decision quality analytics
+8. Automation Engine
+Workflow automation.
+Tables
+automation_rules
+automation_conditions
+automation_actions
+automation_logs
+Triggers
+task overdue
+project delay
+kpi drop
+deadline approaching
+Actions
+create task
+notify user
+update status
+trigger recommendation
+9. AI Executive Assistant
+Your AI Chief of Staff.
+Tables
+ai_briefings
+executive_reports
+daily_priorities
+risk_alerts
+Features
+• daily executive brief
+• weekly company report
+• risk detection
+• action recommendations
+10. Knowledge & Playbook System
+Community intelligence.
+Tables
+playbooks
+playbook_steps
+playbook_imports
+templates
+best_practices
+Features
+• reusable workflows
+• industry playbooks
+• project templates
+11. Graph Intelligence Layer
+Your Work Graph / Algorithm Map.
+Tables
+entity_relationships
+graph_nodes
+graph_edges
+organizational_graph
+Relationships
+task → project
+project → KPI
+KPI → revenue
+team → project
+decision → outcome
+Purpose
+Shows how everything affects everything.
+COMPLETE FEATURE COVERAGE
+Your idea bank items map like this:
+Idea	Module
+AI Chief of Staff	AI Executive Assistant
+Mega Algorithm Map	Graph Intelligence
+Operational Diagnostics	Strategic Advisory
+Company Health Score	Operations Intelligence
+Consulting Frameworks	Strategic Advisory
+Next Best Actions	Recommendation Engine
+Decision Tracking	Decision Intelligence
+Weekly Reports	AI Executive Assistant
+Benchmarking	KPI Engine
+Community Playbooks	Knowledge System
+Automation	Automation Engine
+Project Management	Work Management
+So everything is captured.
+PLATFORM DATA FLOW
+This is the true architecture.
+tasks/projects
+     ↓
+operational signals
+     ↓
+kpi engine
+     ↓
+company health score
+     ↓
+recommendation engine
+     ↓
+AI executive briefing
+FINAL SUPERPROMPT STRUCTURE
+Instead of one massive prompt, Replit should receive 11 prompts.
+Each prompt builds one module.
+Example prompt structure:
+Prompt 1: Core platform schema
+Prompt 2: Work management system
+Prompt 3: KPI engine
+Prompt 4: Company health engine
+Prompt 5: Recommendation engine
+Prompt 6: Advisory frameworks
+Prompt 7: Decision intelligence
+Prompt 8: Automation engine
+Prompt 9: AI executive assistant
+Prompt 10: Playbooks
+Prompt 11: Graph intelligence

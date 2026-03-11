@@ -11,13 +11,56 @@ A PMO/Ops command center SPA built with React, Vite, TypeScript, Tailwind CSS, a
 - **State**: React Query + local hooks
 - **Charts**: Recharts
 
+## Design System
+
+**"Warm Command Center"** — high-tech sophistication + home-office warmth.
+- Background: `hsl(224 22% 8%)` — deep warm charcoal navy (dark mode by default, `:root` = dark)
+- Sidebar: `hsl(222 28% 9%)` — deepest navy
+- Cards: `hsl(224 20% 12%)` — elevated dark surface
+- **Amber/Gold** `hsl(38 92% 52%)` — focus/important/command nav active
+- **Electric Blue** `hsl(222 88% 65%)` — primary/tools nav active, data accents
+- **Teal** `hsl(174 68% 42%)` — success/secondary
+- **Rose** `hsl(350 84% 62%)` — alerts/critical
+- Text: warm off-white `hsl(38 15% 94%)` — never cold white
+- Fonts: Inter (body), JetBrains Mono (scores/metrics)
+- Key utilities: `.glass-card`, `.glow-amber`, `.glow-blue`, `.glow-rose`, `.warm-divider`, `.pmo-card`
+
+## Pages & Routes
+
+| Path | Page | Notes |
+|------|------|-------|
+| `/` | Dashboard (Index) | Executive command center |
+| `/projects` | Projects | NEW — project grid with CRUD |
+| `/decisions` | Decisions | NEW — decision log with outcomes |
+| `/initiatives` | Initiatives | Initiative portfolio |
+| `/action-items` | Action Items | Task management |
+| `/departments` | Departments | Dept cards |
+| `/team` | Team | Team members |
+| `/diagnostics` | Diagnostics | Signal → Diagnosis → Advisory pipeline |
+| `/reports` | Reports | Analytics outputs |
+| `/knowledge` | Resource Hub | Knowledge base |
+| `/workflows` | Workflows | Workflow automation |
+| `/advisory` | Advisory | Strategic advisory frameworks |
+| `/integrations` | Integrations | External connections |
+| `/admin` | Systems | App settings |
+
+## Key Components
+
+- `AppLayout.tsx` — Sidebar (collapsed/expanded), notification bell, health score bar, snooze
+- `CompanyHealthScore.tsx` — Animated SVG ring gauge with dimension breakdown
+- `NotificationsPanel.tsx` — Slide-in notifications panel from DB `notifications` table
+- `InsightCard.tsx` — Intelligence signal cards ranked by priority score
+- `OrgHealthOrb.tsx` — Living 3D-style health orb
+- `OnboardingWizard.tsx` — 4-step onboarding + 6-slide diagnostic deck
+- `PageBanner.tsx` — Contextual page banners
+
 ## Project Structure
 
 ```
 src/
   App.tsx              — Root routing and auth guard
   main.tsx             — Entry point
-  pages/               — Page components (Index, Initiatives, Departments, etc.)
+  pages/               — Page components
   components/          — Shared components (AppLayout, OnboardingWizard, etc.)
   components/ui/       — shadcn/ui component library
   hooks/
@@ -31,7 +74,7 @@ src/
     pmoData.ts              — Static seed data for new users
     frameworkData.ts        — Framework reference data
   integrations/
-    supabase/               — Supabase client + generated types
+    supabase/               — Supabase client + generated types (4,088 lines)
 ```
 
 ## Environment Variables
