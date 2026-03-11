@@ -13,18 +13,19 @@ A PMO/Ops command center SPA built with React, Vite, TypeScript, Tailwind CSS, a
 
 ## Design System
 
-**Light theme by default** — professional, clean, SaaS-standard.
-- Background: `hsl(220 18% 97%)` — soft off-white (light mode default in `:root`)
-- Cards: `hsl(0 0% 100%)` — white cards with soft shadows
-- Sidebar: `hsl(225 50% 11%)` — deep navy (always dark, regardless of theme)
-- **Electric Blue** `hsl(222 72% 48%)` — primary/tools nav active, data accents
-- **Amber/Gold** `hsl(38 85% 46%)` — focus/important/command nav active
-- **Teal** `hsl(174 65% 34%)` — success/secondary
-- **Rose** `hsl(350 72% 52%)` — alerts/critical
-- Text: dark navy `hsl(225 30% 8%)` — high contrast on white
-- Dark mode available via `.dark` class
+**Dark mode forced globally** — `class="dark"` on `<html>` in index.html. Command center aesthetic throughout.
+- Background: `hsl(224 22% 8%)` — deep midnight navy
+- Cards: `hsl(224 20% 12%)` — slightly lighter navy card surfaces
+- Sidebar: `hsl(222 28% 9%)` — deepest navy (always dark)
+- **Electric Blue** `hsl(222 88% 65%)` — primary/tools nav active, data accents
+- **Amber/Gold** `hsl(38 92% 52%)` — focus/important/command nav active
+- **Teal** `hsl(174 68% 42%)` — success/secondary
+- **Rose** `hsl(350 84% 62%)` — alerts/critical
+- Section headers: cinematic `diag-slide-bg-*.jpg` images at 15-18% opacity (luminosity blend) with gradient overlay
+- Hero banner: `onboard-hero.jpg` at 22% opacity (luminosity) + `onboard-network.jpg` at 8% (screen blend)
 - Fonts: Inter (body), JetBrains Mono (scores/metrics)
 - User Modes: founder | executive | startup | creative | freelance | simple (Guided Mode)
+- Toast duration: 12 seconds (Sonner + Radix + PopupToast all unified)
 
 ## Pages & Routes
 

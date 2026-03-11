@@ -2,6 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import { insights, actionItems, initiatives } from "@/lib/pmoData";
 import pmoLogoLight from "@/assets/pmo-logo-light.png";
 import onboardNetwork from "@/assets/onboard-network.jpg";
+import onboardHero from "@/assets/onboard-hero.jpg";
+import diagBg1 from "@/assets/diag-slide-bg-1.jpg";
+import diagBg2 from "@/assets/diag-slide-bg-2.jpg";
+import diagBg3 from "@/assets/diag-slide-bg-3.jpg";
+import diagBg4 from "@/assets/diag-slide-bg-4.jpg";
+import diagBg5 from "@/assets/diag-slide-bg-5.jpg";
 import InsightCard from "@/components/InsightCard";
 import CompanyHealthScore from "@/components/CompanyHealthScore";
 import StrategyScoreCard from "@/components/StrategyScoreCard";
@@ -86,6 +92,11 @@ interface StatusPopup {
 }
 
 function PopupToast({ popup, onDismiss }: { popup: StatusPopup; onDismiss: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onDismiss, 12000);
+    return () => clearTimeout(t);
+  }, [onDismiss]);
+
   const cfg = {
     red:    { border: "border-rose/30",          bg: "bg-rose/8",          dot: "bg-rose",          text: "text-rose" },
     amber:  { border: "border-amber/30",          bg: "bg-amber/8",          dot: "bg-amber",          text: "text-amber" },
@@ -244,7 +255,8 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
     <div className="relative overflow-hidden rounded-2xl" style={{ background: "hsl(225 48% 9%)", minHeight: 220 }}>
 
       {/* Background texture */}
-      <img src={onboardNetwork} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ opacity: 0.07, mixBlendMode: "luminosity" }} />
+      <img src={onboardHero} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ opacity: 0.22, mixBlendMode: "luminosity" }} />
+      <img src={onboardNetwork} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ opacity: 0.08, mixBlendMode: "screen" }} />
 
       {/* Ambient orb */}
       <div className="absolute pointer-events-none" style={{ top: "-30%", right: "20%", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, hsl(222 80% 58% / 0.10) 0%, transparent 60%)" }} />
@@ -590,7 +602,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <div className="flex-1 p-7 space-y-6 max-w-[1560px] mx-auto w-full">
+      <div className="flex-1 p-5 space-y-4 max-w-[1560px] mx-auto w-full">
 
         {/* ════════════════════════════════════════
             HERO: Cinematic Banner Carousel
@@ -624,9 +636,14 @@ export default function Dashboard() {
           </div>
 
           {/* Company Health Score */}
-          <div className="rounded-2xl border p-6 flex flex-col items-center"
+          <div className="rounded-2xl border overflow-hidden flex flex-col items-center"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-elevated)" }}>
-            <div className="section-label mb-4">Company Health</div>
+            <div className="relative overflow-hidden w-full flex items-center justify-center px-5 py-3 border-b" style={{ borderColor: "hsl(var(--border))" }}>
+              <img src={diagBg2} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.13, mixBlendMode: "luminosity" }} />
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "hsl(224 20% 12% / 0.8)" }} />
+              <span className="relative z-10 section-label">Company Health</span>
+            </div>
+            <div className="p-5 flex flex-col items-center w-full">
             <CompanyHealthScore
               score={liveOverallHealth}
               trend={healthTrend as any ?? "Stable"}
@@ -638,8 +655,9 @@ export default function Dashboard() {
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(160 56% 46%)" }} />
               <span className="text-[10px] text-muted-foreground">{activeChains} operational chains active</span>
             </div>
-          </div>
-        </div>
+            </div>{/* end p-5 content wrapper */}
+          </div>{/* end health card */}
+        </div>{/* end KPI grid */}
 
         {/* ════════════════════════════════════════
             STRATEGY SCORES
@@ -662,12 +680,14 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_400px] gap-5">
 
           {/* Next Best Actions */}
-          <div className="rounded-2xl border"
+          <div className="rounded-2xl border overflow-hidden"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "hsl(var(--border))" }}>
-              <div className="flex items-center gap-2.5">
+            <div className="relative overflow-hidden flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
+              <img src={diagBg1} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.18, mixBlendMode: "luminosity" }} />
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, hsl(224 20% 12% / 0.9) 0%, hsl(224 20% 12% / 0.6) 60%, transparent 100%)" }} />
+              <div className="relative z-10 flex items-center gap-2.5">
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                  style={{ background: "hsl(38 92% 52% / 0.12)" }}>
+                  style={{ background: "hsl(38 92% 52% / 0.15)" }}>
                   <Zap className="w-3.5 h-3.5 text-amber" />
                 </div>
                 <span className="text-sm font-bold text-foreground">Next Best Actions</span>
@@ -675,7 +695,7 @@ export default function Dashboard() {
                   {nbaItems.length} queued
                 </span>
               </div>
-              <Link to="/action-items" className="text-xs text-electric-blue hover:underline font-semibold flex items-center gap-0.5">
+              <Link to="/action-items" className="relative z-10 text-xs text-electric-blue hover:underline font-semibold flex items-center gap-0.5">
                 All actions <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
@@ -690,11 +710,12 @@ export default function Dashboard() {
           <div className="rounded-2xl border overflow-hidden"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
             {/* Header */}
-            <div className="px-5 py-4 border-b relative overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
-              <div className="absolute inset-0" style={{
-                background: "radial-gradient(ellipse 140% 120% at 0% 50%, hsl(222 88% 65% / 0.07) 0%, transparent 60%)"
+            <div className="px-5 py-3.5 border-b relative overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
+              <img src={diagBg2} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.16, mixBlendMode: "luminosity" }} />
+              <div className="absolute inset-0 pointer-events-none" style={{
+                background: "linear-gradient(90deg, hsl(224 20% 12% / 0.92) 0%, hsl(224 20% 12% / 0.7) 50%, transparent 100%)"
               }} />
-              <div className="relative flex items-center justify-between">
+              <div className="relative z-10 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg flex items-center justify-center"
                     style={{ background: "hsl(222 88% 65% / 0.12)" }}>
@@ -785,14 +806,16 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
 
           {/* At-Risk Initiatives */}
-          <div className="rounded-2xl border"
+          <div className="rounded-2xl border overflow-hidden"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "hsl(var(--border))" }}>
-              <div className="flex items-center gap-2.5">
+            <div className="relative overflow-hidden flex items-center justify-between px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
+              <img src={diagBg3} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.15, mixBlendMode: "luminosity" }} />
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, hsl(224 20% 12% / 0.92) 0%, hsl(224 20% 12% / 0.6) 60%, transparent 100%)" }} />
+              <div className="relative z-10 flex items-center gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-amber flex-shrink-0" />
                 <span className="text-sm font-bold text-foreground">Initiatives Needing Attention</span>
               </div>
-              <Link to="/initiatives" className="text-[11px] text-electric-blue hover:underline font-semibold flex items-center gap-0.5">
+              <Link to="/initiatives" className="relative z-10 text-[11px] text-electric-blue hover:underline font-semibold flex items-center gap-0.5">
                 All <ChevronRight className="w-3 h-3" />
               </Link>
             </div>
@@ -834,11 +857,13 @@ export default function Dashboard() {
           </div>
 
           {/* Portfolio Overview */}
-          <div className="rounded-2xl border"
+          <div className="rounded-2xl border overflow-hidden"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "hsl(var(--border))" }}>
-              <Target className="w-4 h-4 text-teal flex-shrink-0" />
-              <span className="text-sm font-bold text-foreground">Portfolio Overview</span>
+            <div className="relative overflow-hidden flex items-center gap-2.5 px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
+              <img src={diagBg4} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.15, mixBlendMode: "luminosity" }} />
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, hsl(224 20% 12% / 0.92) 0%, hsl(224 20% 12% / 0.6) 60%, transparent 100%)" }} />
+              <Target className="relative z-10 w-4 h-4 text-teal flex-shrink-0" />
+              <span className="relative z-10 text-sm font-bold text-foreground">Portfolio Overview</span>
             </div>
             <div className="p-5 space-y-3">
               {[
@@ -860,11 +885,13 @@ export default function Dashboard() {
           </div>
 
           {/* Executive Load */}
-          <div className="rounded-2xl border"
+          <div className="rounded-2xl border overflow-hidden"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
-            <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "hsl(var(--border))" }}>
-              <Users className="w-4 h-4 text-electric-blue flex-shrink-0" />
-              <span className="text-sm font-bold text-foreground">Executive Load</span>
+            <div className="relative overflow-hidden flex items-center gap-2.5 px-5 py-3.5 border-b" style={{ borderColor: "hsl(var(--border))" }}>
+              <img src={diagBg5} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.15, mixBlendMode: "luminosity" }} />
+              <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, hsl(224 20% 12% / 0.92) 0%, hsl(224 20% 12% / 0.6) 60%, transparent 100%)" }} />
+              <Users className="relative z-10 w-4 h-4 text-electric-blue flex-shrink-0" />
+              <span className="relative z-10 text-sm font-bold text-foreground">Executive Load</span>
             </div>
             <div>
               {data.departments.slice(0, 4).map((d) => {
@@ -899,15 +926,17 @@ export default function Dashboard() {
         {/* ════════════════════════════════════════
             LAYER 4: Intelligence Signals
             ════════════════════════════════════════ */}
-        <div className="rounded-2xl border"
+        <div className="rounded-2xl border overflow-hidden"
           style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
           <button
-            className="w-full flex items-center justify-between px-5 py-4 border-b hover:bg-white/[0.02] transition-colors"
+            className="relative overflow-hidden w-full flex items-center justify-between px-5 py-3.5 border-b hover:bg-white/[0.02] transition-colors"
             style={{ borderColor: "hsl(var(--border))" }}
             onClick={() => setShowInsights((v) => !v)}>
-            <div className="flex items-center gap-2.5">
+            <img src={onboardHero} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none" style={{ opacity: 0.14, mixBlendMode: "luminosity" }} />
+            <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, hsl(224 20% 12% / 0.92) 0%, hsl(224 20% 12% / 0.6) 60%, transparent 100%)" }} />
+            <div className="relative z-10 flex items-center gap-2.5">
               <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                style={{ background: "hsl(222 88% 65% / 0.10)" }}>
+                style={{ background: "hsl(222 88% 65% / 0.14)" }}>
                 <Brain className="w-3.5 h-3.5 text-electric-blue" />
               </div>
               <span className="text-sm font-bold text-foreground">Intelligence Signals</span>
@@ -915,7 +944,7 @@ export default function Dashboard() {
                 {sortedInsights.length} active · {criticalCount} critical
               </span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="relative z-10 flex items-center gap-3">
               <Link to="/diagnostics" className="text-xs text-electric-blue font-semibold hover:underline hidden sm:block"
                 onClick={(e) => e.stopPropagation()}>
                 Full diagnostics →
