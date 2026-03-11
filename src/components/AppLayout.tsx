@@ -663,8 +663,8 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           </div>
         </header>
 
-        {/* Main canvas — dark background + art texture */}
-        <main className="flex-1 overflow-auto relative" style={{ background: "hsl(222 22% 6%)" }}>
+        {/* Main canvas — pure black */}
+        <main className="flex-1 overflow-auto relative" style={{ background: "#080808" }}>
           {/* Full-canvas art texture — very subtle */}
           {/* Radial glow — top teal */}
           <div className="fixed pointer-events-none z-0"

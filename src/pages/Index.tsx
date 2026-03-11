@@ -11,7 +11,7 @@ import UpgradeBanner from "@/components/UpgradeBanner";
 import { NudgeAlert } from "@/components/NudgeAlert";
 import {
   AlertTriangle, Users, Clock, Target, CheckCircle,
-  ChevronRight, Zap, Activity, X, CalendarDays, UserCheck,
+  ChevronLeft, ChevronRight, Zap, Activity, X, CalendarDays, UserCheck,
   Brain, Sparkles, TrendingUp, ArrowRight, Star,
   Coffee, Sunrise, Sun, Moon, ChevronDown, ListChecks,
   BarChart3, BookOpen, Settings, Tag, Palette, FolderOpen,
@@ -662,12 +662,28 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
   );
 }
 
-// ── Creative Dashboard — Editorial Portfolio Style ────────────────────────────
+// ── Creative Dashboard — Carousel Portfolio, Black Edition ────────────────────
 const C_PROJECTS = [
-  { id: "cp1", title: "Brand Refresh",      client: "Meridian Co.",   status: "Active",  gradient: "linear-gradient(135deg, hsl(174 72% 12%) 0%, hsl(183 80% 22%) 100%)", accent: "hsl(174 72% 52%)" },
-  { id: "cp2", title: "Campaign Strategy",  client: "Apex Studios",   status: "Review",  gradient: "linear-gradient(135deg, hsl(268 68% 14%) 0%, hsl(280 72% 26%) 100%)", accent: "hsl(268 65% 65%)" },
-  { id: "cp3", title: "Editorial Design",   client: "Novo Press",     status: "Active",  gradient: "linear-gradient(135deg, hsl(350 60% 14%) 0%, hsl(0 68% 26%) 100%)",   accent: "hsl(350 72% 62%)" },
-  { id: "cp4", title: "Social Content",     client: "Solaris Health", status: "Draft",   gradient: "linear-gradient(135deg, hsl(212 72% 12%) 0%, hsl(225 80% 22%) 100%)", accent: "hsl(212 80% 62%)" },
+  {
+    id: "cp1", title: "Brand Refresh", client: "Meridian Co.", status: "Active",
+    photo: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&h=1000&fit=crop&auto=format&q=85",
+    accent: "#00ffe0", accentRgb: "0,255,224",
+  },
+  {
+    id: "cp2", title: "Campaign Strategy", client: "Apex Studios", status: "Review",
+    photo: "https://images.unsplash.com/photo-1542744094-3a31f272c490?w=800&h=1000&fit=crop&auto=format&q=85",
+    accent: "#bf80ff", accentRgb: "191,128,255",
+  },
+  {
+    id: "cp3", title: "Editorial Design", client: "Novo Press", status: "Active",
+    photo: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=1000&fit=crop&auto=format&q=85",
+    accent: "#ff6b35", accentRgb: "255,107,53",
+  },
+  {
+    id: "cp4", title: "Social Content", client: "Solaris Health", status: "Draft",
+    photo: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&h=1000&fit=crop&auto=format&q=85",
+    accent: "#ffdd00", accentRgb: "255,221,0",
+  },
 ];
 
 function CreativeDashboard({ firstName, nbaItems, projects }: {
@@ -675,171 +691,214 @@ function CreativeDashboard({ firstName, nbaItems, projects }: {
   nbaItems: { title: string; description?: string; priority?: string }[];
   projects: { name: string; status: string }[];
 }) {
+  const [activeCard, setActiveCard] = useState(1);
+
   const activeCount = projects.filter(p => ["In Progress","Active","On Track"].includes(p.status)).length;
   const draftCount  = projects.filter(p => ["Draft","Planning"].includes(p.status)).length;
   const doneCount   = projects.filter(p => ["Completed","Done"].includes(p.status)).length;
 
-  const statTiles = [
-    { gradient: "linear-gradient(135deg, hsl(174 72% 14%), hsl(183 80% 22%))", label: "Active",  value: activeCount,    icon: Rocket,    sub: "in flight" },
-    { gradient: "linear-gradient(135deg, hsl(268 68% 14%), hsl(280 72% 22%))", label: "Drafts",  value: draftCount,     icon: FileText,  sub: "planning" },
-    { gradient: "linear-gradient(135deg, hsl(38 70% 16%),  hsl(38 80% 28%))",  label: "Tasks",   value: nbaItems.length, icon: ListChecks, sub: "open" },
-    { gradient: "linear-gradient(135deg, hsl(160 60% 12%), hsl(160 72% 22%))", label: "Done",    value: doneCount,      icon: CheckCircle, sub: "completed" },
-  ];
+  const featured = C_PROJECTS[activeCard];
+
+  const cardOffset = (i: number) => {
+    const diff = i - activeCard;
+    if (diff === 0)  return { translateX: "0px",    scale: 1,    z: 30, opacity: 1,    rotate: "0deg" };
+    if (diff === -1) return { translateX: "-70px",   scale: 0.88, z: 20, opacity: 0.55, rotate: "-4deg" };
+    if (diff === 1)  return { translateX: "70px",    scale: 0.88, z: 20, opacity: 0.55, rotate: "4deg" };
+    if (diff === -2) return { translateX: "-130px",  scale: 0.76, z: 10, opacity: 0.30, rotate: "-8deg" };
+    if (diff === 2)  return { translateX: "130px",   scale: 0.76, z: 10, opacity: 0.30, rotate: "8deg" };
+    return { translateX: diff < 0 ? "-180px" : "180px", scale: 0.65, z: 0, opacity: 0.12, rotate: diff < 0 ? "-12deg" : "12deg" };
+  };
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: "hsl(222 22% 6%)" }}>
-      {/* ── Header ── */}
-      <div className="px-7 pt-6 pb-5 flex items-center justify-between border-b" style={{ borderColor: "hsl(220 14% 14%)" }}>
+    <div className="flex flex-col min-h-screen" style={{ background: "#080808" }}>
+
+      {/* ── Header bar ── */}
+      <div className="px-7 pt-5 pb-4 flex items-center justify-between border-b" style={{ borderColor: "#1a1a1a" }}>
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.28em] mb-1" style={{ color: "hsl(174 72% 52%)" }}>
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] mb-0.5" style={{ color: "#00ffe0" }}>
             Creative Studio
           </p>
-          <h1 className="text-2xl font-black tracking-tight" style={{ color: "hsl(220 14% 92%)" }}>
+          <h1 className="text-[22px] font-black tracking-tight text-white">
             {firstName ? `${firstName}'s Studio` : "Creative Studio"}
           </h1>
         </div>
-        <div className="flex items-center gap-4 text-[11px]" style={{ color: "hsl(220 10% 48%)" }}>
-          <span><span className="font-black text-white">{activeCount}</span> active</span>
-          <span className="w-px h-4" style={{ background: "hsl(220 14% 18%)" }} />
-          <span><span className="font-black text-white">{nbaItems.length}</span> tasks</span>
+        <div className="flex items-center gap-5 text-[11px]" style={{ color: "#555" }}>
+          <span><span className="font-black text-white text-sm">{activeCount}</span> active</span>
+          <span className="w-px h-4 bg-[#222]" />
+          <span><span className="font-black text-white text-sm">{nbaItems.length}</span> tasks</span>
+          <span className="w-px h-4 bg-[#222]" />
+          <span><span className="font-black text-white text-sm">{doneCount}</span> done</span>
         </div>
       </div>
 
-      <div className="flex-1 p-5 max-w-[1440px] mx-auto w-full">
-        <div className="grid grid-cols-12 gap-4">
+      <div className="flex-1 overflow-auto">
+        {/* ── Featured hero + carousel ── */}
+        <div className="flex flex-col lg:flex-row gap-0" style={{ minHeight: 440 }}>
 
-          {/* ── Featured hero tile — vivid editorial gradient ── */}
-          <Link to="/initiatives"
-            className="col-span-12 lg:col-span-7 relative rounded-3xl overflow-hidden group cursor-pointer"
-            style={{ minHeight: 260, display: "block", background: "linear-gradient(135deg, hsl(220 80% 10%) 0%, hsl(174 72% 16%) 40%, hsl(268 68% 20%) 100%)" }}>
-            {/* Geometric art lines */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-              <div className="absolute" style={{ top: -60, right: -60, width: 280, height: 280, borderRadius: "50%", border: "1px solid hsl(174 72% 52% / 0.12)" }} />
-              <div className="absolute" style={{ top: -20, right: -20, width: 180, height: 180, borderRadius: "50%", border: "1px solid hsl(174 72% 52% / 0.08)" }} />
-              <div className="absolute" style={{ bottom: -40, left: "30%", width: 200, height: 200, borderRadius: "50%", border: "1px solid hsl(268 68% 65% / 0.08)" }} />
-            </div>
-            <div className="absolute inset-0 p-7 flex flex-col justify-between relative z-10">
-              <div>
-                <span className="text-[9px] font-bold uppercase tracking-[0.28em]" style={{ color: "hsl(174 72% 52% / 0.70)" }}>Featured Project</span>
-                <h2 className="text-2xl font-black mt-2 leading-tight" style={{ color: "hsl(220 14% 94%)" }}>Campaign Strategy</h2>
-                <p className="text-sm mt-1.5" style={{ color: "hsl(220 10% 58%)" }}>Apex Studios · In review</p>
-              </div>
+          {/* Left: large featured photo card */}
+          <Link to="/initiatives" className="relative flex-1 overflow-hidden group"
+            style={{ minHeight: 380, display: "block" }}>
+            <img
+              src={featured.photo}
+              alt={featured.title}
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            {/* Dark overlay */}
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #000000ee 0%, #00000055 50%, transparent 100%)" }} />
+            {/* Electric glow line at top */}
+            <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: featured.accent, boxShadow: `0 0 20px ${featured.accent}` }} />
+            <div className="absolute inset-0 p-8 flex flex-col justify-end z-10">
+              <span className="text-[9px] font-bold uppercase tracking-[0.32em] mb-2" style={{ color: featured.accent }}>
+                Featured Project
+              </span>
+              <h2 className="text-3xl font-black text-white leading-tight mb-1.5">{featured.title}</h2>
+              <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.55)" }}>{featured.client}</p>
               <div className="flex items-center gap-3">
-                <span className="px-3 py-1 rounded-full text-[10px] font-bold"
-                  style={{ background: "hsl(268 68% 50% / 0.20)", color: "hsl(268 65% 80%)", border: "1px solid hsl(268 68% 50% / 0.30)" }}>
-                  In Review
+                <span className="px-3 py-1 rounded-full text-[10px] font-bold border"
+                  style={{ borderColor: `${featured.accent}55`, color: featured.accent, background: `rgba(${featured.accentRgb},0.10)` }}>
+                  {featured.status}
                 </span>
-                <span className="text-xs font-semibold" style={{ color: "hsl(174 72% 52%)" }}>View initiative →</span>
+                <span className="text-xs font-semibold" style={{ color: "rgba(255,255,255,0.40)" }}>View initiative →</span>
               </div>
             </div>
           </Link>
 
-          {/* ── Stat tiles ── */}
-          <div className="col-span-12 lg:col-span-5 grid grid-cols-2 gap-4">
-            {statTiles.map(({ gradient, label, value, icon: Icon, sub }) => (
-              <div key={label} className="rounded-3xl p-5 flex flex-col justify-between" style={{ background: gradient, minHeight: 118 }}>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: "rgba(255,255,255,0.55)" }}>{label}</span>
-                  <div className="w-7 h-7 rounded-xl flex items-center justify-center" style={{ background: "rgba(255,255,255,0.12)" }}>
-                    <Icon className="w-3.5 h-3.5 text-white" />
-                  </div>
-                </div>
-                <div>
-                  <div className="text-4xl font-black text-white leading-none">{value}</div>
-                  <div className="text-[11px] mt-1" style={{ color: "rgba(255,255,255,0.45)" }}>{sub}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Right: 3D carousel */}
+          <div className="relative flex items-center justify-center overflow-hidden"
+            style={{ width: "100%", maxWidth: 460, minHeight: 380, background: "#0a0a0a" }}>
 
-          {/* ── Project cards — no photos, vivid gradient art tiles ── */}
-          {C_PROJECTS.map((p) => (
-            <Link key={p.id} to="/initiatives"
-              className="col-span-6 lg:col-span-3 relative rounded-3xl overflow-hidden group"
-              style={{ height: 170, display: "block", background: p.gradient }}>
-              {/* Abstract circle art */}
-              <div className="absolute" style={{
-                top: -30, right: -30, width: 120, height: 120, borderRadius: "50%",
-                border: `1px solid ${p.accent}25`, opacity: 0.6,
-              }} />
-              <div className="absolute" style={{
-                bottom: -20, left: -20, width: 80, height: 80, borderRadius: "50%",
-                background: `${p.accent}10`,
-              }} />
-              <div className="absolute top-3 right-3 z-10">
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-bold"
-                  style={{ background: "rgba(0,0,0,0.35)", color: "white", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,0.14)" }}>
-                  {p.status}
-                </span>
+            {/* Ambient glow behind active card */}
+            <div className="absolute inset-0 pointer-events-none"
+              style={{ background: `radial-gradient(ellipse 60% 60% at 50% 50%, rgba(${featured.accentRgb},0.08) 0%, transparent 70%)`, transition: "background 0.5s" }} />
+
+            {/* Cards fan */}
+            <div className="relative flex items-center justify-center" style={{ height: 300, width: "100%", perspective: "900px" }}>
+              {C_PROJECTS.map((p, i) => {
+                const pos = cardOffset(i);
+                return (
+                  <button key={p.id} onClick={() => setActiveCard(i)}
+                    className="absolute rounded-2xl overflow-hidden cursor-pointer border-2"
+                    style={{
+                      width: 160, height: 240,
+                      transform: `translateX(${pos.translateX}) scale(${pos.scale}) rotate(${pos.rotate})`,
+                      zIndex: pos.z,
+                      opacity: pos.opacity,
+                      transition: "all 0.45s cubic-bezier(.4,0,.2,1)",
+                      borderColor: i === activeCard ? p.accent : "transparent",
+                      boxShadow: i === activeCard ? `0 0 32px rgba(${p.accentRgb},0.45), 0 0 8px rgba(${p.accentRgb},0.25)` : "0 8px 40px rgba(0,0,0,0.8)",
+                    }}>
+                    <img src={p.photo} alt={p.title} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0" style={{ background: "linear-gradient(to top, #000000cc 0%, transparent 55%)" }} />
+                    <div className="absolute bottom-0 left-0 right-0 p-3 text-left">
+                      <div className="text-[11px] font-black text-white leading-tight">{p.title}</div>
+                      <div className="text-[9px] mt-0.5" style={{ color: p.accent }}>{p.client}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Dot indicators */}
+            <div className="absolute bottom-5 flex items-center gap-2">
+              {C_PROJECTS.map((p, i) => (
+                <button key={i} onClick={() => setActiveCard(i)}
+                  className="rounded-full transition-all duration-300"
+                  style={{
+                    width: i === activeCard ? 20 : 6, height: 6,
+                    background: i === activeCard ? featured.accent : "#333",
+                    boxShadow: i === activeCard ? `0 0 8px ${featured.accent}` : "none",
+                  }} />
+              ))}
+            </div>
+
+            {/* Prev / Next */}
+            <button onClick={() => setActiveCard(i => Math.max(0, i - 1))}
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:bg-white/10"
+              style={{ background: "#111", border: "1px solid #2a2a2a" }}>
+              <ChevronLeft className="w-4 h-4 text-white" />
+            </button>
+            <button onClick={() => setActiveCard(i => Math.min(C_PROJECTS.length - 1, i + 1))}
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center transition-all hover:bg-white/10"
+              style={{ background: "#111", border: "1px solid #2a2a2a" }}>
+              <ChevronRight className="w-4 h-4 text-white" />
+            </button>
+          </div>
+        </div>
+
+        {/* ── Bottom row: stats + tasks + nav ── */}
+        <div className="p-5 grid grid-cols-12 gap-4">
+
+          {/* Stat strip */}
+          {[
+            { label: "Active",  value: activeCount,     accent: "#00ffe0", icon: Rocket },
+            { label: "Drafts",  value: draftCount,      accent: "#bf80ff", icon: FileText },
+            { label: "Tasks",   value: nbaItems.length, accent: "#ff6b35", icon: ListChecks },
+            { label: "Done",    value: doneCount,        accent: "#ffdd00", icon: CheckCircle },
+          ].map(({ label, value, accent, icon: Icon }) => (
+            <div key={label} className="col-span-6 lg:col-span-3 rounded-2xl p-4 flex items-center gap-3"
+              style={{ background: "#111", border: "1px solid #1e1e1e" }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: `${accent}18` }}>
+                <Icon className="w-4 h-4" style={{ color: accent }} />
               </div>
-              <div className="absolute bottom-0 left-0 right-0 p-4 z-10">
-                <div className="text-sm font-bold leading-snug" style={{ color: "rgba(255,255,255,0.95)" }}>{p.title}</div>
-                <div className="text-[10px] mt-0.5" style={{ color: p.accent }}>{p.client}</div>
+              <div>
+                <div className="text-2xl font-black leading-none" style={{ color: accent }}>{value}</div>
+                <div className="text-[10px] font-medium mt-0.5" style={{ color: "#555" }}>{label}</div>
               </div>
-              <div className="absolute top-0 left-0 w-0.5 h-full" style={{ background: p.accent, opacity: 0.7 }} />
-            </Link>
+            </div>
           ))}
 
-          {/* ── Open tasks ── */}
-          <div className="col-span-12 lg:col-span-5 rounded-3xl p-5 overflow-hidden"
-            style={{ background: "hsl(222 18% 9%)", border: "1px solid hsl(220 14% 15%)" }}>
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-xl flex items-center justify-center"
-                  style={{ background: "hsl(174 72% 52% / 0.14)" }}>
-                  <ListChecks className="w-3.5 h-3.5" style={{ color: "hsl(174 72% 52%)" }} />
-                </div>
-                <span className="text-sm font-bold" style={{ color: "hsl(220 14% 88%)" }}>Open Tasks</span>
-              </div>
-              <Link to="/action-items" className="text-[11px] font-semibold hover:underline"
-                style={{ color: "hsl(174 72% 52%)" }}>All →</Link>
+          {/* Open tasks */}
+          <div className="col-span-12 lg:col-span-5 rounded-2xl p-4 overflow-hidden"
+            style={{ background: "#111", border: "1px solid #1e1e1e" }}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-sm font-bold text-white">Open Tasks</span>
+              <Link to="/action-items" className="text-[11px] font-semibold" style={{ color: "#00ffe0" }}>All →</Link>
             </div>
-            {nbaItems.length === 0 ? (
-              <p className="text-xs py-4 text-center" style={{ color: "hsl(220 10% 48%)" }}>All tasks are clear.</p>
-            ) : (
-              <div className="space-y-2">
-                {nbaItems.slice(0, 4).map((item, i) => (
-                  <div key={i} className="flex items-center gap-3 p-2.5 rounded-xl"
-                    style={{ background: "hsl(222 16% 12%)" }}>
-                    <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: C_PROJECTS[i % 4].accent }} />
-                    <p className="text-xs font-medium flex-1 min-w-0 truncate" style={{ color: "hsl(220 14% 82%)" }}>{item.title}</p>
-                    {item.priority && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
-                        style={{
-                          background: item.priority?.toLowerCase() === "high" ? "hsl(350 72% 52% / 0.14)" : "hsl(220 14% 18%)",
-                          color: item.priority?.toLowerCase() === "high" ? "hsl(350 72% 70%)" : "hsl(220 10% 52%)",
-                        }}>
-                        {item.priority}
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+            {nbaItems.length === 0
+              ? <p className="text-xs py-3 text-center" style={{ color: "#444" }}>All tasks are clear.</p>
+              : <div className="space-y-1.5">
+                  {nbaItems.slice(0, 4).map((item, i) => (
+                    <div key={i} className="flex items-center gap-2.5 px-3 py-2 rounded-xl" style={{ background: "#161616" }}>
+                      <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: C_PROJECTS[i % 4].accent }} />
+                      <p className="text-xs flex-1 min-w-0 truncate" style={{ color: "#ccc" }}>{item.title}</p>
+                      {item.priority && (
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md flex-shrink-0"
+                          style={{
+                            background: item.priority?.toLowerCase() === "high" ? "#ff6b3520" : "#1e1e1e",
+                            color: item.priority?.toLowerCase() === "high" ? "#ff6b35" : "#555",
+                          }}>
+                          {item.priority}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+            }
           </div>
 
-          {/* ── Quick nav ── */}
-          <div className="col-span-12 lg:col-span-7 grid grid-cols-3 gap-4">
+          {/* Quick nav */}
+          <div className="col-span-12 lg:col-span-7 grid grid-cols-3 gap-3">
             {[
-              { to: "/crm",          label: "Portfolio", sub: "Clients",   gradient: "linear-gradient(135deg, hsl(212 72% 14%), hsl(225 80% 22%))", icon: Users },
-              { to: "/marketing",    label: "Outreach",  sub: "Campaigns", gradient: "linear-gradient(135deg, hsl(174 72% 12%), hsl(183 80% 22%))", icon: TrendingUp },
-              { to: "/action-items", label: "My Work",   sub: "Actions",   gradient: "linear-gradient(135deg, hsl(268 68% 14%), hsl(280 72% 22%))", icon: Zap },
-            ].map(({ to, label, sub, gradient, icon: Icon }) => (
+              { to: "/crm",          label: "Portfolio", sub: "Clients",   accent: "#00ffe0", icon: Users },
+              { to: "/marketing",    label: "Outreach",  sub: "Campaigns", accent: "#bf80ff", icon: TrendingUp },
+              { to: "/action-items", label: "My Work",   sub: "Actions",   accent: "#ff6b35", icon: Zap },
+            ].map(({ to, label, sub, accent, icon: Icon }) => (
               <Link key={to} to={to}
-                className="rounded-3xl p-5 flex flex-col gap-2 transition-all hover:opacity-90"
-                style={{ background: gradient }}>
+                className="rounded-2xl p-4 flex flex-col gap-2 transition-all hover:opacity-80 group"
+                style={{ background: "#111", border: "1px solid #1e1e1e" }}>
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-                  style={{ background: "rgba(255,255,255,0.14)" }}>
-                  <Icon className="w-4 h-4 text-white" />
+                  style={{ background: `${accent}18` }}>
+                  <Icon className="w-4 h-4" style={{ color: accent }} />
                 </div>
                 <div className="mt-auto">
                   <div className="text-sm font-black text-white">{label}</div>
-                  <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.50)" }}>{sub}</div>
+                  <div className="text-[11px] mt-0.5" style={{ color: "#555" }}>{sub}</div>
                 </div>
+                <div className="h-px w-8 group-hover:w-full transition-all duration-300 rounded-full" style={{ background: accent }} />
               </Link>
             ))}
           </div>
-
         </div>
       </div>
     </div>
