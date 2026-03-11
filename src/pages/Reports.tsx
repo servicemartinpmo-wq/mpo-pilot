@@ -372,8 +372,8 @@ export default function Reports() {
                 <YAxis domain={[40, 100]} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                 <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
                 <Legend />
-                <Line type="monotone" dataKey="health" stroke="hsl(var(--electric-blue))" strokeWidth={2.5} dot={false} name="Execution Health" />
-                <Line type="monotone" dataKey="maturity" stroke="hsl(var(--teal))" strokeWidth={2} strokeDasharray="4 2" dot={false} name="Maturity Score" />
+                <Line type="monotone" dataKey="health" stroke="hsl(var(--electric-blue))" strokeWidth={2.5} dot={false} name="Execution Health" isAnimationActive animationDuration={1400} animationEasing="ease-out" />
+                <Line type="monotone" dataKey="maturity" stroke="hsl(var(--teal))" strokeWidth={2} strokeDasharray="4 2" dot={false} name="Maturity Score" isAnimationActive animationDuration={1600} animationEasing="ease-out" />
               </LineChart>
             </ResponsiveContainer>
           </SectionCard>
@@ -432,8 +432,8 @@ export default function Reports() {
                 <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                 <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
                 <Legend />
-                <Bar dataKey="score" fill="hsl(var(--electric-blue))" radius={[3, 3, 0, 0]} name="Maturity Score" />
-                <Bar dataKey="health" fill="hsl(var(--teal))" radius={[3, 3, 0, 0]} name="Execution Health" />
+                <Bar dataKey="score" fill="hsl(var(--electric-blue))" radius={[3, 3, 0, 0]} name="Maturity Score" isAnimationActive animationDuration={900} animationEasing="ease-out" animationBegin={0} />
+                <Bar dataKey="health" fill="hsl(var(--teal))" radius={[3, 3, 0, 0]} name="Execution Health" isAnimationActive animationDuration={900} animationEasing="ease-out" animationBegin={150} />
               </BarChart>
             </ResponsiveContainer>
           </SectionCard>
@@ -485,7 +485,7 @@ export default function Reports() {
             <SectionCard title="Initiative Status Distribution" icon={BarChart3}>
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
-                  <Pie data={statusCounts} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
+                  <Pie data={statusCounts} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, value }) => `${name}: ${value}`} labelLine={false} isAnimationActive animationDuration={1000} animationEasing="ease-out" animationBegin={100}>
                     {statusCounts.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                   </Pie>
                   <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
@@ -530,10 +530,10 @@ export default function Reports() {
             {QUARTERS.map((q, i) => {
               const isCurrentQ = i === QUARTERS.length - 1;
               return (
-                <div key={q.q} className={cn(
-                  "bg-card rounded-xl border-2 shadow-card overflow-hidden",
-                  isCurrentQ ? "border-electric-blue/30" : "border-border"
-                )}>
+                <div key={q.q}
+                  className={cn("bg-card rounded-xl border-2 shadow-card overflow-hidden"
+                    , isCurrentQ ? "border-electric-blue/30" : "border-border")}
+                  style={{ animation: `slideUp 0.45s cubic-bezier(0.4,0,0.2,1) both`, animationDelay: `${i * 80}ms` }}>
                   <div className={cn(
                     "px-5 py-3.5 border-b-2 flex items-center justify-between",
                     isCurrentQ ? "border-electric-blue/20 bg-electric-blue/5" : "border-border bg-secondary"
@@ -585,9 +585,9 @@ export default function Reports() {
                 <YAxis yAxisId="right" orientation="right" domain={[0, 10]} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                 <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
                 <Legend />
-                <Bar yAxisId="left" dataKey="health" fill="hsl(var(--electric-blue))" radius={[3, 3, 0, 0]} name="Org Health" />
-                <Bar yAxisId="left" dataKey="maturity" fill="hsl(var(--teal))" radius={[3, 3, 0, 0]} name="Maturity" />
-                <Bar yAxisId="right" dataKey="revenue" fill="hsl(var(--signal-green) / 0.7)" radius={[3, 3, 0, 0]} name="Revenue ($M)" />
+                <Bar yAxisId="left" dataKey="health" fill="hsl(var(--electric-blue))" radius={[3, 3, 0, 0]} name="Org Health" isAnimationActive animationDuration={800} animationEasing="ease-out" animationBegin={0} />
+                <Bar yAxisId="left" dataKey="maturity" fill="hsl(var(--teal))" radius={[3, 3, 0, 0]} name="Maturity" isAnimationActive animationDuration={800} animationEasing="ease-out" animationBegin={120} />
+                <Bar yAxisId="right" dataKey="revenue" fill="hsl(var(--signal-green) / 0.7)" radius={[3, 3, 0, 0]} name="Revenue ($M)" isAnimationActive animationDuration={800} animationEasing="ease-out" animationBegin={240} />
               </BarChart>
             </ResponsiveContainer>
           </SectionCard>
@@ -643,8 +643,8 @@ export default function Reports() {
                 <YAxis domain={[40, 100]} tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                 <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
                 <Legend />
-                <Area type="monotone" dataKey="health" stroke="hsl(var(--electric-blue))" strokeWidth={2.5} fill="url(#healthGrad)" name="Execution Health" />
-                <Area type="monotone" dataKey="maturity" stroke="hsl(var(--teal))" strokeWidth={2} fill="url(#maturityGrad)" name="Maturity Score" />
+                <Area type="monotone" dataKey="health" stroke="hsl(var(--electric-blue))" strokeWidth={2.5} fill="url(#healthGrad)" name="Execution Health" isAnimationActive animationDuration={1400} animationEasing="ease-out" animationBegin={0} />
+                <Area type="monotone" dataKey="maturity" stroke="hsl(var(--teal))" strokeWidth={2} fill="url(#maturityGrad)" name="Maturity Score" isAnimationActive animationDuration={1600} animationEasing="ease-out" animationBegin={200} />
               </AreaChart>
             </ResponsiveContainer>
           </SectionCard>
