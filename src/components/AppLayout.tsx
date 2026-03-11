@@ -263,8 +263,7 @@ const MODE_THEMES: Record<string, ModeTheme> = {
     cssVars: {
       "--primary": "44 80% 50%", "--amber": "44 80% 50%",
       "--electric-blue": "44 80% 50%", "--chart-1": "44 80% 50%",
-      "--signal-yellow": "44 80% 50%", "--background": "228 24% 8%",
-      "--card": "228 22% 11%",
+      "--signal-yellow": "44 80% 50%",
     },
   },
   startup: {
@@ -276,7 +275,6 @@ const MODE_THEMES: Record<string, ModeTheme> = {
     cssVars: {
       "--primary": "272 78% 65%", "--electric-blue": "272 78% 65%",
       "--chart-1": "272 78% 65%", "--chart-2": "186 90% 48%",
-      "--background": "268 24% 8%", "--card": "268 22% 11%",
     },
   },
   freelance: {
@@ -288,7 +286,6 @@ const MODE_THEMES: Record<string, ModeTheme> = {
     cssVars: {
       "--primary": "25 88% 52%", "--amber": "25 88% 52%",
       "--chart-1": "25 88% 52%", "--signal-yellow": "25 88% 52%",
-      "--background": "20 22% 8%", "--card": "20 20% 11%",
     },
   },
   simple: {
@@ -300,7 +297,6 @@ const MODE_THEMES: Record<string, ModeTheme> = {
     cssVars: {
       "--primary": "258 68% 64%", "--electric-blue": "258 68% 64%",
       "--chart-1": "258 68% 64%", "--chart-5": "280 65% 65%",
-      "--background": "248 24% 8%", "--card": "248 22% 11%",
     },
   },
 };
