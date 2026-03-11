@@ -664,7 +664,7 @@ const CREATIVE_PROJECTS = [
   { id: "cp1", title: "Brand Refresh", client: "Meridian Co.", status: "Active", img: "/banner-tiger.png", tileColor: "hsl(340 72% 52%)" },
   { id: "cp2", title: "Campaign Strategy", client: "Apex Studios", status: "Review", img: "/banner-mountain.png", tileColor: "hsl(212 80% 52%)" },
   { id: "cp3", title: "Editorial Design", client: "Novo Press", status: "Active", img: "/banner-city.png", tileColor: "hsl(174 68% 38%)" },
-  { id: "cp4", title: "Social Content", client: "Solaris Health", status: "Draft", img: "/banner-forest.png", tileColor: "hsl(258 68% 58%)" },
+  { id: "cp4", title: "Social Content", client: "Solaris Health", status: "Draft", img: "/banner-lake2.png", tileColor: "hsl(258 68% 58%)" },
 ];
 
 function CreativeDashboard({ firstName, nbaItems, projects }: {

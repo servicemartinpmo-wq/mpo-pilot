@@ -2,7 +2,7 @@
  * Systems — Operational nerve center: analytics, delegation matrix, signal detection, quality control, roles & access
  */
 import { frameworks, departments, orgMetrics, orgProfile, authorityMatrix, sopRecords, actionItems, governanceLogs } from "@/lib/pmoData";
-import { loadProfile, saveProfile, applyAccentColor, applyFont } from "@/lib/companyStore";
+import { loadProfile, saveProfile, applyAccentColor, applyFont, resetOnboarding } from "@/lib/companyStore";
 import type { CompanyProfile } from "@/lib/companyStore";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -592,7 +592,7 @@ export default function Admin() {
                 className="w-full text-sm font-bold py-3 px-4 rounded-xl border-2 border-electric-blue text-electric-blue hover:bg-electric-blue/10 transition-colors">
                 Save Changes
               </button>
-              <button onClick={() => { if (confirm("Reset onboarding? This will restart the setup wizard.")) { const { resetOnboarding } = require("@/lib/companyStore"); resetOnboarding(); window.location.reload(); } }}
+              <button onClick={() => { if (confirm("Reset onboarding? This will restart the setup wizard.")) { resetOnboarding(); window.location.reload(); } }}
                 className="w-full text-sm font-semibold py-2.5 px-4 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors">
                 Reset Onboarding
               </button>
