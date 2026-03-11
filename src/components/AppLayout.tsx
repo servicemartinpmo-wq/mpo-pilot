@@ -8,6 +8,7 @@ import {
   FolderOpen, Scale, Layers, UserCircle, TrendingUp,
   Network, ShoppingBag, CreditCard,
 } from "lucide-react";
+import pmoLogoLight from "@/assets/pmo-logo-light.png";
 import { useUserMode } from "@/hooks/useUserMode";
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
@@ -194,26 +195,20 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
         <div className="relative z-10 flex flex-col h-full">
 
           {/* Brand header */}
-          <div className="flex items-center gap-3 px-3.5 py-4 border-b" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
-            <div
-              className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 glow-blue"
-              style={{ background: "linear-gradient(135deg, hsl(222 88% 65%), hsl(174 68% 42%))" }}>
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-
-            {!collapsed && (
-              <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-bold tracking-wide truncate text-white leading-tight">
-                  {profile.orgName
-                    ? profile.orgName.length > 14
-                      ? profile.orgName.slice(0, 13) + "…"
-                      : profile.orgName
-                    : "PMO-Ops"}
-                </div>
-                <div className="text-[10px] mt-0.5 font-medium" style={{ color: "hsl(38 92% 52% / 0.7)" }}>
-                  Command Center
-                </div>
+          <div className="flex items-center gap-3 px-3.5 py-3.5 border-b" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
+            {collapsed ? (
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 glow-blue"
+                style={{ background: "linear-gradient(135deg, hsl(222 88% 65%), hsl(174 68% 42%))" }}>
+                <Zap className="w-4 h-4 text-white" />
               </div>
+            ) : (
+              <img
+                src={pmoLogoLight}
+                alt="Martin PMO"
+                className="flex-shrink-0"
+                style={{ height: 44, width: "auto", filter: "invert(1) brightness(2)", opacity: 0.88 }}
+              />
             )}
 
             <button

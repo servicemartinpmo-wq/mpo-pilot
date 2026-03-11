@@ -1,5 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { insights, actionItems, initiatives } from "@/lib/pmoData";
+import pmoLogoLight from "@/assets/pmo-logo-light.png";
+import onboardNetwork from "@/assets/onboard-network.jpg";
 import InsightCard from "@/components/InsightCard";
 import CompanyHealthScore from "@/components/CompanyHealthScore";
 import StrategyScoreCard from "@/components/StrategyScoreCard";
@@ -198,6 +200,148 @@ function ScoreDim({ label, score }: { label: string; score: number }) {
         <div className="h-full rounded-full transition-all duration-700" style={{ width: `${score}%`, background: color }} />
       </div>
       <span className="text-[11px] font-mono font-semibold w-7 text-right" style={{ color }}>{score}</span>
+    </div>
+  );
+}
+
+// ── Dashboard Hero Carousel Banner ──────────────────────────────────────────
+interface HeroBannerProps {
+  firstName: string;
+  orgName: string;
+  industry: string;
+  liveOverallHealth: number;
+  onTrackCount: number;
+  atRiskCount: number;
+  criticalCount: number;
+  pendingActions: number;
+  nbaItems: { title: string; priority?: string; category?: string }[];
+}
+function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCount, atRiskCount, criticalCount, pendingActions, nbaItems }: HeroBannerProps) {
+  const [slide, setSlide] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const total = 3;
+
+  const resetTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => setSlide(s => (s + 1) % total), 6000);
+  };
+
+  useEffect(() => {
+    resetTimer();
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, []);
+
+  const goTo = (i: number) => { setSlide(i); resetTimer(); };
+
+  const tod = getTimeOfDay();
+  const greeting = tod === "morning" ? "Good morning" : tod === "afternoon" ? "Good afternoon" : "Good evening";
+  const dateStr = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+
+  const healthColor = liveOverallHealth >= 80 ? "hsl(160 56% 46%)" : liveOverallHealth >= 60 ? "hsl(38 92% 52%)" : "hsl(350 72% 52%)";
+  const healthLabel = liveOverallHealth >= 80 ? "Strong" : liveOverallHealth >= 60 ? "Moderate" : "Needs Attention";
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl" style={{ background: "hsl(225 48% 9%)", minHeight: 220 }}>
+
+      {/* Background texture */}
+      <img src={onboardNetwork} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ opacity: 0.07, mixBlendMode: "luminosity" }} />
+
+      {/* Ambient orb */}
+      <div className="absolute pointer-events-none" style={{ top: "-30%", right: "20%", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, hsl(222 80% 58% / 0.10) 0%, transparent 60%)" }} />
+      <div className="absolute pointer-events-none" style={{ bottom: "-20%", left: "5%", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, hsl(38 88% 55% / 0.07) 0%, transparent 60%)" }} />
+
+      {/* Content layout */}
+      <div className="relative z-10 flex items-stretch min-h-[220px]">
+
+        {/* Left: slides */}
+        <div className="flex-1 px-7 py-6 flex flex-col justify-between">
+
+          {/* Logo + live dot */}
+          <div className="flex items-center gap-3 mb-4">
+            <img src={pmoLogoLight} alt="Martin PMO" style={{ height: 36, width: "auto", filter: "invert(1) brightness(2)", opacity: 0.80 }} />
+            <div className="flex items-center gap-1.5">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-70" style={{ background: "hsl(160 56% 46%)" }} />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "hsl(160 56% 46%)" }} />
+              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "hsl(160 56% 46%)" }}>Live</span>
+            </div>
+          </div>
+
+          {/* Slide content */}
+          <div className="flex-1 flex flex-col justify-center">
+
+            {/* Slide 1 — Welcome briefing */}
+            {slide === 0 && (
+              <div key="s0">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-2" style={{ color: "hsl(0 0% 100% / 0.38)" }}>{dateStr}</p>
+                <h2 className="text-[1.9rem] font-black leading-none tracking-tight mb-2.5 text-white">
+                  {greeting}{firstName ? `, ${firstName}` : ""}.
+                </h2>
+                <p className="text-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.55)", maxWidth: 440 }}>
+                  {orgName ? `${orgName} — ` : ""}
+                  {criticalCount > 0
+                    ? `${criticalCount} critical signal${criticalCount > 1 ? "s" : ""} require your attention today.`
+                    : "No critical issues detected. You're on track."}
+                </p>
+              </div>
+            )}
+
+            {/* Slide 2 — Performance snapshot */}
+            {slide === 1 && (
+              <div key="s1">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-3" style={{ color: "hsl(0 0% 100% / 0.38)" }}>Performance at a glance</p>
+                <div className="flex gap-6 flex-wrap">
+                  {[
+                    { value: onTrackCount,   label: "On Track",       color: "hsl(160 56% 46%)" },
+                    { value: atRiskCount,    label: "Needs Attention", color: "hsl(38 92% 52%)" },
+                    { value: criticalCount,  label: "Critical",        color: "hsl(350 72% 52%)" },
+                    { value: pendingActions, label: "Open Actions",    color: "hsl(222 80% 65%)" },
+                  ].map(({ value, label, color }) => (
+                    <div key={label}>
+                      <div className="text-[2.1rem] font-black leading-none font-mono mb-1" style={{ color }}>{value}</div>
+                      <div className="text-[11px] font-medium" style={{ color: "hsl(0 0% 100% / 0.42)" }}>{label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Slide 3 — Today's priorities */}
+            {slide === 2 && (
+              <div key="s2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] mb-3" style={{ color: "hsl(0 0% 100% / 0.38)" }}>Your priorities today</p>
+                <div className="space-y-2">
+                  {nbaItems.slice(0, 3).map((item, i) => (
+                    <div key={i} className="flex items-center gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: item.priority === "high" || item.priority === "High" ? "hsl(38 92% 52%)" : "hsl(222 80% 65%)" }} />
+                      <span className="text-sm font-medium leading-snug line-clamp-1" style={{ color: "hsl(0 0% 100% / 0.78)" }}>{item.title}</span>
+                    </div>
+                  ))}
+                  {nbaItems.length === 0 && <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.45)" }}>No open actions. Great work.</p>}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Slide nav dots */}
+          <div className="flex items-center gap-2 mt-5">
+            {Array.from({ length: total }).map((_, i) => (
+              <button key={i} onClick={() => goTo(i)}
+                className="rounded-full transition-all duration-300"
+                style={{ width: i === slide ? 20 : 6, height: 6, background: i === slide ? "hsl(0 0% 100% / 0.85)" : "hsl(0 0% 100% / 0.22)" }} />
+            ))}
+          </div>
+        </div>
+
+        {/* Right: health score */}
+        <div className="hidden lg:flex flex-col items-center justify-center px-8 border-l" style={{ borderColor: "hsl(0 0% 100% / 0.07)", minWidth: 160 }}>
+          <div className="text-[3.2rem] font-black font-mono leading-none mb-1" style={{ color: healthColor }}>{liveOverallHealth}</div>
+          <div className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: healthColor }}>{healthLabel}</div>
+          <div className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.35)" }}>Company Health</div>
+          {industry && <div className="mt-3 text-[10px] text-center px-2 py-1 rounded-full" style={{ background: "hsl(0 0% 100% / 0.07)", color: "hsl(0 0% 100% / 0.4)" }}>{industry}</div>}
+        </div>
+      </div>
     </div>
   );
 }
@@ -415,8 +559,6 @@ export default function Dashboard() {
   }
 
   const strategyScores = useStrategyScores();
-  const greeting = getGreeting(firstName ?? "");
-  const GreetIcon = greeting.icon;
 
   const healthDimensions = scoreBreakdown.length > 0
     ? scoreBreakdown.map((d: any) => ({ label: d.label, score: d.score, weight: d.weight }))
@@ -451,57 +593,37 @@ export default function Dashboard() {
       <div className="flex-1 p-7 space-y-6 max-w-[1560px] mx-auto w-full">
 
         {/* ════════════════════════════════════════
-            HERO: Greeting + Health Score + KPIs
+            HERO: Cinematic Banner Carousel
+            ════════════════════════════════════════ */}
+        <HeroBanner
+          firstName={firstName ?? ""}
+          orgName={data.orgName ?? ""}
+          industry={data.industry ?? ""}
+          liveOverallHealth={liveOverallHealth}
+          onTrackCount={onTrackCount}
+          atRiskCount={atRiskCount}
+          criticalCount={criticalCount}
+          pendingActions={pendingActions}
+          nbaItems={nbaItems}
+        />
+
+        {/* ════════════════════════════════════════
+            KPI TILES + HEALTH SCORE
             ════════════════════════════════════════ */}
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_300px] gap-5">
-
-          {/* Left: Greeting + 4 KPIs */}
-          <div className="flex flex-col gap-5">
-            {/* Greeting */}
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2.5 mb-2.5">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60" style={{ background: "hsl(160 56% 46%)" }} />
-                    <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "hsl(160 56% 46%)" }} />
-                  </span>
-                  <span className="section-label">
-                    {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-                  </span>
-                </div>
-                <h1 className="text-[2.1rem] font-black text-foreground leading-none tracking-tight mb-2">
-                  {greeting.headline}
-                </h1>
-                <p className="text-sm text-muted-foreground leading-relaxed max-w-lg">{greeting.sub}</p>
-
-                {(data.orgName || data.industry) && (
-                  <div className="flex items-center gap-2 mt-3 text-sm">
-                    {data.orgName && <span className="font-semibold text-foreground/80">{data.orgName}</span>}
-                    {data.industry && <><span className="text-border">·</span><span className="text-muted-foreground">{data.industry}</span></>}
-                    {data.orgType && <><span className="text-border">·</span><span className="text-muted-foreground">{data.orgType}</span></>}
-                  </div>
-                )}
-              </div>
-              <div className="flex-shrink-0 hidden md:flex items-center justify-center w-12 h-12 rounded-2xl"
-                style={{ background: "hsl(38 92% 52% / 0.1)", border: "1px solid hsl(38 92% 52% / 0.15)" }}>
-                <GreetIcon className="w-5 h-5 text-amber" />
-              </div>
-            </div>
-
-            {/* 4 KPI tiles */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <KpiTile label="On Track" value={onTrackCount} sub="Initiatives healthy" signal="green" icon={CheckCircle}
-                onClick={() => navigate("/initiatives")} />
-              <KpiTile label="Needs Attention" value={atRiskCount} sub="At risk or delayed" signal="yellow" icon={Clock}
-                onClick={() => navigate("/initiatives")} />
-              <KpiTile label="Critical Signals" value={criticalCount} sub="Immediate action" signal="red" icon={AlertTriangle}
-                onClick={() => navigate("/diagnostics")} />
-              <KpiTile label="Open Actions" value={pendingActions} sub="Tasks in progress" signal="blue" icon={Activity}
-                onClick={() => navigate("/action-items")} />
-            </div>
+          {/* 4 KPI tiles */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <KpiTile label="On Track" value={onTrackCount} sub="Initiatives healthy" signal="green" icon={CheckCircle}
+              onClick={() => navigate("/initiatives")} />
+            <KpiTile label="Needs Attention" value={atRiskCount} sub="At risk or delayed" signal="yellow" icon={Clock}
+              onClick={() => navigate("/initiatives")} />
+            <KpiTile label="Critical Signals" value={criticalCount} sub="Immediate action" signal="red" icon={AlertTriangle}
+              onClick={() => navigate("/diagnostics")} />
+            <KpiTile label="Open Actions" value={pendingActions} sub="Tasks in progress" signal="blue" icon={Activity}
+              onClick={() => navigate("/action-items")} />
           </div>
 
-          {/* Right: Company Health Score */}
+          {/* Company Health Score */}
           <div className="rounded-2xl border p-6 flex flex-col items-center"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-elevated)" }}>
             <div className="section-label mb-4">Company Health</div>
