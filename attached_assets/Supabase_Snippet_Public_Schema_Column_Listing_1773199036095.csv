@@ -1,0 +1,101 @@
+table_schema,table_name,column_name,data_type
+public,__debug_test_table__,id,uuid
+public,action_items,id,uuid
+public,action_items,title,text
+public,action_items,description,text
+public,action_items,initiative_id,uuid
+public,action_items,project_id,uuid
+public,action_items,owner_id,uuid
+public,action_items,organization_id,uuid
+public,action_items,status,character varying
+public,action_items,priority,character varying
+public,action_items,due_date,date
+public,action_items,created_at,timestamp with time zone
+public,action_items,updated_at,timestamp with time zone
+public,action_items,assigned_to,uuid
+public,action_items,kpi_id,uuid
+public,action_items,task_time_estimate_minutes,numeric
+public,action_items,completed_at,timestamp with time zone
+public,action_items,tags,ARRAY
+public,action_items,task_type,text
+public,action_items,predicted_duration_minutes,integer
+public,action_items,created_by,uuid
+public,activity_feed,id,uuid
+public,activity_feed,workspace_id,uuid
+public,activity_feed,user_id,uuid
+public,activity_feed,action_type,text
+public,activity_feed,entity_type,text
+public,activity_feed,entity_id,uuid
+public,activity_feed,created_at,timestamp with time zone
+public,advisories,id,uuid
+public,advisories,diagnostic_id,uuid
+public,advisories,organization_id,uuid
+public,advisories,title,text
+public,advisories,recommendation,text
+public,advisories,priority,character varying
+public,advisories,actions,jsonb
+public,advisories,owner_id,uuid
+public,advisories,status,character varying
+public,advisories,created_at,timestamp with time zone
+public,advisories,updated_at,timestamp with time zone
+public,advisories,severity,jsonb
+public,advisories,related_initiative_id,uuid
+public,advisories,description,text
+public,advisory_modules,id,bigint
+public,advisory_modules,name,text
+public,advisory_modules,domain,text
+public,advisory_modules,description,text
+public,advisory_modules,advisory_id,uuid
+public,advisory_modules,created_at,timestamp without time zone
+public,advisory_modules,updated_at,timestamp without time zone
+public,advisory_recommendations,id,uuid
+public,advisory_recommendations,task_id,uuid
+public,advisory_recommendations,user_id,uuid
+public,advisory_recommendations,recommendation,jsonb
+public,advisory_recommendations,created_at,timestamp with time zone
+public,ai_call_logs,id,uuid
+public,ai_call_logs,organization_id,uuid
+public,ai_call_logs,user_id,uuid
+public,ai_call_logs,model,text
+public,ai_call_logs,prompt,jsonb
+public,ai_call_logs,response,jsonb
+public,ai_call_logs,cost,numeric
+public,ai_call_logs,created_at,timestamp with time zone
+public,ai_usage,organization_id,uuid
+public,ai_usage,total_calls,bigint
+public,ai_usage,total_cost,numeric
+public,ai_usage,updated_at,timestamp with time zone
+public,alerts,id,bigint
+public,alerts,created_at,timestamp with time zone
+public,alerts,title,text
+public,alerts,description,text
+public,alerts,initiative_id,uuid
+public,alerts,project_id,uuid
+public,alerts,action_item_id,uuid
+public,alerts,severity,text
+public,alerts,status,text
+public,alerts,updated_at,timestamp without time zone
+public,algorithm_scores,id,uuid
+public,algorithm_scores,campaign_id,text
+public,algorithm_scores,engagement_score,numeric
+public,algorithm_scores,relevance_score,numeric
+public,algorithm_scores,conversion_score,numeric
+public,algorithm_scores,authority_score,numeric
+public,algorithm_scores,freshness_score,numeric
+public,algorithm_scores,network_score,numeric
+public,algorithm_scores,efficiency_score,numeric
+public,algorithm_scores,mega_algorithm_score,numeric
+public,algorithm_scores,calculated_at,timestamp with time zone
+public,algorithm_signals,id,uuid
+public,algorithm_signals,organization_id,uuid
+public,algorithm_signals,campaign_id,text
+public,algorithm_signals,platform,text
+public,algorithm_signals,signal_type,text
+public,algorithm_signals,metric_name,text
+public,algorithm_signals,metric_value,numeric
+public,algorithm_signals,recorded_at,timestamp with time zone
+public,api_keys,id,uuid
+public,api_keys,organization_id,uuid
+public,api_keys,key,text
+public,api_keys,name,character varying
+public,api_keys,role,character varying

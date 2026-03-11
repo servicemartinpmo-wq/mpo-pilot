@@ -15,6 +15,36 @@ type DbGovLog       = Database["public"]["Tables"]["governance_logs"]["Row"];
 type DbSopRecord    = Database["public"]["Tables"]["sop_records"]["Row"];
 type DbOrgMetrics   = Database["public"]["Tables"]["org_metrics"]["Row"];
 type DbIntegration  = Database["public"]["Tables"]["integration_connections"]["Row"];
+type DbTeamMember   = Database["public"]["Tables"]["team_members"]["Row"];
+type DbProject      = Database["public"]["Tables"]["projects"]["Row"];
+type DbKpi          = Database["public"]["Tables"]["kpis"]["Row"];
+type DbKpiHistory   = Database["public"]["Tables"]["kpi_history"]["Row"];
+type DbMilestone    = Database["public"]["Tables"]["milestones"]["Row"];
+type DbRisk         = Database["public"]["Tables"]["risks"]["Row"];
+type DbDependency   = Database["public"]["Tables"]["dependencies"]["Row"];
+type DbSignal       = Database["public"]["Tables"]["signals"]["Row"];
+type DbSignalDef    = Database["public"]["Tables"]["signal_definitions"]["Row"];
+type DbAdvisory     = Database["public"]["Tables"]["advisories"]["Row"];
+type DbNotification = Database["public"]["Tables"]["notifications"]["Row"];
+type DbActivityFeed = Database["public"]["Tables"]["activity_feed"]["Row"];
+type DbNextBestAction = Database["public"]["Tables"]["next_best_actions"]["Row"];
+type DbKnowledgeItem  = Database["public"]["Tables"]["knowledge_items"]["Row"];
+type DbFramework      = Database["public"]["Tables"]["frameworks"]["Row"];
+type DbAlert          = Database["public"]["Tables"]["alerts"]["Row"];
+type DbWorkflowRun    = Database["public"]["Tables"]["workflow_runs"]["Row"];
+type DbAiCallLog      = Database["public"]["Tables"]["ai_call_logs"]["Row"];
+type DbOrganization   = Database["public"]["Tables"]["organizations"]["Row"];
+type DbOrgMember      = Database["public"]["Tables"]["organization_members"]["Row"];
+type DbTeam           = Database["public"]["Tables"]["teams"]["Row"];
+
+export type {
+  DbProfile, DbDepartment, DbInitiative, DbActionItem, DbInsight,
+  DbGovLog, DbSopRecord, DbOrgMetrics, DbIntegration, DbTeamMember,
+  DbProject, DbKpi, DbKpiHistory, DbMilestone, DbRisk, DbDependency,
+  DbSignal, DbSignalDef, DbAdvisory, DbNotification, DbActivityFeed,
+  DbNextBestAction, DbKnowledgeItem, DbFramework, DbAlert, DbWorkflowRun,
+  DbAiCallLog, DbOrganization, DbOrgMember, DbTeam,
+};
 
 // ─────────────────────────────────────────────────────────────────────
 // PROFILE
@@ -83,17 +113,27 @@ export async function deleteInitiative(id: string) {
 
 // ─────────────────────────────────────────────────────────────────────
 // ACTION ITEMS
+// Remote table uses `user_id` (not `profile_id`) and `completed_at` (not `completed_date`)
 // ─────────────────────────────────────────────────────────────────────
-export async function getActionItems(profileId: string): Promise<DbActionItem[]> {
+export async function getActionItems(userId: string): Promise<DbActionItem[]> {
   const { data } = await supabase
     .from("action_items")
     .select("*")
-    .eq("profile_id", profileId)
+    .or(`user_id.eq.${userId},owner_id.eq.${userId},assigned_to.eq.${userId}`)
     .order("due_date", { ascending: true });
   return data ?? [];
 }
 
-export async function upsertActionItem(item: Partial<DbActionItem> & { id: string; profile_id: string; title: string }) {
+export async function getActionItemsByInitiative(initiativeId: string): Promise<DbActionItem[]> {
+  const { data } = await supabase
+    .from("action_items")
+    .select("*")
+    .eq("initiative_id", initiativeId)
+    .order("due_date", { ascending: true });
+  return data ?? [];
+}
+
+export async function upsertActionItem(item: Partial<DbActionItem> & { title: string }) {
   return supabase.from("action_items").upsert(item, { onConflict: "id" }).select().single();
 }
 
@@ -102,7 +142,7 @@ export async function updateActionItemStatus(id: string, status: string) {
     .from("action_items")
     .update({
       status,
-      completed_date: status === "Completed" ? new Date().toISOString().split("T")[0] : null,
+      completed_at: status === "Completed" ? new Date().toISOString() : null,
     })
     .eq("id", id);
 }
@@ -127,6 +167,10 @@ export async function upsertInsight(ins: Partial<DbInsight> & { id: string; prof
   return supabase.from("insights").upsert(ins, { onConflict: "id" }).select().single();
 }
 
+export async function deleteInsight(id: string) {
+  return supabase.from("insights").delete().eq("id", id);
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // GOVERNANCE LOGS
 // ─────────────────────────────────────────────────────────────────────
@@ -147,6 +191,10 @@ export async function updateGovernanceStatus(id: string, status: string) {
   return supabase.from("governance_logs").update({ status }).eq("id", id);
 }
 
+export async function deleteGovernanceLog(id: string) {
+  return supabase.from("governance_logs").delete().eq("id", id);
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // SOP RECORDS
 // ─────────────────────────────────────────────────────────────────────
@@ -161,6 +209,10 @@ export async function getSopRecords(profileId: string): Promise<DbSopRecord[]> {
 
 export async function upsertSopRecord(sop: Partial<DbSopRecord> & { id: string; profile_id: string; title: string }) {
   return supabase.from("sop_records").upsert(sop, { onConflict: "id" }).select().single();
+}
+
+export async function deleteSopRecord(id: string) {
+  return supabase.from("sop_records").delete().eq("id", id);
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -195,11 +247,10 @@ export async function getIntegrationConnections(profileId: string): Promise<DbIn
 }
 
 export async function upsertIntegration(profileId: string, integrationId: string, status: string, config?: Record<string, unknown>) {
-  // Use insert with onConflict do update pattern to avoid array overload TS ambiguity
   const { data, error } = await supabase
     .from("integration_connections")
     .upsert(
-      [{ profile_id: profileId, integration_id: integrationId, status, config: (config ?? {}) as import("@/integrations/supabase/types").Json }],
+      [{ profile_id: profileId, integration_id: integrationId, status, config: (config ?? {}) as Database["public"]["Tables"]["integration_connections"]["Row"]["config"] }],
       { onConflict: "profile_id,integration_id" }
     )
     .select()
@@ -216,26 +267,8 @@ export async function removeIntegration(profileId: string, integrationId: string
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// MISSING DELETE OPERATIONS
-// ─────────────────────────────────────────────────────────────────────
-export async function deleteInsight(id: string) {
-  return supabase.from("insights").delete().eq("id", id);
-}
-
-export async function deleteSopRecord(id: string) {
-  return supabase.from("sop_records").delete().eq("id", id);
-}
-
-export async function deleteGovernanceLog(id: string) {
-  return supabase.from("governance_logs").delete().eq("id", id);
-}
-
-// ─────────────────────────────────────────────────────────────────────
 // TEAM MEMBERS
 // ─────────────────────────────────────────────────────────────────────
-type DbTeamMemberRow = Database["public"]["Tables"]["team_members"]["Row"];
-export type DbTeamMember = DbTeamMemberRow;
-
 export async function getTeamMembers(profileId: string): Promise<DbTeamMember[]> {
   const { data } = await supabase
     .from("team_members")
@@ -273,6 +306,414 @@ export async function getCreatorPrompts(profileId: string) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// PROJECTS
+// ─────────────────────────────────────────────────────────────────────
+export async function getProjects(userId: string): Promise<DbProject[]> {
+  const { data } = await supabase
+    .from("projects")
+    .select("*")
+    .or(`owner_id.eq.${userId},profile_id.eq.${userId}`)
+    .order("created_at", { ascending: false });
+  return data ?? [];
+}
+
+export async function getProject(id: string): Promise<DbProject | null> {
+  const { data } = await supabase.from("projects").select("*").eq("id", id).single();
+  return data;
+}
+
+export async function upsertProject(project: Partial<DbProject> & { name: string }) {
+  return supabase.from("projects").upsert(project, { onConflict: "id" }).select().single();
+}
+
+export async function deleteProject(id: string) {
+  return supabase.from("projects").delete().eq("id", id);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// KPIs
+// ─────────────────────────────────────────────────────────────────────
+export async function getKpis(options: { projectId?: string; organizationId?: string; profileId?: string } = {}): Promise<DbKpi[]> {
+  let q = supabase.from("kpis").select("*").order("created_at", { ascending: false });
+  if (options.projectId)      q = q.eq("project_id", options.projectId);
+  if (options.organizationId) q = q.eq("organization_id", options.organizationId);
+  if (options.profileId)      q = q.eq("profile_id", options.profileId);
+  const { data } = await q;
+  return data ?? [];
+}
+
+export async function upsertKpi(kpi: Partial<DbKpi> & { name: string }) {
+  return supabase.from("kpis").upsert(kpi, { onConflict: "id" }).select().single();
+}
+
+export async function updateKpiValue(id: string, currentValue: number) {
+  return supabase.from("kpis").update({ current_value: currentValue }).eq("id", id);
+}
+
+export async function deleteKpi(id: string) {
+  return supabase.from("kpis").delete().eq("id", id);
+}
+
+export async function getKpiHistory(kpiId: string): Promise<DbKpiHistory[]> {
+  const { data } = await supabase
+    .from("kpi_history")
+    .select("*")
+    .eq("kpi_id", kpiId)
+    .order("measured_at", { ascending: false })
+    .limit(100);
+  return data ?? [];
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// MILESTONES
+// ─────────────────────────────────────────────────────────────────────
+export async function getMilestones(options: { projectId?: string; initiativeId?: string; profileId?: string } = {}): Promise<DbMilestone[]> {
+  let q = supabase.from("milestones").select("*").order("due_date", { ascending: true });
+  if (options.projectId)    q = q.eq("project_id", options.projectId);
+  if (options.initiativeId) q = q.eq("initiative_id", options.initiativeId);
+  if (options.profileId)    q = q.eq("profile_id", options.profileId);
+  const { data } = await q;
+  return data ?? [];
+}
+
+export async function upsertMilestone(milestone: Partial<DbMilestone> & { title: string }) {
+  return supabase.from("milestones").upsert(milestone, { onConflict: "id" }).select().single();
+}
+
+export async function deleteMilestone(id: string) {
+  return supabase.from("milestones").delete().eq("id", id);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// RISKS
+// ─────────────────────────────────────────────────────────────────────
+export async function getRisks(options: { initiativeId?: string; organizationId?: string; profileId?: string } = {}): Promise<DbRisk[]> {
+  let q = supabase.from("risks").select("*").order("created_at", { ascending: false });
+  if (options.initiativeId)   q = q.eq("initiative_id", options.initiativeId);
+  if (options.organizationId) q = q.eq("organization_id", options.organizationId);
+  if (options.profileId)      q = q.eq("profile_id", options.profileId);
+  const { data } = await q;
+  return data ?? [];
+}
+
+export async function upsertRisk(risk: Partial<DbRisk> & { title: string }) {
+  return supabase.from("risks").upsert(risk, { onConflict: "id" }).select().single();
+}
+
+export async function deleteRisk(id: string) {
+  return supabase.from("risks").delete().eq("id", id);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// DEPENDENCIES
+// ─────────────────────────────────────────────────────────────────────
+export async function getDependencies(profileId: string): Promise<DbDependency[]> {
+  const { data } = await supabase
+    .from("dependencies")
+    .select("*")
+    .eq("profile_id", profileId);
+  return data ?? [];
+}
+
+export async function upsertDependency(dep: Partial<DbDependency> & { dependent_id: string; depends_on_id: string }) {
+  return supabase.from("dependencies").upsert(dep, { onConflict: "id" }).select().single();
+}
+
+export async function deleteDependency(id: string) {
+  return supabase.from("dependencies").delete().eq("id", id);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// SIGNALS
+// ─────────────────────────────────────────────────────────────────────
+export async function getSignalDefinitions(profileId: string): Promise<DbSignalDef[]> {
+  const { data } = await supabase
+    .from("signal_definitions")
+    .select("*")
+    .eq("profile_id", profileId);
+  return data ?? [];
+}
+
+export async function upsertSignalDefinition(def: Partial<DbSignalDef> & { name: string }) {
+  return supabase.from("signal_definitions").upsert(def, { onConflict: "id" }).select().single();
+}
+
+export async function getSignals(options: { initiativeId?: string; profileId?: string } = {}): Promise<DbSignal[]> {
+  let q = supabase.from("signals").select("*").order("captured_at", { ascending: false });
+  if (options.initiativeId) q = q.eq("initiative_id", options.initiativeId);
+  if (options.profileId)    q = q.eq("profile_id", options.profileId);
+  const { data } = await q;
+  return data ?? [];
+}
+
+export async function insertSignal(signal: Omit<DbSignal, "id" | "created_at">) {
+  return supabase.from("signals").insert(signal).select().single();
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// ADVISORIES
+// ─────────────────────────────────────────────────────────────────────
+export async function getAdvisories(options: { profileId?: string; organizationId?: string } = {}): Promise<DbAdvisory[]> {
+  let q = supabase.from("advisories").select("*").order("created_at", { ascending: false });
+  if (options.profileId)      q = q.eq("profile_id", options.profileId);
+  if (options.organizationId) q = q.eq("organization_id", options.organizationId);
+  const { data } = await q;
+  return data ?? [];
+}
+
+export async function upsertAdvisory(advisory: Partial<DbAdvisory> & { title: string }) {
+  return supabase.from("advisories").upsert(advisory, { onConflict: "id" }).select().single();
+}
+
+export async function updateAdvisoryStatus(id: string, status: string) {
+  return supabase.from("advisories").update({ status }).eq("id", id);
+}
+
+export async function deleteAdvisory(id: string) {
+  return supabase.from("advisories").delete().eq("id", id);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────────────────────────────
+export async function getNotifications(userId: string, limit = 50): Promise<DbNotification[]> {
+  const { data } = await supabase
+    .from("notifications")
+    .select("*")
+    .or(`recipient_user_id.eq.${userId},user_id.eq.${userId}`)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
+export async function markNotificationRead(id: string) {
+  return supabase.from("notifications").update({ is_read: true }).eq("id", id);
+}
+
+export async function markAllNotificationsRead(userId: string) {
+  return supabase
+    .from("notifications")
+    .update({ is_read: true })
+    .or(`recipient_user_id.eq.${userId},user_id.eq.${userId}`)
+    .eq("is_read", false);
+}
+
+export async function getUnreadNotificationCount(userId: string): Promise<number> {
+  const { count } = await supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .or(`recipient_user_id.eq.${userId},user_id.eq.${userId}`)
+    .eq("is_read", false);
+  return count ?? 0;
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// ACTIVITY FEED
+// ─────────────────────────────────────────────────────────────────────
+export async function getActivityFeed(userId: string, limit = 50): Promise<DbActivityFeed[]> {
+  const { data } = await supabase
+    .from("activity_feed")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
+export async function logActivity(entry: Omit<DbActivityFeed, "id" | "created_at">) {
+  return supabase.from("activity_feed").insert(entry).select().single();
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// NEXT-BEST ACTIONS
+// ─────────────────────────────────────────────────────────────────────
+export async function getNextBestActions(userId: string): Promise<DbNextBestAction[]> {
+  const { data } = await supabase
+    .from("next_best_actions")
+    .select("*")
+    .eq("user_id", userId)
+    .order("rank", { ascending: true });
+  return data ?? [];
+}
+
+export async function computeNextBestActions(userId: string, topN = 5) {
+  return supabase.rpc("upsert_next_best_for_user", { p_user: userId, p_top_n: topN });
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// KNOWLEDGE ITEMS
+// ─────────────────────────────────────────────────────────────────────
+export async function getKnowledgeItems(profileId: string): Promise<DbKnowledgeItem[]> {
+  const { data } = await supabase
+    .from("knowledge_items")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("created_at", { ascending: false });
+  return data ?? [];
+}
+
+export async function upsertKnowledgeItem(item: Partial<DbKnowledgeItem> & { title: string }) {
+  return supabase.from("knowledge_items").upsert(item, { onConflict: "id" }).select().single();
+}
+
+export async function deleteKnowledgeItem(id: string) {
+  return supabase.from("knowledge_items").delete().eq("id", id);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// FRAMEWORKS
+// ─────────────────────────────────────────────────────────────────────
+export async function getFrameworks(profileId: string): Promise<DbFramework[]> {
+  const { data } = await supabase
+    .from("frameworks")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("name");
+  return data ?? [];
+}
+
+export async function upsertFramework(fw: Partial<DbFramework> & { name: string }) {
+  return supabase.from("frameworks").upsert(fw, { onConflict: "id" }).select().single();
+}
+
+export async function deleteFramework(id: string) {
+  return supabase.from("frameworks").delete().eq("id", id);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// ALERTS
+// ─────────────────────────────────────────────────────────────────────
+export async function getAlerts(profileId: string): Promise<DbAlert[]> {
+  const { data } = await supabase
+    .from("alerts")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("created_at", { ascending: false });
+  return data ?? [];
+}
+
+export async function dismissAlert(id: number) {
+  return supabase.from("alerts").update({ status: "dismissed" }).eq("id", id);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// WORKFLOW RUNS
+// ─────────────────────────────────────────────────────────────────────
+export async function getWorkflowRuns(profileId: string, limit = 20): Promise<DbWorkflowRun[]> {
+  const { data } = await supabase
+    .from("workflow_runs")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
+export async function createWorkflowRun(run: Partial<DbWorkflowRun> & { workflow_id: string }) {
+  return supabase.from("workflow_runs").insert(run).select().single();
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// AI CALL LOGS
+// ─────────────────────────────────────────────────────────────────────
+export async function logAiCall(entry: Omit<DbAiCallLog, "id" | "created_at">) {
+  return supabase.from("ai_call_logs").insert(entry).select().single();
+}
+
+export async function getAiCallLogs(userId: string, limit = 50): Promise<DbAiCallLog[]> {
+  const { data } = await supabase
+    .from("ai_call_logs")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// ORGANIZATIONS
+// ─────────────────────────────────────────────────────────────────────
+export async function getOrganizations(userId: string): Promise<DbOrganization[]> {
+  const { data } = await supabase
+    .from("organizations")
+    .select("*, organization_members!inner(user_id)")
+    .eq("organization_members.user_id", userId);
+  return (data ?? []) as unknown as DbOrganization[];
+}
+
+export async function createOrganization(org: Partial<DbOrganization> & { name: string }) {
+  return supabase.from("organizations").insert(org).select().single();
+}
+
+export async function getOrgMembers(organizationId: string): Promise<DbOrgMember[]> {
+  const { data } = await supabase
+    .from("organization_members")
+    .select("*")
+    .eq("organization_id", organizationId);
+  return data ?? [];
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// TEAMS
+// ─────────────────────────────────────────────────────────────────────
+export async function getTeams(options: { organizationId?: string; profileId?: string } = {}): Promise<DbTeam[]> {
+  let q = supabase.from("teams").select("*").order("name");
+  if (options.organizationId) q = q.eq("organization_id", options.organizationId);
+  if (options.profileId)      q = q.eq("profile_id", options.profileId);
+  const { data } = await q;
+  return data ?? [];
+}
+
+export async function upsertTeam(team: Partial<DbTeam> & { name: string }) {
+  return supabase.from("teams").upsert(team, { onConflict: "id" }).select().single();
+}
+
+export async function deleteTeam(id: string) {
+  return supabase.from("teams").delete().eq("id", id);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// DB FUNCTIONS (RPCs)
+// ─────────────────────────────────────────────────────────────────────
+export async function getInitiativeDetails(initiativeId: string) {
+  const { data, error } = await supabase.rpc("get_initiative_details", { p_initiative_id: initiativeId });
+  return { data, error };
+}
+
+export async function generateDailyPlan(userId: string) {
+  const { data, error } = await supabase.rpc("generate_daily_plan", { p_user_id: userId });
+  return { data, error };
+}
+
+export async function getProjectProgress(projectId: string, completedStatus = "completed") {
+  const { data, error } = await supabase.rpc("get_project_progress", {
+    p_project_id: projectId,
+    p_completed_status: completedStatus,
+  });
+  return { data, error };
+}
+
+export async function getProjectMilestones(projectId: string) {
+  const { data, error } = await supabase.rpc("get_project_milestones", { p_project_id: projectId });
+  return { data, error };
+}
+
+export async function getProjectKpiSummary(projectId: string) {
+  const { data, error } = await supabase.rpc("get_project_kpi_summary", { p_project_id: projectId });
+  return { data, error };
+}
+
+export async function getSignalSummary(initiativeId: string) {
+  const { data, error } = await supabase.rpc("get_signal_summary", { p_initiative_id: initiativeId });
+  return { data, error };
+}
+
+export async function getMilestoneProgress(milestoneId: string) {
+  const { data, error } = await supabase.rpc("get_milestone_progress", { p_milestone_id: milestoneId });
+  return { data, error };
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // SEED: push pmoData into DB for a new user (called after onboarding)
 // ─────────────────────────────────────────────────────────────────────
 export async function seedUserData(userId: string) {
@@ -281,7 +722,6 @@ export async function seedUserData(userId: string) {
 
   const now = new Date().toISOString().split("T")[0];
 
-  // Seed departments
   for (const d of departments) {
     await supabase.from("departments").upsert({
       id: `${userId}-${d.id}`,
@@ -307,7 +747,6 @@ export async function seedUserData(userId: string) {
     }, { onConflict: "id" });
   }
 
-  // Seed initiatives
   for (const ini of initiatives) {
     await supabase.from("initiatives").upsert({
       id: `${userId}-${ini.id}`,
@@ -339,11 +778,10 @@ export async function seedUserData(userId: string) {
     }, { onConflict: "id" });
   }
 
-  // Seed action items
   for (const a of actionItems) {
     await supabase.from("action_items").upsert({
       id: `${userId}-${a.id}`,
-      profile_id: userId,
+      user_id: userId,
       title: a.title,
       initiative_id: `${userId}-${a.initiativeId}`,
       assigned_to: a.assignedTo,
@@ -351,12 +789,9 @@ export async function seedUserData(userId: string) {
       status: a.status,
       priority: a.priority,
       description: a.description,
-      dependency: a.dependency ?? null,
-      completed_date: a.completedDate ?? null,
     }, { onConflict: "id" });
   }
 
-  // Seed insights
   for (const ins of insights) {
     await supabase.from("insights").upsert({
       id: `${userId}-${ins.id}`,
@@ -377,7 +812,6 @@ export async function seedUserData(userId: string) {
     }, { onConflict: "id" });
   }
 
-  // Seed governance logs
   for (const g of governanceLogs) {
     await supabase.from("governance_logs").upsert({
       id: `${userId}-${g.id}`,
@@ -393,7 +827,6 @@ export async function seedUserData(userId: string) {
     }, { onConflict: "id" });
   }
 
-  // Seed SOP records
   for (const s of sopRecords) {
     await supabase.from("sop_records").upsert({
       id: `${userId}-${s.id}`,
@@ -408,7 +841,6 @@ export async function seedUserData(userId: string) {
     }, { onConflict: "id" });
   }
 
-  // Seed org metrics
   await supabase.from("org_metrics").upsert({
     profile_id: userId,
     overall_maturity_score: orgMetrics.overallMaturityScore,

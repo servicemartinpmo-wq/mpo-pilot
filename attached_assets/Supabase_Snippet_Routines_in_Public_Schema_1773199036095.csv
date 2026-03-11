@@ -1,0 +1,1893 @@
+routine_name,routine_definition
+get_tenant_id,"
+  SELECT (auth.jwt() ->> 'org_id')::uuid;
+"
+workspaces_after_insert,"
+begin
+  -- try to insert owner as owner role; if already exists, do nothing
+  insert into workspace_members (workspace_id, user_id, role)
+  values (new.id, new.owner_id, 'owner')
+  on conflict (workspace_id, user_id) do update set role = excluded.role
+  where workspace_members.role <> 'owner';
+  return new;
+end;
+"
+get_has_role,"
+  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = p_user AND role = p_role);
+"
+compute_and_store_org_health_metrics,"
+DECLARE
+  cfg record;
+  ws timestamptz;
+  we timestamptz;
+  interval_text text;
+  created_count bigint := 0;
+  completed_count bigint := 0;
+  active_count bigint := 0;
+  overdue_count bigint := 0;
+  blocked_count bigint := 0;
+  avg_cycle_time_seconds double precision := NULL;
+  completion_rate double precision := NULL;
+  overdue_rate_val double precision := NULL;
+  dependency_block_rate_val double precision := NULL;
+  team_focus double precision := NULL;
+BEGIN
+  SELECT * INTO cfg FROM public.org_health_metrics_config WHERE org_id = p_org_id;
+
+  IF p_window_end IS NULL THEN
+    we := date_trunc('day', now());
+  ELSE
+    we := p_window_end;
+  END IF;
+
+  IF p_window_start IS NULL THEN
+    IF p_window_interval IS NOT NULL THEN
+      interval_text := p_window_interval;
+    ELSIF cfg IS NOT NULL THEN
+      interval_text := cfg.window_interval;
+    ELSE
+      interval_text := '1 day';
+    END IF;
+    ws := we - (interval_text::interval);
+  ELSE
+    ws := p_window_start;
+  END IF;
+
+  IF p_top_teams IS NULL THEN
+    IF cfg IS NOT NULL THEN
+      p_top_teams := cfg.top_teams;
+    ELSE
+      p_top_teams := 1;
+    END IF;
+  END IF;
+
+  IF p_completed_statuses IS NULL THEN
+    IF cfg IS NOT NULL THEN
+      p_completed_statuses := cfg.completed_statuses;
+    ELSE
+      p_completed_statuses := ARRAY['completed','done','closed'];
+    END IF;
+  END IF;
+
+  -- Created in window
+  SELECT count(*) INTO created_count
+    FROM public.tasks
+   WHERE organization_id = p_org_id
+     AND created_at >= ws
+     AND created_at < we;
+
+  -- Completed in window using configured statuses
+  EXECUTE format('SELECT count(*) FROM public.tasks WHERE organization_id = $1 AND status = ANY($2) AND updated_at >= $3 AND updated_at < $4')
+    INTO completed_count USING p_org_id, p_completed_statuses, ws, we;
+
+  -- Active tasks as of window_end
+  EXECUTE format('SELECT count(*) FROM public.tasks WHERE organization_id = $1 AND (status IS NULL OR NOT (status = ANY($2)))')
+    INTO active_count USING p_org_id, p_completed_statuses;
+
+  -- Overdue
+  SELECT count(*) INTO overdue_count
+    FROM public.tasks
+   WHERE organization_id = p_org_id
+     AND due_date IS NOT NULL
+     AND due_date < we
+     AND (status IS NULL OR NOT (status = ANY (p_completed_statuses)));
+
+  -- Blocked
+  SELECT count(distinct td.task_id) INTO blocked_count
+    FROM public.task_dependencies td
+    LEFT JOIN public.action_items ai ON ai.id = td.task_id
+    LEFT JOIN public.tasks t ON t.id = td.task_id
+    WHERE ( (ai.id IS NOT NULL AND ai.completed_at IS NULL) OR (t.id IS NOT NULL AND (t.status IS NULL OR NOT (t.status = ANY(p_completed_statuses)))) )
+      AND (td.depends_on_task_id IS NOT NULL OR td.depends_on_action_item_id IS NOT NULL)
+      AND (
+        EXISTS (SELECT 1 FROM public.action_items x WHERE x.id = coalesce(td.depends_on_action_item_id, td.depends_on_task_id) AND x.organization_id = p_org_id)
+        OR EXISTS (SELECT 1 FROM public.tasks x WHERE x.id = coalesce(td.depends_on_action_item_id, td.depends_on_task_id) AND x.organization_id = p_org_id)
+      );
+
+  -- Avg cycle time
+  SELECT avg(EXTRACT(EPOCH FROM (ai.completed_at - ai.created_at))) INTO avg_cycle_time_seconds
+    FROM public.action_items ai
+   WHERE ai.organization_id = p_org_id
+     AND ai.completed_at IS NOT NULL
+     AND ai.completed_at >= ws
+     AND ai.completed_at < we;
+
+  IF created_count > 0 THEN
+    completion_rate := completed_count::double precision / created_count::double precision;
+  ELSE
+    completion_rate := NULL;
+  END IF;
+
+  IF active_count > 0 THEN
+    overdue_rate_val := overdue_count::double precision / active_count::double precision;
+    dependency_block_rate_val := blocked_count::double precision / active_count::double precision;
+  ELSE
+    overdue_rate_val := NULL;
+    dependency_block_rate_val := NULL;
+  END IF;
+
+  -- Team focus
+  IF active_count > 0 THEN
+    WITH team_active AS (
+      SELECT dm.team_id, count(*) AS cnt
+      FROM public.tasks t
+      LEFT JOIN public.users u ON u.id = t.assignee_id
+      LEFT JOIN public.department_membership dm ON dm.user_id = u.id
+      WHERE t.organization_id = p_org_id
+        AND (t.status IS NULL OR NOT (t.status = ANY(p_completed_statuses)))
+      GROUP BY dm.team_id
+    ), top_sum AS (
+      SELECT COALESCE(SUM(cnt),0) AS top_cnt FROM (
+        SELECT cnt FROM team_active ORDER BY cnt DESC NULLS LAST LIMIT p_top_teams
+      ) s
+    )
+    SELECT (top_cnt::double precision / active_count::double precision) INTO team_focus FROM top_sum;
+  ELSE
+    team_focus := NULL;
+  END IF;
+
+  INSERT INTO public.org_health_metrics (
+    org_id, measured_at, window_start, window_end,
+    task_created_count, task_completed_count, task_active_count,
+    task_overdue_count, task_blocked_count, avg_cycle_time_seconds,
+    task_completion_rate, overdue_rate, dependency_block_rate,
+    team_focus_score, metadata
+  ) VALUES (
+    p_org_id, now(), ws, we,
+    created_count, completed_count, active_count,
+    overdue_count, blocked_count, avg_cycle_time_seconds,
+    completion_rate, overdue_rate_val, dependency_block_rate_val,
+    team_focus, jsonb_build_object('window_interval', interval_text, 'top_teams', p_top_teams)
+  );
+END;
+"
+compute_and_store_org_health_metrics,"
+DECLARE
+  v_created_count bigint := 0;
+  v_completed_count bigint := 0;
+  v_active_count bigint := 0;
+  v_overdue_count bigint := 0;
+  v_blocked_count bigint := 0;
+  v_avg_cycle_seconds double precision := NULL;
+  v_ownership_clarity double precision := 0;
+  v_team_focus double precision := 0;
+  v_score double precision := 0;
+  v_top_teams integer := 3;
+  v_completed_statuses text[] := ARRAY['completed','done','closed'];
+  v_total_tasks bigint := 0;
+  v_tasks_with_owner bigint := 0;
+  v_tasks_top_teams bigint := 0;
+  rec record;
+  v_task_created_count bigint := 0;
+  v_task_completed_count bigint := 0;
+  v_task_active_count bigint := 0;
+  v_task_overdue_count bigint := 0;
+  v_task_blocked_count bigint := 0;
+  v_avg_cycle_time_seconds double precision := NULL;
+  v_task_completion_rate double precision := NULL;
+  v_overdue_rate double precision := NULL;
+  v_dependency_block_rate double precision := NULL;
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='tasks') THEN
+    EXECUTE format('SELECT count(*) FROM public.tasks WHERE org_id = %L', p_org_id::text) INTO v_total_tasks;
+    IF v_total_tasks > 0 THEN
+      EXECUTE format('SELECT count(*) FROM public.tasks WHERE org_id = %L AND status = ANY (%L::text[])', p_org_id::text, array_to_string(v_completed_statuses,',')) INTO v_completed_count;
+      EXECUTE format('SELECT count(*) FROM public.tasks WHERE org_id = %L AND (status IS NULL OR status NOT IN (%L))', p_org_id::text, array_to_string(v_completed_statuses,',')) INTO v_active_count;
+      IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='tasks' AND column_name='due_date') THEN
+        EXECUTE format('SELECT count(*) FROM public.tasks WHERE org_id = %L AND (status IS NULL OR status NOT IN (%L)) AND due_date IS NOT NULL AND due_date < now()', p_org_id::text, array_to_string(v_completed_statuses,',')) INTO v_overdue_count;
+      END IF;
+      IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='task_dependencies') THEN
+        EXECUTE format(
+          'SELECT count(DISTINCT td.task_id) FROM public.task_dependencies td JOIN public.tasks t ON t.id = td.task_id WHERE t.org_id = %L AND (td.blocked = true OR EXISTS (SELECT 1 FROM public.tasks dep WHERE dep.id = td.depends_on AND (dep.status IS NULL OR dep.status NOT IN (%s))))',
+          p_org_id::text, array_to_string(v_completed_statuses,',')) INTO v_blocked_count;
+      END IF;
+      IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='org_health_metrics_config') THEN
+        SELECT window_interval, top_teams, completed_statuses INTO rec FROM public.org_health_metrics_config WHERE org_id = p_org_id LIMIT 1;
+        IF FOUND THEN
+          IF rec.window_interval IS NOT NULL THEN
+            EXECUTE format('SELECT count(*) FROM public.tasks WHERE org_id = %L AND created_at >= now() - %L::interval', p_org_id::text, rec.window_interval) INTO v_created_count;
+            v_top_teams := COALESCE(rec.top_teams, v_top_teams);
+            v_completed_statuses := COALESCE(rec.completed_statuses, v_completed_statuses);
+          END IF;
+        END IF;
+      END IF;
+      IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='tasks' AND column_name='started_at')
+         AND EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='tasks' AND column_name='completed_at') THEN
+        EXECUTE format('SELECT avg(extract(epoch from (completed_at - started_at))) FROM public.tasks WHERE org_id = %L AND completed_at IS NOT NULL AND started_at IS NOT NULL', p_org_id::text) INTO v_avg_cycle_seconds;
+      END IF;
+      IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='tasks' AND column_name='owner_id') THEN
+        EXECUTE format('SELECT count(*) FROM public.tasks WHERE org_id = %L AND owner_id IS NOT NULL', p_org_id::text) INTO v_tasks_with_owner;
+        v_ownership_clarity := CASE WHEN v_total_tasks > 0 THEN (v_tasks_with_owner::double precision / v_total_tasks) ELSE 0 END;
+      END IF;
+      IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='tasks' AND column_name='team_id') THEN
+        EXECUTE format('SELECT sum(cnt) FROM (SELECT count(*) as cnt FROM public.tasks WHERE org_id = %L GROUP BY team_id ORDER BY cnt DESC LIMIT %s) x', p_org_id::text, v_top_teams) INTO v_tasks_top_teams;
+        v_team_focus := CASE WHEN v_total_tasks > 0 THEN (COALESCE(v_tasks_top_teams,0)::double precision / v_total_tasks) ELSE 0 END;
+      END IF;
+    END IF;
+  END IF;
+
+  v_task_created_count := v_created_count;
+  v_task_completed_count := v_completed_count;
+  v_task_active_count := v_active_count;
+  v_task_overdue_count := v_overdue_count;
+  v_task_blocked_count := v_blocked_count;
+  v_avg_cycle_time_seconds := v_avg_cycle_seconds;
+  v_task_completion_rate := CASE WHEN (v_created_count > 0) THEN (v_completed_count::double precision / v_created_count) ELSE NULL END;
+  v_overdue_rate := CASE WHEN (v_active_count > 0) THEN (v_overdue_count::double precision / v_active_count) ELSE NULL END;
+  v_dependency_block_rate := CASE WHEN (v_active_count > 0) THEN (v_blocked_count::double precision / v_active_count) ELSE NULL END;
+
+  v_score := 0;
+  IF v_task_completion_rate IS NOT NULL THEN v_score := v_score + (COALESCE(v_task_completion_rate,0) * 20); END IF;
+  IF v_overdue_rate IS NOT NULL THEN v_score := v_score + ((1 - LEAST(v_overdue_rate,1)) * 20); END IF;
+  IF v_avg_cycle_time_seconds IS NOT NULL THEN
+    v_score := v_score + (LEAST(1, 604800 / (v_avg_cycle_time_seconds + 1)) * 15);
+  END IF;
+  IF v_dependency_block_rate IS NOT NULL THEN v_score := v_score + ((1 - LEAST(v_dependency_block_rate,1)) * 15); END IF;
+  v_score := v_score + (v_ownership_clarity * 15);
+  v_score := v_score + (v_team_focus * 15);
+
+  IF v_score < 0 THEN v_score := 0; END IF;
+  IF v_score > 100 THEN v_score := 100; END IF;
+
+  -- ensure org_health_metrics table exists
+  IF NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='org_health_metrics') THEN
+    CREATE TABLE public.org_health_metrics (
+      id bigserial PRIMARY KEY,
+      org_id uuid NOT NULL,
+      measured_at timestamptz NOT NULL,
+      window_start timestamptz,
+      window_end timestamptz,
+      task_created_count bigint,
+      task_completed_count bigint,
+      task_active_count bigint,
+      task_overdue_count bigint,
+      task_blocked_count bigint,
+      avg_cycle_time_seconds double precision,
+      task_completion_rate double precision,
+      overdue_rate double precision,
+      dependency_block_rate double precision,
+      team_focus_score double precision,
+      metadata jsonb
+    );
+  END IF;
+
+  INSERT INTO public.org_health_metrics(
+    org_id, measured_at, window_start, window_end, task_created_count, task_completed_count, task_active_count, task_overdue_count, task_blocked_count, avg_cycle_time_seconds, task_completion_rate, overdue_rate, dependency_block_rate, team_focus_score, metadata
+  ) VALUES (
+    p_org_id, now(), NULL, NULL, v_task_created_count, v_task_completed_count, v_task_active_count, v_task_overdue_count, v_task_blocked_count, v_avg_cycle_time_seconds, v_task_completion_rate, v_overdue_rate, v_dependency_block_rate, v_team_focus,
+    jsonb_build_object('ownership_clarity', v_ownership_clarity, 'generated_at', now(), 'score', v_score)
+  );
+END;
+"
+process_org_job_trigger,"
+BEGIN
+  IF NEW.status = 'pending' THEN
+    UPDATE public.org_jobs SET started_at = now(), status = 'running' WHERE id = NEW.id;
+    PERFORM public.compute_and_store_org_health_metrics(NEW.org_id);
+    UPDATE public.org_jobs SET status = 'completed', completed_at = now() WHERE id = NEW.id;
+  END IF;
+  RETURN NEW;
+END;
+"
+generate_task_reminders,"
+BEGIN
+  INSERT INTO task_reminders (task_id, user_id, remind_at, metadata)
+  SELECT t.id, t.user_id, t.due_at - INTERVAL '1 hour', jsonb_build_object('reason','due_1h')
+  FROM tasks t
+  WHERE t.status = 'open'
+    AND t.due_at IS NOT NULL
+    AND t.due_at > now()
+    AND t.due_at <= now() + INTERVAL '24 hours'
+    AND NOT EXISTS (
+      SELECT 1 FROM task_reminders r WHERE r.task_id = t.id
+    );
+END;
+"
+get_is_admin,"
+  SELECT public.get_has_role((SELECT auth.uid()), 'admin');
+"
+check_overdue_tasks,"
+DECLARE
+  rec RECORD;
+BEGIN
+  FOR rec IN
+    SELECT id, user_id FROM tasks
+    WHERE status = 'open' AND due_at IS NOT NULL AND due_at < now()
+  LOOP
+    UPDATE tasks SET status = 'overdue' WHERE id = rec.id;
+    INSERT INTO notifications (user_id, type, payload)
+    VALUES (rec.user_id, 'task_overdue', jsonb_build_object('task_id', rec.id));
+  END LOOP;
+END;
+"
+get_user_organization,"
+DECLARE
+    org_id uuid;
+BEGIN
+    SELECT organization_id
+    INTO org_id
+    FROM public.organization_members
+    WHERE user_id = auth.uid()
+    LIMIT 1;
+
+    RETURN org_id;
+END;
+"
+_is_workday_for_user,"
+  SELECT
+    CASE
+      WHEN EXISTS(SELECT 1 FROM public.user_snoozes s WHERE s.user_id = p_user AND s.snooze_date = p_date) THEN false
+      WHEN user_work_capacity.weekday_mask IS NULL THEN true
+      ELSE (( (user_work_capacity.weekday_mask >> ((EXTRACT(dow FROM p_date)::int + 6) % 7) ) & 1) = 1)
+    END
+  FROM public.user_work_capacity user_work_capacity
+  WHERE user_work_capacity.user_id = p_user
+  LIMIT 1;
+"
+_count_workdays_in_range,"
+DECLARE
+  d date := p_start;
+  cnt int := 0;
+BEGIN
+  IF p_end < p_start THEN RETURN 0; END IF;
+  LOOP
+    EXIT WHEN d > p_end;
+    IF public._is_workday_for_user(p_user, d) THEN
+      cnt := cnt + 1;
+    END IF;
+    d := d + INTERVAL '1 day';
+  END LOOP;
+  RETURN cnt;
+END;
+"
+soft_delete,"
+BEGIN
+    -- Mark row as archived instead of deleting
+    IF TG_OP = 'DELETE' THEN
+        NEW := OLD;
+        -- preferred column is status; fallback to is_deleted boolean if status doesn't exist will error at execution time
+        BEGIN
+            NEW.status := 'archived';
+        EXCEPTION WHEN undefined_column THEN
+            -- try boolean flag
+            BEGIN
+                NEW.is_deleted := true;
+            EXCEPTION WHEN undefined_column THEN
+                RAISE EXCEPTION 'soft_delete trigger expects table to have either a ""status"" column or ""is_deleted"" boolean column';
+            END;
+        END;
+        RETURN NEW;
+    END IF;
+    RETURN NEW;
+END;
+"
+get_project_progress,"
+DECLARE
+  total_items int;
+  completed_items int;
+BEGIN
+  SELECT COUNT(*) INTO total_items
+  FROM public.action_items
+  WHERE project_id = p_project_id;
+
+  IF total_items = 0 THEN
+    RETURN NULL;
+  END IF;
+
+  SELECT COUNT(*) INTO completed_items
+  FROM public.action_items
+  WHERE project_id = p_project_id
+    AND status = p_completed_status;
+
+  RETURN ROUND((completed_items::numeric / total_items) * 100, 2);
+END;
+"
+track_kpi_history,"
+BEGIN
+  IF TG_OP = 'UPDATE' AND (OLD.current_value IS DISTINCT FROM NEW.current_value) THEN
+    INSERT INTO public.kpi_history (kpi_id, measured_value, measured_at, created_at, changed_by)
+    VALUES (OLD.id, OLD.current_value, now(), now(), (current_setting('request.jwt.claim.sub', true))::uuid);
+  END IF;
+  RETURN NEW;
+END;
+"
+get_project_milestones,"
+BEGIN
+  RETURN (
+    SELECT jsonb_agg(jsonb_build_object(
+      'id', m.id,
+      'title', m.title,
+      'status', m.status,
+      'due_date', m.due_date
+    ))
+    FROM public.milestones m
+    WHERE m.project_id = p_project_id
+  );
+END;
+"
+recommend_advisories,"
+DECLARE
+  rec_id uuid := NEW.id;
+  rec_user uuid := NEW.user_id;
+  payload jsonb := jsonb_build_object('hints', to_jsonb(ARRAY[]::text[]));
+BEGIN
+  IF NEW.title ILIKE '%migration%' OR (NEW.metadata->> 'note') ILIKE '%migration%' THEN
+    payload := jsonb_set(payload, '{hints}', to_jsonb(ARRAY['migration_migration_guide']::text[]));
+  ELSIF NEW.title ILIKE '%dashboard%' OR (NEW.metadata->> 'note') ILIKE '%dashboard%' THEN
+    payload := jsonb_set(payload, '{hints}', to_jsonb(ARRAY['dashboard_tips']::text[]));
+  END IF;
+
+  INSERT INTO advisory_recommendations (task_id, user_id, recommendation)
+  VALUES (rec_id, rec_user, payload);
+
+  INSERT INTO notifications (user_id, type, payload)
+  VALUES (rec_user, 'advisory_recommendation', jsonb_build_object('task_id', rec_id));
+
+  RETURN NEW;
+END;
+"
+validate_dependency,"
+DECLARE
+  loop_found boolean;
+BEGIN
+  -- Prevent trivial self-dependency
+  IF NEW.dependent_id = NEW.depends_on_id THEN
+    RAISE EXCEPTION 'Circular dependency detected: cannot depend on self (%).', NEW.dependent_id;
+  END IF;
+
+  -- Use recursive CTE to walk the dependency graph from the node we depend on
+  WITH RECURSIVE chain(depends_on_id) AS (
+    SELECT NEW.depends_on_id
+    UNION
+    SELECT d.depends_on_id
+    FROM dependencies d
+    JOIN chain c ON d.dependent_id = c.depends_on_id
+  )
+  SELECT EXISTS(SELECT 1 FROM chain WHERE depends_on_id = NEW.dependent_id) INTO loop_found;
+
+  IF loop_found THEN
+    RAISE EXCEPTION 'Circular dependency detected between % and %', NEW.dependent_id, NEW.depends_on_id;
+  END IF;
+
+  RETURN NEW;
+END;
+"
+get_project_kpi_summary,"
+BEGIN
+  RETURN (
+    SELECT jsonb_agg(jsonb_build_object(
+      'kpi_id', k.id,
+      'name', k.name,
+      'current_value', k.current_value,
+      'target_value', k.target_value
+    ))
+    FROM public.kpis k
+    WHERE k.project_id = p_project_id
+  );
+END;
+"
+enqueue_update_notification_v2,"
+DECLARE
+  payload jsonb;
+  changed_fields text[] := ARRAY[]::text[];
+  key text;
+  val_old text;
+  val_new text;
+  rec jsonb;
+  recipients uuid;
+  filter_fields text[] := ARRAY['status','assigned_user_id','assignee_id','assigned_to','owner_id','user_id']; -- fields to watch; you can modify
+  should_notify boolean := false;
+BEGIN
+  -- Convert record to jsonb
+  IF TG_OP = 'DELETE' THEN
+    rec := to_jsonb(OLD);
+  ELSE
+    rec := to_jsonb(NEW);
+  END IF;
+
+  payload := jsonb_build_object('table', TG_TABLE_NAME, 'op', TG_OP, 'record_id', COALESCE(rec ->> 'id', NULL), 'changed_at', now());
+
+  IF TG_OP = 'UPDATE' THEN
+    FOREACH key IN ARRAY (SELECT jsonb_object_keys(to_jsonb(NEW) - 'updated_at' - 'created_at')) LOOP
+      EXECUTE format('SELECT ($1)->>%L', key) INTO val_new USING to_jsonb(NEW);
+      EXECUTE format('SELECT ($1)->>%L', key) INTO val_old USING to_jsonb(OLD);
+      IF val_new IS DISTINCT FROM val_old THEN
+        changed_fields := array_append(changed_fields, key);
+      END IF;
+    END LOOP;
+  ELSIF TG_OP = 'INSERT' THEN
+    changed_fields := ARRAY['*'];
+  END IF;
+
+  payload := payload || jsonb_build_object('changed_fields', to_jsonb(changed_fields), 'new', rec);
+
+  -- Check if any changed field is in the filter list (or notify on all if filter list contains '*')
+  IF filter_fields @> ARRAY['*'] THEN
+    should_notify := true;
+  ELSE
+    FOREACH key IN ARRAY changed_fields LOOP
+      IF key = ANY(filter_fields) THEN
+        should_notify := true;
+        EXIT;
+      END IF;
+    END LOOP;
+  END IF;
+
+  IF NOT should_notify THEN
+    RETURN NEW;
+  END IF;
+
+  -- Resolve recipients using helper function
+  FOR recipients IN SELECT * FROM public.get_notification_recipients(rec, TG_TABLE_NAME) LOOP
+    INSERT INTO public.notifications(recipient_user_id, event_table, event_type, record_id, payload)
+    VALUES (recipients, TG_TABLE_NAME, TG_OP, (rec ->> 'id')::uuid, payload);
+
+    -- Try to send realtime message, but only if realtime extension present
+    BEGIN
+      PERFORM realtime.send('user:' || recipients::text, 'record_updated', payload, true);
+    EXCEPTION WHEN undefined_function THEN
+      -- skip if realtime not installed
+      NULL;
+    END;
+  END LOOP;
+
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  ELSE
+    RETURN NEW;
+  END IF;
+END;
+"
+get_signal_summary,"
+DECLARE
+  result jsonb;
+BEGIN
+  SELECT jsonb_agg(jsonb_build_object(
+    'signal_id', s.id,
+    'signal_definition_id', s.signal_definition_id,
+    'name', sd.name,
+    'value', s.value,
+    'measured_at', s.measured_at
+  ) ORDER BY s.measured_at DESC)
+  INTO result
+  FROM public.signals s
+  LEFT JOIN public.signal_definitions sd ON s.signal_definition_id = sd.id
+  WHERE s.initiative_id = p_initiative_id;
+
+  RETURN COALESCE(result, '[]'::jsonb);
+END;
+"
+get_project_kpi_summary,"
+BEGIN
+  RETURN COALESCE((
+    SELECT jsonb_agg(jsonb_build_object(
+      'kpi_id', k.id,
+      'name', k.name,
+      'current_value', k.current_value,
+      'target_value', k.target_value,
+      'last_updated', k.updated_at
+    ))
+    FROM public.kpis k
+    WHERE k.project_id = p_project_id
+      AND (p_name IS NULL OR k.name ILIKE ('%' || p_name || '%'))
+      AND (p_min_value IS NULL OR k.current_value >= p_min_value)
+      AND (p_max_value IS NULL OR k.current_value <= p_max_value)
+      AND (p_below_target IS NULL OR (p_below_target = true AND k.current_value < k.target_value) OR (p_below_target = false AND k.current_value >= k.target_value))
+      AND (p_last_updated_after IS NULL OR k.updated_at >= p_last_updated_after)
+  ), '[]'::jsonb);
+END;
+"
+app_settings_audit_trigger,"
+BEGIN
+  IF (TG_OP = 'INSERT') THEN
+    INSERT INTO public.app_settings_audit(app_setting_id, key, old_value, new_value, changed_by, operation)
+    VALUES (NEW.id, NEW.key, NULL, NEW.value, NULLIF((SELECT auth.uid()), '')::uuid, TG_OP);
+    RETURN NEW;
+  ELSIF (TG_OP = 'UPDATE') THEN
+    INSERT INTO public.app_settings_audit(app_setting_id, key, old_value, new_value, changed_by, operation)
+    VALUES (NEW.id, NEW.key, OLD.value, NEW.value, NULLIF((SELECT auth.uid()), '')::uuid, TG_OP);
+    RETURN NEW;
+  ELSIF (TG_OP = 'DELETE') THEN
+    INSERT INTO public.app_settings_audit(app_setting_id, key, old_value, new_value, changed_by, operation)
+    VALUES (OLD.id, OLD.key, OLD.value, NULL, NULLIF((SELECT auth.uid()), '')::uuid, TG_OP);
+    RETURN OLD;
+  END IF;
+  RETURN NULL;
+END;
+"
+enqueue_update_notification,"
+DECLARE
+  payload jsonb;
+  changed_fields text[] := ARRAY[]::text[];
+  key text;
+  val_old text;
+  val_new text;
+  assigned_user uuid;
+BEGIN
+  -- Build payload with old/new when available
+  payload := jsonb_build_object(
+    'table', TG_TABLE_NAME,
+    'op', TG_OP,
+    'record_id', COALESCE(NEW.id::text, OLD.id::text),
+    'changed_at', now()
+  );
+
+  IF TG_OP = 'UPDATE' THEN
+    FOREACH key IN ARRAY (SELECT jsonb_object_keys(to_jsonb(NEW) - 'updated_at' - 'created_at')) LOOP
+      -- compare text representations
+      EXECUTE format('SELECT ($1).%I::text', key) INTO val_new USING NEW;
+      EXECUTE format('SELECT ($1).%I::text', key) INTO val_old USING OLD;
+      IF val_new IS DISTINCT FROM val_old THEN
+        changed_fields := array_append(changed_fields, key);
+      END IF;
+    END LOOP;
+  ELSIF TG_OP = 'INSERT' THEN
+    changed_fields := ARRAY['*'];
+  END IF;
+
+  payload := payload || jsonb_build_object('changed_fields', to_jsonb(changed_fields));
+
+  -- Determine recipient(s). If table has assigned_user_id or owner_id, notify them.
+  assigned_user := NULL;
+  BEGIN
+    EXECUTE 'SELECT (NEW).assigned_user_id::uuid' INTO assigned_user;
+  EXCEPTION WHEN undefined_column THEN
+    assigned_user := NULL;
+  END;
+
+  IF assigned_user IS NULL THEN
+    BEGIN
+      EXECUTE 'SELECT (NEW).owner_id::uuid' INTO assigned_user;
+    EXCEPTION WHEN undefined_column THEN
+      assigned_user := NULL;
+    END;
+  END IF;
+
+  -- Fallback: if still NULL, do nothing (or you could notify a project owner lookup)
+  IF assigned_user IS NOT NULL THEN
+    INSERT INTO public.notifications(recipient_user_id, event_table, event_type, record_id, payload)
+    VALUES (assigned_user, TG_TABLE_NAME, TG_OP, COALESCE(NEW.id, OLD.id), payload);
+
+    -- Also broadcast via realtime if available
+    PERFORM realtime.send('user:' || assigned_user::text, 'record_updated', payload, true);
+  END IF;
+
+  -- Return NEW for INSERT/UPDATE
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  ELSE
+    RETURN NEW;
+  END IF;
+END;
+"
+get_project_milestones,"
+BEGIN
+  RETURN COALESCE((
+    SELECT jsonb_agg(jsonb_build_object(
+      'id', m.id,
+      'title', m.title,
+      'status', m.status,
+      'due_date', m.due_date,
+      'completed', m.completed,
+      'priority', m.priority
+    ))
+    FROM public.milestones m
+    WHERE m.project_id = p_project_id
+      AND (p_status IS NULL OR m.status = p_status)
+      AND (p_due_before IS NULL OR m.due_date <= p_due_before)
+      AND (p_due_after IS NULL OR m.due_date >= p_due_after)
+      AND (p_completed IS NULL OR m.completed IS NOT DISTINCT FROM p_completed)
+      AND (p_priority IS NULL OR m.priority = p_priority)
+  ), '[]'::jsonb);
+END;
+"
+record_history,"
+DECLARE
+  hist_table text := TG_TABLE_NAME || '_history';
+  cols text;
+  insert_sql text;
+BEGIN
+  -- Build insert for all columns present in OLD
+  SELECT string_agg(format('%I', attname), ',') INTO cols
+  FROM pg_catalog.pg_attribute a
+  JOIN pg_catalog.pg_class c ON a.attrelid = c.oid
+  WHERE c.relname = TG_TABLE_NAME AND a.attnum > 0 AND NOT a.attisdropped;
+
+  insert_sql := format('INSERT INTO %I.%I(%s, _history_op, _history_at) SELECT %s, %L, now() FROM %I.%I WHERE id = $1',
+    TG_TABLE_SCHEMA, hist_table, cols, cols, TG_OP, TG_TABLE_SCHEMA, TG_TABLE_NAME);
+
+  -- If history table doesn't exist, create it dynamically
+  PERFORM 1 FROM pg_tables WHERE schemaname = TG_TABLE_SCHEMA AND tablename = hist_table;
+  IF NOT FOUND THEN
+    EXECUTE format('CREATE TABLE %I.%I AS TABLE %I.%I WITH NO DATA;', TG_TABLE_SCHEMA, hist_table, TG_TABLE_SCHEMA, TG_TABLE_NAME);
+    -- add metadata columns
+    EXECUTE format('ALTER TABLE %I.%I ADD COLUMN _history_id uuid PRIMARY KEY DEFAULT gen_random_uuid();', TG_TABLE_SCHEMA, hist_table);
+    EXECUTE format('ALTER TABLE %I.%I ADD COLUMN _history_op text;', TG_TABLE_SCHEMA, hist_table);
+    EXECUTE format('ALTER TABLE %I.%I ADD COLUMN _history_at timestamptz DEFAULT now();', TG_TABLE_SCHEMA, hist_table);
+  END IF;
+
+  -- Insert OLD row into history
+  EXECUTE format('INSERT INTO %I.%I(%s, _history_op, _history_at) SELECT %s, %L, now()', TG_TABLE_SCHEMA, hist_table, cols, cols, TG_OP) USING OLD;
+
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  ELSE
+    RETURN NEW;
+  END IF;
+END;
+"
+run_signal_detectors,"
+BEGIN
+    INSERT INTO public.signals(signal_definition_id, source, value, captured_at)
+    SELECT sd.id,
+           'risk_monitor',
+           jsonb_build_object('risk_id', r.id, 'probability', r.probability),
+           now()
+    FROM public.risks r
+    JOIN public.signal_definitions sd ON sd.name = 'High Risk'
+    WHERE r.probability > 0.8;
+END;
+"
+get_notification_recipients,"
+DECLARE
+  uid uuid;
+  tmp text;
+  proj_id uuid;
+  member uuid;
+BEGIN
+  -- Try common direct fields
+  FOR tmp IN SELECT val FROM jsonb_each_text(record_row) LOOP
+    -- check likely field names
+    IF tmp = 'assigned_user_id' OR tmp = 'assignee_id' OR tmp = 'assigned_to' OR tmp = 'user_id' OR tmp = 'owner_id' THEN
+      BEGIN
+        EXECUTE format('SELECT ($1)->>%L', tmp) INTO tmp USING record_row;
+      EXCEPTION WHEN others THEN
+        tmp := NULL;
+      END;
+    END IF;
+  END LOOP;
+
+  -- Direct checks: assignee, assigned_user_id, assignee_id, assigned_to, owner_id, user_id
+  BEGIN
+    uid := (record_row ->> 'assigned_user_id')::uuid;
+    IF uid IS NOT NULL THEN RETURN NEXT uid; END IF;
+  EXCEPTION WHEN others THEN END;
+
+  BEGIN
+    uid := (record_row ->> 'assignee_id')::uuid;
+    IF uid IS NOT NULL THEN RETURN NEXT uid; END IF;
+  EXCEPTION WHEN others THEN END;
+
+  BEGIN
+    uid := (record_row ->> 'assigned_to')::uuid;
+    IF uid IS NOT NULL THEN RETURN NEXT uid; END IF;
+  EXCEPTION WHEN others THEN END;
+
+  BEGIN
+    uid := (record_row ->> 'user_id')::uuid;
+    IF uid IS NOT NULL THEN RETURN NEXT uid; END IF;
+  EXCEPTION WHEN others THEN END;
+
+  BEGIN
+    uid := (record_row ->> 'owner_id')::uuid;
+    IF uid IS NOT NULL THEN RETURN NEXT uid; END IF;
+  EXCEPTION WHEN others THEN END;
+
+  -- If there is a project_id, try to add project owners and members
+  BEGIN
+    proj_id := (record_row ->> 'project_id')::uuid;
+    IF proj_id IS NOT NULL THEN
+      -- project owners
+      BEGIN
+        FOR member IN SELECT user_id FROM public.project_owners WHERE project_id = proj_id LOOP
+          RETURN NEXT member;
+        END LOOP;
+      EXCEPTION WHEN undefined_table THEN NULL; END;
+      -- project members
+      BEGIN
+        FOR member IN SELECT user_id FROM public.project_members WHERE project_id = proj_id LOOP
+          RETURN NEXT member;
+        END LOOP;
+      EXCEPTION WHEN undefined_table THEN NULL; END;
+    END IF;
+  EXCEPTION WHEN others THEN END;
+
+  -- watchers table
+  BEGIN
+    FOR member IN SELECT user_id FROM public.watchers WHERE table_name = table_name AND record_id = (record_row ->> 'id')::uuid LOOP
+      RETURN NEXT member;
+    END LOOP;
+  EXCEPTION WHEN undefined_table THEN NULL; END;
+
+  RETURN;
+END;
+"
+kg_recommendations_for_kpi,"
+  SELECT rec.id, rec.title, act.id, act.title
+  FROM public.kg_nodes kpi
+  JOIN public.kg_relationships r1 ON r1.from_node = kpi.id AND r1.relationship_type = 'triggers'
+  JOIN public.kg_nodes rec ON rec.id = r1.to_node AND rec.node_type = 'recommendation'
+  LEFT JOIN public.kg_relationships r2 ON r2.from_node = rec.id AND r2.relationship_type = 'recommends'
+  LEFT JOIN public.kg_nodes act ON act.id = r2.to_node AND act.node_type = 'action'
+  WHERE kpi.id = p_kpi_uuid;
+"
+calculate_algorithm_score,"
+DECLARE
+   engagement NUMERIC;
+   relevance NUMERIC;
+   conversion NUMERIC;
+   authority NUMERIC;
+   freshness NUMERIC;
+   network NUMERIC;
+   efficiency NUMERIC;
+   mega_score NUMERIC;
+BEGIN
+  SELECT AVG(metric_value) INTO engagement
+  FROM public.algorithm_signals
+  WHERE campaign_id = campaign
+    AND signal_type = 'engagement';
+
+  SELECT AVG(metric_value) INTO relevance
+  FROM public.algorithm_signals
+  WHERE campaign_id = campaign
+    AND signal_type = 'relevance';
+
+  SELECT AVG(metric_value) INTO conversion
+  FROM public.algorithm_signals
+  WHERE campaign_id = campaign
+    AND signal_type = 'conversion';
+
+  SELECT AVG(metric_value) INTO authority
+  FROM public.algorithm_signals
+  WHERE campaign_id = campaign
+    AND signal_type = 'authority';
+
+  SELECT AVG(metric_value) INTO freshness
+  FROM public.algorithm_signals
+  WHERE campaign_id = campaign
+    AND signal_type = 'freshness';
+
+  SELECT AVG(metric_value) INTO network
+  FROM public.algorithm_signals
+  WHERE campaign_id = campaign
+    AND signal_type = 'network';
+
+  SELECT AVG(metric_value) INTO efficiency
+  FROM public.algorithm_signals
+  WHERE campaign_id = campaign
+    AND signal_type = 'efficiency';
+
+  mega_score :=
+    0.20 * COALESCE(engagement,0) +
+    0.20 * COALESCE(relevance,0) +
+    0.20 * COALESCE(conversion,0) +
+    0.15 * COALESCE(authority,0) +
+    0.10 * COALESCE(freshness,0) +
+    0.10 * COALESCE(network,0) +
+    0.05 * COALESCE(efficiency,0);
+
+  -- Upsert into algorithm_scores
+  INSERT INTO public.algorithm_scores (
+    campaign_id,
+    engagement_score,
+    relevance_score,
+    conversion_score,
+    authority_score,
+    freshness_score,
+    network_score,
+    efficiency_score,
+    mega_algorithm_score,
+    calculated_at
+  ) VALUES (
+    campaign,
+    engagement,
+    relevance,
+    conversion,
+    authority,
+    freshness,
+    network,
+    efficiency,
+    mega_score,
+    now()
+  ) ON CONFLICT (campaign_id) DO UPDATE SET
+    engagement_score = EXCLUDED.engagement_score,
+    relevance_score = EXCLUDED.relevance_score,
+    conversion_score = EXCLUDED.conversion_score,
+    authority_score = EXCLUDED.authority_score,
+    freshness_score = EXCLUDED.freshness_score,
+    network_score = EXCLUDED.network_score,
+    efficiency_score = EXCLUDED.efficiency_score,
+    mega_algorithm_score = EXCLUDED.mega_algorithm_score,
+    calculated_at = EXCLUDED.calculated_at;
+END;
+"
+trigger_algorithm_score,"
+BEGIN
+  PERFORM public.calculate_algorithm_score(NEW.campaign_id);
+  RETURN NEW;
+END;
+"
+compute_predicted_duration,"
+DECLARE
+  rec RECORD;
+  proj uuid;
+  tg_tags text[];
+  ttype text;
+  avg_minutes numeric;
+  fallback_minutes numeric;
+BEGIN
+  SELECT project_id, tags, task_type, task_time_estimate_minutes INTO proj, tg_tags, ttype, fallback_minutes FROM public.action_items WHERE id = p_action_item LIMIT 1;
+  IF NOT FOUND THEN RETURN NULL; END IF;
+
+  -- Compute average from completed tasks matching project OR overlapping tags OR same task_type in last 180 days
+  SELECT AVG(COALESCE(actual_work_minutes, task_time_estimate_minutes)) INTO avg_minutes FROM public.action_items ai
+    WHERE ai.completed_at IS NOT NULL
+      AND ai.id <> p_action_item
+      AND (
+        (ai.project_id IS NOT NULL AND proj IS NOT NULL AND ai.project_id = proj)
+        OR (array_length(ai.tags,1) IS NOT NULL AND array_length(tg_tags,1) IS NOT NULL AND (SELECT count(*) FROM unnest(ai.tags) t(tag) WHERE tag = ANY(tg_tags)) > 0)
+        OR (ai.task_type IS NOT NULL AND ttype IS NOT NULL AND ai.task_type = ttype)
+      )
+      AND ai.completed_at >= now() - interval '180 days';
+
+  IF avg_minutes IS NOT NULL THEN
+    RETURN GREATEST(1, CEIL(avg_minutes));
+  END IF;
+
+  -- Fallback 1: use task_time_estimate_minutes if provided
+  IF fallback_minutes IS NOT NULL AND fallback_minutes > 0 THEN
+    RETURN GREATEST(1, CEIL(fallback_minutes));
+  END IF;
+
+  -- Fallback 2: global median of actual durations from last 365 days
+  SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY COALESCE(actual_work_minutes, task_time_estimate_minutes)) INTO avg_minutes
+    FROM public.action_items ai WHERE ai.completed_at IS NOT NULL AND ai.completed_at >= now() - interval '365 days';
+
+  IF avg_minutes IS NOT NULL THEN
+    RETURN GREATEST(1, CEIL(avg_minutes));
+  END IF;
+
+  RETURN NULL;
+END;
+"
+_create_policy_if_not_exists,"
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = p_table AND policyname = p_name
+  ) THEN
+    IF upper(p_cmd) = 'INSERT' THEN
+      EXECUTE format('CREATE POLICY %I ON public.%I FOR INSERT TO authenticated WITH CHECK (%s);', p_name, p_table, p_expr);
+    ELSE
+      EXECUTE format('CREATE POLICY %I ON public.%I FOR %s TO authenticated USING (%s);', p_name, p_table, p_cmd, p_expr);
+    END IF;
+  END IF;
+END;"
+set_updated_at_timestamps,"
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+"
+validate_polymorphic_reference,"
+DECLARE
+  target_table text;
+  target_id uuid;
+  exists_flag boolean;
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
+
+  -- Expect columns: target_table (text) and target_id (uuid)
+  target_table := COALESCE(NEW.target_table, OLD.target_table);
+  target_id := COALESCE(NEW.target_id, OLD.target_id)::uuid;
+
+  IF target_table IS NULL OR target_id IS NULL THEN
+    RAISE EXCEPTION 'Polymorphic reference requires target_table and target_id';
+  END IF;
+
+  -- Prevent SQL injection: allow only safe table names (letters, digits, underscore)
+  IF target_table ~ '^[a-zA-Z0-9_]+$' THEN
+    EXECUTE format('SELECT EXISTS (SELECT 1 FROM public.%I WHERE id = $1)', target_table) INTO exists_flag USING target_id;
+    IF NOT exists_flag THEN
+      RAISE EXCEPTION 'Referenced % does not exist: %', target_table, target_id;
+    END IF;
+  ELSE
+    RAISE EXCEPTION 'Invalid target_table name: %', target_table;
+  END IF;
+
+  RETURN NEW;
+END;
+"
+get_milestone_progress,"
+DECLARE
+  total_items int;
+  completed_items int;
+BEGIN
+  SELECT COUNT(*) INTO total_items
+  FROM public.action_items
+  WHERE milestone_id = p_milestone_id;
+
+  SELECT COUNT(*) INTO completed_items
+  FROM public.action_items
+  WHERE milestone_id = p_milestone_id
+    AND status = 'completed';
+
+  IF total_items = 0 THEN
+    RETURN 0;
+  ELSE
+    RETURN ROUND((completed_items::numeric / total_items) * 100, 2);
+  END IF;
+END;
+"
+set_timestamps,"
+BEGIN
+  IF TG_OP = 'INSERT' THEN
+    NEW.created_at = COALESCE(NEW.created_at, NOW());
+  END IF;
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+"
+set_archived_at,"
+BEGIN
+  IF TG_OP = 'UPDATE' THEN
+    IF (OLD.* IS NOT NULL) THEN
+      IF (SELECT count(*) FROM information_schema.columns WHERE table_schema=TG_TABLE_SCHEMA AND table_name=TG_TABLE_NAME AND column_name='status') > 0 THEN
+        IF OLD.status IS DISTINCT FROM NEW.status THEN
+          IF NEW.status = 'archived' THEN
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema=TG_TABLE_SCHEMA AND table_name=TG_TABLE_NAME AND column_name='archived_at') THEN
+              NEW.archived_at := now();
+            END IF;
+          ELSE
+            IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema=TG_TABLE_SCHEMA AND table_name=TG_TABLE_NAME AND column_name='archived_at') THEN
+              NEW.archived_at := NULL;
+            END IF;
+          END IF;
+        END IF;
+      END IF;
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+"
+notifications_is_owner,"
+  SELECT EXISTS(
+    SELECT 1 FROM public.notifications n
+    WHERE n.id = p_notification_id AND n.user_id = auth.uid()
+  );
+"
+current_user_id,"
+  SET LOCAL search_path = public, pg_catalog;
+  SELECT auth.uid();
+"
+compute_next_best_for_user,"
+WITH source AS (
+  SELECT ai.id,
+    ai.due_date,
+    ai.priority,
+    ai.assigned_to,
+    ai.kpi_id,
+    GREATEST(COALESCE(ai.updated_at, 'epoch'::timestamptz), COALESCE(ai.created_at, 'epoch'::timestamptz)) AS last_activity_at,
+    (SELECT COUNT(*) FROM task_dependencies td WHERE td.depends_on_action_item_id = ai.id) AS blocking_count,
+    (SELECT COUNT(*) FROM task_dependencies td WHERE td.action_item_id = ai.id OR td.depends_on_action_item_id = ai.id) AS total_dependencies
+  FROM action_items ai
+  WHERE ai.id IS NOT NULL
+), scores AS (
+  SELECT s.*, 
+    CASE
+      WHEN s.due_date IS NULL THEN 0.2
+      WHEN s.due_date < now() THEN 1
+      ELSE 1.0 / (1 + GREATEST(0, (s.due_date::date - now()::date)))
+    END AS urgency_score,
+    CASE COALESCE(upper(s.priority), 'LOW')
+      WHEN 'LOW' THEN 0.25
+      WHEN 'MEDIUM' THEN 0.5
+      WHEN 'HIGH' THEN 0.75
+      WHEN 'CRITICAL' THEN 1
+      ELSE 0.5
+    END AS priority_weight,
+    CASE WHEN s.total_dependencies IS NULL OR s.total_dependencies = 0 THEN 0 ELSE (s.blocking_count::numeric / s.total_dependencies::numeric) END AS dependency_score,
+    CASE
+      WHEN s.last_activity_at > now() - interval '1 hour' THEN 1
+      WHEN s.last_activity_at > now() - interval '24 hours' THEN 0.7
+      WHEN s.last_activity_at > now() - interval '3 days' THEN 0.4
+      ELSE 0.1
+    END AS activity_score,
+    CASE WHEN s.assigned_to = p_user THEN 1 ELSE 0.4 END AS ownership_score,
+    CASE WHEN s.kpi_id IS NOT NULL THEN 1 ELSE 0.2 END AS strategic_alignment_score
+  FROM source s
+), final AS (
+  SELECT 
+    id AS action_item_id,
+    ( (urgency_score * 0.35)::numeric + (priority_weight * 0.25)::numeric + (COALESCE(dependency_score,0) * 0.15)::numeric + (activity_score * 0.10)::numeric + (ownership_score * 0.10)::numeric + (strategic_alignment_score * 0.05)::numeric ) AS priority_score,
+    urgency_score, priority_weight, dependency_score, activity_score, ownership_score, strategic_alignment_score,
+    (
+      CASE WHEN urgency_score >= 0.95 THEN 'Overdue or due very soon' 
+           WHEN urgency_score >= 0.7 THEN 'Due soon'
+           WHEN urgency_score <= 0.25 THEN 'No due date'
+           ELSE 'Scheduled'
+      END || '; ' ||
+      CASE WHEN priority_weight >= 0.9 THEN 'Critical priority' WHEN priority_weight >= 0.7 THEN 'High priority' WHEN priority_weight >= 0.4 THEN 'Medium priority' ELSE 'Low priority' END || '; ' ||
+      CASE WHEN dependency_score > 0 THEN (blocking_count::text || ' tasks blocked') ELSE 'No blocking tasks' END || '; ' ||
+      CASE WHEN activity_score >= 0.9 THEN 'Recent activity' WHEN activity_score >= 0.4 THEN 'Some recent activity' ELSE 'Stale' END || '; ' ||
+      CASE WHEN ownership_score > 0.9 THEN 'Assigned to you' ELSE 'Not assigned to you' END || '; ' ||
+      CASE WHEN strategic_alignment_score > 0.9 THEN 'Linked to KPI' ELSE 'No KPI link' END
+    ) AS recommendation_reason,
+    now() AS generated_at
+  FROM scores
+  WHERE (assigned_to = p_user) OR (TRUE)
+  ORDER BY priority_score DESC NULLS LAST
+  LIMIT p_top_n
+)
+SELECT action_item_id, round(priority_score::numeric, 6) AS priority_score, row_number() OVER (ORDER BY priority_score DESC) AS rank, recommendation_reason, generated_at FROM final;
+"
+normalize_user_behavior_event,"
+BEGIN
+  IF NEW.event_type IS NOT NULL THEN
+    -- simple normalization: lower and replace spaces with underscores
+    NEW.event_type := lower(regexp_replace(trim(NEW.event_type), '\s+', '_', 'g'));
+  END IF;
+  IF NEW.metadata IS NULL THEN
+    NEW.metadata := '{}';
+  END IF;
+  -- ensure created_at is set
+  IF NEW.created_at IS NULL THEN
+    NEW.created_at := now();
+  END IF;
+  RETURN NEW;
+END;
+"
+upsert_next_best_for_user,"
+DECLARE
+  rec RECORD;
+BEGIN
+  CREATE TEMP TABLE IF NOT EXISTS tmp_nb (action_item_id uuid, priority_score numeric, rank smallint, recommendation_reason text, generated_at timestamptz) ON COMMIT DROP;
+
+  INSERT INTO tmp_nb(action_item_id, priority_score, rank, recommendation_reason, generated_at)
+  SELECT action_item_id, priority_score, rank, recommendation_reason, generated_at FROM public.compute_next_best_for_user(p_user, p_top_n);
+
+  FOR rec IN SELECT * FROM tmp_nb LOOP
+    INSERT INTO next_best_actions(id, user_id, action_item_id, priority_score, rank, recommendation_reason, generated_at)
+    VALUES (gen_random_uuid(), p_user, rec.action_item_id, rec.priority_score, rec.rank, rec.recommendation_reason, rec.generated_at)
+    ON CONFLICT (user_id, rank) DO UPDATE SET
+      action_item_id = EXCLUDED.action_item_id,
+      priority_score = EXCLUDED.priority_score,
+      recommendation_reason = EXCLUDED.recommendation_reason,
+      generated_at = EXCLUDED.generated_at;
+  END LOOP;
+
+  DELETE FROM next_best_actions WHERE user_id = p_user AND (rank IS NULL OR rank > p_top_n);
+END;
+"
+get_user_action_items,"
+BEGIN
+  RETURN (
+    SELECT COALESCE(
+      jsonb_agg(
+        jsonb_build_object(
+          'id', a.id,
+          'title', a.title,
+          'description', a.description,
+          'initiative_id', a.initiative_id,
+          'project_id', a.project_id,
+          'owner_id', a.owner_id,
+          'organization_id', a.organization_id,
+          'status', a.status,
+          'priority', a.priority,
+          'due_date', a.due_date,
+          'created_at', a.created_at,
+          'updated_at', a.updated_at
+        ) ORDER BY a.due_date NULLS LAST, a.created_at DESC
+      ), '[]'::jsonb
+    )
+    FROM public.action_items a
+    WHERE a.owner_id = p_user_id
+  );
+END;
+"
+mark_notification_read,"
+BEGIN
+  UPDATE public.notifications
+  SET is_read = true
+  WHERE id = p_notification_id AND user_id = auth.uid()
+  RETURNING id, user_id, entity_type, entity_id, title, body, is_read, created_at
+  INTO id, user_id, entity_type, entity_id, title, body, is_read, created_at;
+
+  IF NOT FOUND THEN
+    RETURN; -- returns zero rows
+  END IF;
+  RETURN NEXT;
+END;
+"
+nb_actions_trigger_notify,"
+DECLARE
+  affected_users uuid[] := ARRAY[]::uuid[];
+  u uuid;
+  payload jsonb;
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    affected_users := array_append(affected_users, OLD.assigned_to);
+  ELSE
+    IF NEW.assigned_to IS NOT NULL THEN
+      affected_users := array_append(affected_users, NEW.assigned_to);
+    END IF;
+  END IF;
+
+  SELECT ARRAY(SELECT DISTINCT x FROM unnest(affected_users) x) INTO affected_users;
+
+  FOREACH u IN ARRAY affected_users LOOP
+    PERFORM public.upsert_next_best_for_user(u, 3);
+
+    payload := jsonb_build_object('type','next_best_actions_updated', 'actions', (
+      SELECT jsonb_agg(jsonb_build_object('action_item_id', action_item_id, 'priority_score', priority_score, 'rank', rank, 'recommendation_reason', recommendation_reason, 'generated_at', generated_at))
+      FROM next_best_actions WHERE user_id = u ORDER BY rank
+    ));
+
+    PERFORM realtime.broadcast_changes('user:'||u::text||':next_best_actions', TG_OP, 'next_best_actions_updated', TG_TABLE_NAME, TG_TABLE_SCHEMA, payload, NULL);
+  END LOOP;
+
+  RETURN NULL;
+END;
+"
+get_initiative_details,"
+DECLARE
+  result jsonb;
+BEGIN
+  SELECT jsonb_build_object(
+    'initiative', to_jsonb(i.*),
+    'milestones', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object(
+        'id', m.id,
+        'title', m.title,
+        'status', m.status,
+        'due_date', m.due_date
+      ) ORDER BY m.due_date NULLS LAST)
+      FROM public.milestones m
+      WHERE m.initiative_id = i.id
+    ), '[]'::jsonb),
+    'action_items', COALESCE((
+      SELECT jsonb_agg(jsonb_build_object(
+        'id', a.id,
+        'title', a.title,
+        'status', a.status,
+        'priority', a.priority,
+        'due_date', a.due_date,
+        'owner_id', a.owner_id,
+        'project_id', a.project_id
+      ) ORDER BY a.due_date NULLS LAST, a.created_at DESC)
+      FROM public.action_items a
+      WHERE a.initiative_id = i.id
+    ), '[]'::jsonb)
+  ) INTO result
+  FROM public.initiatives i
+  WHERE i.id = p_initiative_id;
+
+  RETURN COALESCE(result, '{}'::jsonb);
+END;
+"
+suggest_snoozes,"
+DECLARE
+  rec RECORD;
+  sums int[] := ARRAY[0,0,0,0,0,0,0];
+  cnts int[] := ARRAY[0,0,0,0,0,0,0];
+  i int;
+  today date := now()::date;
+  d date;
+BEGIN
+  -- Try to aggregate from action_items if columns exist
+  BEGIN
+    FOR rec IN SELECT completed_at, COALESCE(actual_work_minutes,0) AS minutes FROM action_items WHERE assigned_to = p_user AND completed_at IS NOT NULL AND completed_at >= now() - interval '90 days' LOOP
+      i := EXTRACT(dow FROM rec.completed_at)::int; -- 0..6
+      sums[i+1] := sums[i+1] + rec.minutes; -- arrays are 1-based
+      cnts[i+1] := cnts[i+1] + 1;
+    END LOOP;
+  EXCEPTION WHEN undefined_table OR undefined_column THEN
+    -- no action_items data; return no suggestions
+    RETURN;
+  END;
+
+  -- compute averages and pick low weekdays
+  FOR i IN 1..7 LOOP
+    IF cnts[i] > 0 AND (sums[i]::numeric / cnts[i] / 60.0) < 1 THEN
+      -- weekday with avg < 1 hour
+      -- find upcoming dates in next 14 days matching this dow
+      FOR d IN SELECT generate_series(today, today + 13, interval '1 day')::date LOOP
+        IF EXTRACT(dow FROM d)::int = (i-1) THEN
+          -- ensure not already snoozed
+          IF NOT EXISTS (SELECT 1 FROM public.user_snoozes s WHERE s.user_id = p_user AND s.snooze_date = d) THEN
+            suggested_date := d;
+            reason := 'low historical productive hours on this weekday';
+            RETURN NEXT;
+          END IF;
+        END IF;
+      END LOOP;
+    END IF;
+  END LOOP;
+END;
+"
+cleanup_old_notifications,"
+DECLARE
+  deleted_count bigint := 0;
+BEGIN
+  DELETE FROM public.notifications
+  WHERE created_at < NOW() - (p_retention_days || ' days')::interval;
+  GET DIAGNOSTICS deleted_count = ROW_COUNT;
+  RETURN deleted_count;
+END;
+"
+kg_traverse,"
+BEGIN
+  RETURN QUERY
+  WITH RECURSIVE walk(path, types, depth) AS (
+    SELECT ARRAY[start_uuid]::uuid[], ARRAY[]::text[], 0
+    UNION ALL
+    SELECT path || r.to_node, types || r.relationship_type, depth + 1
+    FROM walk w
+    JOIN public.kg_relationships r ON r.from_node = w.path[array_length(w.path,1)]
+    WHERE depth < max_depth AND NOT r.to_node = ANY(path)
+  )
+  SELECT path, types FROM walk WHERE array_length(path,1) > 1;
+END;
+"
+process_due_reminders,"
+DECLARE
+  rec RECORD;
+  cnt bigint := 0;
+BEGIN
+  FOR rec IN
+    SELECT * FROM public.reminders
+    WHERE sent = false AND reminder_time <= p_now
+    ORDER BY reminder_time
+    LIMIT p_limit
+  LOOP
+    -- Insert notification for each reminder (if notifications table has different columns adjust accordingly)
+    INSERT INTO public.notifications (id, user_id, message, metadata, created_at)
+    VALUES (
+      gen_random_uuid(),
+      rec.user_id,
+      'Reminder due: ' || COALESCE(rec.reminder_type, 'Action item reminder'),
+      jsonb_build_object('reminder_id', rec.id),
+      now()
+    );
+
+    UPDATE public.reminders SET sent = true WHERE id = rec.id;
+    cnt := cnt + 1;
+  END LOOP;
+
+  processed_count := cnt;
+  RETURN NEXT;
+END;
+"
+enqueue_reminder_notification,"
+BEGIN
+  IF NEW.sent = true OR NEW.reminder_time IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  -- Only insert if no existing notification references this reminder_id
+  IF NOT EXISTS (
+    SELECT 1 FROM public.notifications n
+    WHERE (n.metadata ->> 'reminder_id')::uuid = NEW.id
+  ) THEN
+    INSERT INTO public.notifications (id, user_id, message, metadata, created_at)
+    VALUES (
+      gen_random_uuid(),
+      NEW.user_id,
+      'Reminder: ' || COALESCE(NEW.reminder_type, 'Action item reminder'),
+      jsonb_build_object('reminder_id', NEW.id, 'action_item_link', NEW.action_item_link),
+      now()
+    );
+  END IF;
+
+  RETURN NEW;
+END;
+"
+generate_daily_plan,"
+DECLARE
+  user_energy int := 2; -- default medium
+  now_ts timestamptz := now();
+  today_start timestamptz := date_trunc('day', now_ts);
+  today_end timestamptz := today_start + interval '1 day';
+  meetings_count int;
+  rec RECORD;
+  items jsonb := '[]'::jsonb;
+  total_minutes int := 0;
+BEGIN
+  -- try to get user energy_level
+  BEGIN
+    SELECT energy_level INTO user_energy FROM public.user_profiles WHERE user_id = p_user_id LIMIT 1;
+  EXCEPTION WHEN others THEN
+    user_energy := 2;
+  END;
+
+  -- count meetings today to penalize busy schedules
+  SELECT COUNT(*) INTO meetings_count FROM public.meetings m WHERE m.user_id = p_user_id AND m.start_at < today_end AND m.end_at > today_start;
+
+  -- Select candidate tasks: incomplete, assigned to user, due today or overdue or high priority, plus short tasks to fill gaps
+  FOR rec IN
+    SELECT ai.id, COALESCE(ai.title, ai.name, '') AS title, COALESCE(ai.predicted_duration_minutes, ai.task_time_estimate_minutes, 15) AS minutes,
+           COALESCE(ai.priority_score, 0) AS priority, ai.due_date, ai.task_type
+    FROM public.action_items ai
+    WHERE ai.user_id = p_user_id
+      AND ai.completed_at IS NULL
+      AND (ai.due_date IS NULL OR ai.due_date <= today_end)
+    ORDER BY COALESCE(ai.priority_score,0) DESC NULLS LAST, ai.due_date NULLS LAST
+  LOOP
+    -- compute a simple score: priority * 10 + energy factor - duration penalty - meeting penalty
+    -- energy factor: higher energy boosts score proportionally
+    -- duration penalty: longer tasks get slightly lower score
+    -- meeting penalty: if meetings_count high, reduce score
+    DECLARE
+      score numeric;
+      energy_factor numeric := (user_energy::numeric / 2.0); -- 0.5 to 1.5
+      meeting_penalty numeric := GREATEST(0, (meetings_count - 2)) * 2; -- penalize if >2 meetings
+    BEGIN
+      score := (rec.priority * 10) * energy_factor - (rec.minutes::numeric / 30.0) - meeting_penalty;
+      IF score < 0 THEN score := 0; END IF;
+
+      items := items || jsonb_build_object(
+        'id', rec.id,
+        'title', rec.title,
+        'minutes', rec.minutes,
+        'priority_score', rec.priority,
+        'score', round(score::numeric,2)
+      );
+      total_minutes := total_minutes + COALESCE(rec.minutes,0);
+    END;
+  END LOOP;
+
+  -- Order items by score desc, then by minutes asc
+  items := (
+    SELECT jsonb_agg(x ORDER BY (x->>'score')::numeric DESC, (x->>'minutes')::int ASC)
+    FROM jsonb_array_elements(items) AS t(x)
+  );
+
+  RETURN jsonb_build_object(
+    'date', to_char(now_ts, 'YYYY-MM-DD'),
+    'total_minutes', total_minutes,
+    'items', items
+  );
+END;
+"
+get_initiative_progress,"
+DECLARE
+  total_items int;
+  completed_items int;
+BEGIN
+  SELECT COUNT(*) INTO total_items
+  FROM public.action_items
+  WHERE initiative_id = p_initiative_id;
+
+  SELECT COUNT(*) INTO completed_items
+  FROM public.action_items
+  WHERE initiative_id = p_initiative_id
+    AND status = ANY (ARRAY['completed','done','closed']);
+
+  IF total_items = 0 THEN
+    RETURN 0;
+  ELSE
+    RETURN ROUND((completed_items::numeric / total_items) * 100, 2);
+  END IF;
+END;
+"
+compute_and_store_org_health_metrics,"
+DECLARE
+  created_count bigint := 0;
+  completed_count bigint := 0;
+  active_count bigint := 0;
+  overdue_count bigint := 0;
+  blocked_count bigint := 0;
+  avg_cycle_time_seconds double precision := NULL;
+  completion_rate double precision := NULL;
+  overdue_rate_val double precision := NULL;
+  dependency_block_rate_val double precision := NULL;
+  team_focus double precision := NULL;
+BEGIN
+  -- Created in window
+  SELECT count(*) INTO created_count
+    FROM public.tasks
+   WHERE organization_id = p_org_id
+     AND created_at >= p_window_start
+     AND created_at < p_window_end;
+
+  -- Completed: tasks with status indicating completion (conservative set)
+  SELECT count(*) INTO completed_count
+    FROM public.tasks
+   WHERE organization_id = p_org_id
+     AND status IN ('completed','done','closed')
+     AND updated_at >= p_window_start
+     AND updated_at < p_window_end;
+
+  -- Active tasks as of window_end
+  SELECT count(*) INTO active_count
+    FROM public.tasks
+   WHERE organization_id = p_org_id
+     AND (status NOT IN ('completed','done','closed'));
+
+  -- Overdue: due_date < window_end and not completed
+  SELECT count(*) INTO overdue_count
+    FROM public.tasks
+   WHERE organization_id = p_org_id
+     AND due_date IS NOT NULL
+     AND due_date < p_window_end
+     AND status NOT IN ('completed','done','closed');
+
+  -- Blocked: tasks/action_items that have dependencies and are not completed
+  SELECT count(distinct td.task_id) INTO blocked_count
+    FROM public.task_dependencies td
+    LEFT JOIN public.action_items ai ON ai.id = td.task_id
+    LEFT JOIN public.tasks t ON t.id = td.task_id
+    WHERE ( (ai.id IS NOT NULL AND ai.completed_at IS NULL) OR (t.id IS NOT NULL AND t.status NOT IN ('completed','done','closed')) )
+      AND (
+        td.depends_on_task_id IS NOT NULL OR td.depends_on_action_item_id IS NOT NULL
+      )
+      AND (
+        -- ensure the dependent belongs to the org
+        EXISTS (SELECT 1 FROM public.action_items x WHERE x.id = coalesce(td.depends_on_action_item_id, td.depends_on_task_id) AND x.organization_id = p_org_id)
+        OR EXISTS (SELECT 1 FROM public.tasks x WHERE x.id = coalesce(td.depends_on_action_item_id, td.depends_on_task_id) AND x.organization_id = p_org_id)
+      );
+
+  -- Avg cycle time: use action_items.completed_at - action_items.created_at where completed in window and organization matches
+  SELECT avg(EXTRACT(EPOCH FROM (ai.completed_at - ai.created_at))) INTO avg_cycle_time_seconds
+    FROM public.action_items ai
+   WHERE ai.organization_id = p_org_id
+     AND ai.completed_at IS NOT NULL
+     AND ai.completed_at >= p_window_start
+     AND ai.completed_at < p_window_end;
+
+  -- safe rates
+  IF created_count > 0 THEN
+    completion_rate := completed_count::double precision / created_count::double precision;
+  ELSE
+    completion_rate := NULL;
+  END IF;
+
+  IF active_count > 0 THEN
+    overdue_rate_val := overdue_count::double precision / active_count::double precision;
+    dependency_block_rate_val := blocked_count::double precision / active_count::double precision;
+  ELSE
+    overdue_rate_val := NULL;
+    dependency_block_rate_val := NULL;
+  END IF;
+
+  -- Team focus: proportion of active tasks assigned to top p_top_teams
+  IF active_count > 0 THEN
+    WITH team_active AS (
+      SELECT dm.team_id, count(*) AS cnt
+      FROM public.tasks t
+      JOIN public.users u ON u.id = t.assignee_id
+      LEFT JOIN public.department_membership dm ON dm.user_id = u.id
+      WHERE t.organization_id = p_org_id
+        AND (t.status NOT IN ('completed','done','closed'))
+      GROUP BY dm.team_id
+    ), top_sum AS (
+      SELECT COALESCE(SUM(cnt),0) AS top_cnt FROM (
+        SELECT cnt FROM team_active ORDER BY cnt DESC NULLS LAST LIMIT p_top_teams
+      ) s
+    )
+    SELECT (top_cnt::double precision / active_count::double precision) INTO team_focus FROM top_sum;
+  ELSE
+    team_focus := NULL;
+  END IF;
+
+  INSERT INTO public.org_health_metrics (
+    org_id, measured_at, window_start, window_end,
+    task_created_count, task_completed_count, task_active_count,
+    task_overdue_count, task_blocked_count, avg_cycle_time_seconds,
+    task_completion_rate, overdue_rate, dependency_block_rate,
+    team_focus_score, metadata
+  ) VALUES (
+    p_org_id, now(), p_window_start, p_window_end,
+    created_count, completed_count, active_count,
+    overdue_count, blocked_count, avg_cycle_time_seconds,
+    completion_rate, overdue_rate_val, dependency_block_rate_val,
+    team_focus, jsonb_build_object('top_teams', p_top_teams)
+  );
+END;
+"
+get_initiative_signals,"
+BEGIN
+  RETURN COALESCE((
+    SELECT jsonb_agg(jsonb_build_object(
+      'signal_id', s.id,
+      'definition_id', s.signal_definition_id,
+      'value', s.value,
+      'captured_at', s.captured_at
+    ) ORDER BY s.captured_at DESC)
+    FROM public.signals s
+    WHERE s.initiative_id = p_initiative_id
+  ), '[]'::jsonb);
+END;
+"
+compute_org_health_metrics_for_all_orgs,"
+DECLARE
+  r record;
+BEGIN
+  FOR r IN SELECT org_id FROM public.org_health_metrics_config LOOP
+    PERFORM public.compute_and_store_org_health_metrics(r.org_id);
+  END LOOP;
+END;
+"
+can_delete_initiative,"
+DECLARE
+  has_deps boolean;
+BEGIN
+  -- Check for active projects or action items
+  SELECT (EXISTS(SELECT 1 FROM public.projects WHERE initiative_id = p_initiative_id)
+          OR EXISTS(SELECT 1 FROM public.action_items WHERE initiative_id = p_initiative_id))
+  INTO has_deps;
+
+  IF has_deps THEN
+    RETURN FALSE;
+  END IF;
+
+  -- Allow only initiative owner or org admin (simplified)
+  RETURN EXISTS(
+    SELECT 1
+    FROM public.initiatives i
+    JOIN public.organization_members om ON om.organization_id = i.organization_id
+    WHERE i.id = p_initiative_id
+      AND (i.owner_id = p_user_id OR om.role = 'admin')
+  );
+END;
+"
+_user_task_stats,"
+WITH recent AS (
+  SELECT ai.id, ai.task_time_estimate_minutes, ai.completed_at, ai.created_at
+  FROM action_items ai
+  WHERE ai.assigned_to = p_user
+    AND ai.created_at >= now() - interval '90 days'
+), completed AS (
+  SELECT id, task_time_estimate_minutes, completed_at, created_at, EXTRACT(EPOCH FROM (completed_at - created_at))/3600.0 AS completion_hours
+  FROM recent WHERE completed_at IS NOT NULL
+)
+SELECT
+  COALESCE( (SELECT AVG(task_time_estimate_minutes)/60.0 FROM recent WHERE task_time_estimate_minutes IS NOT NULL), 0) AS avg_hours_estimate,
+  COALESCE( (SELECT AVG(completion_hours) FROM completed), 0) AS avg_completion_hours,
+  COALESCE( (SELECT COUNT(*)::numeric FROM completed) / GREATEST(1, 90.0/7.0), 0) AS weekly_throughput
+;
+"
+_set_predicted_duration_trigger,"
+BEGIN
+  NEW.predicted_duration_minutes := public.compute_predicted_duration(NEW.id);
+  RETURN NEW;
+END;
+"
+predict_user_overload,"
+DECLARE
+  tasks_due_next7 int;
+  total_estimated_hours numeric;
+  stats RECORD;
+  productive_hours_per_day numeric := 5;
+  working_days_per_week numeric := 5;
+  workdays_in_window int;
+  expected_capacity_hours numeric;
+  projected_throughput numeric := 0;
+  score numeric;
+  likely_missed integer := 0;
+  user_cap RECORD;
+  start_date date := now()::date;
+  end_date date := (now() + interval '6 days')::date;
+BEGIN
+  SELECT productive_hours_per_day, working_days_per_week INTO user_cap FROM public.user_work_capacity WHERE user_id = p_user;
+  IF FOUND THEN
+    productive_hours_per_day := user_cap.productive_hours_per_day;
+    working_days_per_week := user_cap.working_days_per_week;
+  END IF;
+
+  workdays_in_window := public._count_workdays_in_range(p_user, start_date, end_date);
+  expected_capacity_hours := productive_hours_per_day * GREATEST(1, workdays_in_window);
+
+  SELECT COUNT(*) INTO tasks_due_next7 FROM action_items ai
+    WHERE ai.assigned_to = p_user
+      AND ai.due_date >= now() AND ai.due_date <= now() + interval '7 days'
+      AND NOT EXISTS (SELECT 1 FROM public.user_snoozes s WHERE s.user_id = p_user AND s.snooze_date = ai.due_date::date);
+
+  SELECT COALESCE(SUM(task_time_estimate_minutes),0)/60.0 INTO total_estimated_hours FROM action_items ai
+    WHERE ai.assigned_to = p_user
+      AND ai.due_date >= now() AND ai.due_date <= now() + interval '7 days'
+      AND NOT EXISTS (SELECT 1 FROM public.user_snoozes s WHERE s.user_id = p_user AND s.snooze_date = ai.due_date::date);
+
+  -- attempt to get weekly_throughput from a helper if exists
+  BEGIN
+    SELECT weekly_throughput, avg_hours_estimate, avg_completion_hours INTO stats FROM _user_task_stats(p_user);
+    projected_throughput := COALESCE(stats.weekly_throughput,0);
+  EXCEPTION WHEN undefined_function THEN
+    projected_throughput := GREATEST(1, tasks_due_next7); -- fallback
+  END;
+
+  IF expected_capacity_hours = 0 THEN
+    score := 1;
+  ELSE
+    score := LEAST(1, (total_estimated_hours / expected_capacity_hours) * 0.6 + (CASE WHEN projected_throughput <= 0 THEN 1 ELSE LEAST(1, (tasks_due_next7 / projected_throughput)) END) * 0.4);
+  END IF;
+
+  overload_score := round(score::numeric, 4);
+  likely_missed := GREATEST(0, (tasks_due_next7 - CEIL(projected_throughput)));
+
+  IF overload_score > 0.8 THEN
+    advisory := format('You''re likely to miss %s deadlines in the next 7 days', likely_missed);
+  ELSE
+    advisory := NULL;
+  END IF;
+
+  details := jsonb_build_object(
+    'tasks_due_next7', tasks_due_next7,
+    'total_estimated_hours', total_estimated_hours,
+    'weekly_throughput', projected_throughput,
+    'productive_hours_per_day', productive_hours_per_day,
+    'working_days_per_week', working_days_per_week,
+    'workdays_in_window', workdays_in_window,
+    'expected_capacity_hours', expected_capacity_hours
+  );
+
+  RETURN NEXT;
+END;
+"
+is_org_member,"
+BEGIN
+    RETURN EXISTS (
+        SELECT 1
+        FROM public.organization_members
+        WHERE organization_id = org_id
+          AND user_id = auth.uid()
+    );
+END;
+"
+is_workspace_admin,"
+  select exists(
+    select 1 from workspace_members
+    where workspace_id = p_workspace_id
+      and user_id = (select auth.uid())
+      and role in ('owner','admin')
+  );
+"
+_set_predicted_duration_after_insert,"
+BEGIN
+  UPDATE public.action_items SET predicted_duration_minutes = public.compute_predicted_duration(NEW.id) WHERE id = NEW.id;
+  RETURN NEW;
+END;
+"
+update_updated_at_column,"
+BEGIN
+    NEW.updated_at := now();
+    RETURN NEW;
+END;
+"
+set_updated_at,"
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+"
+generate_recommendations_for_org,"
+DECLARE
+  bm RECORD;
+  tpl RECORD;
+  score_val double precision;
+BEGIN
+  FOR bm IN SELECT * FROM public.behavioral_metrics WHERE org_id = p_org_id AND measured_at >= now() - interval '1 day' LOOP
+    -- example rule: overdue_rate > 0.2 and dependency_count_avg > 5
+    IF bm.tasks_created > 0 THEN
+      IF (bm.overdue_count::numeric / bm.tasks_created) > 0.2 AND COALESCE(bm.dependency_count_avg,0) > 5 THEN
+        SELECT * INTO tpl FROM public.recommendation_templates WHERE key = 'high_dependency_delay' LIMIT 1;
+        IF tpl IS NULL THEN
+          INSERT INTO public.recommendation_templates(key, category, title, description, action_suggestion, severity, priority_base)
+          VALUES('high_dependency_delay','operations','High dependency count causing delays','Projects with >5 dependencies are delayed more often.','Break tasks into smaller milestones and assign dependency owners',70,70)
+          RETURNING * INTO tpl;
+        END IF;
+        score_val := tpl.priority_base + 100 * ((bm.overdue_count::double precision / bm.tasks_created));
+        INSERT INTO public.next_best_actions(user_id, action_item_id, priority_score, reason, generated_at, source_template_id, score, score_components, generated_by, recommendation_reason)
+        VALUES (NULL, NULL, score_val, tpl.title, now(), tpl.id, score_val, jsonb_build_object('overdue_rate',(bm.overdue_count::double precision / bm.tasks_created),'dependency_count_avg',bm.dependency_count_avg), 'engine', tpl.description);
+      END IF;
+    END IF;
+  END LOOP;
+END;
+"
+process_due_reminders_v2,"
+DECLARE
+  rec RECORD;
+  cnt bigint := 0;
+BEGIN
+  FOR rec IN
+    SELECT r.* FROM public.reminders r
+    WHERE r.sent = false AND r.reminder_time <= p_now
+    ORDER BY r.reminder_time
+    FOR UPDATE SKIP LOCKED
+    LIMIT p_limit
+  LOOP
+    -- insert notification if not exists
+    IF NOT EXISTS (
+      SELECT 1 FROM public.notifications n
+      WHERE (n.metadata ->> 'reminder_id')::uuid = rec.id
+    ) THEN
+      INSERT INTO public.notifications (id, user_id, message, metadata, created_at)
+      VALUES (
+        gen_random_uuid(),
+        rec.user_id,
+        'Reminder due: ' || COALESCE(rec.reminder_type, 'Action item reminder'),
+        jsonb_build_object('reminder_id', rec.id, 'action_item_link', rec.action_item_link),
+        now()
+      );
+    END IF;
+
+    UPDATE public.reminders SET sent = true WHERE id = rec.id;
+    cnt := cnt + 1;
+  END LOOP;
+
+  processed_count := cnt;
+  RETURN NEXT;
+END;
+"
+can_update_action_item,"
+BEGIN
+  RETURN EXISTS(
+    SELECT 1
+    FROM public.action_items a
+    JOIN public.organization_members om ON om.organization_id = a.organization_id
+    WHERE a.id = p_action_item_id
+      AND (a.owner_id = p_user_id OR om.role = 'admin')
+  );
+END;
+"
+get_project_progress,"
+DECLARE
+  total_items int;
+  completed_items int;
+BEGIN
+  SELECT COUNT(*) INTO total_items
+  FROM public.action_items
+  WHERE project_id = p_project_id;
+
+  SELECT COUNT(*) INTO completed_items
+  FROM public.action_items
+  WHERE project_id = p_project_id
+    AND status = 'completed';
+
+  IF total_items = 0 THEN
+    RETURN 0;
+  ELSE
+    RETURN ROUND((completed_items::numeric / total_items) * 100, 2);
+  END IF;
+END;
+"
+aggregate_feature_flag_events,"
+BEGIN
+  WITH increments AS (
+    SELECT feature_key, COUNT(*) AS cnt
+    FROM public.feature_flag_events
+    WHERE occurred_at > now() - p_window
+    GROUP BY feature_key
+  )
+  UPDATE public.feature_flags f
+  SET usage_count = f.usage_count + COALESCE(i.cnt,0),
+      updated_at = now()
+  FROM increments i
+  WHERE f.key = i.feature_key;
+
+  -- optional: delete processed events older than window*2 to avoid unbounded growth
+  DELETE FROM public.feature_flag_events
+  WHERE occurred_at <= now() - (p_window * 2);
+END;
+"

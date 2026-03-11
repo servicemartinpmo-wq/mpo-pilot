@@ -50,12 +50,32 @@ npm run build  # Build for production
 
 ## Database
 
-Supabase schema is in `supabase/migrations/`. Tables:
-- `profiles` — User profiles (extends auth.users)
-- `departments`, `initiatives`, `action_items`
+Supabase project: `okgpcsfqkshdzbfuigfq`. Migrations in `supabase/migrations/`.
+
+**Original profile-centric tables** (use `profile_id` FK):
+- `profiles`, `departments`, `initiatives`
 - `insights`, `governance_logs`, `sop_records`
 - `org_metrics`, `integration_connections`, `creator_prompts`
-- `authority_matrix`
+- `authority_matrix`, `team_members`
+
+**New org/user-centric tables** (migration 20260311000002):
+- `organizations`, `organization_members`, `users`, `teams`, `department_membership`
+- `projects`, `kpis`, `kpi_history`, `milestones`
+- `risks`, `dependencies`, `task_dependencies`
+- `signals`, `signal_definitions`
+- `frameworks`, `knowledge_items`, `modules`, `framework_knowledge_link`
+- `decision_weights`, `attachments`
+- `advisories`, `advisory_modules`, `advisory_recommendations`
+- `notifications`, `activity_feed`, `next_best_actions`
+- `ai_call_logs`, `ai_usage`, `algorithm_signals`, `algorithm_scores`
+- `alerts`, `api_keys`, `workflow_runs`
+- `reminders`, `task_reminders`, `meetings`
+- `user_work_capacity`, `user_snoozes`, `org_health_metrics`
+- `kg_nodes`, `kg_relationships` (knowledge graph)
+
+**Key DB functions**: `compute_next_best_for_user`, `generate_daily_plan`, `get_initiative_details`, `get_project_progress`, `get_project_milestones`, `get_project_kpi_summary`, `get_signal_summary`, `get_milestone_progress`, `compute_predicted_duration`, `calculate_algorithm_score`, `validate_dependency`, `track_kpi_history`, `record_history`, `enqueue_update_notification_v2`
+
+**Note**: `action_items` in remote Supabase uses `user_id` (not `profile_id`). The data service handles both via `or()` filters.
 
 ## UI/UX Design System
 
