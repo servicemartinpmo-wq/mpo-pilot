@@ -801,10 +801,10 @@ function TemplateFillModal({ template, onClose, onSave }: {
   const pct = Math.round((filled / total) * 100);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
       style={{ background: "hsl(var(--background) / 0.85)", backdropFilter: "blur(8px)" }}>
-      <div className="w-full max-w-2xl rounded-2xl border-2 shadow-elevated overflow-hidden flex flex-col"
-        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--card))", maxHeight: "90vh" }}>
+      <div className="w-full sm:max-w-2xl rounded-t-2xl sm:rounded-2xl border-2 shadow-elevated overflow-hidden flex flex-col"
+        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--card))", maxHeight: "92dvh", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
 
         {/* Header */}
         <div className="px-6 py-4 border-b flex items-start justify-between"

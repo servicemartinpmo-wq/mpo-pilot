@@ -380,10 +380,10 @@ function DeployModal({ workflow, onClose, onDeploy }: {
   ] as const;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
       style={{ background: "hsl(var(--background) / 0.88)", backdropFilter: "blur(8px)" }}>
-      <div className="w-full max-w-lg rounded-2xl border-2 shadow-elevated overflow-hidden"
-        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--card))" }}>
+      <div className="w-full sm:max-w-lg rounded-t-2xl sm:rounded-2xl border-2 shadow-elevated overflow-hidden"
+        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--card))", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
 
         {/* Header */}
         <div className="px-6 py-4 border-b flex items-start justify-between"
@@ -757,10 +757,10 @@ function PackageBuilder({ onClose, onSave }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
       style={{ background: "hsl(var(--background) / 0.88)", backdropFilter: "blur(8px)" }}>
-      <div className="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl border-2 shadow-elevated overflow-hidden"
-        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--card))" }}>
+      <div className="w-full sm:max-w-2xl max-h-[92dvh] sm:max-h-[85vh] flex flex-col rounded-t-2xl sm:rounded-2xl border-2 shadow-elevated overflow-hidden"
+        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--card))", paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
 
         <div className="px-6 py-4 border-b flex items-center justify-between flex-shrink-0"
           style={{ borderColor: "hsl(var(--border))" }}>

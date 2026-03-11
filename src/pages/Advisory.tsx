@@ -373,9 +373,9 @@ export default function Advisory() {
 
       {/* ── Request Modal ── */}
       {requestModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
           <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={closeModal} />
-          <div className="relative w-full max-w-xl bg-card rounded-2xl border-2 border-border shadow-elevated overflow-hidden">
+          <div className="relative w-full sm:max-w-xl bg-card rounded-t-2xl sm:rounded-2xl border-2 border-border shadow-elevated overflow-hidden" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
 
             {/* Modal header */}
             <div className="px-6 py-5 border-b-2 border-border flex items-start gap-4"

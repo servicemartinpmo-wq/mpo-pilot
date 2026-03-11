@@ -620,9 +620,9 @@ export default function Diagnostics() {
 
       {/* ── Check detail drawer ── */}
       {selectedCheck && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center md:items-center">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
           <div className="absolute inset-0 bg-foreground/20 backdrop-blur-sm" onClick={() => setSelectedCheck(null)} />
-          <div className="relative w-full max-w-lg bg-card border-2 border-border rounded-2xl shadow-elevated p-6 m-4 animate-fade-in">
+          <div className="relative w-full sm:max-w-lg bg-card border-2 border-border rounded-t-2xl sm:rounded-2xl shadow-elevated p-6 sm:m-4 animate-fade-in" style={{ paddingBottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))" }}>
             <div className="flex items-start gap-3 mb-4">
               {selectedCheck.status === "pass"
                 ? <CheckCircle className="w-5 h-5 text-signal-green mt-0.5 flex-shrink-0" />
@@ -646,9 +646,9 @@ export default function Diagnostics() {
 
       {/* ── Org Audit Modal ── */}
       {(auditStatus === "selecting" || auditStatus === "running" || auditStatus === "complete") && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
           <div className="absolute inset-0 bg-foreground/30 backdrop-blur-sm" onClick={() => auditStatus !== "running" && setAuditStatus("idle")} />
-          <div className="relative w-full max-w-2xl bg-card border-2 border-border rounded-2xl shadow-elevated animate-fade-in max-h-[90vh] flex flex-col">
+          <div className="relative w-full sm:max-w-2xl bg-card border-2 border-border rounded-t-2xl sm:rounded-2xl shadow-elevated animate-fade-in max-h-[92dvh] sm:max-h-[90vh] flex flex-col" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
 
             {/* Modal Header */}
             <div className="flex items-center gap-3 px-6 py-4 border-b-2 border-border bg-secondary/60 rounded-t-2xl">
