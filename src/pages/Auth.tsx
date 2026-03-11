@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Zap, CheckCircle, AlertCircle } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Tag, CheckCircle, AlertCircle } from "lucide-react";
 import { SiReplit } from "react-icons/si";
 
 type Mode = "signin" | "signup" | "forgot";
@@ -109,7 +109,7 @@ export default function AuthPage() {
         <div className="text-center mb-8">
           <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center"
             style={{ background: "var(--gradient-electric)", boxShadow: `0 0 28px ${ACCENT}33` }}>
-            <Zap className="w-6 h-6 text-white" />
+            <Tag className="w-6 h-6 text-white" />
           </div>
           <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1">Martin PMO</div>
           <h1 className="text-2xl font-black text-foreground tracking-tight">

@@ -17,7 +17,7 @@ import {
   ChevronRight, Zap, Activity, X, CalendarDays, UserCheck,
   Brain, Sparkles, TrendingUp, ArrowRight, Star,
   Coffee, Sunrise, Sun, Moon, ChevronDown, ListChecks,
-  BarChart3, BookOpen, Settings,
+  BarChart3, BookOpen, Settings, Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useNavigate } from "react-router-dom";
@@ -252,7 +252,7 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
   const healthLabel = liveOverallHealth >= 80 ? "Strong" : liveOverallHealth >= 60 ? "Moderate" : "Needs Attention";
 
   return (
-    <div className="relative overflow-hidden rounded-2xl" style={{ background: "hsl(225 48% 9%)", minHeight: 220 }}>
+    <div className="relative overflow-hidden rounded-2xl" style={{ background: "hsl(225 48% 9%)", height: 240 }}>
 
       {/* Background texture */}
       <img src={onboardHero} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ opacity: 0.22, mixBlendMode: "luminosity" }} />
@@ -262,16 +262,25 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
       <div className="absolute pointer-events-none" style={{ top: "-30%", right: "20%", width: 480, height: 480, borderRadius: "50%", background: "radial-gradient(circle, hsl(222 80% 58% / 0.10) 0%, transparent 60%)" }} />
       <div className="absolute pointer-events-none" style={{ bottom: "-20%", left: "5%", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle, hsl(38 88% 55% / 0.07) 0%, transparent 60%)" }} />
 
-      {/* Content layout */}
-      <div className="relative z-10 flex items-stretch min-h-[220px]">
+      {/* Content layout — full height, no flex stretching that could cause shifts */}
+      <div className="relative z-10 flex h-full">
 
         {/* Left: slides */}
-        <div className="flex-1 px-7 py-6 flex flex-col justify-between">
+        <div className="flex-1 px-7 py-5 flex flex-col">
 
-          {/* Logo + live dot */}
-          <div className="flex items-center gap-3 mb-4">
-            <img src={pmoLogoLight} alt="Martin PMO" style={{ height: 36, width: "auto", filter: "invert(1) brightness(2)", opacity: 0.80 }} />
-            <div className="flex items-center gap-1.5">
+          {/* Tag icon + company/app name + live dot */}
+          <div className="flex items-center gap-3 mb-3 flex-shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: "linear-gradient(135deg, hsl(222 88% 65%), hsl(174 68% 42%))" }}>
+                <Tag className="w-3.5 h-3.5 text-white" />
+              </div>
+              <div>
+                <div className="text-[12px] font-black text-white leading-none tracking-tight">Martin PMO</div>
+                <div className="text-[9px] font-medium" style={{ color: "hsl(0 0% 100% / 0.38)" }}>PMO-Ops Command Center</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 ml-1">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-70" style={{ background: "hsl(160 56% 46%)" }} />
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: "hsl(160 56% 46%)" }} />
@@ -280,8 +289,8 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
             </div>
           </div>
 
-          {/* Slide content */}
-          <div className="flex-1 flex flex-col justify-center">
+          {/* Slide content — fixed height container so banner never shifts */}
+          <div className="flex-1 overflow-hidden flex flex-col justify-center">
 
             {/* Slide 1 — Welcome briefing */}
             {slide === 0 && (
@@ -336,8 +345,8 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
             )}
           </div>
 
-          {/* Slide nav dots */}
-          <div className="flex items-center gap-2 mt-5">
+          {/* Slide nav dots — mt-auto pins to bottom regardless of slide content */}
+          <div className="flex items-center gap-2 mt-auto pt-3 flex-shrink-0">
             {Array.from({ length: total }).map((_, i) => (
               <button key={i} onClick={() => goTo(i)}
                 className="rounded-full transition-all duration-300"

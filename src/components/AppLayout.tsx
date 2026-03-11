@@ -6,7 +6,7 @@ import {
   BookOpen, Plug, Users, ChevronLeft, Headphones,
   GitBranch, Brain, BarChart3, Moon, Bell, Clock,
   FolderOpen, Scale, Layers, UserCircle, TrendingUp,
-  Network, ShoppingBag, CreditCard,
+  Network, ShoppingBag, CreditCard, Tag,
 } from "lucide-react";
 import pmoLogoLight from "@/assets/pmo-logo-light.png";
 import { useUserMode } from "@/hooks/useUserMode";
@@ -195,20 +195,20 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
         <div className="relative z-10 flex flex-col h-full">
 
           {/* Brand header */}
-          <div className="flex items-center gap-3 px-3.5 py-3.5 border-b" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
-            {collapsed ? (
-              <div
-                className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 glow-blue"
-                style={{ background: "linear-gradient(135deg, hsl(222 88% 65%), hsl(174 68% 42%))" }}>
-                <Zap className="w-4 h-4 text-white" />
+          <div className="flex items-center gap-2.5 px-3 py-3 border-b" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
+            {/* Tag icon — always visible */}
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "linear-gradient(135deg, hsl(222 88% 65%), hsl(174 68% 42%))" }}>
+              <Tag className="w-4 h-4 text-white" />
+            </div>
+
+            {/* Company + app name — only when expanded */}
+            {!collapsed && (
+              <div className="flex-1 min-w-0">
+                <div className="text-[13px] font-black text-white leading-none tracking-tight truncate">Martin PMO</div>
+                <div className="text-[9px] font-medium mt-0.5 truncate" style={{ color: "hsl(0 0% 100% / 0.38)" }}>PMO-Ops Command Center</div>
               </div>
-            ) : (
-              <img
-                src={pmoLogoLight}
-                alt="Martin PMO"
-                className="flex-shrink-0"
-                style={{ height: 44, width: "auto", filter: "invert(1) brightness(2)", opacity: 0.88 }}
-              />
             )}
 
             <button
