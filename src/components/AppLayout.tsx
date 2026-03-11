@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
 import { saveProfile } from "@/lib/companyStore";
 import { runOrgHealthScoring, runMaturityScoring } from "@/lib/engine/maturity";
+import { actionItems, initiatives } from "@/lib/pmoData";
 import NotificationsPanel from "./NotificationsPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { getNotifications } from "@/lib/supabaseDataService";
@@ -43,6 +44,17 @@ const workMgmtItems = [
   { to: "/action-items", label: "Action Items", icon: CheckSquare  },
   { to: "/agile",        label: "Agile Board",  icon: Layers       },
 ];
+
+function PulseTrace({ color }: { color: string }) {
+  return (
+    <svg width="16" height="4" viewBox="0 0 16 4" fill="none" aria-hidden="true">
+      <polyline
+        points="0,2 2.5,2 4,0.5 5.5,3.5 7,2 10,2 11.5,1 13,3 14.5,2 16,2"
+        stroke={color} strokeWidth="0.85" strokeLinecap="round" strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 type SnoozeDuration = "off" | "1h" | "3h" | "tonight" | "weekend";
 
@@ -166,6 +178,27 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
     animatedScore >= 70 ? "hsl(160 56% 46%)" :
     animatedScore >= 50 ? "hsl(38 92% 52%)" :
     "hsl(350 84% 62%)";
+
+  const now = new Date();
+  const overdueCount = actionItems.filter(a =>
+    a.status !== "Completed" && a.status !== "Dropped" && new Date(a.dueDate) < now
+  ).length;
+  const blockedCount = initiatives.filter(i => i.status === "Blocked").length;
+  const atRiskCount = initiatives.filter(i => i.status === "Needs Attention").length;
+
+  const TRACE_GREEN = "hsl(160 56% 46%)";
+  const TRACE_AMBER = "hsl(38 92% 52%)";
+  const TRACE_RED   = "hsl(0 84% 60%)";
+
+  function navTrace(to: string): string | null {
+    if (to === "/" || to === "/diagnostics" || to === "/departments") {
+      return healthScore >= 70 ? TRACE_GREEN : healthScore >= 50 ? TRACE_AMBER : TRACE_RED;
+    }
+    if (to === "/action-items") return overdueCount > 0 ? TRACE_RED : TRACE_GREEN;
+    if (to === "/initiatives")  return blockedCount > 0 ? TRACE_RED : atRiskCount > 0 ? TRACE_AMBER : TRACE_GREEN;
+    if (to === "/decisions")    return healthScore >= 70 ? TRACE_GREEN : TRACE_AMBER;
+    return null;
+  }
 
   const sidebarWidth = collapsed ? 58 : 234;
 
@@ -298,8 +331,11 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                 })}>
                 {({ isActive }) => (
                   <>
-                    <Icon className="w-4 h-4 flex-shrink-0"
-                      style={{ color: isActive ? "hsl(38 92% 62%)" : "hsl(0 0% 100% / 0.38)" }} />
+                    <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+                      <Icon className="w-4 h-4"
+                        style={{ color: isActive ? "hsl(38 92% 62%)" : "hsl(0 0% 100% / 0.38)" }} />
+                      {navTrace(to) && <PulseTrace color={navTrace(to)!} />}
+                    </div>
                     {!collapsed && (
                       <>
                         <span className="flex-1 truncate"
@@ -348,8 +384,11 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                       })}>
                       {({ isActive }) => (
                         <>
-                          <Icon className="w-3.5 h-3.5 flex-shrink-0"
-                            style={{ color: isActive ? "hsl(38 92% 62%)" : "hsl(0 0% 100% / 0.30)" }} />
+                          <div className="flex flex-col items-center gap-0.5 flex-shrink-0">
+                            <Icon className="w-3.5 h-3.5"
+                              style={{ color: isActive ? "hsl(38 92% 62%)" : "hsl(0 0% 100% / 0.30)" }} />
+                            {navTrace(to) && <PulseTrace color={navTrace(to)!} />}
+                          </div>
                           {!collapsed && (
                             <span className="flex-1 truncate"
                               style={{ color: isActive ? "hsl(38 10% 96%)" : "hsl(0 0% 100% / 0.50)" }}>
