@@ -273,37 +273,6 @@ const MODE_THEMES: Record<string, ModeTheme> = {
   },
 };
 
-// ── Semantic icon colors per route ─────────────────────────────────────────
-// Each icon has a functional hue: blue=command, amber=judgment, teal=structure,
-// green=people/flow, purple=analysis, orange=growth/momentum, etc.
-const NAV_ICON_HSL: Record<string, string> = {
-  "/":             "222 88% 65%",   // electric blue — command center
-  "/decisions":    "38 92% 54%",    // warm amber — judgment / decisioning
-  "/departments":  "174 68% 44%",   // teal — structure & org
-  "/team":         "160 56% 48%",   // green — people & wellness
-  "/diagnostics":  "268 68% 64%",   // purple — health analysis
-  "/crm":          "186 90% 50%",   // cyan — commercial pipeline
-  "/marketing":    "28 94% 60%",    // orange — growth & momentum
-  "/pricing":      "44 82% 54%",    // gold — upgrade
-  "/reports":      "258 68% 66%",   // lavender — data & analysis
-  "/knowledge":    "174 72% 50%",   // teal — knowledge
-  "/graph":        "210 90% 62%",   // sky blue — relational view
-  "/workflows":    "160 62% 50%",   // green — process flow
-  "/advisory":     "38 85% 60%",    // warm amber — guidance
-  "/integrations": "272 68% 64%",   // purple — connections
-  "/admin":        "214 58% 54%",   // steel blue — systems
-};
-const WORK_ICON_HSL: Record<string, string> = {
-  "/initiatives":  "28 94% 60%",    // orange — strategic momentum
-  "/projects":     "222 88% 65%",   // blue — project execution
-  "/action-items": "350 82% 64%",   // red — urgency & tasks
-  "/agile":        "268 68% 64%",   // purple — sprint / agile
-};
-// Returns an hsl() string with optional opacity
-function ihsl(hsl: string, opacity = 1): string {
-  return opacity < 1 ? `hsl(${hsl} / ${opacity})` : `hsl(${hsl})`;
-}
-// ───────────────────────────────────────────────────────────────────────────
 
 type SnoozeDuration = "off" | "1h" | "3h" | "tonight" | "weekend";
 
@@ -512,7 +481,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                 </NavLink>
               ))}
               <div className="w-px h-5 mx-1 flex-shrink-0" style={{ background: "hsl(30 22% 86%)" }} />
-              {workMgmtItems.map(({ to, label, icon: Icon }) => (
+              {workItems.map(({ to, label, icon: Icon }) => (
                 <NavLink key={to} to={to}
                   className="flex items-center gap-1.5 px-3 h-[52px] text-[12px] font-medium whitespace-nowrap transition-colors border-b-2 flex-shrink-0"
                   style={({ isActive }) => ({
@@ -717,26 +686,25 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                   boxShadow: isActive ? theme.accentShadow : undefined,
                 })}>
                 {({ isActive }) => {
-                  const sem  = NAV_ICON_HSL[to];
                   const trace = navTrace(to);
                   const needsAttention = !isActive && trace === TRACE_RED;
+                  const isAmber = !isActive && trace === TRACE_AMBER;
                   const iconCol = isActive
                     ? theme.accentIcon
-                    : trace
-                      ? trace
-                      : sem ? ihsl(sem, 0.55) : "hsl(0 0% 100% / 0.38)";
+                    : trace ? trace
+                    : "hsl(0 0% 100% / 0.38)";
                   return (
                     <>
                       <div className="flex flex-col items-center gap-0.5 flex-shrink-0 relative">
-                        {/* Ambient glow ring behind icon when active */}
-                        {isActive && sem && (
-                          <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
-                            style={{ background: `radial-gradient(circle, ${ihsl(sem, 0.22)} 0%, transparent 70%)` }} />
-                        )}
-                        {/* Attention halo when route needs action */}
+                        {/* Urgent halo — red attention */}
                         {needsAttention && (
                           <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
-                            style={{ background: `radial-gradient(circle, hsl(350 82% 62% / 0.14) 0%, transparent 70%)` }} />
+                            style={{ background: "radial-gradient(circle, hsl(350 82% 62% / 0.16) 0%, transparent 70%)" }} />
+                        )}
+                        {/* Amber halo — warning */}
+                        {isAmber && (
+                          <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                            style={{ background: "radial-gradient(circle, hsl(38 92% 52% / 0.12) 0%, transparent 70%)" }} />
                         )}
                         <Icon
                           className={cn("w-4 h-4 relative z-10", needsAttention && "nav-icon-nudge")}
@@ -803,23 +771,23 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                         boxShadow: isActive ? theme.accentShadow : undefined,
                       })}>
                       {({ isActive }) => {
-                        const sem   = WORK_ICON_HSL[to];
                         const trace = navTrace(to);
                         const needsAttention = !isActive && trace === TRACE_RED;
+                        const isAmber = !isActive && trace === TRACE_AMBER;
                         const iconCol = isActive
                           ? theme.accentIcon
                           : trace ? trace
-                          : sem ? ihsl(sem, 0.52) : "hsl(0 0% 100% / 0.30)";
+                          : "hsl(0 0% 100% / 0.30)";
                         return (
                           <>
                             <div className="flex flex-col items-center gap-0.5 flex-shrink-0 relative">
-                              {isActive && sem && (
-                                <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
-                                  style={{ background: `radial-gradient(circle, ${ihsl(sem, 0.20)} 0%, transparent 70%)` }} />
-                              )}
                               {needsAttention && (
                                 <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
-                                  style={{ background: `radial-gradient(circle, hsl(350 82% 62% / 0.14) 0%, transparent 70%)` }} />
+                                  style={{ background: "radial-gradient(circle, hsl(350 82% 62% / 0.16) 0%, transparent 70%)" }} />
+                              )}
+                              {isAmber && (
+                                <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                                  style={{ background: "radial-gradient(circle, hsl(38 92% 52% / 0.12) 0%, transparent 70%)" }} />
                               )}
                               <Icon
                                 className={cn("w-3.5 h-3.5 relative z-10", needsAttention && "nav-icon-nudge")}
@@ -866,18 +834,29 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                     boxShadow: isActive ? "inset 2px 0 0 hsl(160 56% 42% / 0.6)" : undefined,
                   })}>
                   {({ isActive }) => {
-                    const sem = NAV_ICON_HSL[to];
+                    const trace = navTrace(to);
+                    const needsAttention = !isActive && trace === TRACE_RED;
+                    const isAmber = !isActive && trace === TRACE_AMBER;
                     const iconCol = isActive
                       ? "hsl(160 56% 54%)"
-                      : sem ? ihsl(sem, 0.55) : "hsl(0 0% 100% / 0.38)";
+                      : trace ? trace
+                      : "hsl(0 0% 100% / 0.38)";
                     return (
                       <>
                         <div className="relative flex-shrink-0">
-                          {isActive && sem && (
+                          {needsAttention && (
                             <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
-                              style={{ background: `radial-gradient(circle, ${ihsl(sem, 0.20)} 0%, transparent 70%)` }} />
+                              style={{ background: "radial-gradient(circle, hsl(350 82% 62% / 0.16) 0%, transparent 70%)" }} />
                           )}
-                          <Icon className="w-4 h-4 relative z-10" style={{ color: iconCol }} />
+                          {isAmber && (
+                            <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                              style={{ background: "radial-gradient(circle, hsl(38 92% 52% / 0.12) 0%, transparent 70%)" }} />
+                          )}
+                          <Icon
+                            className={cn("w-4 h-4 relative z-10", needsAttention && "nav-icon-nudge")}
+                            style={{ color: iconCol }}
+                          />
+                          {trace && <PulseTrace color={trace} />}
                         </div>
                         {!collapsed && (
                           <>
@@ -922,18 +901,29 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                     boxShadow: isActive ? "inset 2px 0 0 hsl(272 60% 52% / 0.65)" : undefined,
                   })}>
                   {({ isActive }) => {
-                    const sem = NAV_ICON_HSL[to];
+                    const trace = navTrace(to);
+                    const needsAttention = !isActive && trace === TRACE_RED;
+                    const isAmber = !isActive && trace === TRACE_AMBER;
                     const iconCol = isActive
                       ? "hsl(272 60% 70%)"
-                      : sem ? ihsl(sem, 0.52) : "hsl(220 50% 92% / 0.45)";
+                      : trace ? trace
+                      : "hsl(220 50% 92% / 0.45)";
                     return (
                       <>
                         <div className="relative flex-shrink-0">
-                          {isActive && sem && (
+                          {needsAttention && (
                             <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
-                              style={{ background: `radial-gradient(circle, ${ihsl(sem, 0.20)} 0%, transparent 70%)` }} />
+                              style={{ background: "radial-gradient(circle, hsl(350 82% 62% / 0.16) 0%, transparent 70%)" }} />
                           )}
-                          <Icon className="w-4 h-4 relative z-10" style={{ color: iconCol }} />
+                          {isAmber && (
+                            <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                              style={{ background: "radial-gradient(circle, hsl(38 92% 52% / 0.12) 0%, transparent 70%)" }} />
+                          )}
+                          <Icon
+                            className={cn("w-4 h-4 relative z-10", needsAttention && "nav-icon-nudge")}
+                            style={{ color: iconCol }}
+                          />
+                          {trace && <PulseTrace color={trace} />}
                         </div>
                         {!collapsed && (
                           <>
