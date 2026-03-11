@@ -12,7 +12,7 @@ import pmoLogoLight from "@/assets/pmo-logo-light.png";
 import { useUserMode } from "@/hooks/useUserMode";
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
-import { saveProfile } from "@/lib/companyStore";
+import { saveProfile, loadProfile } from "@/lib/companyStore";
 import { runOrgHealthScoring, runMaturityScoring } from "@/lib/engine/maturity";
 import { actionItems, initiatives } from "@/lib/pmoData";
 import NotificationsPanel from "./NotificationsPanel";
@@ -338,6 +338,12 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   });
 
   useEffect(() => {
+    const profile = loadProfile();
+    if (!profile.onboardingComplete) {
+      setHealthScore(0);
+      setAnimatedScore(0);
+      return;
+    }
     const scores = runMaturityScoring();
     const orgHealth = runOrgHealthScoring(scores);
     setHealthScore(orgHealth.overall);

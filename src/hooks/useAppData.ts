@@ -99,16 +99,17 @@ export function useAppData(): AppData {
     const firstName = profile.userName?.split(" ")[0] || "";
     const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
 
-    // Live engine health
+    // Live engine health — only populate when intake is complete
+    const hasIntakeData = profile.onboardingComplete;
     const lh = engine.orgHealth;
-    const orgHealth = lh?.overall ?? orgMetrics.overallMaturityScore;
-    const executionHealth = lh?.executionHealth ?? orgMetrics.avgExecutionHealth;
-    const strategicClarity = lh?.strategicClarity ?? orgMetrics.avgStrategicAlignment;
-    const riskPosture = lh?.riskPosture ?? 60;
-    const capacityHealth = lh?.capacityHealth ?? 70;
-    const governanceScore = lh?.governanceScore ?? 65;
+    const orgHealth = hasIntakeData ? (lh?.overall ?? orgMetrics.overallMaturityScore) : 0;
+    const executionHealth = hasIntakeData ? (lh?.executionHealth ?? orgMetrics.avgExecutionHealth) : 0;
+    const strategicClarity = hasIntakeData ? (lh?.strategicClarity ?? orgMetrics.avgStrategicAlignment) : 0;
+    const riskPosture = hasIntakeData ? (lh?.riskPosture ?? 60) : 0;
+    const capacityHealth = hasIntakeData ? (lh?.capacityHealth ?? 70) : 0;
+    const governanceScore = hasIntakeData ? (lh?.governanceScore ?? 65) : 0;
     const healthTrend = lh?.trend ?? "Stable";
-    const scoreBreakdown = lh?.scoreBreakdown ?? [];
+    const scoreBreakdown = hasIntakeData ? (lh?.scoreBreakdown ?? []) : [];
     const activeChains = engine.activeChains.length;
     const criticalRecs = engine.recommendations.filter(r => r.priority === "Immediate").length;
 
