@@ -7,20 +7,12 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Zap, CheckCircle, AlertCircle } from "lucide-react";
-import { SiReplit } from "react-icons/si";
 
 type Mode = "signin" | "signup" | "forgot";
 
 export default function AuthPage() {
   const navigate = useNavigate();
   const { signIn, signUp, resetPassword } = useAuth();
-  const { signInWithReplit: authSignInWithReplit } = useAuth();
-  
-  // Use the local wrapper for better error handling/logging
-  const handleReplitSignIn = () => {
-    console.log("Replit login button clicked");
-    authSignInWithReplit();
-  };
 
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
@@ -147,27 +139,6 @@ export default function AuthPage() {
           )}
 
           <div className="p-6 space-y-4">
-            {/* Replit Auth Button */}
-            <div className="grid grid-cols-1 gap-3 mb-2">
-              <button
-                type="button"
-                onClick={handleReplitSignIn}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-border bg-background hover:bg-secondary transition-all font-semibold text-sm group"
-              >
-                <SiReplit className="w-5 h-5 text-[#F26207] group-hover:scale-110 transition-transform" />
-                Continue with Replit
-              </button>
-            </div>
-
-            <div className="relative mb-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-[10px] uppercase tracking-widest font-bold">
-                <span className="bg-card px-3 text-muted-foreground/60">Or email login</span>
-              </div>
-            </div>
-
             {/* Feedback banners */}
             {error && (
               <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm"
