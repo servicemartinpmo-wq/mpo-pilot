@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
+
+:root {
+  --background: 220 18% 97%;
+  --foreground: 225 30% 8%;
+  --card: 0 0% 100%;
+  --card-foreground: 225 30% 8%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 225 30% 8%;
+  --primary: 222 70% 42%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 15% 94%;
+  --secondary-foreground: 225 30% 14%;
+  --muted: 220 12% 92%;
+  --muted-foreground: 225 18% 44%;
+  --accent: 220 15% 88%;
+  --accent-foreground: 225 30% 8%;
+  --destructive: 350 72% 50%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 220 15% 86%;
+  --input: 220 15% 82%;
+  --ring: 222 70% 50%;
+  --radius: 0.75rem;
+  --electric-blue: 222 72% 48%;
+  --electric-blue-foreground: 0 0% 100%;
+  --signal-red: 350 70% 52%;
+  --signal-green: 160 50% 34%;
+  --gradient-electric: linear-gradient(135deg, hsl(222 72% 48%), hsl(202 70% 48%));
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
