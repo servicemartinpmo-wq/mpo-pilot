@@ -821,7 +821,7 @@ export default function Initiatives() {
 
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>Showing <span className="font-bold text-foreground">{filtered.length}</span> of {initiatives.length} initiatives</span>
-          <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
+          <div className="hidden sm:flex items-center gap-1 bg-secondary rounded-lg p-1">
             <button onClick={() => setView("table")} className={cn("p-1.5 rounded transition-colors", view === "table" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground")}><Table2 className="w-3.5 h-3.5" /></button>
             <button onClick={() => setView("cards")} className={cn("p-1.5 rounded transition-colors", view === "cards" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground")}><LayoutGrid className="w-3.5 h-3.5" /></button>
           </div>
@@ -834,7 +834,7 @@ export default function Initiatives() {
         )}
 
         {view === "table" && initiatives.length > 0 && (
-          <div className="data-card overflow-hidden">
+          <div className="hidden sm:block data-card overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
