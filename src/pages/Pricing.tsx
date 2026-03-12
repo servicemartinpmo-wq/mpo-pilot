@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Check, Zap, Star, Building2, Crown, Users,
-  ArrowRight, Sparkles, Shield, Clock, BarChart3, Brain, Heart,
+  ArrowRight, Sparkles, Shield, Clock, BarChart3, Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUserMode, type UserMode } from "@/hooks/useUserMode";
@@ -114,29 +114,6 @@ const tiers: Tier[] = [
       { text: "Tier 4–5 maturity roadmap included", highlight: true },
     ],
     cta: "Start Command",
-  },
-  {
-    id: "advisory",
-    name: "Advisory",
-    audience: "Consultants · Fractional Executives",
-    price: "$750",
-    priceNote: "/ month",
-    tagline: "Everything in Command plus a dedicated advisory team and consultant tools.",
-    icon: Brain,
-    accent: "hsl(38 92% 55%)",
-    accentBg: "hsl(38 92% 55% / 0.10)",
-    border: "hsl(38 50% 28%)",
-    badge: "NEW",
-    features: [
-      { text: "Everything in Command", highlight: true },
-      { text: "Dedicated advisory team (3 specialists)", highlight: true },
-      { text: "Monthly 1-on-1 strategy session", highlight: true },
-      { text: "White-glove onboarding & quarterly reviews" },
-      { text: "Multi-client workspace management" },
-      { text: "Custom playbooks & deliverable templates", highlight: true },
-      { text: "Priority support & implementation guidance" },
-    ],
-    cta: "Talk to Advisory",
   },
   {
     id: "enterprise",
