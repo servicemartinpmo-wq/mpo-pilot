@@ -5,10 +5,11 @@ import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
-import { Pool } from "pg";
 import { createClient } from "@supabase/supabase-js";
+import { getPool } from "./db";
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+// Shared session store - created once
+let sessionStore: any = null;
 
 const SUPABASE_URL = "https://okgpcsfqkshdzbfuigfq.supabase.co";
 
@@ -21,6 +22,7 @@ function getSupabaseAdmin() {
 }
 
 async function upsertReplitUser(claims: Record<string, unknown>) {
+  const pool = getPool();
   await pool.query(
     `INSERT INTO replit_users (id, email, first_name, last_name, profile_image_url)
      VALUES ($1, $2, $3, $4, $5)
@@ -97,15 +99,28 @@ const getOidcConfig = memoize(
   { maxAge: 3600 * 1000 }
 );
 
-function getSession() {
+function getSessionMiddleware() {
+  // Create session store only once
+  if (!sessionStore) {
+    const sessionTtl = 7 * 24 * 60 * 60 * 1000;
+    const pgStore = connectPg(session);
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) {
+      throw new Error("DATABASE_URL environment variable is not set");
+    }
+    const sessionSecret = process.env.SESSION_SECRET;
+    if (!sessionSecret) {
+      throw new Error("SESSION_SECRET environment variable is not set");
+    }
+    sessionStore = new pgStore({
+      conString: databaseUrl,
+      createTableIfMissing: false,
+      ttl: sessionTtl,
+      tableName: "sessions",
+    });
+  }
+  
   const sessionTtl = 7 * 24 * 60 * 60 * 1000;
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
-    ttl: sessionTtl,
-    tableName: "sessions",
-  });
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
@@ -131,7 +146,7 @@ function updateUserSession(
 
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
-  app.use(getSession());
+  app.use(getSessionMiddleware());
   app.use(passport.initialize());
   app.use(passport.session());
 
@@ -244,6 +259,7 @@ export async function setupAuth(app: Express) {
           claims: Record<string, unknown>;
         }
       ).claims.sub as string;
+      const pool = getPool();
       const { rows } = await pool.query(
         "SELECT * FROM replit_users WHERE id = $1",
         [userId]
@@ -254,6 +270,14 @@ export async function setupAuth(app: Express) {
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
+}
+
+export async function closeAuth(): Promise<void> {
+  if (sessionStore && sessionStore.close) {
+    sessionStore.close(() => {
+      console.log("[Auth] Session store closed");
+    });
+  }
 }
 
 const isAuthenticated: RequestHandler = async (req, res, next) => {

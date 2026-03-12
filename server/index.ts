@@ -1,7 +1,8 @@
 import express from "express";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
-import { setupAuth } from "./replitAuth";
+import { setupAuth, closeAuth } from "./replitAuth";
+import { closePool } from "./db";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -64,17 +65,24 @@ async function main() {
   });
 
   // Graceful shutdown
-  process.on("SIGTERM", () => {
-    console.log("[Shutdown] SIGTERM received, closing gracefully...");
+  const cleanup = async () => {
+    console.log("[Shutdown] Cleanup started...");
     server.close(() => {
       console.log("[Shutdown] Server closed");
-      process.exit(0);
     });
-    setTimeout(() => {
-      console.error("[Shutdown] Forcing exit after 10s");
+    try {
+      await closeAuth();
+      await closePool();
+      console.log("[Shutdown] All resources cleaned up");
+      process.exit(0);
+    } catch (err) {
+      console.error("[Shutdown] Error during cleanup:", err);
       process.exit(1);
-    }, 10000);
-  });
+    }
+  };
+
+  process.on("SIGTERM", cleanup);
+  process.on("SIGINT", cleanup);
 }
 
 main().catch((err) => {
