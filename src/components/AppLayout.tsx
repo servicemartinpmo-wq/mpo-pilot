@@ -13,7 +13,7 @@ import pmoLogoLight from "@/assets/pmo-logo-light.png";
 import { useUserMode } from "@/hooks/useUserMode";
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
-import { saveProfile, loadProfile } from "@/lib/companyStore";
+import { saveProfile, loadProfile, isDemoMode, clearDemo } from "@/lib/companyStore";
 import { runOrgHealthScoring, runMaturityScoring } from "@/lib/engine/maturity";
 import { actionItems, initiatives } from "@/lib/pmoData";
 import NotificationsPanel from "./NotificationsPanel";
@@ -321,6 +321,8 @@ interface Props {
 export default function AppLayout({ children, profile, onProfileUpdate }: Props) {
   const { user } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [demoBannerDismissed, setDemoBannerDismissed] = useState(false);
+  const inDemoMode = isDemoMode();
   const [healthScore, setHealthScore] = useState(0);
   const [animatedScore, setAnimatedScore] = useState(0);
   const [snoozeOpen, setSnoozeOpen] = useState(false);
@@ -732,6 +734,33 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           <div className="fixed pointer-events-none z-0"
             style={{ bottom: -200, left: "20%", right: "20%", height: 400, background: `radial-gradient(ellipse 80% 60% at 50% 100%, hsl(350 72% 58% / 0.04) 0%, transparent 70%)` }} />
           <div className="relative z-10">
+            {inDemoMode && !demoBannerDismissed && (
+              <div className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium sticky top-0 z-40"
+                style={{ background: "hsl(38 92% 50% / 0.10)", borderBottom: "1px solid hsl(38 92% 50% / 0.2)" }}>
+                <span className="flex-shrink-0 text-base" aria-hidden>✨</span>
+                <span style={{ color: "hsl(38 92% 60%)" }}>
+                  <span className="font-bold">Demo Mode</span>
+                  {" "}— Exploring Apex Operations Group (sample data). Nothing is saved.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => { clearDemo(); window.location.replace("/auth"); }}
+                  className="ml-auto flex-shrink-0 px-3 py-1 rounded-lg text-xs font-bold transition-all"
+                  style={{ background: "hsl(38 92% 50%)", color: "#fff" }}
+                >
+                  Sign Up Free
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDemoBannerDismissed(true)}
+                  className="flex-shrink-0 p-1 rounded opacity-50 hover:opacity-100 transition-opacity"
+                  style={{ color: "hsl(38 92% 60%)" }}
+                  aria-label="Dismiss banner"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
             {children}
           </div>
         </main>
@@ -1369,6 +1398,33 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           minHeight: "100vh",
           overflow: "auto",
         }}>
+        {inDemoMode && !demoBannerDismissed && (
+          <div className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium sticky top-0 z-40"
+            style={{ background: "hsl(38 92% 50% / 0.12)", borderBottom: "1px solid hsl(38 92% 50% / 0.25)" }}>
+            <span className="flex-shrink-0 text-base" aria-hidden>✨</span>
+            <span style={{ color: "hsl(38 92% 45%)" }}>
+              <span className="font-bold">Demo Mode</span>
+              {" "}— Exploring Apex Operations Group (sample data). Nothing is saved.
+            </span>
+            <button
+              type="button"
+              onClick={() => { clearDemo(); window.location.replace("/auth"); }}
+              className="ml-auto flex-shrink-0 px-3 py-1 rounded-lg text-xs font-bold transition-all"
+              style={{ background: "hsl(38 92% 50%)", color: "#fff" }}
+            >
+              Sign Up Free
+            </button>
+            <button
+              type="button"
+              onClick={() => setDemoBannerDismissed(true)}
+              className="flex-shrink-0 p-1 rounded opacity-50 hover:opacity-100 transition-opacity"
+              style={{ color: "hsl(38 92% 45%)" }}
+              aria-label="Dismiss banner"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
         {children}
       </main>
 

@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 import { upsertProfile, getProfile } from "@/lib/supabaseDataService";
+import { isDemoMode } from "@/lib/companyStore";
 
 export interface AuthProfile {
   id: string;
@@ -51,10 +52,13 @@ function mapProfile(raw: Awaited<ReturnType<typeof getProfile>>): AuthProfile | 
 }
 
 export function useAuth() {
+  // In demo mode we skip Supabase entirely — no auth check, no spinner.
+  const [isDemo] = useState(() => isDemoMode());
   const [session, setSession]     = useState<Session | null>(null);
   const [user, setUser]           = useState<User | null>(null);
   const [profile, setProfile]     = useState<AuthProfile | null>(null);
-  const [loading, setLoading]     = useState(true);
+  // loading starts as false immediately in demo mode so no spinner ever shows.
+  const [loading, setLoading]     = useState(() => !isDemoMode());
 
   const loadProfile = useCallback(async (userId: string) => {
     // Race the DB fetch against a 4-second timeout so the spinner
@@ -67,6 +71,9 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
+    // In demo mode skip all Supabase subscription setup.
+    if (isDemo) return;
+
     // Hard safety net: if Supabase never responds (hanging fetch, unreachable DB),
     // force loading=false after 5 seconds so the user is never stuck on the spinner.
     const safetyTimer = setTimeout(() => setLoading(false), 5000);
@@ -117,7 +124,7 @@ export function useAuth() {
       clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
-  }, [loadProfile]);
+  }, [isDemo, loadProfile]);
 
   const signUp = useCallback(async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({

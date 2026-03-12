@@ -6,8 +6,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Tag, CheckCircle, AlertCircle, Building2 } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Tag, CheckCircle, AlertCircle, Building2, Sparkles } from "lucide-react";
 import { SiGoogle } from "react-icons/si";
+import { activateDemo } from "@/lib/companyStore";
 
 type Mode = "signin" | "signup" | "forgot";
 
@@ -24,6 +25,12 @@ export default function AuthPage() {
   const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const handleDemoAccess = () => {
+    // Use a full page load via ?demo=1 param — main.tsx detects this,
+    // calls activateDemo() before React initializes, then strips the param.
+    window.location.replace("/?demo=1");
+  };
 
   const handleGoogleSignIn = async () => {
     setError(null);
@@ -325,6 +332,36 @@ export default function AuthPage() {
               </p>
             </div>
           </div>
+        </div>
+
+        {/* ── Demo mode CTA ── */}
+        <div className="mt-5 text-center space-y-2">
+          <p className="text-[11px] text-muted-foreground/60 uppercase tracking-widest font-semibold">Or</p>
+          <button
+            type="button"
+            onClick={handleDemoAccess}
+            className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl border-2 transition-all font-semibold text-sm group"
+            style={{
+              borderColor: "hsl(var(--electric-blue) / 0.3)",
+              background: "hsl(var(--electric-blue) / 0.05)",
+              color: "hsl(var(--electric-blue))",
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = "hsl(var(--electric-blue) / 0.1)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "hsl(var(--electric-blue) / 0.5)";
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = "hsl(var(--electric-blue) / 0.05)";
+              (e.currentTarget as HTMLButtonElement).style.borderColor = "hsl(var(--electric-blue) / 0.3)";
+            }}
+          >
+            <Sparkles className="w-4 h-4 flex-shrink-0" />
+            Explore the Demo — no account needed
+            <ArrowRight className="w-3.5 h-3.5 ml-auto opacity-60 group-hover:translate-x-0.5 transition-transform" />
+          </button>
+          <p className="text-[10px] text-muted-foreground/50 leading-relaxed">
+            Pre-loaded with a 45-person tech company · No data saved
+          </p>
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6 leading-relaxed">

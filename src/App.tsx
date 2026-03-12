@@ -36,7 +36,7 @@ import GraphView from "./pages/GraphView";
 import AuthPage from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
-import { applyAccentColor, applyFont, saveProfile, loadProfile } from "./lib/companyStore";
+import { applyAccentColor, applyFont, saveProfile, loadProfile, isDemoMode, DEMO_PROFILE } from "./lib/companyStore";
 import { seedUserData } from "./lib/supabaseDataService";
 import { useRealtimeSync } from "./hooks/useLiveData";
 import type { CompanyProfile } from "./lib/companyStore";
@@ -70,11 +70,16 @@ function AppRoutes() {
   // Keep all live data in sync via Supabase realtime channels
   useRealtimeSync(user?.id);
 
-  // Apply theme from DB profile whenever it changes
+  // Apply theme from DB profile whenever it changes.
+  // In demo mode, fall back to the locally-stored demo profile for theme.
   useEffect(() => {
     if (profile) {
       applyAccentColor(profile.accentHue ?? 210);
       applyFont((profile.font as "inter" | "mono" | "rounded") ?? "inter");
+    } else if (isDemoMode()) {
+      const local = loadProfile();
+      applyAccentColor(local.accentHue ?? 215);
+      applyFont(local.font ?? "inter");
     }
   }, [profile]);
 
@@ -86,7 +91,7 @@ function AppRoutes() {
     }
   }, [user, profile?.onboardingComplete, seeded]);
 
-  if (loading) {
+  if (loading && !isDemoMode()) {
     return (
       <div className="fixed inset-0 flex items-center justify-center"
         style={{ background: "#0c1117" }}>
@@ -109,8 +114,8 @@ function AppRoutes() {
     );
   }
 
-  // Not logged in
-  if (!user) {
+  // Not logged in — redirect to auth unless demo mode is active
+  if (!user && !isDemoMode()) {
     return (
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
