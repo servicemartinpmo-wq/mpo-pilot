@@ -11,9 +11,15 @@ import {
   FileText, TrendingUp, AlertTriangle, CheckCircle, BarChart3,
   Download, ChevronDown, ChevronUp, Upload, X, Plus, Image, Folder,
   Calendar, CalendarDays, Award, Clock, DollarSign, Activity,
-  ThumbsUp, Save, BookOpen
+  ThumbsUp, Save, BookOpen, Info
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend, AreaChart, Area } from "recharts";
+import {
+  Tooltip as ShadTooltip,
+  TooltipContent as ShadTooltipContent,
+  TooltipTrigger as ShadTooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useAppData } from "@/hooks/useAppData";
 
 const SIGNAL_COLORS = {
   red: "hsl(var(--signal-red))", yellow: "hsl(var(--signal-yellow))",
@@ -108,6 +114,48 @@ const ANNUAL_TREND_BASE = [
 
 const currentYear = new Date().getFullYear();
 
+const GLOBAL_SMB_AVG = 63;
+
+interface IndustryBenchmark {
+  avg: number;
+  label: string;
+  tooltip: string;
+}
+
+const INDUSTRY_BENCHMARKS: Record<string, IndustryBenchmark> = {
+  "Technology": { avg: 71, label: "Technology & Software", tooltip: "Tech firms score higher due to OKR adoption, sprint-based execution discipline, and cross-functional alignment tooling embedded in daily operations." },
+  "Information Technology": { avg: 71, label: "Information Technology", tooltip: "IT organizations benefit from strong process tooling and DevOps culture, typically outperforming the global SMB average on execution metrics." },
+  "Healthcare": { avg: 68, label: "Healthcare", tooltip: "Healthcare organizations score above average on governance and compliance, but operational complexity and regulatory overhead moderate overall scores." },
+  "Pharmaceuticals": { avg: 69, label: "Pharmaceuticals", tooltip: "Pharma companies score well on process structure and risk management, driven by regulatory requirements and clinical trial governance frameworks." },
+  "Financial Services": { avg: 69, label: "Financial Services", tooltip: "Financial services firms benefit from audit-driven process rigor and strong governance culture, though strategic agility can be constrained by compliance overhead." },
+  "Insurance": { avg: 67, label: "Insurance", tooltip: "Insurance companies show strong risk management scores, but initiative velocity and strategic agility tend to trail peers in more dynamic sectors." },
+  "Education": { avg: 61, label: "Education & Training", tooltip: "Education organizations score near the global baseline. Execution scores vary widely based on funding model and administrative structure." },
+  "E-Commerce": { avg: 64, label: "E-Commerce", tooltip: "E-commerce companies are high-velocity but execution gaps at scale often keep scores close to the global average." },
+  "Retail": { avg: 62, label: "Retail", tooltip: "Retail organizations face thin margins and high operational complexity. Execution discipline varies significantly by format and supply chain maturity." },
+  "Manufacturing": { avg: 66, label: "Manufacturing", tooltip: "Manufacturers score well on process structure and operational capacity, driven by lean and Six Sigma adoption, but strategic alignment can lag." },
+  "Legal": { avg: 65, label: "Legal Services", tooltip: "Legal firms score near average on process structure but often show lower scores in strategic alignment and cross-functional governance." },
+  "Logistics": { avg: 64, label: "Logistics & Transportation", tooltip: "Logistics organizations are operationally complex. Strong on capacity management, but coordination gaps across sites and teams affect composite scores." },
+  "Real Estate": { avg: 60, label: "Real Estate", tooltip: "Real estate firms tend to score below the global average on process structure and governance, though strategic clarity scores can be high in growth periods." },
+  "Construction": { avg: 58, label: "Construction", tooltip: "Construction scores tend to be lower due to project-based rather than process-based operations, and high variability in execution environments." },
+  "Media": { avg: 63, label: "Media & Entertainment", tooltip: "Media organizations typically track close to the global SMB average, with creative agility often offset by structural governance gaps." },
+  "Non-Profit": { avg: 59, label: "Non-Profit", tooltip: "Non-profits score below average on execution and capacity health, driven by resource constraints and dependency on external funding cycles." },
+  "Hospitality": { avg: 60, label: "Hospitality & Food Service", tooltip: "Hospitality organizations face high turnover and operational variability, resulting in below-average execution and process structure scores." },
+  "Agriculture": { avg: 56, label: "Agriculture", tooltip: "Agricultural organizations often operate with lean staff and limited formal process structures, trailing the global benchmark on most dimensions." },
+  "Energy": { avg: 67, label: "Energy & Utilities", tooltip: "Energy companies score above average on risk management and operational capacity, driven by safety culture and regulatory compliance requirements." },
+  "Professional Services": { avg: 68, label: "Professional Services", tooltip: "Professional services firms tend to score well on strategic alignment and execution, backed by client-driven accountability and delivery frameworks." },
+  "Engineering": { avg: 70, label: "Engineering", tooltip: "Engineering organizations benefit from structured project management practices and strong technical process governance, scoring above the global average." },
+};
+
+function getIndustryBenchmark(industry: string): IndustryBenchmark {
+  const key = Object.keys(INDUSTRY_BENCHMARKS).find(k =>
+    industry.toLowerCase().includes(k.toLowerCase()) ||
+    k.toLowerCase().includes(industry.toLowerCase().split(" ")[0])
+  );
+  return key
+    ? INDUSTRY_BENCHMARKS[key]
+    : { avg: GLOBAL_SMB_AVG, label: industry || "General Business", tooltip: "No specific benchmark data exists for this industry. The global SMB average is used as the reference baseline." };
+}
+
 export default function Reports() {
   const { data: initiatives = [] } = useInitiatives();
   const { data: actionItems = [] } = useActionItems();
@@ -115,6 +163,7 @@ export default function Reports() {
   const { data: departments = [] } = useDepartments();
   const { data: governanceLogs = [] } = useGovernanceLogs();
   const { data: orgMetrics } = useOrgMetrics();
+  const appData = useAppData();
 
   const [tab, setTab] = useState<ReportTab>("executive");
   const [showAllInsights, setShowAllInsights] = useState(false);
@@ -188,6 +237,12 @@ export default function Reports() {
 
   const execHealth = orgMetrics?.avg_execution_health ?? 70;
   const overallMaturity = orgMetrics?.overall_maturity_score ?? 65;
+
+  const industry = appData?.industry ?? "";
+  const industryBench = getIndustryBenchmark(industry);
+  const industryAvg = industryBench.avg;
+  const contextualShift = industryAvg - GLOBAL_SMB_AVG;
+  const orgScoreVsIndustry = overallMaturity - industryAvg;
 
   const healthTrend = [
     { month: "Aug", health: 58, maturity: 52 }, { month: "Sep", health: 61, maturity: 54 },
@@ -955,6 +1010,122 @@ export default function Reports() {
             />
           </div>
 
+          {/* ── Contextual Scoring Panel ── */}
+          <div className="rounded-xl border p-5 space-y-4" style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--card))" }}>
+            <div className="flex items-start gap-3">
+              <div>
+                <h3 className="text-sm font-bold text-foreground">Contextual Scoring</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Your scores carry different meaning depending on who you're compared to. These three reference points calibrate your raw scores against both the global SMB baseline and your specific industry peer group.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Card 1: Global SMB Average */}
+              <div className="rounded-xl border p-4 flex flex-col gap-2" style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--secondary) / 0.5)" }}>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Score Across All Industries</span>
+                  <ShadTooltip>
+                    <ShadTooltipTrigger asChild>
+                      <button type="button" className="flex-shrink-0 cursor-help">
+                        <Info className="w-3 h-3 text-muted-foreground hover:text-foreground transition-colors" />
+                      </button>
+                    </ShadTooltipTrigger>
+                    <ShadTooltipContent side="top" className="max-w-[280px] text-xs leading-relaxed">
+                      The global SMB baseline — the median organizational health score across all {Object.keys(INDUSTRY_BENCHMARKS).length}+ industries in our dataset. Use this as your universal starting point: any score above {GLOBAL_SMB_AVG} means you are outperforming the average SMB regardless of sector. This benchmark is updated quarterly from aggregated (anonymized) platform data.
+                    </ShadTooltipContent>
+                  </ShadTooltip>
+                </div>
+                <div className="flex items-end gap-1.5">
+                  <span className="text-3xl font-black font-mono" style={{ color: "hsl(var(--electric-blue))" }}>{GLOBAL_SMB_AVG}</span>
+                  <span className="text-xs text-muted-foreground pb-0.5">/ 100</span>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--border))" }}>
+                  <div className="h-full rounded-full" style={{ width: `${GLOBAL_SMB_AVG}%`, background: "hsl(var(--electric-blue))" }} />
+                </div>
+                <p className="text-[10px] text-muted-foreground">Median across all SMB sectors</p>
+              </div>
+
+              {/* Card 2: Industry Average */}
+              <div className="rounded-xl border p-4 flex flex-col gap-2" style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--secondary) / 0.5)" }}>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                    {industryBench.label} Average
+                  </span>
+                  <ShadTooltip>
+                    <ShadTooltipTrigger asChild>
+                      <button type="button" className="flex-shrink-0 cursor-help">
+                        <Info className="w-3 h-3 text-muted-foreground hover:text-foreground transition-colors" />
+                      </button>
+                    </ShadTooltipTrigger>
+                    <ShadTooltipContent side="top" className="max-w-[280px] text-xs leading-relaxed">
+                      {industryBench.tooltip} This is the average score for comparable {industryBench.label} organizations — your true peer benchmark. Use this to gauge where you stand among direct competitors rather than the broader SMB universe.
+                    </ShadTooltipContent>
+                  </ShadTooltip>
+                </div>
+                <div className="flex items-end gap-1.5">
+                  <span className="text-3xl font-black font-mono" style={{ color: contextualShift > 0 ? "hsl(var(--signal-yellow))" : contextualShift < 0 ? "hsl(var(--teal))" : "hsl(var(--foreground))" }}>{industryAvg}</span>
+                  <span className="text-xs text-muted-foreground pb-0.5">/ 100</span>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--border))" }}>
+                  <div className="h-full rounded-full" style={{ width: `${industryAvg}%`, background: contextualShift > 0 ? "hsl(var(--signal-yellow))" : contextualShift < 0 ? "hsl(var(--teal))" : "hsl(var(--electric-blue))" }} />
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  {contextualShift > 0
+                    ? `+${contextualShift}pts above global baseline — higher bar`
+                    : contextualShift < 0
+                    ? `${contextualShift}pts below global baseline — lower bar`
+                    : "Matches the global SMB baseline"}
+                </p>
+              </div>
+
+              {/* Card 3: Contextual Score (shift) */}
+              <div className="rounded-xl border p-4 flex flex-col gap-2" style={{
+                borderColor: orgScoreVsIndustry >= 0 ? "hsl(var(--teal) / 0.4)" : "hsl(var(--signal-yellow) / 0.4)",
+                background: orgScoreVsIndustry >= 0 ? "hsl(var(--teal) / 0.06)" : "hsl(var(--signal-yellow) / 0.06)",
+              }}>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">Contextual Score</span>
+                  <ShadTooltip>
+                    <ShadTooltipTrigger asChild>
+                      <button type="button" className="flex-shrink-0 cursor-help">
+                        <Info className="w-3 h-3 text-muted-foreground hover:text-foreground transition-colors" />
+                      </button>
+                    </ShadTooltipTrigger>
+                    <ShadTooltipContent side="top" className="max-w-[300px] text-xs leading-relaxed">
+                      The contextual score shows how your organization sits within the adjusted landscape created by the other two benchmarks. Your raw maturity score of {overallMaturity} shifts to{" "}
+                      {orgScoreVsIndustry >= 0
+                        ? `+${orgScoreVsIndustry}pts above your ${industryBench.label} peer average`
+                        : `${orgScoreVsIndustry}pts below your ${industryBench.label} peer average`}.
+                      {" "}{contextualShift > 0
+                        ? `Because ${industryBench.label} companies generally outperform the global baseline (industry avg ${industryAvg} vs global ${GLOBAL_SMB_AVG}), beating your global score is harder — the bar is raised by ${contextualShift}pts compared to a cross-industry context.`
+                        : contextualShift < 0
+                        ? `Because ${industryBench.label} companies generally score below the global baseline (industry avg ${industryAvg} vs global ${GLOBAL_SMB_AVG}), your industry context lowers the relative bar by ${Math.abs(contextualShift)}pts — meaning your absolute score carries more relative weight within your peer group.`
+                        : `Your industry average matches the global baseline, so the contextual adjustment is neutral.`}
+                    </ShadTooltipContent>
+                  </ShadTooltip>
+                </div>
+                <div className="flex items-end gap-1.5">
+                  <span className="text-3xl font-black font-mono" style={{ color: orgScoreVsIndustry >= 0 ? "hsl(var(--teal))" : "hsl(var(--signal-yellow))" }}>
+                    {orgScoreVsIndustry >= 0 ? `+${orgScoreVsIndustry}` : orgScoreVsIndustry}
+                  </span>
+                  <span className="text-xs text-muted-foreground pb-0.5">vs industry</span>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--border))" }}>
+                  <div className="h-full rounded-full" style={{
+                    width: `${Math.min(100, Math.abs(orgScoreVsIndustry) * 4 + 20)}%`,
+                    background: orgScoreVsIndustry >= 0 ? "hsl(var(--teal))" : "hsl(var(--signal-yellow))",
+                  }} />
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  {orgScoreVsIndustry >= 0
+                    ? `Your org outperforms ${industryBench.label} peers`
+                    : `${Math.abs(orgScoreVsIndustry)}pts gap to close vs. industry peers`}
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Benchmarking Panel */}
           <div>
             <h3 className="text-sm font-bold text-foreground mb-3">Industry Benchmarking</h3>
@@ -964,8 +1135,32 @@ export default function Reports() {
                 <thead>
                   <tr style={{ background: "hsl(var(--muted))" }}>
                     <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Metric</th>
-                    <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Your Score</th>
-                    <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Industry Avg</th>
+                    <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">
+                      <ShadTooltip>
+                        <ShadTooltipTrigger asChild>
+                          <span className="inline-flex items-center gap-1 cursor-help">
+                            Your Score
+                            <Info className="w-3 h-3 opacity-50" />
+                          </span>
+                        </ShadTooltipTrigger>
+                        <ShadTooltipContent side="top" className="max-w-[240px] text-xs leading-relaxed">
+                          Your organization's current score for each metric, derived from live operational data — departments, initiatives, action items, and governance signals.
+                        </ShadTooltipContent>
+                      </ShadTooltip>
+                    </th>
+                    <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">
+                      <ShadTooltip>
+                        <ShadTooltipTrigger asChild>
+                          <span className="inline-flex items-center gap-1 cursor-help">
+                            Industry Avg
+                            <Info className="w-3 h-3 opacity-50" />
+                          </span>
+                        </ShadTooltipTrigger>
+                        <ShadTooltipContent side="top" className="max-w-[240px] text-xs leading-relaxed">
+                          The average score for your industry ({industryBench.label}). This is your peer-group benchmark — it reflects companies operating under similar sector dynamics, competitive pressures, and operational complexity as your own.
+                        </ShadTooltipContent>
+                      </ShadTooltip>
+                    </th>
                     <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Top Quartile</th>
                     <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Gap to Top</th>
                     <th className="text-left px-4 py-2.5 font-semibold text-muted-foreground">Position</th>
