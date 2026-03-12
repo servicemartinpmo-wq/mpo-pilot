@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "concurrently \"npx tsx server/index.ts\" \"vite\"",
     "dev:server": "npx tsx server/index.ts",
-    "build": "vite build",
+    "build": "vite build && npm run build:server",
+    "build:server": "esbuild server/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --packages=external",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",

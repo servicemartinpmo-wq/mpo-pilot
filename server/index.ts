@@ -1,10 +1,7 @@
 import express from "express";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { join } from "path";
 import { setupAuth, closeAuth } from "./replitAuth";
 import { closePool } from "./db";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 app.use(express.json({ limit: "10mb" }));
@@ -37,7 +34,7 @@ async function main() {
     });
   });
 
-  const distPath = join(__dirname, "../dist");
+  const distPath = join(process.cwd(), "dist");
   app.use(express.static(distPath, { maxAge: "1d" }));
 
   app.use((req, res, next) => {
