@@ -47,30 +47,22 @@
       }
 
       .boot-logo {
-        width: 52px;
-        height: 52px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 0 48px rgba(59,130,246,0.4);
+        width: 80px;
+        height: 80px;
+        border-radius: 20px;
+        overflow: hidden;
         animation: boot-pulse 2s ease-in-out infinite;
       }
 
       @keyframes boot-pulse {
-        0%, 100% { box-shadow: 0 0 48px rgba(59,130,246,0.35); }
-        50%       { box-shadow: 0 0 64px rgba(59,130,246,0.55); }
+        0%, 100% { opacity: 0.92; }
+        50%       { opacity: 1; }
       }
 
-      .boot-logo svg {
-        width: 28px;
-        height: 28px;
-        stroke: white;
-        stroke-width: 2;
-        fill: none;
-        stroke-linecap: round;
-        stroke-linejoin: round;
+      .boot-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
 
       .boot-wordmark {
@@ -108,14 +100,9 @@
     <!-- Native loading shell — renders instantly, before any JS downloads -->
     <div id="boot-shell">
       <div class="boot-logo">
-        <!-- Layers icon (matches the app's feel) -->
-        <svg viewBox="0 0 24 24">
-          <polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/>
-          <polyline points="2 15.5 12 22 22 15.5"/>
-          <polyline points="2 11.5 12 18 22 11.5"/>
-        </svg>
+        <img src="/pmo-logo-dark.png" alt="PMO-Ops" />
       </div>
-      <div class="boot-wordmark">Martin PMO</div>
+      <div class="boot-wordmark">PMO-Ops</div>
       <div class="boot-spinner-track">
         <div class="boot-spinner"></div>
       </div>

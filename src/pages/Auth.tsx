@@ -6,7 +6,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Tag, CheckCircle, AlertCircle, Building2, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, CheckCircle, AlertCircle, Building2, Sparkles } from "lucide-react";
+import pmoLogoDark from "@/assets/pmo-logo-dark.png";
 import { SiGoogle } from "react-icons/si";
 import { activateDemo } from "@/lib/companyStore";
 
@@ -124,11 +125,8 @@ export default function AuthPage() {
       <div className="relative z-10 w-full max-w-md px-6 py-10">
         {/* Brand */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-            style={{ background: "var(--gradient-electric)", boxShadow: `0 0 28px ${ACCENT}33` }}>
-            <Tag className="w-6 h-6 text-white" />
-          </div>
-          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1">Martin PMO</div>
+          <img src={pmoLogoDark} alt="PMO-Ops" className="w-16 h-16 rounded-2xl mx-auto mb-4 object-cover" style={{ boxShadow: `0 0 28px ${ACCENT}33` }} />
+          <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1">PMO-Ops</div>
           <h1 className="text-2xl font-black text-foreground tracking-tight">
             {mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}
           </h1>

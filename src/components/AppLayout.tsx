@@ -9,7 +9,7 @@ import {
   Network, ShoppingBag, CreditCard, Tag,
   Menu, X, MoreHorizontal,
 } from "lucide-react";
-import pmoLogoLight from "@/assets/pmo-logo-light.png";
+import pmoLogoDark from "@/assets/pmo-logo-dark.png";
 import { useUserMode } from "@/hooks/useUserMode";
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
@@ -843,11 +843,8 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
             {mobileDrawerOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
           <div className="flex-1 flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{ background: "linear-gradient(135deg, hsl(222 88% 65%), hsl(174 68% 42%))" }}>
-              <Tag className="w-3 h-3 text-white" />
-            </div>
-            <span className="text-[13px] font-black text-white leading-none tracking-tight">Martin PMO</span>
+            <img src={pmoLogoDark} alt="PMO-Ops" className="w-6 h-6 rounded-lg flex-shrink-0 object-cover" />
+            <span className="text-[13px] font-black text-white leading-none tracking-tight">PMO-Ops</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="text-[10px] font-bold px-2 py-1 rounded-lg"
@@ -920,18 +917,18 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
 
           {/* Brand header */}
           <div className="flex items-center gap-2.5 px-3 py-3 border-b" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
-            {/* Tag icon — always visible */}
-            <div
-              className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: "linear-gradient(135deg, hsl(222 88% 65%), hsl(174 68% 42%))" }}>
-              <Tag className="w-4 h-4 text-white" />
-            </div>
+            {/* Logo — always visible */}
+            <img
+              src={pmoLogoDark}
+              alt="PMO-Ops"
+              className="w-8 h-8 rounded-xl flex-shrink-0 object-cover"
+            />
 
             {/* Company + app name — only when expanded */}
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-black text-white leading-none tracking-tight truncate">Martin PMO</div>
-                <div className="text-[9px] font-medium mt-0.5 truncate" style={{ color: "hsl(0 0% 100% / 0.38)" }}>PMO-Ops Command Center</div>
+                <div className="text-[13px] font-black text-white leading-none tracking-tight truncate">PMO-Ops</div>
+                <div className="text-[9px] font-medium mt-0.5 truncate" style={{ color: "hsl(0 0% 100% / 0.38)" }}>Command Center</div>
               </div>
             )}
 
