@@ -51,13 +51,20 @@ function mapProfile(raw: Awaited<ReturnType<typeof getProfile>>): AuthProfile | 
   };
 }
 
+export interface ReplitUser {
+  id: string;
+  email: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  profile_image_url: string | null;
+}
+
 export function useAuth() {
-  // In demo mode we skip Supabase entirely — no auth check, no spinner.
   const [isDemo] = useState(() => isDemoMode());
   const [session, setSession]     = useState<Session | null>(null);
   const [user, setUser]           = useState<User | null>(null);
+  const [replitUser, setReplitUser] = useState<ReplitUser | null>(null);
   const [profile, setProfile]     = useState<AuthProfile | null>(null);
-  // loading starts as false immediately in demo mode so no spinner ever shows.
   const [loading, setLoading]     = useState(() => !isDemoMode());
 
   const loadProfile = useCallback(async (userId: string) => {
@@ -70,17 +77,38 @@ export function useAuth() {
     setProfile(mapProfile(raw));
   }, []);
 
+  const checkReplitAuth = useCallback(async () => {
+    try {
+      const res = await fetch("/api/auth/user", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json() as ReplitUser;
+        setReplitUser(data);
+        await loadProfile(data.id);
+        return true;
+      }
+    } catch {
+      // Replit auth not available
+    }
+    return false;
+  }, [loadProfile]);
+
   useEffect(() => {
-    // In demo mode skip all Supabase subscription setup.
     if (isDemo) return;
 
-    // Hard safety net: if Supabase never responds (hanging fetch, unreachable DB),
-    // force loading=false after 5 seconds so the user is never stuck on the spinner.
     const safetyTimer = setTimeout(() => setLoading(false), 5000);
+
+    const checkAuth = async () => {
+      const hasReplitSession = await checkReplitAuth();
+      if (hasReplitSession) {
+        clearTimeout(safetyTimer);
+        setLoading(false);
+        return;
+      }
+    };
+    checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
-        // TOKEN_REFRESHED: session silently updated — no loading flash, no profile reload needed
         if (event === "TOKEN_REFRESHED") {
           setSession(newSession);
           return;
@@ -92,12 +120,10 @@ export function useAuth() {
 
         try {
           if (newSession?.user) {
-            // Only reload profile on true sign-in or session init events
             if (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "USER_UPDATED") {
               await loadProfile(newSession.user.id);
             }
-          } else {
-            // SIGNED_OUT — clear profile
+          } else if (!replitUser) {
             setProfile(null);
           }
         } catch {
@@ -108,8 +134,6 @@ export function useAuth() {
       }
     );
 
-    // Belt-and-suspenders: also load via getSession in case onAuthStateChange
-    // fires with a stale null before the real INITIAL_SESSION resolves
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       if (s?.user) {
         clearTimeout(safetyTimer);
@@ -117,14 +141,13 @@ export function useAuth() {
         setUser(s.user);
         loadProfile(s.user.id).catch(() => {}).finally(() => setLoading(false));
       }
-      // else: onAuthStateChange will fire with null INITIAL_SESSION and set loading=false
     });
 
     return () => {
       clearTimeout(safetyTimer);
       subscription.unsubscribe();
     };
-  }, [isDemo, loadProfile]);
+  }, [isDemo, loadProfile, checkReplitAuth, replitUser]);
 
   const signUp = useCallback(async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signUp({
@@ -157,13 +180,16 @@ export function useAuth() {
   }, []);
 
   const signInWithReplit = useCallback(() => {
-    const domain = window.location.host;
-    window.location.href = `https://replit.com/auth_with_repl_site?domain=${domain}`;
+    window.location.href = "/api/login";
   }, []);
 
   const signOut = useCallback(async () => {
+    if (replitUser) {
+      window.location.href = "/api/logout";
+      return;
+    }
     await supabase.auth.signOut();
-  }, []);
+  }, [replitUser]);
 
   const resetPassword = useCallback(async (email: string) => {
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -196,9 +222,12 @@ export function useAuth() {
     return { data, error };
   }, [user]);
 
+  const effectiveUserId = user?.id ?? replitUser?.id ?? null;
+
   return {
     session,
     user,
+    replitUser,
     profile,
     loading,
     signUp,
@@ -209,6 +238,7 @@ export function useAuth() {
     resetPassword,
     updateProfile,
     signInWithReplit,
-    refreshProfile: () => user ? loadProfile(user.id) : Promise.resolve(),
+    refreshProfile: () => effectiveUserId ? loadProfile(effectiveUserId) : Promise.resolve(),
+    isAuthenticated: !!(user || replitUser),
   };
 }

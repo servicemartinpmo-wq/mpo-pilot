@@ -48,7 +48,7 @@ const queryClient = new QueryClient({
 });
 
 function AppRoutes() {
-  const { user, profile, loading, updateProfile } = useAuth();
+  const { user, replitUser, profile, loading, updateProfile } = useAuth();
   const [seeded, setSeeded] = useState(false);
   const [onboardingDone, setOnboardingDone] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
@@ -67,8 +67,9 @@ function AppRoutes() {
     return () => window.removeEventListener("keydown", handle);
   }, []);
 
-  // Keep all live data in sync via Supabase realtime channels
-  useRealtimeSync(user?.id);
+  const effectiveUserId = user?.id ?? replitUser?.id ?? undefined;
+
+  useRealtimeSync(effectiveUserId);
 
   // Apply theme from DB profile whenever it changes.
   // In demo mode, fall back to the locally-stored demo profile for theme.
@@ -115,7 +116,7 @@ function AppRoutes() {
   }
 
   // Not logged in — redirect to auth unless demo mode is active
-  if (!user && !isDemoMode()) {
+  if (!user && !replitUser && !isDemoMode()) {
     return (
       <Routes>
         <Route path="/auth" element={<AuthPage />} />

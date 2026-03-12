@@ -17,6 +17,13 @@ export default defineConfig(({ mode }) => ({
       "Cache-Control": "no-store, no-cache, must-revalidate",
       "Pragma": "no-cache",
     } : {},
+    proxy: {
+      "/api": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
