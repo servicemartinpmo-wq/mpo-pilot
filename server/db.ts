@@ -1,6 +1,5 @@
-import { Pool, type PoolClient } from "pg";
+import { Pool } from "pg";
 
-// Global connection pool - initialized once
 let pool: Pool | null = null;
 
 export function getPool(): Pool {
@@ -12,18 +11,13 @@ export function getPool(): Pool {
 
     pool = new Pool({
       connectionString: databaseUrl,
-      max: 20, // Limit connections to prevent exhaustion
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 2000,
+      max: 10,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 5_000,
     });
 
     pool.on("error", (err) => {
-      console.error("[Database Pool] Unexpected error:", err.message);
-      // Don't exit - let app continue but log the issue
-    });
-
-    pool.on("connect", () => {
-      // Connection acquired
+      console.error("[Database Pool] Unexpected error on idle client:", err.message);
     });
   }
 
@@ -39,18 +33,5 @@ export async function closePool(): Promise<void> {
       console.error("[Database] Error closing pool:", err instanceof Error ? err.message : err);
     }
     pool = null;
-  }
-}
-
-export async function queryPool(
-  text: string,
-  values?: any[]
-): Promise<{ rows: any[]; rowCount: number | null }> {
-  const client = await getPool().connect();
-  try {
-    const result = await client.query(text, values);
-    return { rows: result.rows, rowCount: result.rowCount };
-  } finally {
-    client.release();
   }
 }

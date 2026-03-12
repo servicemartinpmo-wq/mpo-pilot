@@ -10,8 +10,6 @@ channel = "stable-25_05"
 deploymentTarget = "autoscale"
 run = ["npx", "tsx", "server/index.ts"]
 build = ["npm", "run", "build"]
-numReplicas = 2
-restartPolicy = "on_failure"
 
 [userenv]
 

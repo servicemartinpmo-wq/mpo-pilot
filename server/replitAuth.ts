@@ -5,20 +5,23 @@ import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getPool } from "./db";
 
-// Shared session store - created once
-let sessionStore: any = null;
+let sessionStore: InstanceType<ReturnType<typeof connectPg>> | null = null;
+let supabaseAdmin: SupabaseClient | null = null;
 
 const SUPABASE_URL = "https://okgpcsfqkshdzbfuigfq.supabase.co";
 
-function getSupabaseAdmin() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set");
-  return createClient(SUPABASE_URL, key, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  });
+function getSupabaseAdmin(): SupabaseClient {
+  if (!supabaseAdmin) {
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set");
+    supabaseAdmin = createClient(SUPABASE_URL, key, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+  }
+  return supabaseAdmin;
 }
 
 async function upsertReplitUser(claims: Record<string, unknown>) {
@@ -48,38 +51,43 @@ async function provisionSupabaseSession(
   const email = claims["email"] as string | undefined;
   if (!email) return null;
 
-  const supabaseAdmin = getSupabaseAdmin();
-  const displayName = [claims["first_name"], claims["last_name"]]
-    .filter(Boolean)
-    .join(" ") || undefined;
+  try {
+    const admin = getSupabaseAdmin();
+    const displayName = [claims["first_name"], claims["last_name"]]
+      .filter(Boolean)
+      .join(" ") || undefined;
 
-  const { error: createError } = await supabaseAdmin.auth.admin.createUser({
-    email,
-    email_confirm: true,
-    user_metadata: {
-      full_name: displayName,
-      avatar_url: claims["profile_image_url"],
-      replit_id: claims["sub"],
-    },
-  });
-
-  if (createError && createError.message !== "A user with this email address has already been registered") {
-    console.error("[replitAuth] createUser error:", createError.message);
-  }
-
-  const { data: linkData, error: linkError } =
-    await supabaseAdmin.auth.admin.generateLink({
-      type: "magiclink",
+    const { error: createError } = await admin.auth.admin.createUser({
       email,
-      options: { redirectTo: `${SUPABASE_URL}` },
+      email_confirm: true,
+      user_metadata: {
+        full_name: displayName,
+        avatar_url: claims["profile_image_url"],
+        replit_id: claims["sub"],
+      },
     });
 
-  if (linkError || !linkData?.properties?.action_link) {
-    console.error("[replitAuth] generateLink error:", linkError?.message);
+    if (createError && createError.message !== "A user with this email address has already been registered") {
+      console.error("[replitAuth] createUser error:", createError.message);
+    }
+
+    const { data: linkData, error: linkError } =
+      await admin.auth.admin.generateLink({
+        type: "magiclink",
+        email,
+        options: { redirectTo: `${SUPABASE_URL}` },
+      });
+
+    if (linkError || !linkData?.properties?.action_link) {
+      console.error("[replitAuth] generateLink error:", linkError?.message);
+      return null;
+    }
+
+    return linkData.properties.action_link;
+  } catch (err) {
+    console.error("[replitAuth] provisionSupabaseSession error:", err instanceof Error ? err.message : err);
     return null;
   }
-
-  return linkData.properties.action_link;
 }
 
 const getOidcConfig = memoize(
@@ -100,36 +108,33 @@ const getOidcConfig = memoize(
 );
 
 function getSessionMiddleware() {
-  // Create session store only once
   if (!sessionStore) {
-    const sessionTtl = 7 * 24 * 60 * 60 * 1000;
     const pgStore = connectPg(session);
-    const databaseUrl = process.env.DATABASE_URL;
-    if (!databaseUrl) {
-      throw new Error("DATABASE_URL environment variable is not set");
-    }
-    const sessionSecret = process.env.SESSION_SECRET;
-    if (!sessionSecret) {
-      throw new Error("SESSION_SECRET environment variable is not set");
-    }
+    const pool = getPool();
     sessionStore = new pgStore({
-      conString: databaseUrl,
+      pool,
       createTableIfMissing: false,
-      ttl: sessionTtl,
+      ttl: 7 * 24 * 60 * 60,
       tableName: "sessions",
+      pruneSessionInterval: 60 * 15,
     });
   }
-  
-  const sessionTtl = 7 * 24 * 60 * 60 * 1000;
+
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) throw new Error("DATABASE_URL environment variable is not set");
+  const sessionSecret = process.env.SESSION_SECRET;
+  if (!sessionSecret) throw new Error("SESSION_SECRET environment variable is not set");
+
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: sessionSecret,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
       secure: true,
-      maxAge: sessionTtl,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      sameSite: "lax",
     },
   });
 }
@@ -273,11 +278,12 @@ export async function setupAuth(app: Express) {
 }
 
 export async function closeAuth(): Promise<void> {
-  if (sessionStore && sessionStore.close) {
-    sessionStore.close(() => {
-      console.log("[Auth] Session store closed");
-    });
+  if (sessionStore) {
+    sessionStore.close();
+    console.log("[Auth] Session store closed");
+    sessionStore = null;
   }
+  supabaseAdmin = null;
 }
 
 const isAuthenticated: RequestHandler = async (req, res, next) => {

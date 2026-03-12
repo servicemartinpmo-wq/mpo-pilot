@@ -7,52 +7,52 @@ import { closePool } from "./db";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 
-// Middleware
 app.use(express.json({ limit: "10mb" }));
 
-// Track request count for monitoring
-let requestCount = 0;
-app.use((req, res, next) => {
-  requestCount++;
-  if (requestCount % 1000 === 0) {
-    console.log(`[Health] Processed ${requestCount} requests`);
-  }
-  next();
+let fatalShutdown: (() => void) | null = null;
+
+process.on("uncaughtException", (err) => {
+  console.error("[FATAL] Uncaught exception:", err.message, err.stack);
+  if (fatalShutdown) fatalShutdown();
+  else process.exit(1);
+});
+
+process.on("unhandledRejection", (reason) => {
+  console.error("[FATAL] Unhandled rejection:", reason);
 });
 
 async function main() {
   try {
     await setupAuth(app);
+    console.log("[Auth] Setup complete");
   } catch (authError) {
     console.warn("[Auth] Setup failed, continuing without auth:", authError);
   }
 
-  // API routes (before static files)
-  app.get("/health", (req, res) => {
-    res.json({ status: "ok", uptime: process.uptime() });
+  app.get("/health", (_req, res) => {
+    res.json({
+      status: "ok",
+      uptime: Math.floor(process.uptime()),
+      memory: Math.floor(process.memoryUsage().rss / 1024 / 1024),
+    });
   });
 
-  // Serve static files from the Vite build output
   const distPath = join(__dirname, "../dist");
-  app.use(express.static(distPath, { 
-    maxAge: "1d",
-    etag: false 
-  }));
+  app.use(express.static(distPath, { maxAge: "1d" }));
 
-  // Fallback to index.html for client-side routing
-  app.use((req, res) => {
+  app.use((req, res, next) => {
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      return next();
+    }
     const indexPath = join(distPath, "index.html");
-    res.type("text/html");
     res.sendFile(indexPath, (err) => {
       if (err && !res.headersSent) {
-        console.error("[Error] Failed to send index.html:", err.message);
         res.status(404).send("Not found");
       }
     });
   });
 
-  // Error handler
-  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error("[Error]", err.message || err);
     if (!res.headersSent) {
       res.status(500).json({ error: "Internal server error" });
@@ -60,29 +60,37 @@ async function main() {
   });
 
   const PORT = process.env.PORT || 3001;
-  const server = app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(Number(PORT), "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
   });
 
-  // Graceful shutdown
-  const cleanup = async () => {
-    console.log("[Shutdown] Cleanup started...");
-    server.close(() => {
-      console.log("[Shutdown] Server closed");
-    });
-    try {
-      await closeAuth();
-      await closePool();
-      console.log("[Shutdown] All resources cleaned up");
-      process.exit(0);
-    } catch (err) {
-      console.error("[Shutdown] Error during cleanup:", err);
+  server.keepAliveTimeout = 65_000;
+  server.headersTimeout = 66_000;
+
+  let shuttingDown = false;
+  const cleanup = async (signal: string) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    console.log(`[Shutdown] ${signal} received`);
+
+    const forceTimer = setTimeout(() => {
+      console.error("[Shutdown] Forcing exit");
       process.exit(1);
-    }
+    }, 10_000);
+
+    server.close(async () => {
+      try {
+        await closeAuth();
+        await closePool();
+      } catch {}
+      clearTimeout(forceTimer);
+      process.exit(0);
+    });
   };
 
-  process.on("SIGTERM", cleanup);
-  process.on("SIGINT", cleanup);
+  fatalShutdown = () => cleanup("uncaughtException");
+  process.on("SIGTERM", () => cleanup("SIGTERM"));
+  process.on("SIGINT", () => cleanup("SIGINT"));
 }
 
 main().catch((err) => {
