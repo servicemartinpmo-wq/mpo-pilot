@@ -133,7 +133,7 @@ export default function AuthPage() {
   const ACCENT = "hsl(var(--electric-blue))";
 
   return (
-    <div className="min-h-screen flex items-start justify-center bg-background relative overflow-x-hidden overflow-y-auto">
+    <div className="h-screen flex items-start justify-center bg-background relative overflow-x-hidden overflow-y-auto">
       {/* Background glows */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px]"
