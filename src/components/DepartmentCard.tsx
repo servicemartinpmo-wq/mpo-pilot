@@ -3,6 +3,7 @@ import { MaturityBadge } from "./ScoreBadge";
 import { getScoreSignal } from "@/lib/pmoData";
 import { TrendingUp, TrendingDown, Minus, Users, AlertTriangle, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ScoreExplainer from "@/components/ScoreExplainer";
 
 interface DepartmentCardProps {
   dept: Department;
@@ -71,7 +72,10 @@ export default function DepartmentCard({ dept }: DepartmentCardProps) {
             </span>
           </div>
         </div>
-        <MaturityBadge tier={dept.maturityTier} score={dept.maturityScore} />
+        <div className="flex items-center gap-1">
+          <MaturityBadge tier={dept.maturityTier} score={dept.maturityScore} />
+          <ScoreExplainer metricName={`${dept.name} Maturity`} rawScore={dept.maturityScore} size="sm" />
+        </div>
       </div>
 
       {/* ── 4 Metric Tiles — explicit numbers with color coding ── */}

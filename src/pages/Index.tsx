@@ -1110,7 +1110,10 @@ function ExecutiveDashboard({
               return (
                 <div key={label}>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[11px] font-semibold" style={{ color: "rgba(255,255,255,0.65)" }}>{label}</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[11px] font-semibold" style={{ color: "rgba(255,255,255,0.65)" }}>{label}</span>
+                      <ScoreExplainer metricName={label} rawScore={score} variant="dark" size="sm" />
+                    </div>
                     <span className="text-[11px] font-black font-mono" style={{ color: clr }}>{score}%</span>
                   </div>
                   <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(224 20% 20%)" }}>

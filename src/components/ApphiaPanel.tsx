@@ -64,20 +64,29 @@ function buildCtx() {
   const blocked   = initiatives.filter(i => i.status === "Blocked");
   const atRisk    = initiatives.filter(i => i.status === "At Risk");
   const delayed   = initiatives.filter(i => i.status === "Delayed");
+
+  let orgCtx: OrgContext | undefined;
+  try {
+    if (profile.onboardingComplete) orgCtx = buildOrgContext(profile);
+  } catch {}
+
   let healthScore = 0;
   try {
-    const scores = runMaturityScoring();
-    healthScore  = runOrgHealthScoring(scores).overall;
+    const scores = runMaturityScoring(orgCtx);
+    healthScore  = runOrgHealthScoring(scores, orgCtx).overall;
   } catch { /* silent */ }
 
-  return { overdue, blocked, atRisk, delayed, healthScore, profile };
+  return { overdue, blocked, atRisk, delayed, healthScore, profile, orgCtx };
 }
 
 function apphiaRespond(input: string, page: string): Omit<ApphiaMsg, "id" | "timestamp"> {
   const lower = input.toLowerCase().trim();
   const ctx   = buildCtx();
-  const { overdue, blocked, atRisk, delayed, healthScore, profile } = ctx;
+  const { overdue, blocked, atRisk, delayed, healthScore, profile, orgCtx: orgContext } = ctx;
   const org   = profile.orgName || "your organization";
+  const ctxLabel = orgContext
+    ? ` (${orgContext.companyStage}-stage ${orgContext.industry || "org"}, Q${orgContext.fiscalQuarter})`
+    : "";
 
   // ── Greetings ──────────────────────────────────────────────────────
   if (/^(hi|hello|hey|good morning|howdy|yo)/.test(lower) && lower.length < 20) {
@@ -86,7 +95,7 @@ function apphiaRespond(input: string, page: string): Omit<ApphiaMsg, "id" | "tim
       role: "apphia",
       text: `Hey${profile.userName ? ` ${profile.userName}` : ""}! I'm Apphia — your executive intelligence engine. Pattern recognition, decision-making, efficiency. ${urgency
         ? `There's some urgency to address: ${overdue.length > 0 ? `${overdue.length} overdue action item${overdue.length !== 1 ? "s" : ""}` : ""}${overdue.length > 0 && blocked.length > 0 ? " and " : ""}${blocked.length > 0 ? `${blocked.length} blocked initiative${blocked.length !== 1 ? "s" : ""}` : ""}.`
-        : `${org} looks stable right now — operational health is at ${healthScore}.`} What can I help you with?`,
+        : `${org} looks stable right now — operational health is at ${healthScore}${ctxLabel}.`} What can I help you with?`,
     };
   }
 
@@ -101,7 +110,7 @@ function apphiaRespond(input: string, page: string): Omit<ApphiaMsg, "id" | "tim
     if (lines.length === 0) {
       return {
         role: "apphia",
-        text: `${org} is looking healthy today. No overdue items, no blocked initiatives. Operational health: ${healthScore}. A good day to make progress on strategic priorities.`,
+        text: `${org} is looking healthy today${ctxLabel}. No overdue items, no blocked initiatives. Operational health: ${healthScore}. A good day to make progress on strategic priorities.`,
         actions: [{ label: "View Dashboard", href: "/" }],
       };
     }
@@ -187,7 +196,7 @@ function apphiaRespond(input: string, page: string): Omit<ApphiaMsg, "id" | "tim
       : "Prioritize foundational processes: clear ownership, documented SOPs, and weekly performance reviews.";
     return {
       role: "apphia",
-      text: `${org}'s organizational health score is ${healthScore} — rated ${level}. ${advice}`,
+      text: `${org}'s organizational health score is ${healthScore} — rated ${level}${ctxLabel}. ${advice}`,
       actions: [{ label: "Full Diagnostics", href: "/diagnostics" }],
     };
   }

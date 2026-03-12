@@ -1,6 +1,7 @@
 import { insights, frameworks, initiatives, departments, actionItems, governanceLogs } from "@/lib/pmoData";
 import UpgradeBanner from "@/components/UpgradeBanner";
 import { ScoreBadge, SignalDot } from "@/components/ScoreBadge";
+import ScoreExplainer from "@/components/ScoreExplainer";
 import { cn } from "@/lib/utils";
 import {
   Activity, AlertCircle, GitBranch, Layers, Target, Shield, Clock,
@@ -292,11 +293,14 @@ export default function Diagnostics() {
                       </div>
                       <p className="text-xs text-muted-foreground leading-snug line-clamp-2">{sig.description}</p>
                     </div>
-                    <div className="text-right flex-shrink-0">
-                      <div className={cn("text-lg font-bold font-mono",
-                        sig.score >= 85 ? "text-signal-red" : sig.score >= 70 ? "text-signal-yellow" : "text-signal-green"
-                      )}>{sig.score}</div>
-                      <div className="text-xs text-muted-foreground">score</div>
+                    <div className="text-right flex-shrink-0 flex items-start gap-1">
+                      <div>
+                        <div className={cn("text-lg font-bold font-mono",
+                          sig.score >= 85 ? "text-signal-red" : sig.score >= 70 ? "text-signal-yellow" : "text-signal-green"
+                        )}>{sig.score}</div>
+                        <div className="text-xs text-muted-foreground">score</div>
+                      </div>
+                      <ScoreExplainer metricName={sig.category} rawScore={sig.score} size="sm" />
                     </div>
                   </div>
                 );
