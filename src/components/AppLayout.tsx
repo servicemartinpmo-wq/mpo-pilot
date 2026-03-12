@@ -342,6 +342,18 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
     return { active: false, duration: "off", label: "Notifications on" };
   });
 
+  // Lock body/html scroll while the main app layout is mounted so inner regions
+  // (sidebar, main content) handle their own scroll — restore on unmount so
+  // the auth page (which has its own overflow-y-auto) can scroll freely.
+  useEffect(() => {
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   useEffect(() => {
     const profile = loadProfile();
     if (!profile.onboardingComplete) {
