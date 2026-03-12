@@ -150,7 +150,7 @@ export default function AuthPage() {
       <div className="relative z-10 w-full max-w-md px-6 py-10">
         {/* Brand */}
         <div className="text-center mb-8">
-          <img src={pmoLogoDark} alt="PMO-Ops" className="w-16 h-16 rounded-2xl mx-auto mb-4 object-cover" style={{ boxShadow: `0 0 28px ${ACCENT}33` }} />
+          <img src={pmoLogoDark} alt="PMO-Ops" className="h-20 w-auto mx-auto mb-4 object-contain" style={{ maxWidth: 180, filter: `drop-shadow(0 0 18px ${ACCENT}55)` }} />
           <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1">PMO-Ops</div>
           <h1 className="text-2xl font-black text-foreground tracking-tight">
             {mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}

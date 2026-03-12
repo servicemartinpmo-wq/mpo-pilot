@@ -147,6 +147,8 @@ export default function VoiceCommand() {
 
   if (["/auth", "/reset-password"].includes(location.pathname)) return null;
 
+  return null;
+
   if (!open) {
     return (
       <button

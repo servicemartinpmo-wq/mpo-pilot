@@ -567,13 +567,10 @@
    Applies when [data-pmo-creative="true"] wraps the app
 ───────────────────────────────────────────────────────────────────────── */
 
-/* Cards: subtle art-texture bleed + richer shadow depth */
+/* Cards: deep dark glass aesthetic */
 [data-pmo-creative] .bg-card,
 [data-pmo-creative] [class*="shadow-card"] {
-  background-image: url('/banner-art.png') !important;
-  background-size: 900px auto !important;
-  background-position: center !important;
-  background-blend-mode: soft-light !important;
+  background-image: none !important;
 }
 
 /* Stronger, dark-mode-appropriate card shadows */
@@ -602,10 +599,10 @@
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url('/banner-fields.png');
+  background-image: url('/banner-strategy.jpg');
   background-size: cover;
   background-position: center;
-  opacity: 0.12;
+  opacity: 0.14;
   mix-blend-mode: luminosity;
   pointer-events: none;
   z-index: 0;
@@ -681,4 +678,48 @@
 @keyframes wt-bar {
   0%   { transform: scaleY(0.4); opacity: 0.5; }
   100% { transform: scaleY(1.4); opacity: 1; }
+}
+
+/* ── Apphia FAB — animated Siri-style orb ────────────────────────────── */
+@keyframes apphia-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-4px); }
+}
+@keyframes apphia-glow {
+  0%, 100% { box-shadow: 0 0 18px 4px hsl(268 72% 55% / 0.55), 0 8px 28px hsl(268 72% 35% / 0.35); }
+  33%       { box-shadow: 0 0 22px 6px hsl(183 62% 50% / 0.55), 0 8px 32px hsl(183 62% 30% / 0.30); }
+  66%       { box-shadow: 0 0 20px 5px hsl(210 90% 55% / 0.55), 0 8px 28px hsl(210 90% 35% / 0.30); }
+}
+@keyframes apphia-bg {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+.apphia-orb {
+  background: linear-gradient(135deg, hsl(268 72% 52%), hsl(210 90% 55%), hsl(183 62% 48%), hsl(280 80% 52%));
+  background-size: 300% 300%;
+  border-radius: 50%;
+  animation:
+    apphia-float 3.6s ease-in-out infinite,
+    apphia-glow  5s   ease-in-out infinite,
+    apphia-bg    6s   ease        infinite;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+.apphia-orb:hover {
+  animation:
+    apphia-glow  2s   ease-in-out infinite,
+    apphia-bg    4s   ease        infinite;
+  transform: scale(1.1) translateY(-2px) !important;
+}
+.apphia-orb.is-listening {
+  animation:
+    apphia-glow  1.2s ease-in-out infinite,
+    apphia-bg    2s   ease        infinite;
+}
+.apphia-orb.is-speaking {
+  animation:
+    apphia-glow  0.9s ease-in-out infinite,
+    apphia-bg    1.5s ease        infinite;
 }

@@ -632,15 +632,12 @@ export default function ApphiaPanel() {
         <button
           onClick={() => setOpen(true)}
           title="Ask Apphia (Ctrl+K)"
-          className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95 select-none"
-          style={{
-            width: 52, height: 52,
-            background: "linear-gradient(135deg, hsl(268 72% 52%), hsl(183 62% 42%))",
-            boxShadow: "0 8px 28px hsl(268 72% 52% / 0.45), 0 2px 8px hsl(0 0% 0% / 0.2)",
-          }}>
-          <span className="text-white font-black text-lg tracking-tight select-none">A</span>
-          <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white animate-pulse"
-            style={{ background: "hsl(160 56% 46%)" }} />
+          className={`apphia-orb fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 flex items-center justify-center select-none${listening ? " is-listening" : ""}`}
+          style={{ width: 56, height: 56 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 3 L9.2 9.2 L3 12 L9.2 14.8 L12 21 L14.8 14.8 L21 12 L14.8 9.2 Z" fill="white" opacity="0.92"/>
+            <circle cx="12" cy="12" r="2" fill="white" opacity="0.5"/>
+          </svg>
         </button>
       </>
     );

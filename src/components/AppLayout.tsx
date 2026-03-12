@@ -858,7 +858,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
             {mobileDrawerOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
           <div className="flex-1 flex items-center gap-2.5">
-            <img src={pmoLogoDark} alt="PMO-Ops" className="w-6 h-6 rounded-lg flex-shrink-0 object-cover" />
+            <img src={pmoLogoDark} alt="PMO-Ops" className="h-6 w-auto flex-shrink-0 object-contain" style={{ maxWidth: 72 }} />
             <span className="text-[13px] font-black text-white leading-none tracking-tight">PMO-Ops</span>
           </div>
           <div className="flex items-center gap-2">
@@ -936,7 +936,8 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
             <img
               src={pmoLogoDark}
               alt="PMO-Ops"
-              className="w-8 h-8 rounded-xl flex-shrink-0 object-cover"
+              className="h-8 w-auto flex-shrink-0 object-contain"
+              style={{ maxWidth: 90 }}
             />
 
             {/* Company + app name — only when expanded */}

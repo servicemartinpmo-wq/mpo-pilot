@@ -266,13 +266,13 @@ interface HeroBannerProps {
   onAddEmoji: (winId: string, key: WinReactionKey) => void;
 }
 const BANNER_PHOTOS = [
-  { src: "/banner-tiger.png",    label: "Tiger",            category: "Wildlife" },
-  { src: "/banner-mountain.png", label: "Mountain Range",   category: "Nature" },
-  { src: "/banner-city.png",     label: "City Skyline",     category: "Urban" },
-  { src: "/banner-fields.png",   label: "Tuscan Fields",    category: "Nature" },
-  { src: "/banner-hex.png",      label: "Dark Hex Grid",    category: "Abstract" },
-  { src: "/banner-art.png",      label: "Bold Brushwork",   category: "Creative" },
-  { src: "/banner-space.png",    label: "Deep Space",       category: "Cosmos" },
+  { src: "/banner-strategy.jpg", label: "Strategic Vision",    category: "Strategy" },
+  { src: "/banner-team.jpg",     label: "High-Performance Team", category: "People" },
+  { src: "/banner-analytics.jpg",label: "Data & Analytics",    category: "Insights" },
+  { src: "/banner-exec.jpg",     label: "Executive Leadership", category: "Leadership" },
+  { src: "/banner-creative.jpg", label: "Creative Studio",     category: "Creative" },
+  { src: "/banner-city.png",     label: "Urban Operations",    category: "Urban" },
+  { src: "/banner-space.png",    label: "Deep Space",          category: "Cosmos" },
 ];
 const DEFAULT_HERO_PHOTO = 0;
 
