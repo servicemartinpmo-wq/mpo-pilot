@@ -7,7 +7,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   X, Send, Mic, MicOff, ChevronRight,
-  Volume2, RefreshCw, Zap, PlayCircle, Target,
+  Volume2, RefreshCw, Zap, PlayCircle, Target, Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { actionItems, initiatives, departments } from "@/lib/pmoData";
@@ -903,6 +903,16 @@ function ApphiaContextStrip() {
                 </div>
               </div>
             ))}
+          </div>
+          <div className="mt-2.5 pt-2" style={{ borderTop: "1px solid hsl(226 40% 16%)" }}>
+            <Link
+              to="/settings"
+              onClick={() => setShowCtxPanel(false)}
+              className="text-[10px] font-semibold flex items-center gap-1 hover:underline"
+              style={{ color: "hsl(183 62% 58%)" }}>
+              <Settings className="w-2.5 h-2.5" />
+              Edit org profile &amp; context →
+            </Link>
           </div>
         </div>
       )}

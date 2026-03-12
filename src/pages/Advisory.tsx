@@ -620,7 +620,7 @@ export default function Advisory() {
                 <span className="text-lg">{adv.icon}</span>
                 <span className="text-xs font-bold text-foreground">{adv.industry}</span>
                 {adv.industry === (industryAdvisor?.industry ?? "") && (
-                  <span className="ml-auto text-[8px] font-bold px-1.5 py-0.5 rounded"
+                  <span className="ml-auto text-[9px] font-bold px-1.5 py-0.5 rounded"
                     style={{ background: `${adv.color}18`, color: adv.color }}>
                     YOURS
                   </span>
@@ -628,7 +628,7 @@ export default function Advisory() {
               </div>
               <div className="flex flex-wrap gap-1 mt-2">
                 {adv.frameworks.slice(0, 2).map(fw => (
-                  <span key={fw} className="text-[9px] px-1.5 py-0.5 rounded"
+                  <span key={fw} className="text-[10px] px-1.5 py-0.5 rounded"
                     style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
                     {fw}
                   </span>

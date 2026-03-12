@@ -12,6 +12,7 @@
  */
 
 import type { CompanyProfile } from "@/lib/companyStore";
+import { getAdvisorForIndustry } from "@/lib/engine/industryAdvisors";
 
 export type CompanyStage = "pre-revenue" | "early" | "growth" | "scale" | "mature";
 export type TeamSizeBand = "solo" | "micro" | "small" | "mid" | "large" | "enterprise";
@@ -31,6 +32,10 @@ export interface OrgContext {
   currentStateRaw: string;
   futureStateRaw: string;
   orgName: string;
+  industryKeyKPIs?: string[];
+  industryFrameworks?: string[];
+  industryDescription?: string;
+  industryBenchmarks?: { label: string; value: string; unit: string }[];
 }
 
 export interface DimensionWeights {
@@ -185,6 +190,7 @@ export function buildOrgContext(profile: CompanyProfile): OrgContext {
   const now = new Date();
   const quarter = (Math.floor(now.getMonth() / 3) + 1) as 1 | 2 | 3 | 4;
   const { band, num } = deriveTeamSizeBand(profile.teamSize);
+  const advisor = getAdvisorForIndustry(profile.industry);
 
   return {
     industry: profile.industry,
@@ -199,6 +205,10 @@ export function buildOrgContext(profile: CompanyProfile): OrgContext {
     currentStateRaw: profile.currentState,
     futureStateRaw: profile.futureState,
     orgName: profile.orgName,
+    industryKeyKPIs: advisor?.keyKPIs,
+    industryFrameworks: advisor?.frameworks,
+    industryDescription: advisor?.description,
+    industryBenchmarks: advisor?.benchmarks,
   };
 }
 
@@ -339,15 +349,22 @@ export function explainScore(metricName: string, rawScore: number, ctx: OrgConte
   const sizeLabel = ctx.teamSizeNum > 0 ? `${ctx.teamSizeNum}-person` : ctx.teamSizeBand;
   const industryLabel = ctx.industry || "General";
 
+  const benchmarkHint = ctx.industryBenchmarks?.length
+    ? ` Industry benchmark: ${ctx.industryBenchmarks[0].label} = ${ctx.industryBenchmarks[0].value}${ctx.industryBenchmarks[0].unit}.`
+    : "";
+  const frameworkHint = ctx.industryFrameworks?.length
+    ? ` Recommended framework: ${ctx.industryFrameworks[0]}.`
+    : "";
+
   let summary: string;
   if (stagePosition === "Excellent") {
-    summary = `Your ${metricName} score of ${rawScore} is excellent for a ${sizeLabel} ${stageLabel}-stage ${industryLabel} organization. You're ${vsIndustry >= 0 ? "+" + vsIndustry : vsIndustry}pts vs industry average (${industryAvg}) and ${vsGlobal >= 0 ? "+" + vsGlobal : vsGlobal}pts vs the global SMB baseline (${GLOBAL_SMB_AVG}).`;
+    summary = `Your ${metricName} score of ${rawScore} is excellent for a ${sizeLabel} ${stageLabel}-stage ${industryLabel} organization. You're ${vsIndustry >= 0 ? "+" + vsIndustry : vsIndustry}pts vs industry average (${industryAvg}) and ${vsGlobal >= 0 ? "+" + vsGlobal : vsGlobal}pts vs the global SMB baseline (${GLOBAL_SMB_AVG}).${benchmarkHint}`;
   } else if (stagePosition === "Above Stage") {
-    summary = `Your ${metricName} score of ${rawScore} is above average for a ${sizeLabel} ${stageLabel}-stage organization (stage mid-point: ${band.mid}). ${vsIndustry >= 0 ? `You're ${vsIndustry}pts above` : `You're ${Math.abs(vsIndustry)}pts below`} the ${industryLabel} industry average of ${industryAvg}.`;
+    summary = `Your ${metricName} score of ${rawScore} is above average for a ${sizeLabel} ${stageLabel}-stage organization (stage mid-point: ${band.mid}). ${vsIndustry >= 0 ? `You're ${vsIndustry}pts above` : `You're ${Math.abs(vsIndustry)}pts below`} the ${industryLabel} industry average of ${industryAvg}.${benchmarkHint}`;
   } else if (stagePosition === "At Stage") {
-    summary = `Your ${metricName} score of ${rawScore} is typical for a ${sizeLabel} ${stageLabel}-stage organization (stage range: ${band.low}–${band.high}). ${vsIndustry >= 0 ? `You're tracking at industry average` : `You're ${Math.abs(vsIndustry)}pts below the ${industryLabel} average of ${industryAvg}`} — there's room to improve.`;
+    summary = `Your ${metricName} score of ${rawScore} is typical for a ${sizeLabel} ${stageLabel}-stage organization (stage range: ${band.low}–${band.high}). ${vsIndustry >= 0 ? `You're tracking at industry average` : `You're ${Math.abs(vsIndustry)}pts below the ${industryLabel} average of ${industryAvg}`} — there's room to improve.${frameworkHint}`;
   } else {
-    summary = `Your ${metricName} score of ${rawScore} is below the expected range for a ${sizeLabel} ${stageLabel}-stage organization (expected: ${band.low}+). ${band.tierNote} Focus on the highest-weighted dimensions first.`;
+    summary = `Your ${metricName} score of ${rawScore} is below the expected range for a ${sizeLabel} ${stageLabel}-stage organization (expected: ${band.low}+). ${band.tierNote} Focus on the highest-weighted dimensions first.${frameworkHint}`;
   }
 
   return {
@@ -364,12 +381,14 @@ export function getContextFactors(ctx: OrgContext): { label: string; value: stri
   const multi = getContextMultipliers(ctx);
   const factors: { label: string; value: string; influence: string }[] = [];
 
+  const industryInfluence = multi.weightAdjustments.length > 0
+    ? `${multi.weightAdjustments[0].dimension.replace(/([A-Z])/g, " $1").trim()} ${multi.weightAdjustments[0].delta > 0 ? "+" : ""}${multi.weightAdjustments[0].delta}% weight applied`
+    : "Default weights applied";
+  const kpiHint = ctx.industryKeyKPIs?.length ? ` · KPIs: ${ctx.industryKeyKPIs.slice(0, 2).join(", ")}` : "";
   factors.push({
     label: "Industry",
     value: ctx.industry || "Not set",
-    influence: multi.weightAdjustments.find(w => w.dimension === "riskManagement")
-      ? `Risk weight ${multi.dimensionWeights.riskManagement > DEFAULT_WEIGHTS.riskManagement ? "+" : ""}${Math.round((multi.dimensionWeights.riskManagement - DEFAULT_WEIGHTS.riskManagement) * 100)}%`
-      : "Default weights applied",
+    influence: industryInfluence + kpiHint,
   });
 
   const stageLabel = ctx.companyStage.charAt(0).toUpperCase() + ctx.companyStage.slice(1);

@@ -306,7 +306,7 @@ export default function Departments() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="flex-1 text-center sm:text-left">
             <div className="section-label mb-1.5">Organization</div>
-            <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight mb-1">Department Engine</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight mb-1">Departments</h1>
             <p className="text-sm text-muted-foreground">
               {departments.length} departments · Operational Maturity Scoring · CMMI-based assessment
             </p>

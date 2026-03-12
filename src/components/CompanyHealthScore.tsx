@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import ScoreExplainer from "@/components/ScoreExplainer";
 
 interface Dimension {
   label: string;
@@ -128,6 +129,9 @@ export default function CompanyHealthScore({
           <span className={cn("font-bold mt-0.5", subSize)} style={{ color: colors.text }}>
             {colors.label}
           </span>
+          <div className="mt-1">
+            <ScoreExplainer metricName="Org Health" rawScore={score} size="sm" />
+          </div>
         </div>
       </div>
 

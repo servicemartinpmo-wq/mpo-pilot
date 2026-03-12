@@ -1264,7 +1264,7 @@ export default function Workflows() {
       <div className="relative flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2.5 mb-0.5">
-            <h1 className="text-xl font-bold text-foreground">Workflows</h1>
+            <h1 className="text-xl font-black text-foreground tracking-tight">Workflows</h1>
             <span className="text-[10px] px-2 py-0.5 rounded font-semibold"
               style={{ background: "hsl(var(--electric-blue) / 0.12)", color: "hsl(var(--electric-blue))", border: "1px solid hsl(var(--electric-blue) / 0.3)" }}>
               {WORKFLOWS.length} WORKFLOWS

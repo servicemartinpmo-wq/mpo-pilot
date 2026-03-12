@@ -178,17 +178,21 @@ export function runOrgHealthScoring(maturityScores: MaturityScore[], ctx?: OrgCo
   const onTrackRatio = initiatives.filter(i => i.status === "On Track").length / Math.max(1, initiatives.length);
   const governanceScore = Math.round(onTrackRatio * 100);
 
+  const processArr = maturityScores.map(m => m.dimensions.processStructure);
+
   const orgW = ctx ? getContextMultipliers(ctx).dimensionWeights : null;
   const overall = Math.round(
     orgW
-      ? avg(overallArr) * 0.40 +
-        avg(execArr) * orgW.executionDiscipline +
-        avg(stratArr) * orgW.strategicAlignment +
-        governanceScore * (1.0 - 0.40 - orgW.executionDiscipline - orgW.strategicAlignment)
-      : avg(overallArr) * 0.40 +
-        avg(execArr) * 0.20 +
-        avg(stratArr) * 0.20 +
-        governanceScore * 0.20
+      ? avg(execArr)    * orgW.executionDiscipline +
+        avg(stratArr)   * orgW.strategicAlignment +
+        avg(capArr)     * orgW.operationalCapacity +
+        avg(processArr) * orgW.processStructure +
+        avg(riskArr)    * orgW.riskManagement
+      : avg(execArr)    * 0.25 +
+        avg(stratArr)   * 0.25 +
+        avg(capArr)     * 0.20 +
+        avg(processArr) * 0.15 +
+        avg(riskArr)    * 0.15
   );
 
   const decliningCount = maturityScores.filter(m => m.trend === "Declining").length;

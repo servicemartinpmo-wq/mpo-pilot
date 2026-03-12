@@ -633,7 +633,7 @@ export default function Admin() {
                 )}
               </div>
 
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2">Business Type</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2">Business Type</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
                 {(["freelance", "startup", "smb", "enterprise"] as BusinessMode[]).map(key => {
                   const kit = MODE_KITS[key];
@@ -656,7 +656,7 @@ export default function Admin() {
                 })}
               </div>
 
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2">Experience Style</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60 mb-2">Experience Style</p>
               <div className="grid grid-cols-2 gap-2">
                 {(["creative", "guided"] as BusinessMode[]).map(key => {
                   const kit = MODE_KITS[key];

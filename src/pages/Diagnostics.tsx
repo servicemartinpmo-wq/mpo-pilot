@@ -150,7 +150,7 @@ export default function Diagnostics() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex-1 text-center sm:text-left">
-          <h1 className="text-xl font-bold text-foreground mb-0.5">Diagnostics</h1>
+          <h1 className="text-xl font-black text-foreground mb-0.5 tracking-tight">Diagnostics</h1>
           <p className="text-sm text-muted-foreground">Signal detection · Root cause analysis · Governance oversight</p>
         </div>
         <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2">
@@ -236,7 +236,7 @@ export default function Diagnostics() {
       <div className="bg-card rounded-lg border-2 border-border shadow-card">
         <div className="px-4 py-3 border-b-2 border-border bg-secondary/60 rounded-t-lg flex flex-wrap items-center gap-2">
           <Brain className="w-4 h-4 text-electric-blue" />
-          <h2 className="text-sm font-semibold text-foreground">Operational Intelligence — Live Engine</h2>
+          <h2 className="text-sm font-bold text-foreground">Operational Intelligence — Live Engine</h2>
           <div className="flex items-center gap-1.5 ml-2">
             <span className="w-2 h-2 rounded-full bg-signal-green animate-pulse" />
             <span className="text-xs text-signal-green font-medium">Running</span>
@@ -437,7 +437,7 @@ export default function Diagnostics() {
         <div className="bg-card rounded-lg border-2 border-border shadow-card">
           <div className="flex items-center gap-2 px-4 py-3 border-b-2 border-border bg-secondary/60 rounded-t-lg">
             <Target className="w-4 h-4 text-electric-blue" />
-            <h2 className="text-sm font-semibold text-foreground">Strategic Clarity Check</h2>
+            <h2 className="text-sm font-bold text-foreground">Strategic Clarity Check</h2>
             <span className="ml-auto text-xs text-muted-foreground">{clarityChecks.filter(c => c.status === "warn").length} items flagged</span>
           </div>
           <div className="divide-y max-h-72 overflow-y-auto">
@@ -461,7 +461,7 @@ export default function Diagnostics() {
         <div className="bg-card rounded-lg border-2 border-border shadow-card">
           <div className="flex items-center gap-2 px-4 py-3 border-b-2 border-border bg-secondary/60 rounded-t-lg">
             <Shield className="w-4 h-4 text-teal" />
-            <h2 className="text-sm font-semibold text-foreground">Structural Integrity Check</h2>
+            <h2 className="text-sm font-bold text-foreground">Structural Integrity Check</h2>
             <span className="ml-auto text-xs text-muted-foreground">{integrityChecks.filter(c => c.status === "warn").length} items flagged</span>
           </div>
           <div className="divide-y max-h-72 overflow-y-auto">
@@ -487,7 +487,7 @@ export default function Diagnostics() {
       <div className="bg-card rounded-lg border-2 border-border shadow-card">
         <div className="px-4 py-3 border-b-2 border-border bg-secondary/60 rounded-t-lg flex flex-wrap items-center gap-2">
           <Activity className="w-4 h-4 text-electric-blue" />
-          <h2 className="text-sm font-semibold text-foreground">Signal Stream</h2>
+          <h2 className="text-sm font-bold text-foreground">Signal Stream</h2>
           <div className="ml-auto flex flex-wrap gap-1.5">
             <button onClick={() => setTypeFilter("All")}
               className={cn("text-xs px-2.5 py-1 rounded-full border transition-all",
@@ -530,7 +530,7 @@ export default function Diagnostics() {
         <div className="bg-card rounded-lg border-2 border-border shadow-card">
           <div className="px-4 py-3 border-b-2 border-border bg-secondary/60 rounded-t-lg flex items-center gap-2">
             <Brain className="w-4 h-4 text-signal-green" />
-            <h2 className="text-sm font-semibold text-foreground">Engine-Generated Recommendations</h2>
+            <h2 className="text-sm font-bold text-foreground">Engine-Generated Recommendations</h2>
             <span className="ml-auto text-xs text-muted-foreground">{engine.recommendations.length} recommendations · {engine.generatedActions.length} actions created</span>
           </div>
           <div className="divide-y max-h-72 overflow-y-auto">
@@ -568,7 +568,7 @@ export default function Diagnostics() {
       <div className="bg-card rounded-lg border-2 border-border shadow-card">
         <div className="px-4 py-3 border-b-2 border-border bg-secondary/60 flex flex-wrap items-center gap-2">
           <Shield className="w-4 h-4 text-signal-yellow" />
-          <h2 className="text-sm font-semibold text-foreground">Governance & Risk Log</h2>
+          <h2 className="text-sm font-bold text-foreground">Governance & Risk Log</h2>
           <span className="ml-auto flex gap-1">
             {(["all", "Risk", "Decision", "Change"] as const).map(t => (
               <button key={t} onClick={() => setGovTab(t)}

@@ -476,17 +476,20 @@ const FORMULA_CATEGORIES = [
     color: "hsl(var(--electric-blue))",
     formulas: [
       {
-        id: "f-health", name: "Org Health Score", notation: "H = 0.40·D̄ + 0.20·Ē + 0.20·Ā + 0.20·G",
-        description: "Two-layer aggregation. Each department is first scored across five CMMI-aligned dimensions (weights: Execution Discipline 25%, Strategic Alignment 25%, Operational Capacity 20%, Process Structure 15%, Risk Management 15%). Those department scores are then aggregated into the organisation-level health score shown on the Dashboard.",
+        id: "f-health", name: "Org Health Score", notation: "H = (1/N)·Σ[wₑ·E + wₐ·A + wc·C + w_p·P + w_r·R]",
+        description: "Two-layer aggregation. Each department is scored across five CMMI-aligned dimensions — Execution Discipline (25%), Strategic Alignment (25%), Operational Capacity (20%), Process Structure (15%), Risk Management (15%). Weights are context-adjusted by industry and growth stage. Department scores are then averaged into the org-level health score shown on the Dashboard.",
         variables: [
-          { symbol: "D̄", meaning: "Average department overall maturity score (0–100)" },
-          { symbol: "Ē", meaning: "Cross-department average Execution Discipline score (0–100)" },
-          { symbol: "Ā", meaning: "Cross-department average Strategic Alignment score (0–100)" },
-          { symbol: "G", meaning: "Governance score — percentage of initiatives On Track × 100" },
+          { symbol: "E", meaning: "Execution Discipline score per department (0–100)" },
+          { symbol: "A", meaning: "Strategic Alignment score per department (0–100)" },
+          { symbol: "C", meaning: "Operational Capacity score per department (0–100)" },
+          { symbol: "P", meaning: "Process Structure score per department (0–100)" },
+          { symbol: "R", meaning: "Risk Management score per department (0–100)" },
+          { symbol: "wₑ/wₐ/wc/w_p/w_r", meaning: "Context-adjusted dimension weights (default: 0.25/0.25/0.20/0.15/0.15)" },
+          { symbol: "N", meaning: "Number of departments" },
           { symbol: "H", meaning: "Overall organisational health score (0–100)" },
         ],
-        example: "3 departments: avg overall = 68, avg execution = 64, avg strategic alignment = 72; 50% of initiatives On Track → G = 50",
-        result: "H = 0.40×68 + 0.20×64 + 0.20×72 + 0.20×50 = 27.2 + 12.8 + 14.4 + 10.0 = 64.4",
+        example: "3 depts with default weights: dept scores 72, 65, 58 → H = (72+65+58)/3",
+        result: "H = 195/3 = 65.0 — Defined maturity (Level 3)",
       } as FormulaCard,
       {
         id: "f-maturity", name: "Maturity Level Classification", notation: "Level = threshold(H) — CMMI-DEV v2.0",
@@ -981,7 +984,7 @@ export default function Knowledge() {
       {/* Header */}
       {isGuided ? (
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-1">Resources</h1>
+          <h1 className="text-2xl font-black text-foreground mb-1 tracking-tight">Resources</h1>
           <p className="text-sm text-muted-foreground">
             Simple, ready-to-use templates to help you run your business — no experience required.
           </p>
@@ -990,7 +993,7 @@ export default function Knowledge() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-0.5">
-              <h1 className="text-xl font-bold text-foreground">Resource Hub</h1>
+              <h1 className="text-xl font-black text-foreground tracking-tight">Resource Hub</h1>
               <span className="text-[10px] px-2 py-0.5 rounded font-semibold"
                 style={{ background: "hsl(var(--teal) / 0.12)", color: "hsl(var(--teal))", border: "1px solid hsl(var(--teal) / 0.3)" }}>
                 LIVING

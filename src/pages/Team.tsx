@@ -188,7 +188,7 @@ export default function Team() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex-1">
-          <h1 className="text-xl font-bold text-foreground mb-0.5">Team</h1>
+          <h1 className="text-xl font-black text-foreground mb-0.5 tracking-tight">Team</h1>
           <p className="text-sm text-muted-foreground">MOCHA accountability by project · delegated work · capacity</p>
         </div>
         <div className="flex items-center gap-1.5 bg-secondary rounded-xl p-1 border border-border self-start sm:self-auto">

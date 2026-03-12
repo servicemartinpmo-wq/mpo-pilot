@@ -1027,7 +1027,7 @@ function ExecutiveDashboard({
   const topKpis = [
     { label: "On Track",       value: kpis.onTrack,        clr: "hsl(152 60% 50%)", unit: "" },
     { label: "At Risk",        value: kpis.atRisk + kpis.blocked, clr: "hsl(38 90% 56%)", unit: "" },
-    { label: "Ops Health",      value: orgHealth,            clr: "hsl(213 90% 62%)", unit: "%" },
+    { label: "Org Health",      value: orgHealth,            clr: "hsl(213 90% 62%)", unit: "%" },
     { label: "Budget Used",    value: budgetPct,            clr: budgetPct > 90 ? "hsl(0 72% 58%)" : "hsl(38 90% 56%)", unit: "%" },
   ];
 
@@ -1054,7 +1054,10 @@ function ExecutiveDashboard({
       <div className="border-b px-7 py-5 grid grid-cols-2 lg:grid-cols-4 gap-px" style={{ background: cardAlt, borderColor: border }}>
         {topKpis.map(({ label, value, clr, unit }) => (
           <div key={label} className="px-6 py-3 flex flex-col gap-1 border-r last:border-0" style={{ borderColor: border }}>
-            <span className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: dimText }}>{label}</span>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: dimText }}>{label}</span>
+              {unit === "%" && <ScoreExplainer metricName={label} rawScore={typeof value === "number" ? value : 0} variant="dark" size="sm" />}
+            </div>
             <div className="flex items-baseline gap-1.5">
               <span className="text-4xl font-black font-mono leading-none" style={{ color: clr }}>{value}</span>
               {unit && <span className="text-xl font-bold font-mono" style={{ color: clr }}>{unit}</span>}

@@ -1,5 +1,6 @@
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import type { StrategyScore } from "@/hooks/useStrategyScores";
+import ScoreExplainer from "@/components/ScoreExplainer";
 
 interface Props {
   score: StrategyScore;
@@ -35,10 +36,11 @@ export default function StrategyScoreCard({ score }: Props) {
             style={{ transition: "stroke-dashoffset 0.8s ease" }}
           />
         </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
           <span className="text-2xl font-black font-mono leading-none" style={{ color: score.color }}>
             {score.value}
           </span>
+          <ScoreExplainer metricName={score.label} rawScore={score.value} size="sm" />
         </div>
       </div>
 

@@ -185,8 +185,8 @@ export default function ActionItems() {
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex-1">
-          <h1 className="text-xl sm:text-2xl font-black text-foreground mb-0.5 tracking-tight">Action Items & Events</h1>
-          <p className="text-sm text-muted-foreground font-medium">Structured · Concise · Actionable</p>
+          <h1 className="text-xl sm:text-2xl font-black text-foreground mb-0.5 tracking-tight">Action Items</h1>
+          <p className="text-sm text-muted-foreground font-medium">Structured · Prioritized · Actionable</p>
         </div>
         <button className="self-start sm:self-auto flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border-2 border-electric-blue/40 text-electric-blue font-semibold hover:bg-electric-blue/8 transition-colors">
           <Plus className="w-3.5 h-3.5" /> New Item
