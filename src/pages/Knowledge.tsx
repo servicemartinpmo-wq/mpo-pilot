@@ -454,6 +454,57 @@ const SOPS = [
       { n: 5, title: "Root Cause & Prevention", detail: "Post-resolution: document root cause, customer impact, fix applied, and process change to prevent recurrence. Update health score in CRM." },
     ],
   },
+  {
+    id: "s6", title: "New Employee Onboarding — 30/60/90 Day Plan", dept: "HR", framework: "PMO Standard", version: "v1.3", lastUpdated: "2025-02-10", status: "active", pages: 7,
+    steps: [
+      { n: 1, title: "Pre-Start Setup (T-5 days)", detail: "IT provisions equipment, accounts, and system access. Manager prepares 30/60/90-day success metrics. Buddy assigned. Welcome email with day-one agenda sent to new hire." },
+      { n: 2, title: "Day 1 — Orientation", detail: "HR completes I-9, benefits enrollment, and policy sign-offs. IT walk-through of tools and security standards. Executive welcome session (15 min). Team lunch." },
+      { n: 3, title: "Week 1 — Foundation (Days 1–5)", detail: "Department head delivers team charter and org context. New hire completes required training modules. Shadow 3+ cross-functional meetings. Manager 1:1 every day this week." },
+      { n: 4, title: "30-Day Milestone — Learn", detail: "New hire documents their understanding of role, team, and top 3 priorities. Manager reviews and calibrates. First deliverable due. Informal feedback captured (not formal review)." },
+      { n: 5, title: "60-Day Milestone — Contribute", detail: "New hire owns at least one project or workstream. Peer feedback collected via 360 pulse. Any blockers escalated to HR. Compensation step confirmed if role has probationary period." },
+      { n: 6, title: "90-Day Milestone — Perform", detail: "Formal 90-day review: goals achieved vs set, cultural fit assessment, development plan drafted. Manager decides on full onboarding completion. New hire submits onboarding experience feedback to HR." },
+    ],
+  },
+  {
+    id: "s7", title: "Weekly Leadership Sync — Ops Meeting", dept: "Executive", framework: "EOS/L10", version: "v1.1", lastUpdated: "2025-01-05", status: "active", pages: 3,
+    steps: [
+      { n: 1, title: "Pre-Meeting Prep (T-1 day)", detail: "Each leader submits their scorecard metrics, rocks status (On Track / Off Track), and any issues to the shared agenda doc by EOD Monday. No prep = no airtime." },
+      { n: 2, title: "Segue & Scorecard Review (10 min)", detail: "Meeting opens with 1 personal + 1 professional win per person (60 sec each). Scorecard reviewed — any red metrics are noted but not discussed yet." },
+      { n: 3, title: "Rock Review & Headlines (10 min)", detail: "Each rock owner states On Track or Off Track — no discussion. Company and department headlines shared (customer wins, team news, project updates)." },
+      { n: 4, title: "Issues List — IDS (60 min)", detail: "Top issues identified, discussed, and solved using IDS (Identify, Discuss, Solve). Issues resolved in this meeting — no parking lot. Owner and due date assigned to every action item." },
+      { n: 5, title: "Conclude & Rate (5 min)", detail: "To-do list read aloud. Cascading messages identified (what to communicate to teams). Meeting rated 1–10 by each participant. Target average: 8+. Sub-7 triggers a 2-minute retrospective." },
+    ],
+  },
+  {
+    id: "s8", title: "Sprint Planning & Retrospective", dept: "Product", framework: "Scrum/SAFe", version: "v2.2", lastUpdated: "2025-03-01", status: "active", pages: 5,
+    steps: [
+      { n: 1, title: "Backlog Refinement (T-2 days before sprint)", detail: "Product Owner reviews and reprioritises backlog with engineering lead. Top 1.5x sprint capacity of stories estimated using planning poker or T-shirt sizing. Definition of Ready confirmed for top items: acceptance criteria written, dependencies identified, designs available." },
+      { n: 2, title: "Sprint Planning Session (Day 1, max 2 hours)", detail: "Team reviews sprint goal drafted by PO. Engineering selects stories up to velocity capacity. Each story assigned to owner. Sprint goal and committed items logged in project tracker. No story in sprint without an owner." },
+      { n: 3, title: "Daily Stand-Up (Every day, 15 min max)", detail: "Each engineer states: what was done yesterday, what's planned today, any blockers. Blockers escalated immediately — not left for next day. Scrum master updates board. No status updates in stand-up — those go async." },
+      { n: 4, title: "Sprint Demo / Review (Last day, 30 min)", detail: "Team demos completed work to stakeholders. Only Done items shown — no partial work. PO accepts or rejects each story. Velocity calculated. Unfinished stories returned to backlog with an explanation." },
+      { n: 5, title: "Retrospective (Last day, 45 min)", detail: "Team reflects on: what went well, what didn't, one action item to improve. Format: Start/Stop/Continue or 4Ls (Liked, Learned, Lacked, Longed For). One committed improvement per retro. Previous retro action item reviewed first." },
+    ],
+  },
+  {
+    id: "s9", title: "OKR Setting & Mid-Cycle Review", dept: "Strategy", framework: "OKR", version: "v1.5", lastUpdated: "2025-01-10", status: "active", pages: 6,
+    steps: [
+      { n: 1, title: "Company OKR Draft (T-3 weeks before quarter)", detail: "CEO/leadership team proposes 3–5 company Objectives — qualitative, inspirational, and time-bound to the quarter. Each Objective has 2–4 measurable Key Results (KRs) with a clear owner, baseline, and target. Draft shared for 48-hour async comment period." },
+      { n: 2, title: "Department OKR Cascade (T-2 weeks)", detail: "Each department head drafts 2–3 Objectives that directly support 1+ company Objectives. Individual contributor OKRs optional at this stage. 20–30% of OKR capacity reserved for operational BAU so OKRs represent stretch, not survival." },
+      { n: 3, title: "OKR Alignment Session (T-1 week)", detail: "Full leadership OKR review: every company KR has at least one department KR supporting it. Conflicts or overlaps resolved. Final OKRs locked and published in shared system. No OKR changes after lock except under extraordinary circumstances — must be documented." },
+      { n: 4, title: "Weekly Check-in (Every Monday)", detail: "Each KR owner updates their confidence score (0–100%) and one-line status note. Red (below 40%) flagged for leadership attention. Check-ins take <5 min per person — no meetings required. Automated reminder sent Friday, due Monday morning." },
+      { n: 5, title: "Mid-Quarter Pulse Review (Week 6)", detail: "Leadership reviews all KRs. Any KR below 30% confidence is discussed: adjust target, add resources, or accept as miss. OKRs that are 100% certain are retroactively classified as too easy — stretch targets recalibrated. Decision to drop, adjust, or accelerate documented." },
+    ],
+  },
+  {
+    id: "s10", title: "Monthly Financial Close Checklist", dept: "Finance", framework: "GAAP", version: "v1.0", lastUpdated: "2025-02-28", status: "active", pages: 5,
+    steps: [
+      { n: 1, title: "Transaction Cut-Off (Close Day 1–2)", detail: "All transactions for the month posted. AP team confirms all vendor invoices received and coded. AR confirms all revenue invoiced and revenue recognition entries completed. No prior-month entries after Day 2 without controller approval." },
+      { n: 2, title: "Bank & Account Reconciliation (Close Day 2–3)", detail: "All bank accounts reconciled to statements. Credit card statements matched to expense reports. Intercompany transactions reconciled to zero. Any variances >$500 flagged with explanation." },
+      { n: 3, title: "Accruals & Adjusting Entries (Close Day 3–4)", detail: "Accrued liabilities entered (payroll, benefits, rent, unbilled vendor costs). Prepaid expenses amortised. Depreciation run. Deferred revenue schedules updated. Revenue recognition adjustments reviewed by controller." },
+      { n: 4, title: "Financial Statement Preparation (Close Day 4–5)", detail: "P&L vs budget variance analysis prepared — any line item >10% or >$5K requires written explanation. Balance sheet reviewed for unusual balances. Cash flow statement prepared. Prior month comparisons verified for consistency." },
+      { n: 5, title: "Leadership Review & Distribution (Close Day 5–7)", detail: "Controller presents draft financials to CFO/CEO. Questions resolved before distribution. Final package includes: P&L, Balance Sheet, Cash Flow, KPI dashboard, and department spend summaries. Distributed to leadership by the 7th of the following month." },
+    ],
+  },
 ];
 
 // ── Formula Data ────────────────────────────────────────────────────────
