@@ -1,7 +1,7 @@
 modules = ["nodejs-20", "web"]
 [agent]
 expertMode = true
-integrations = ["javascript_database:1.0.0"]
+integrations = ["javascript_database:1.0.0", "javascript_log_in_with_replit:2.0.0"]
 
 [nix]
 channel = "stable-25_05"
@@ -61,3 +61,6 @@ externalPort = 3002
 [[ports]]
 localPort = 23637
 externalPort = 3003
+
+[objectStorage]
+defaultBucketID = "replit-objstore-ef0f1a44-242b-4e88-b08b-1ecc852e1c50"
