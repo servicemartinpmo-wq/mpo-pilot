@@ -346,11 +346,11 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   // (sidebar, main content) handle their own scroll — restore on unmount so
   // the auth page (which has its own overflow-y-auto) can scroll freely.
   useEffect(() => {
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
+    document.documentElement.classList.add("layout-locked");
+    document.body.classList.add("layout-locked");
     return () => {
-      document.documentElement.style.overflow = "";
-      document.body.style.overflow = "";
+      document.documentElement.classList.remove("layout-locked");
+      document.body.classList.remove("layout-locked");
     };
   }, []);
 
@@ -447,11 +447,11 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
 
   useEffect(() => {
     if (mobileDrawerOpen) {
-      document.body.style.overflow = "hidden";
+      document.body.classList.add("mobile-drawer-open");
     } else {
-      document.body.style.overflow = "";
+      document.body.classList.remove("mobile-drawer-open");
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => { document.body.classList.remove("mobile-drawer-open"); };
   }, [mobileDrawerOpen]);
 
   const { mode, setMode, label: modeLabel, allModes } = useUserMode();
