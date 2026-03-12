@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { X, Bell, CheckCheck, AlertTriangle, Info, CheckCircle, Zap, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getNotifications, markAllNotificationsRead } from "@/lib/supabaseDataService";
-import { playAlertSound, playSuccessSound, playPingSound } from "@/lib/notificationSound";
+import { playAlertSound, playSuccessSound, playPingSound, requestNotificationPermission, getNotificationPermission } from "@/lib/notificationSound";
 
 interface DbNotification {
   id: string;
@@ -49,10 +49,17 @@ export default function NotificationsPanel({ userId, open, onClose, onUnreadChan
   const [notifications, setNotifications] = useState<DbNotification[]>([]);
   const [loading, setLoading] = useState(false);
   const [markingRead, setMarkingRead] = useState(false);
+  const [pushPerm, setPushPerm] = useState<NotificationPermission>(() => getNotificationPermission());
+
+  async function handleEnablePush() {
+    const granted = await requestNotificationPermission();
+    setPushPerm(granted ? "granted" : "denied");
+  }
 
   useEffect(() => {
     if (!open || !userId) return;
     setLoading(true);
+    const savedRingtone = (localStorage.getItem("apphia_ringtone") ?? "default") as Parameters<typeof playAlertSound>[0];
     getNotifications(userId, 30)
       .then((data) => {
         setNotifications(data as DbNotification[]);
@@ -66,9 +73,9 @@ export default function NotificationsPanel({ userId, open, onClose, onUnreadChan
         const hasWin = types.some((t: string) =>
           t.includes("success") || t.includes("complete") || t.includes("win")
         );
-        if (hasUrgent) playAlertSound();
-        else if (hasWin) playSuccessSound();
-        else playPingSound();
+        if (hasUrgent) playAlertSound(savedRingtone);
+        else if (hasWin) playSuccessSound(savedRingtone);
+        else playPingSound(savedRingtone);
       })
       .catch(() => setNotifications([]))
       .finally(() => setLoading(false));
@@ -137,6 +144,23 @@ export default function NotificationsPanel({ userId, open, onClose, onUnreadChan
             </button>
           </div>
         </div>
+
+        {/* Push permission prompt — shown only when browser hasn't decided yet */}
+        {pushPerm === "default" && (
+          <div className="flex items-center gap-3 px-4 py-2.5 border-b"
+            style={{ background: "hsl(var(--electric-blue) / 0.08)", borderColor: "hsl(var(--electric-blue) / 0.18)" }}>
+            <Bell className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(var(--electric-blue))" }} />
+            <p className="flex-1 text-[11px] leading-snug" style={{ color: "hsl(var(--electric-blue) / 0.85)" }}>
+              Enable desktop alerts to stay notified when the app is in the background.
+            </p>
+            <button
+              onClick={handleEnablePush}
+              className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-lg transition-colors"
+              style={{ background: "hsl(var(--electric-blue) / 0.18)", color: "hsl(var(--electric-blue))" }}>
+              Enable
+            </button>
+          </div>
+        )}
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">

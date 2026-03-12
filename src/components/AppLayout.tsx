@@ -370,6 +370,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
         prevUnreadRef.current = count;
         setUnreadCount(count);
         if (count > prev && !snooze.active) {
+          const savedRingtone = (localStorage.getItem("apphia_ringtone") ?? "default") as Parameters<typeof playAlertSound>[0];
           const types = unreadItems.map((n: any) => (n.type ?? "").toLowerCase());
           const hasUrgent = types.some((t: string) =>
             t.includes("risk") || t.includes("alert") || t.includes("critical") || t.includes("urgent")
@@ -377,9 +378,9 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           const hasWin = types.some((t: string) =>
             t.includes("success") || t.includes("complete") || t.includes("win")
           );
-          if (hasUrgent) playAlertSound();
-          else if (hasWin) playSuccessSound();
-          else playPingSound();
+          if (hasUrgent) playAlertSound(savedRingtone);
+          else if (hasWin) playSuccessSound(savedRingtone);
+          else playPingSound(savedRingtone);
         }
       } catch {
         // silent — network issues shouldn't crash the sidebar
