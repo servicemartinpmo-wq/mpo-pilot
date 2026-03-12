@@ -233,16 +233,16 @@ export default function Pricing() {
                     <div className="text-[10px] mb-3" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
                       {tier.audience}
                     </div>
-                    <div className="flex items-baseline gap-1 mb-1">
-                      <span className="text-2xl font-black" style={{ color: "hsl(38 12% 94%)" }}>
-                        {displayPrice(tier)}
-                      </span>
-                      {tier.id !== "enterprise" && (
+                    {tier.id !== "enterprise" && (
+                      <div className="flex items-baseline gap-1 mb-1">
+                        <span className="text-2xl font-black" style={{ color: "hsl(38 12% 94%)" }}>
+                          {displayPrice(tier)}
+                        </span>
                         <span className="text-xs" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
                           {billing === "annual" && tier.price !== "Free" ? "/mo billed annually" : tier.priceNote}
                         </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                     <p className="text-[11px] leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.40)" }}>
                       {tier.tagline}
                     </p>
