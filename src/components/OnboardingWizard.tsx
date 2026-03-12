@@ -100,21 +100,21 @@ function computeScores(form: Record<string, unknown>) {
   const futureState = form.futureState as string;
   const uploadedFiles = (form.uploadedFiles as File[]) || [];
 
-  const sopScore = hasSops ? 68 : 22;
-  const structureScore = departments >= 7 ? 82 : departments >= 5 ? 70 : departments >= 3 ? 52 : 32;
-  const strategyScore = currentState && futureState ? 74 : currentState ? 52 : 28;
-  const dataScore = uploadedFiles.length >= 3 ? 80 : uploadedFiles.length >= 1 ? 55 : 30;
+  const sopScore = hasSops ? 68 : 0;
+  const structureScore = departments >= 7 ? 82 : departments >= 5 ? 70 : departments >= 3 ? 52 : 0;
+  const strategyScore = currentState && futureState ? 74 : currentState ? 52 : 0;
+  const dataScore = uploadedFiles.length >= 3 ? 80 : uploadedFiles.length >= 1 ? 55 : 0;
 
   // Scaled scoring modifiers
   const teamBonus = teamSize === "200+" ? 8 : teamSize === "51–200" ? 5 : teamSize === "11–50" ? 3 : 0;
   const revBonus = ["$25M–$100M", "$100M+"].includes(revenueRange) ? 7 : ["$5M–$25M", "$1M–$5M"].includes(revenueRange) ? 4 : 0;
 
-  const executionInfraScore = hasSops && departments >= 5 ? 58 : hasSops ? 40 : 20;
-  const leadershipScore = teamSize === "200+" || teamSize === "51–200" ? 65 : teamSize === "11–50" ? 45 : 30;
-  const riskPostureScore = Math.max(20, Math.min(85, 40 + revBonus + teamBonus));
-  const innovationScore = futureState ? 62 : 32;
-  const changeReadinessScore = hasSops && futureState ? 68 : 38;
-  const govScore = hasSops && departments >= 5 ? 60 : 35;
+  const executionInfraScore = hasSops && departments >= 5 ? 58 : hasSops ? 40 : 0;
+  const leadershipScore = teamSize === "200+" || teamSize === "51–200" ? 65 : teamSize === "11–50" ? 45 : 0;
+  const riskPostureScore = Math.max(0, Math.min(85, revBonus + teamBonus));
+  const innovationScore = futureState ? 62 : 0;
+  const changeReadinessScore = hasSops && futureState ? 68 : 0;
+  const govScore = hasSops && departments >= 5 ? 60 : 0;
 
   const overallScore = Math.round(
     sopScore * 0.18 +
@@ -1021,6 +1021,16 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
                   Takes 3–5 minutes · No credit card required
                 </p>
 
+                {/* Commitment to Care */}
+                <div className="mt-8 pt-7 border-t w-full text-center" style={{ borderColor: "hsl(225 30% 22%)" }}>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] mb-2" style={{ color: "hsl(222 60% 55%)" }}>
+                    A Commitment to Care
+                  </p>
+                  <p className="text-xs leading-relaxed max-w-md mx-auto" style={{ color: "hsl(225 15% 50%)" }}>
+                    We designed this platform around the reality that leaders carry a lot. Your data stays yours, your privacy is protected, and every recommendation is built to reduce your load — not add to it.
+                  </p>
+                </div>
+
               </div>
             </div>
           </div>
@@ -1459,7 +1469,10 @@ export default function OnboardingWizard({ onComplete }: Props) {
   const TEAL = "hsl(var(--teal))";
 
   if (showWelcome) {
-    return <WelcomeScreen onStart={() => setShowWelcome(false)} />;
+    return <WelcomeScreen onStart={() => {
+      try { if (!localStorage.getItem("pmo_signup_ts")) localStorage.setItem("pmo_signup_ts", String(Date.now())); } catch {/* */}
+      setShowWelcome(false);
+    }} />;
   }
 
   if (showModeSelect) {

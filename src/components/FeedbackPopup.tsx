@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 
-const STORAGE_KEY = "pmo_feedback_state";
-const FIRST_SHOW_DELAY_MS  = 25_000;   // 25 s after first load
-const RESHOW_AFTER_RESPOND = 7 * 24 * 60 * 60 * 1000;  // 7 days
-const RESHOW_AFTER_DISMISS = 3 * 24 * 60 * 60 * 1000;  // 3 days
+const STORAGE_KEY        = "pmo_feedback_state";
+const SIGNUP_TS_KEY      = "pmo_signup_ts";
+const MIN_SESSION_AGE_MS = 60 * 60 * 1000;          // 1 hour after first use
+const RESHOW_AFTER_RESPOND = 7 * 24 * 60 * 60 * 1000;
+const RESHOW_AFTER_DISMISS = 3 * 24 * 60 * 60 * 1000;
 
 type Choice = "yes" | "maybe" | "no";
 
@@ -29,8 +30,26 @@ function saveState(s: StoredState) {
   }
 }
 
+function getSignupAge(): number {
+  try {
+    const ts = localStorage.getItem(SIGNUP_TS_KEY);
+    if (!ts) return 0;
+    return Date.now() - parseInt(ts, 10);
+  } catch { return 0; }
+}
+
+export function recordSignupTimestamp() {
+  try {
+    if (!localStorage.getItem(SIGNUP_TS_KEY)) {
+      localStorage.setItem(SIGNUP_TS_KEY, String(Date.now()));
+    }
+  } catch { /* silent */ }
+}
+
 function shouldShow(state: StoredState): boolean {
   const now = Date.now();
+  // Don't show until at least 1 hour after first use/signup
+  if (getSignupAge() < MIN_SESSION_AGE_MS) return false;
   if (!state.lastShown) return true;
   const gap = now - state.lastShown;
   if (state.lastResponse === "dismissed") return gap > RESHOW_AFTER_DISMISS;

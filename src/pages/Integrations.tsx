@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   CheckCircle, Lock, ExternalLink, Mail, MessageSquare,
   Calendar, FileText, BarChart2, Video, ArrowRight, Zap,
@@ -315,6 +315,75 @@ function IntegrationRow({ intg, isConnected, onConnect, onDisconnect }: {
   );
 }
 
+function IntegrationRequestCard() {
+  const [name, setName] = useState("");
+  const [tool, setTool] = useState("");
+  const [sent, setSent] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tool.trim()) return;
+    // Persist request locally and show confirmation
+    try {
+      const existing = JSON.parse(localStorage.getItem("pmo_integration_requests") ?? "[]");
+      existing.push({ tool: tool.trim(), name: name.trim(), ts: Date.now() });
+      localStorage.setItem("pmo_integration_requests", JSON.stringify(existing));
+    } catch {/* silent */}
+    setSent(true);
+  };
+
+  return (
+    <div className="rounded-xl border border-dashed p-6" style={{ borderColor: "hsl(var(--border))" }}>
+      {!sent ? (
+        <form onSubmit={handleSubmit}>
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "hsl(var(--electric-blue) / 0.10)", border: "1px solid hsl(var(--electric-blue) / 0.20)" }}>
+              <Plug className="w-4 h-4 text-electric-blue" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground">Request an Integration</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Tell us what tool you use and we'll prioritize it on the roadmap. You'll receive a personal update when it's ready.</p>
+            </div>
+          </div>
+          <div className="space-y-2.5">
+            <input
+              ref={inputRef}
+              value={tool}
+              onChange={e => setTool(e.target.value)}
+              placeholder="Tool name (e.g. Notion, Salesforce, Xero…)"
+              className="w-full px-3 py-2.5 rounded-lg text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground outline-none focus:border-electric-blue/50 transition-colors"
+              required
+            />
+            <input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Your name (optional)"
+              className="w-full px-3 py-2.5 rounded-lg text-sm bg-background border border-border text-foreground placeholder:text-muted-foreground outline-none focus:border-electric-blue/50 transition-colors"
+            />
+            <button type="submit"
+              className="w-full py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 transition-all hover:opacity-90"
+              style={{ background: "hsl(var(--electric-blue))", color: "#fff" }}>
+              <ArrowRight className="w-3.5 h-3.5" /> Submit Request
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div className="text-center py-4">
+          <div className="text-2xl mb-2">🙏</div>
+          <p className="text-sm font-bold text-foreground mb-1">Request received — thank you{name ? `, ${name}` : ""}!</p>
+          <p className="text-xs text-muted-foreground">We'll personally update you when <span className="font-semibold text-foreground">{tool}</span> is on the roadmap or ready to connect.</p>
+          <button onClick={() => { setSent(false); setTool(""); setName(""); }}
+            className="mt-3 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors">
+            Request another
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Integrations() {
   const { data: connections = [] } = useIntegrationConnections();
   const { mutate: upsertIntegration } = useUpsertIntegration();
@@ -422,12 +491,8 @@ export default function Integrations() {
           </div>
         ))}
 
-        {/* ── Footer ── */}
-        <div className="rounded-xl border border-dashed border-border p-6 text-center">
-          <Settings className="w-5 h-5 mx-auto mb-2 text-muted-foreground opacity-30" />
-          <p className="text-sm font-semibold text-foreground mb-1">More integrations on the roadmap</p>
-          <p className="text-xs text-muted-foreground">Notion, Jira, HubSpot, Salesforce, Asana — built on your feedback.</p>
-        </div>
+        {/* ── Request Integration ── */}
+        <IntegrationRequestCard />
 
       </div>
     </div>

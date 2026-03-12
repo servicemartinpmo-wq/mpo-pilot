@@ -434,7 +434,7 @@ export default function Reports() {
             <div className="bg-card rounded-xl border-2 border-signal-red/30 p-5 shadow-card">
               <div className="flex items-center gap-2 mb-3">
                 <AlertTriangle className="w-4 h-4 text-signal-red" />
-                <h3 className="text-sm font-bold text-foreground">Needs Your Attention</h3>
+                <h3 className="text-sm font-bold text-foreground">Critical Signals</h3>
               </div>
               <ul className="space-y-2.5">
                 {[

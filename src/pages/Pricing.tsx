@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Check, Zap, Star, Building2, Crown, Users,
-  ArrowRight, Sparkles, Shield, Clock, BarChart3, Brain,
+  ArrowRight, Sparkles, Shield, Clock, BarChart3, Brain, Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUserMode, type UserMode } from "@/hooks/useUserMode";
@@ -95,24 +95,48 @@ const tiers: Tier[] = [
   {
     id: "smb",
     name: "Command",
-    audience: "Growing SMBs",
+    audience: "Growing SMBs · Established Teams",
     price: "$250",
     priceNote: "/ month",
-    tagline: "Full knowledge engine, cross-department intelligence, and integrations.",
+    tagline: "Full analysis engine, cross-department intelligence, and integrations.",
     icon: Crown,
     accent: "hsl(268 68% 65%)",
     accentBg: "hsl(268 68% 65% / 0.10)",
     border: "hsl(268 35% 28%)",
     features: [
-      { text: "Full knowledge engine — ~1,000 frameworks", highlight: true },
+      { text: "Full analysis engine — complete coverage", highlight: true },
       { text: "Cross-department dashboards (Finance, Sales, Marketing, Operations, Product)", highlight: true },
-      { text: "Scenario simulations" },
+      { text: "Scenario simulations & stress testing" },
       { text: "Integrations — CRM, ERP, Accounting, HR", highlight: true },
-      { text: "Operational recommendations" },
+      { text: "Operational recommendations & gap scoring" },
       { text: "Multi-user collaboration (up to 50 users)" },
-      { text: "Benchmarking vs industry standards" },
+      { text: "Industry benchmarking" },
+      { text: "Tier 4–5 maturity roadmap included", highlight: true },
     ],
     cta: "Start Command",
+  },
+  {
+    id: "advisory",
+    name: "Advisory",
+    audience: "Consultants · Fractional Executives",
+    price: "$750",
+    priceNote: "/ month",
+    tagline: "Everything in Command plus a dedicated advisory team and consultant tools.",
+    icon: Brain,
+    accent: "hsl(38 92% 55%)",
+    accentBg: "hsl(38 92% 55% / 0.10)",
+    border: "hsl(38 50% 28%)",
+    badge: "NEW",
+    features: [
+      { text: "Everything in Command", highlight: true },
+      { text: "Dedicated advisory team (3 specialists)", highlight: true },
+      { text: "Monthly 1-on-1 strategy session", highlight: true },
+      { text: "White-glove onboarding & quarterly reviews" },
+      { text: "Multi-client workspace management" },
+      { text: "Custom playbooks & deliverable templates", highlight: true },
+      { text: "Priority support & implementation guidance" },
+    ],
+    cta: "Talk to Advisory",
   },
   {
     id: "enterprise",
@@ -131,7 +155,7 @@ const tiers: Tier[] = [
       { text: "API access & full data integration", highlight: true },
       { text: "Enterprise-grade security & compliance" },
       { text: "Unlimited users" },
-      { text: "Advanced predictive algorithms", highlight: true },
+      { text: "Advanced predictive analysis", highlight: true },
       { text: "Dedicated support & onboarding" },
     ],
     cta: "Contact Sales",
@@ -199,7 +223,7 @@ export default function Pricing() {
 
       {/* Tier Cards */}
       <div className="max-w-6xl mx-auto px-6 pb-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {tiers.map((tier) => {
             const Icon = tier.icon;
             const isPrimary = tier.ctaPrimary;
@@ -307,6 +331,18 @@ export default function Pricing() {
               </span>
             ))}
           </div>
+        </div>
+
+        {/* Commitment to Care */}
+        <div className="mt-12 rounded-2xl border p-8 text-center"
+          style={{ background: "hsl(224 22% 9%)", borderColor: "hsl(222 60% 48% / 0.20)" }}>
+          <Heart className="w-5 h-5 mx-auto mb-3" style={{ color: "hsl(222 60% 58%)" }} />
+          <h3 className="text-base font-bold mb-2" style={{ color: "hsl(38 12% 92%)" }}>
+            A Commitment to Care
+          </h3>
+          <p className="text-sm max-w-xl mx-auto leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.42)" }}>
+            We built this platform around a simple belief: leaders deserve tools that respect their time, protect their data, and reduce their load — not add to it. Every tier is designed with that in mind.
+          </p>
         </div>
       </div>
     </div>

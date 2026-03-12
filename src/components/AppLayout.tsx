@@ -318,8 +318,21 @@ interface Props {
   onProfileUpdate: (p: CompanyProfile) => void;
 }
 
+const ROUTE_LABELS: Record<string, string> = {
+  "/":             "Dashboard",
+  "/initiatives":  "Initiatives",
+  "/action-items": "Action Items",
+  "/reports":      "Reports",
+  "/diagnostics":  "Diagnostics",
+  "/integrations": "Integrations",
+  "/strategy":     "Strategy",
+  "/settings":     "Settings",
+  "/pricing":      "Pricing",
+};
+
 export default function AppLayout({ children, profile, onProfileUpdate }: Props) {
   const { user } = useAuth();
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [demoBannerDismissed, setDemoBannerDismissed] = useState(false);
   const inDemoMode = isDemoMode();
@@ -353,6 +366,14 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
       document.body.classList.remove("layout-locked");
     };
   }, []);
+
+  // Track navigation for "Your Plan / Where You Left Off" feature
+  useEffect(() => {
+    const label = ROUTE_LABELS[location.pathname] ?? "Dashboard";
+    try {
+      localStorage.setItem("pmo_last_page", JSON.stringify({ path: location.pathname, label, ts: Date.now() }));
+    } catch {/* silent */}
+  }, [location.pathname]);
 
   useEffect(() => {
     const profile = loadProfile();

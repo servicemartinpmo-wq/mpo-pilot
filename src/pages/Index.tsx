@@ -16,7 +16,7 @@ import {
   Brain, Sparkles, TrendingUp, ArrowRight, Star,
   Coffee, Sunrise, Sun, Moon, ChevronDown, ListChecks,
   BarChart3, BookOpen, Settings, Tag, Palette, FolderOpen,
-  Rocket, Image, FileText, ExternalLink,
+  Rocket, Image, FileText, ExternalLink, History, MapPin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useNavigate } from "react-router-dom";
@@ -244,6 +244,103 @@ function ScoreDim({ label, score }: { label: string; score: number }) {
         <div className="h-full rounded-full transition-all duration-700" style={{ width: `${score}%`, background: color }} />
       </div>
       <span className="text-[11px] font-mono font-semibold w-7 text-right" style={{ color }}>{score}</span>
+    </div>
+  );
+}
+
+// ── Where You Left Off / Plan Card ──────────────────────────────────────────
+function formatRelativeTime(ts: number | null): string {
+  if (!ts) return "";
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+function LastSessionCard({ nbaItems }: { nbaItems: Array<{ title: string; priority: string }> }) {
+  const navigate = useNavigate();
+  const [lastPage, setLastPage] = useState<{ path: string; label: string; ts: number } | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("pmo_last_page");
+      if (raw) setLastPage(JSON.parse(raw));
+    } catch {/* silent */}
+  }, []);
+
+  const topItems = nbaItems.slice(0, 3);
+
+  // Don't render if this is truly the first visit (no last page stored yet)
+  if (!lastPage && topItems.length === 0) return null;
+
+  return (
+    <div className="rounded-2xl border overflow-hidden"
+      style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3 border-b border-l-4"
+        style={{ borderColor: "hsl(var(--border))", borderLeftColor: "hsl(38 92% 55%)" }}>
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+            style={{ background: "hsl(38 92% 55% / 0.10)" }}>
+            <History className="w-3.5 h-3.5" style={{ color: "hsl(38 92% 55%)" }} />
+          </div>
+          <div>
+            <span className="text-sm font-bold text-foreground">Your Plan</span>
+            <p className="text-[10px] text-muted-foreground">Where you left off · What's next</p>
+          </div>
+        </div>
+        {lastPage && (
+          <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+            <Clock className="w-3 h-3" /> {formatRelativeTime(lastPage.ts)}
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x"
+        style={{ borderColor: "hsl(var(--border))" }}>
+        {/* Left — last page */}
+        <div className="p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Last Session</p>
+          {lastPage ? (
+            <button
+              onClick={() => navigate(lastPage.path)}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all hover:opacity-80 text-left"
+              style={{ background: "hsl(38 92% 55% / 0.06)", borderColor: "hsl(38 92% 55% / 0.20)" }}>
+              <MapPin className="w-4 h-4 flex-shrink-0" style={{ color: "hsl(38 92% 55%)" }} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">Continue in {lastPage.label}</p>
+                <p className="text-[11px] text-muted-foreground">Resume where you left off</p>
+              </div>
+              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+            </button>
+          ) : (
+            <p className="text-xs text-muted-foreground">Start exploring to track your progress here.</p>
+          )}
+        </div>
+
+        {/* Right — next best actions */}
+        <div className="p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Recommended Next Steps</p>
+          {topItems.length > 0 ? (
+            <div className="space-y-2">
+              {topItems.map((item, i) => (
+                <div key={i} className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 text-[10px] font-bold"
+                    style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
+                    {i + 1}
+                  </div>
+                  <p className="text-xs text-foreground leading-relaxed">{item.title}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">No active recommendations right now — your team is on track.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1446,6 +1543,11 @@ export default function Dashboard() {
           <KpiTile label="Open Actions" value={pendingActions} sub="Tasks in progress" signal="blue" icon={Activity}
             onClick={() => navigate("/action-items")} />
         </div>
+
+        {/* ════════════════════════════════════════
+            WHERE YOU LEFT OFF / PLAN
+            ════════════════════════════════════════ */}
+        <LastSessionCard nbaItems={nbaItems} />
 
         {/* ════════════════════════════════════════
             DAILY BRIEFING (full-width, horizontal)

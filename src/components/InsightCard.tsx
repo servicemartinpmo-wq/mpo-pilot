@@ -13,6 +13,46 @@ const typeLabels: Record<string, string> = {
   "Execution Delay":        "Execution Delay",
 };
 
+// Plain-language names shown instead of technical framework labels
+const FRAMEWORK_LABELS: Record<string, string> = {
+  "SWOT Analysis":                "Strategic Position",
+  "SWOT":                         "Strategic Position",
+  "Porter Analysis":              "Competitive Position",
+  "Porter's Five Forces":         "Competitive Position",
+  "Porter Competitive Strategy":  "Competitive Position",
+  "McKinsey 7S":                  "Organizational Alignment",
+  "McKinsey 7-S":                 "Organizational Alignment",
+  "BCG Matrix":                   "Portfolio Balance",
+  "BCG Growth-Share Matrix":      "Portfolio Balance",
+  "PESTLE":                       "Environmental Scan",
+  "PESTEL":                       "Environmental Scan",
+  "Hoshin Kanri":                 "Strategic Focus",
+  "OKRs":                         "Goal Alignment",
+  "OKR":                          "Goal Alignment",
+  "Balanced Scorecard":           "Performance Balance",
+  "BSC":                          "Performance Balance",
+  "Ansoff Matrix":                "Growth Strategy",
+  "Lean Six Sigma":               "Process Efficiency",
+  "Six Sigma":                    "Process Efficiency",
+  "Lean":                         "Waste Reduction",
+  "RACI":                         "Accountability Map",
+  "VRIO":                         "Competitive Advantage",
+  "Blue Ocean Strategy":          "Market Differentiation",
+  "Kotter":                       "Change Execution",
+  "Kotter's 8-Step":              "Change Execution",
+  "ADKAR":                        "Change Readiness",
+  "Stage-Gate":                   "Initiative Governance",
+  "Agile":                        "Adaptive Delivery",
+  "Scrum":                        "Adaptive Delivery",
+  "PMBOK":                        "Project Standards",
+  "PRINCE2":                      "Project Governance",
+};
+
+function friendlyFramework(raw: string | undefined): string | undefined {
+  if (!raw) return undefined;
+  return FRAMEWORK_LABELS[raw] ?? undefined;
+}
+
 const insightTypeColors: Record<string, string> = {
   "Risk Escalation":        "text-signal-red bg-signal-red/8 border-signal-red/25",
   "Strategic Misalignment": "text-signal-red bg-signal-red/8 border-signal-red/25",
@@ -65,7 +105,9 @@ export default function InsightCard({ insight, rank }: InsightCardProps) {
                 {insight.department && (
                   <span className="text-xs text-muted-foreground font-medium">{insight.department}</span>
                 )}
-                <span className="ml-auto text-xs text-muted-foreground font-mono">{insight.framework}</span>
+                {friendlyFramework(insight.framework) && (
+                  <span className="ml-auto text-xs text-muted-foreground">{friendlyFramework(insight.framework)}</span>
+                )}
               </div>
 
               {/* Situation — always visible */}
