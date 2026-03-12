@@ -1356,8 +1356,19 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
       </aside>
 
       {/* Main content */}
-      <main className="min-h-screen overflow-auto bg-background"
-        style={isMobile ? { paddingTop: 52, paddingBottom: 72 } : undefined}>
+      <main
+        className="bg-background"
+        style={isMobile ? {
+          height: "calc(100dvh - 28px)",
+          overflowY: "auto",
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+          paddingTop: 52,
+          paddingBottom: 72,
+        } : {
+          minHeight: "100vh",
+          overflow: "auto",
+        }}>
         {children}
       </main>
 
