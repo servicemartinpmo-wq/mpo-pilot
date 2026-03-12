@@ -617,6 +617,8 @@ export default function ApphiaPanel() {
 
   const chips = getChips(location.pathname);
 
+  if (["/auth", "/reset-password"].includes(location.pathname)) return null;
+
   if (!open) {
     return (
       <>

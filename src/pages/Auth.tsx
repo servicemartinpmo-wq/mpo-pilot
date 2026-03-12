@@ -133,7 +133,7 @@ export default function AuthPage() {
   const ACCENT = "hsl(var(--electric-blue))";
 
   return (
-    <div className="h-screen flex items-start justify-center bg-background relative overflow-x-hidden overflow-y-auto">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background relative overflow-x-hidden" style={{ minHeight: "100dvh" }}>
       {/* Background glows */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px]"
@@ -147,7 +147,7 @@ export default function AuthPage() {
           }} />
       </div>
 
-      <div className="relative z-10 w-full max-w-md px-6 py-10 my-auto">
+      <div className="relative z-10 w-full max-w-md px-6 py-10">
         {/* Brand */}
         <div className="text-center mb-8">
           <img src={pmoLogoDark} alt="PMO-Ops" className="w-16 h-16 rounded-2xl mx-auto mb-4 object-cover" style={{ boxShadow: `0 0 28px ${ACCENT}33` }} />

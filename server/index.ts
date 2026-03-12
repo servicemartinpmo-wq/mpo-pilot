@@ -9,16 +9,16 @@ const app = express();
 
 app.use(express.json({ limit: "10mb" }));
 
-let fatalShutdown: (() => void) | null = null;
-
 process.on("uncaughtException", (err) => {
   console.error("[FATAL] Uncaught exception:", err.message, err.stack);
-  if (fatalShutdown) fatalShutdown();
-  else process.exit(1);
 });
 
 process.on("unhandledRejection", (reason) => {
-  console.error("[FATAL] Unhandled rejection:", reason);
+  console.error("[WARN] Unhandled rejection:", reason);
+});
+
+process.on("SIGHUP", () => {
+  console.log("[Signal] SIGHUP received — ignoring");
 });
 
 async function main() {
@@ -88,7 +88,6 @@ async function main() {
     });
   };
 
-  fatalShutdown = () => cleanup("uncaughtException");
   process.on("SIGTERM", () => cleanup("SIGTERM"));
   process.on("SIGINT", () => cleanup("SIGINT"));
 }

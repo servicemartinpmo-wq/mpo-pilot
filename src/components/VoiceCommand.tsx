@@ -5,7 +5,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Mic, MicOff, X, Loader2, ChevronRight, Keyboard } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { openApphia } from "@/components/ApphiaPanel";
 
 type State = "idle" | "listening" | "processing" | "result" | "error";
@@ -59,6 +59,7 @@ const PROMPTS = [
 ];
 
 export default function VoiceCommand() {
+  const location = useLocation();
   const [open, setOpen]           = useState(false);
   const [state, setState]         = useState<State>("idle");
   const [transcript, setTranscript] = useState("");
@@ -143,6 +144,8 @@ export default function VoiceCommand() {
   const executeIntent = () => {
     if (intent) { navigate(intent.path); setOpen(false); setState("idle"); setTranscript(""); setIntent(null); }
   };
+
+  if (["/auth", "/reset-password"].includes(location.pathname)) return null;
 
   if (!open) {
     return (
