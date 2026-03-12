@@ -72,14 +72,25 @@ export function useAuth() {
     const safetyTimer = setTimeout(() => setLoading(false), 5000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
+      async (event, newSession) => {
+        // TOKEN_REFRESHED: session silently updated — no loading flash, no profile reload needed
+        if (event === "TOKEN_REFRESHED") {
+          setSession(newSession);
+          return;
+        }
+
         clearTimeout(safetyTimer);
         setSession(newSession);
         setUser(newSession?.user ?? null);
+
         try {
           if (newSession?.user) {
-            await loadProfile(newSession.user.id);
+            // Only reload profile on true sign-in or session init events
+            if (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "USER_UPDATED") {
+              await loadProfile(newSession.user.id);
+            }
           } else {
+            // SIGNED_OUT — clear profile
             setProfile(null);
           }
         } catch {

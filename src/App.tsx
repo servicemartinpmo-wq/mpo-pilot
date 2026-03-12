@@ -88,10 +88,22 @@ function AppRoutes() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-electric-blue/30 border-t-electric-blue rounded-full animate-spin" />
-          <p className="text-xs text-muted-foreground">Loading…</p>
+      <div className="fixed inset-0 flex items-center justify-center"
+        style={{ background: "#0c1117" }}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "linear-gradient(135deg,#3b82f6,#1d4ed8)", boxShadow: "0 0 48px rgba(59,130,246,0.4)" }}>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+              stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 22 8.5 12 15 2 8.5 12 2"/>
+              <polyline points="2 15.5 12 22 22 15.5"/>
+              <polyline points="2 11.5 12 18 22 11.5"/>
+            </svg>
+          </div>
+          <p className="text-[10px] font-bold tracking-[0.28em] uppercase"
+            style={{ color: "rgba(255,255,255,0.38)" }}>Martin PMO</p>
+          <div className="w-7 h-7 rounded-full border-2 animate-spin"
+            style={{ borderColor: "rgba(59,130,246,0.18)", borderTopColor: "#3b82f6" }} />
         </div>
       </div>
     );
