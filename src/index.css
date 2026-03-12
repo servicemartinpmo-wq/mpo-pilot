@@ -398,7 +398,8 @@
   /* ── Layout ── */
   .pmo-grid {
     display: grid;
-    min-height: 100vh;
+    height: 100vh;
+    grid-template-rows: minmax(0, 1fr);
   }
 
   /* ── Mobile safe area support ── */
@@ -502,13 +503,13 @@
 
 /* ── Chart & data-viz entrance animations ── */
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-12px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @keyframes growWidth {
@@ -522,11 +523,11 @@
 }
 
 .animate-slide-up {
-  animation: slideUp 0.45s cubic-bezier(0.4,0,0.2,1) both;
+  animation: slideUp 0.15s ease-out both;
 }
 
 .animate-slide-in-left {
-  animation: slideInLeft 0.35s cubic-bezier(0.4,0,0.2,1) both;
+  animation: slideInLeft 0.15s ease-out both;
 }
 
 /* ── Card hover lift ── */

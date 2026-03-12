@@ -139,20 +139,20 @@ export default {
                                 '50%': { opacity: '0.3' }
                         },
                         'fade-in': {
-                                from: { opacity: '0', transform: 'translateY(6px)' },
-                                to: { opacity: '1', transform: 'translateY(0)' }
+                                from: { opacity: '0' },
+                                to: { opacity: '1' }
                         },
                         'fade-up': {
-                                from: { opacity: '0', transform: 'translateY(16px)' },
-                                to: { opacity: '1', transform: 'translateY(0)' }
+                                from: { opacity: '0' },
+                                to: { opacity: '1' }
                         },
                         'slide-in-left': {
-                                from: { opacity: '0', transform: 'translateX(-8px)' },
-                                to: { opacity: '1', transform: 'translateX(0)' }
+                                from: { opacity: '0' },
+                                to: { opacity: '1' }
                         },
                         'slide-in-right': {
-                                from: { opacity: '0', transform: 'translateX(12px)' },
-                                to: { opacity: '1', transform: 'translateX(0)' }
+                                from: { opacity: '0' },
+                                to: { opacity: '1' }
                         },
                         'float-slow': {
                                 '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
@@ -180,10 +180,10 @@ export default {
                         'accordion-down': 'accordion-down 0.2s ease-out',
                         'accordion-up': 'accordion-up 0.2s ease-out',
                         'pulse-dot': 'pulse-dot 2s ease-in-out infinite',
-                        'fade-in': 'fade-in 0.35s ease-out',
-                        'fade-up': 'fade-up 0.4s ease-out',
-                        'slide-in-left': 'slide-in-left 0.25s ease-out',
-                        'slide-in-right': 'slide-in-right 0.3s ease-out',
+                        'fade-in': 'fade-in 0.15s ease-out',
+                        'fade-up': 'fade-up 0.15s ease-out',
+                        'slide-in-left': 'slide-in-left 0.15s ease-out',
+                        'slide-in-right': 'slide-in-right 0.15s ease-out',
                         'float-slow': 'float-slow 6s ease-in-out infinite',
                         'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
                         'ring-fill': 'ring-fill 1.2s cubic-bezier(0.4,0,0.2,1) forwards',

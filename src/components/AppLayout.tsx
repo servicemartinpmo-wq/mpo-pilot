@@ -536,7 +536,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
     return (
       <div
         data-pmo-creative="true"
-        className="min-h-screen flex flex-col"
+        className="h-screen flex flex-col overflow-hidden"
         style={{
           paddingTop: 28,
           ...Object.fromEntries(Object.entries({
@@ -741,7 +741,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
         )}
 
         {/* Main canvas — pure black */}
-        <main className="flex-1 overflow-auto relative" style={{ background: "#080808", paddingBottom: isMobile ? 72 : undefined }}>
+        <main className="flex-1 min-h-0 overflow-auto relative" style={{ background: "#080808", paddingBottom: isMobile ? 72 : undefined }}>
           {/* Radial glow — top teal */}
           <div className="fixed pointer-events-none z-0"
             style={{ top: -200, left: "10%", right: "10%", height: 500, background: `radial-gradient(ellipse 80% 60% at 50% 0%, hsl(174 72% 52% / 0.06) 0%, transparent 70%)` }} />
@@ -1408,7 +1408,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           paddingTop: 52,
           paddingBottom: 72,
         } : {
-          minHeight: "100vh",
+          minHeight: 0,
           overflow: "auto",
         }}>
         {inDemoMode && !demoBannerDismissed && (
