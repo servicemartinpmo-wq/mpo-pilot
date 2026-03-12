@@ -8,9 +8,10 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0",
     port: 5000,
+    strictPort: true,
     allowedHosts: true,
     hmr: {
-      overlay: false,
+      overlay: true,
     },
     headers: mode !== "production" ? {
       "Cache-Control": "no-store, no-cache, must-revalidate",

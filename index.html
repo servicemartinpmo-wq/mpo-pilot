@@ -129,8 +129,22 @@
         });
         observer.observe(root, { childList: true, subtree: false });
 
-        // Hard safety: hide after 10 s regardless of React state
-        setTimeout(function () { shell.style.display = 'none'; }, 10000);
+        // Hard safety: if React hasn't mounted after 12 s, show recovery UI
+        setTimeout(function () {
+          if (root.children.length === 0) {
+            shell.innerHTML = '<div style="max-width:400px;text-align:center;padding:32px 24px;background:hsl(225 40% 13%);border:1px solid hsl(0 72% 55% / 0.35);border-radius:24px;box-shadow:0 40px 100px hsl(0 0% 0% / 0.6)">'
+              + '<div style="font-size:28px;margin-bottom:12px">\u26A0\uFE0F</div>'
+              + '<p style="color:white;font-weight:800;font-size:15px;margin-bottom:6px">App failed to start</p>'
+              + '<p style="color:hsl(0 0% 100%/0.5);font-size:12px;margin-bottom:20px;line-height:1.6">The application did not load within the expected time. This is usually resolved by clearing the cache.</p>'
+              + '<button onclick="localStorage.clear();location.reload()" style="background:hsl(222 88% 62%);color:white;border:none;border-radius:12px;padding:10px 20px;font-weight:700;font-size:13px;cursor:pointer;margin-right:8px">Clear Cache &amp; Reload</button>'
+              + '<button onclick="location.reload()" style="background:hsl(225 35% 22%);color:hsl(0 0% 100%/0.7);border:1px solid hsl(225 25% 30%);border-radius:12px;padding:10px 20px;font-weight:700;font-size:13px;cursor:pointer">Retry</button>'
+              + '</div>';
+            shell.style.display = 'flex';
+            shell.style.opacity = '1';
+          } else {
+            shell.style.display = 'none';
+          }
+        }, 12000);
       })();
     </script>
   </body>
