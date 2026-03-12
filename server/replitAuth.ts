@@ -82,10 +82,17 @@ async function provisionSupabaseSession(
 
 const getOidcConfig = memoize(
   async () => {
-    return await client.discovery(
-      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
-    );
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    try {
+      return await client.discovery(
+        new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
+        process.env.REPL_ID!,
+        { signal: controller.signal } as any
+      );
+    } finally {
+      clearTimeout(timeoutId);
+    }
   },
   { maxAge: 3600 * 1000 }
 );
@@ -128,26 +135,30 @@ export async function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  const config = await getOidcConfig();
-
   const verify: VerifyFunction = async (
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
     verified: passport.AuthenticateCallback
   ) => {
-    const user: Record<string, unknown> = {};
-    updateUserSession(user, tokens);
-    const claims = tokens.claims() as Record<string, unknown>;
-    await upsertReplitUser(claims);
-    const actionLink = await provisionSupabaseSession(claims);
-    user.supabase_action_link = actionLink;
-    verified(null, user);
+    try {
+      const user: Record<string, unknown> = {};
+      updateUserSession(user, tokens);
+      const claims = tokens.claims() as Record<string, unknown>;
+      await upsertReplitUser(claims);
+      const actionLink = await provisionSupabaseSession(claims);
+      user.supabase_action_link = actionLink;
+      verified(null, user);
+    } catch (err) {
+      console.error("[replitAuth] verify error:", err instanceof Error ? err.message : err);
+      verified(err as Error);
+    }
   };
 
   const registeredStrategies = new Set<string>();
 
-  const ensureStrategy = (domain: string) => {
+  const ensureStrategy = async (domain: string) => {
     const strategyName = `replitauth:${domain}`;
     if (!registeredStrategies.has(strategyName)) {
+      const config = await getOidcConfig();
       const strategy = new Strategy(
         {
           name: strategyName,
@@ -165,49 +176,65 @@ export async function setupAuth(app: Express) {
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
-  app.get("/api/login", (req, res, next) => {
-    ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      prompt: "login consent",
-      scope: ["openid", "email", "profile", "offline_access"],
-    })(req, res, next);
+  app.get("/api/login", async (req, res, next) => {
+    try {
+      await ensureStrategy(req.hostname);
+      passport.authenticate(`replitauth:${req.hostname}`, {
+        prompt: "login consent",
+        scope: ["openid", "email", "profile", "offline_access"],
+      })(req, res, next);
+    } catch (err) {
+      console.error("[/api/login] error:", err instanceof Error ? err.message : err);
+      res.status(500).json({ error: "Failed to initiate login" });
+    }
   });
 
-  app.get("/api/callback", (req, res, next) => {
-    ensureStrategy(req.hostname);
-    passport.authenticate(
-      `replitauth:${req.hostname}`,
-      { failureRedirect: "/auth?error=replit_auth_failed" },
-      (err: unknown, user: Record<string, unknown> | false) => {
-        if (err || !user) {
-          return res.redirect("/auth?error=replit_auth_failed");
-        }
-        req.logIn(user, (loginErr) => {
-          if (loginErr) return res.redirect("/auth?error=replit_auth_failed");
-          const actionLink = user.supabase_action_link as string | undefined;
-          if (actionLink) {
-            const redirectUrl = new URL(actionLink);
-            redirectUrl.searchParams.set(
-              "redirect_to",
-              `${req.protocol}://${req.hostname}/`
-            );
-            return res.redirect(redirectUrl.toString());
+  app.get("/api/callback", async (req, res, next) => {
+    try {
+      await ensureStrategy(req.hostname);
+      passport.authenticate(
+        `replitauth:${req.hostname}`,
+        { failureRedirect: "/auth?error=replit_auth_failed" },
+        (err: unknown, user: Record<string, unknown> | false) => {
+          if (err || !user) {
+            return res.redirect("/auth?error=replit_auth_failed");
           }
-          return res.redirect("/");
-        });
-      }
-    )(req, res, next);
+          req.logIn(user, (loginErr) => {
+            if (loginErr) return res.redirect("/auth?error=replit_auth_failed");
+            const actionLink = user.supabase_action_link as string | undefined;
+            if (actionLink) {
+              const redirectUrl = new URL(actionLink);
+              redirectUrl.searchParams.set(
+                "redirect_to",
+                `${req.protocol}://${req.hostname}/`
+              );
+              return res.redirect(redirectUrl.toString());
+            }
+            return res.redirect("/");
+          });
+        }
+      )(req, res, next);
+    } catch (err) {
+      console.error("[/api/callback] error:", err instanceof Error ? err.message : err);
+      res.redirect("/auth?error=replit_auth_failed");
+    }
   });
 
-  app.get("/api/logout", (req, res) => {
-    req.logout(() => {
-      res.redirect(
-        client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-        }).href
-      );
-    });
+  app.get("/api/logout", async (req, res) => {
+    try {
+      const config = await getOidcConfig();
+      req.logout(() => {
+        res.redirect(
+          client.buildEndSessionUrl(config, {
+            client_id: process.env.REPL_ID!,
+            post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
+          }).href
+        );
+      });
+    } catch (err) {
+      console.error("[/api/logout] error:", err instanceof Error ? err.message : err);
+      res.redirect("/auth");
+    }
   });
 
   app.get("/api/auth/user", isAuthenticated, async (req, res) => {
