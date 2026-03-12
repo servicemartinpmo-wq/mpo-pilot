@@ -576,7 +576,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
             {isMobile && (
               <button
                 onClick={() => setMobileDrawerOpen(o => !o)}
-                className="mr-3 w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                className="mr-3 min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{ color: "hsl(220 10% 60%)", background: "hsl(0 0% 100% / 0.05)" }}>
                 {mobileDrawerOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
               </button>
@@ -808,7 +808,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           }}>
           <button
             onClick={() => setMobileDrawerOpen(o => !o)}
-            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
+            className="min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center transition-colors"
             style={{ color: "hsl(0 0% 100% / 0.7)", background: "hsl(0 0% 100% / 0.06)" }}>
             {mobileDrawerOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
@@ -826,11 +826,11 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
             </div>
             <button
               onClick={() => setNotifOpen(true)}
-              className="relative w-8 h-8 rounded-lg flex items-center justify-center"
+              className="relative min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center"
               style={{ color: "hsl(0 0% 100% / 0.6)", background: "hsl(0 0% 100% / 0.06)" }}>
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full"
+                <span className="absolute top-3 right-3 w-2 h-2 rounded-full"
                   style={{ background: "hsl(38 92% 52%)" }} />
               )}
             </button>

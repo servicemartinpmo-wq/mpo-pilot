@@ -1502,7 +1502,33 @@ export default function Knowledge() {
                 </span>
                 <div className="h-px flex-1" style={{ background: "hsl(var(--border))" }} />
               </div>
-              <div className="rounded-xl border overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
+              {/* Mobile card list */}
+              <div className="sm:hidden divide-y" style={{ borderColor: "hsl(var(--border))" }}>
+                {PMO_FRAMEWORKS.filter(f => f.category === category).map(fw => (
+                  <div key={fw.name} className="p-3 space-y-2 bg-card">
+                    <div className="font-bold text-foreground text-xs">{fw.name}</div>
+                    <div className="flex flex-wrap gap-1">
+                      {fw.executionModule.split(", ").map(m => (
+                        <span key={m} className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                          style={{ background: "hsl(var(--electric-blue) / 0.1)", color: "hsl(var(--electric-blue))" }}>
+                          {m}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-[10px] text-muted-foreground">
+                      <span className="px-1.5 py-0.5 rounded font-medium"
+                        style={{ background: "hsl(var(--teal) / 0.1)", color: "hsl(var(--teal))" }}>
+                        {fw.statusRelevance}
+                      </span>
+                      <span className="font-mono">{fw.temporalContext}</span>
+                    </div>
+                    {fw.notes && <p className="text-[10px] text-muted-foreground leading-relaxed">{fw.notes}</p>}
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop table */}
+              <div className="hidden sm:block rounded-xl border overflow-hidden" style={{ borderColor: "hsl(var(--border))" }}>
                 <table className="w-full text-xs">
                   <thead>
                     <tr style={{ background: "hsl(var(--muted))" }}>
