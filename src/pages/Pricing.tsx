@@ -5,6 +5,7 @@ import {
   ArrowRight, Sparkles, Shield, Clock, BarChart3, Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUserMode, type UserMode } from "@/hooks/useUserMode";
 
 interface Feature { text: string; highlight?: boolean }
 
@@ -139,8 +140,18 @@ const tiers: Tier[] = [
 
 const annualDiscount = 0.80;
 
+const MODE_TAGLINES: Record<UserMode, string> = {
+  founder: "Built for founders scaling their business",
+  executive: "Built for executives managing operations",
+  startup: "Built for operators who need to move fast",
+  creative: "Built for creators managing projects and clients",
+  freelance: "Built for freelancers staying organized",
+  simple: "Built for anyone who needs clear guidance",
+};
+
 export default function Pricing() {
   const navigate = useNavigate();
+  const { mode } = useUserMode();
   const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
 
   const displayPrice = (tier: Tier) => {
@@ -161,7 +172,7 @@ export default function Pricing() {
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border mb-6 text-[11px] font-bold tracking-widest uppercase"
           style={{ borderColor: "hsl(38 92% 52% / 0.25)", color: "hsl(38 92% 60%)", background: "hsl(38 92% 52% / 0.06)" }}>
           <Shield className="w-3 h-3" />
-          Built for operators who need to move fast
+          {MODE_TAGLINES[mode]}
         </div>
         <h1 className="text-4xl lg:text-5xl font-black mb-4 leading-tight" style={{ color: "hsl(38 12% 94%)" }}>
           The right level of intelligence<br />
