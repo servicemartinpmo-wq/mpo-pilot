@@ -7,11 +7,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   X, Send, Mic, MicOff, ChevronRight,
-  Volume2, RefreshCw, Zap, PlayCircle, Target, Settings,
+  RefreshCw, Zap, PlayCircle, CheckCircle2, Loader2, AlertCircle, ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { actionItems, initiatives, departments } from "@/lib/pmoData";
-import { loadProfile } from "@/lib/companyStore";
+import { loadProfile, isDemoMode } from "@/lib/companyStore";
 import { runMaturityScoring, runOrgHealthScoring } from "@/lib/engine/maturity";
 import { buildOrgContext, getContextFactors } from "@/lib/engine/contextEngine";
 import type { OrgContext } from "@/lib/engine/contextEngine";
@@ -19,6 +19,8 @@ import WalkthroughPlayer, { type WalkthroughScript } from "@/components/Walkthro
 import {
   getWalkthrough, PAGE_DEFAULT_WALKTHROUGH, type WalkthroughId,
 } from "@/lib/walkthroughs";
+import { upsertActionItem } from "@/lib/supabaseDataService";
+import { useAuth } from "@/hooks/useAuth";
 
 // ── Types ──────────────────────────────────────────────────────────────
 interface ApphiaMsg {
@@ -30,12 +32,16 @@ interface ApphiaMsg {
   list?: string[];
   /** If set, this message offers a walkthrough the user can launch */
   walkthroughId?: WalkthroughId;
+  /** If set, this message offers a "create task" confirmation card */
+  createTask?: string;
 }
+
+type TaskSaveStatus = "idle" | "saving" | "saved" | "error";
 
 // ── Page suggestion chips ─────────────────────────────────────────────
 const PAGE_CHIPS: Record<string, string[]> = {
-  "/":                  ["What needs my attention?", "Explain my health score", "Walk me through diagnostics", "What's blocked?"],
-  "/action-items":      ["What's overdue?", "Walk me through execution", "What's most critical?", "Read my top 3 items"],
+  "/":                  ["What needs my attention?", "Remind me to review Q2 budget", "Walk me through diagnostics", "What's blocked?"],
+  "/action-items":      ["What's overdue?", "Create a task to review Q2 goals", "What's most critical?", "Read my top 3 items"],
   "/initiatives":       ["Walk me through the portfolio", "What's blocked?", "What's at risk?", "Explain priority scores"],
   "/diagnostics":       ["Explain my health score", "Walk me through diagnostics", "What should I fix first?", "Show me why"],
   "/departments":       ["Which department needs help?", "Summarize team capacity", "Where are the bottlenecks?"],
@@ -52,6 +58,20 @@ const PAGE_CHIPS: Record<string, string[]> = {
 
 function getChips(path: string): string[] {
   return PAGE_CHIPS[path] ?? PAGE_CHIPS["/"];
+}
+
+// ── Task title extractor ───────────────────────────────────────────────
+function extractTaskTitle(raw: string): string {
+  const s = raw.trim()
+    .replace(/^(please\s+)?create\s+(a\s+)?(?:new\s+)?(?:action\s+item|task)\s*(?:to\s+|for\s+|called\s+|titled\s+|named\s+|:)?\s*/i, "")
+    .replace(/^(please\s+)?add\s+(a\s+)?(?:new\s+)?(?:action\s+item|task)\s*(?:to\s+(?:my\s+)?(?:list|plate|action\s+items?)\s*)?(?:to\s+|for\s+|:|called\s+|titled\s+)?\s*/i, "")
+    .replace(/^remind\s+me\s+to\s+/i, "")
+    .replace(/^make\s+(?:a\s+)?task\s+(?:to\s+|for\s+)?/i, "")
+    .replace(/^add\s+(?:this\s+)?to\s+(?:my\s+)?(?:list|plate|action\s+items?)\s*:?\s*/i, "")
+    .replace(/^(please\s+)?log\s+(?:a\s+)?task\s*(?:to\s+|for\s+|:)?\s*/i, "")
+    .trim();
+  if (!s) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 // ── Response engine ────────────────────────────────────────────────────
@@ -318,6 +338,22 @@ function apphiaRespond(input: string, page: string): Omit<ApphiaMsg, "id" | "tim
     };
   }
 
+  // ── Create task / remind me to ───────────────────────────────────
+  if (/create\s+(a\s+)?(?:new\s+)?(?:action\s+item|task)|add\s+(a\s+)?(?:new\s+)?(?:action\s+item|task)|remind\s+me\s+to|make\s+(a\s+)?(?:new\s+)?task|log\s+(a\s+)?task|add\s+(this\s+)?to\s+(my\s+)?(list|plate|action\s+items?)/i.test(lower)) {
+    const title = extractTaskTitle(lower);
+    if (title.length >= 3) {
+      return {
+        role: "apphia",
+        text: `Got it — I'll save this as an action item for you:`,
+        createTask: title,
+      };
+    }
+    return {
+      role: "apphia",
+      text: `I'd be happy to create a task for you. What's the title? For example, try: "Create a task to review the Q2 budget."`,
+    };
+  }
+
   // ── Navigation / go to ────────────────────────────────────────────
   const navMap: [RegExp, string, string][] = [
     [/dashboard|home/i,       "/",            "Dashboard"],
@@ -399,6 +435,7 @@ export function openApphia() { _apphiaOpen?.(true); }
 
 export default function ApphiaPanel() {
   const location = useLocation();
+  const { user } = useAuth();
   const [open, setOpen]                   = useState(false);
   const [messages, setMessages]           = useState<ApphiaMsg[]>([]);
   const [input, setInput]                 = useState("");
@@ -406,6 +443,7 @@ export default function ApphiaPanel() {
   const [listening, setListening]         = useState(false);
   const [wakeEnabled, setWakeEnabled]     = useState(false);
   const [activeWT, setActiveWT]           = useState<WalkthroughScript | null>(null);
+  const [taskStatus, setTaskStatus]       = useState<Record<string, TaskSaveStatus>>({});
   const inputRef   = useRef<HTMLInputElement>(null);
   const bottomRef  = useRef<HTMLDivElement>(null);
   const recRef     = useRef<SpeechRecognition | null>(null);
@@ -425,6 +463,32 @@ export default function ApphiaPanel() {
     };
     setOpen(false);
     setActiveWT(getWalkthrough(id, wtCtx));
+  }
+
+  /** Save a task to Supabase (or simulate in demo mode) */
+  async function handleCreateTask(msgId: string, title: string) {
+    setTaskStatus(s => ({ ...s, [msgId]: "saving" }));
+    try {
+      if (isDemoMode()) {
+        await new Promise(r => setTimeout(r, 700));
+        setTaskStatus(s => ({ ...s, [msgId]: "saved" }));
+        return;
+      }
+      if (!user) { setTaskStatus(s => ({ ...s, [msgId]: "error" })); return; }
+      const dueDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        .toISOString().split("T")[0];
+      const { error } = await upsertActionItem({
+        title,
+        user_id:    user.id,
+        created_by: user.id,
+        status:     "Not Started",
+        priority:   "Medium",
+        due_date:   dueDate,
+      });
+      setTaskStatus(s => ({ ...s, [msgId]: error ? "error" : "saved" }));
+    } catch {
+      setTaskStatus(s => ({ ...s, [msgId]: "error" }));
+    }
   }
 
   // Global keyboard shortcut Ctrl+K
@@ -605,7 +669,7 @@ export default function ApphiaPanel() {
           <ApphiaContextStrip />
 
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0" style={{ scrollbarWidth: "none" }}>
-            {messages.map(msg => <MessageBubble key={msg.id} msg={msg} onLaunchWT={launchWalkthrough} />)}
+            {messages.map(msg => <MessageBubble key={msg.id} msg={msg} onLaunchWT={launchWalkthrough} taskSaveStatus={taskStatus[msg.id] ?? "idle"} onCreateTask={(title) => handleCreateTask(msg.id, title)} />)}
             {loading && (
               <div className="flex items-center gap-2 py-1">
                 <div className="w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -739,7 +803,7 @@ export default function ApphiaPanel() {
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0"
           style={{ scrollbarWidth: "none" }}>
           {messages.map(msg => (
-            <MessageBubble key={msg.id} msg={msg} onLaunchWT={launchWalkthrough} />
+            <MessageBubble key={msg.id} msg={msg} onLaunchWT={launchWalkthrough} taskSaveStatus={taskStatus[msg.id] ?? "idle"} onCreateTask={(title) => handleCreateTask(msg.id, title)} />
           ))}
           {loading && (
             <div className="flex items-center gap-2 py-1">
@@ -933,9 +997,13 @@ function CtxChip({ label, color }: { label: string; color: string }) {
 function MessageBubble({
   msg,
   onLaunchWT,
+  taskSaveStatus,
+  onCreateTask,
 }: {
   msg: ApphiaMsg;
   onLaunchWT: (id: WalkthroughId) => void;
+  taskSaveStatus: TaskSaveStatus;
+  onCreateTask: (title: string) => void;
 }) {
   const isApphia = msg.role === "apphia";
   return (
@@ -955,6 +1023,64 @@ function MessageBubble({
           }}>
           {msg.text}
         </div>
+
+        {/* Create-task confirmation card */}
+        {msg.createTask && (
+          <div className="rounded-xl overflow-hidden w-full"
+            style={{ background: "hsl(226 40% 13%)", border: "1px solid hsl(226 40% 22%)" }}>
+            {/* Task preview row */}
+            <div className="flex items-center gap-2.5 px-3 py-2.5">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                style={{ background: "hsl(268 72% 52% / 0.22)" }}>
+                <ClipboardList className="w-3.5 h-3.5" style={{ color: "hsl(268 72% 75%)" }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-semibold text-white truncate">{msg.createTask}</p>
+                <p className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.38)" }}>
+                  Medium · Due in 7 days · Not Started
+                </p>
+              </div>
+            </div>
+            {/* Action row */}
+            <div className="px-3 pb-2.5">
+              {taskSaveStatus === "idle" && (
+                <button
+                  onClick={() => onCreateTask(msg.createTask!)}
+                  className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-bold transition-all hover:opacity-90 active:scale-[0.97]"
+                  style={{
+                    background: "linear-gradient(135deg, hsl(268 72% 52%), hsl(183 62% 42%))",
+                    color: "white",
+                  }}>
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Save to Action Items
+                </button>
+              )}
+              {taskSaveStatus === "saving" && (
+                <div className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px]"
+                  style={{ background: "hsl(268 72% 52% / 0.15)", color: "hsl(268 72% 72%)" }}>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Saving…
+                </div>
+              )}
+              {taskSaveStatus === "saved" && (
+                <div className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-semibold"
+                  style={{ background: "hsl(160 56% 46% / 0.15)", color: "hsl(160 56% 58%)" }}>
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  {isDemoMode() ? "Saved to demo board" : "Saved to Action Items"}
+                </div>
+              )}
+              {taskSaveStatus === "error" && (
+                <div className="w-full flex flex-col items-center gap-1 py-1.5 rounded-lg text-[11px]"
+                  style={{ color: "hsl(350 84% 65%)" }}>
+                  <div className="flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {isDemoMode() ? "Demo mode — sign up to save tasks" : "Sign in to save tasks"}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {msg.list && msg.list.length > 0 && (
           <div className="rounded-xl overflow-hidden"
