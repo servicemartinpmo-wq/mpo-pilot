@@ -670,3 +670,15 @@
 .animate-kb-c { animation: ken-burns-c 20s ease-in-out infinite alternate; transform-origin: center center; }
 /* Crossfade transition for animated hero photos */
 .photo-crossfade { transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* ── Apphia Walkthrough Player animations ─────────────────────────── */
+@keyframes wt-ring-pulse {
+  0%   { box-shadow: 0 0 0 4px hsl(268 72% 52% / 0.18), 0 0 0 0 hsl(268 72% 52% / 0.08); }
+  50%  { box-shadow: 0 0 0 8px hsl(268 72% 52% / 0.10), 0 0 16px 6px hsl(268 72% 52% / 0.12); }
+  100% { box-shadow: 0 0 0 4px hsl(268 72% 52% / 0.18), 0 0 0 0 hsl(268 72% 52% / 0.08); }
+}
+
+@keyframes wt-bar {
+  0%   { transform: scaleY(0.4); opacity: 0.5; }
+  100% { transform: scaleY(1.4); opacity: 1; }
+}

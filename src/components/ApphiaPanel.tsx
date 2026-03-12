@@ -6,13 +6,17 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  X, Send, Mic, MicOff, Sparkles, ChevronRight,
-  Loader2, Volume2, RefreshCw, BookOpen, Zap
+  X, Send, Mic, MicOff, ChevronRight,
+  Volume2, RefreshCw, Zap, PlayCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { actionItems, initiatives, departments } from "@/lib/pmoData";
 import { loadProfile } from "@/lib/companyStore";
 import { runMaturityScoring, runOrgHealthScoring } from "@/lib/engine/maturity";
+import WalkthroughPlayer, { type WalkthroughScript } from "@/components/WalkthroughPlayer";
+import {
+  getWalkthrough, PAGE_DEFAULT_WALKTHROUGH, type WalkthroughId,
+} from "@/lib/walkthroughs";
 
 // ── Types ──────────────────────────────────────────────────────────────
 interface ApphiaMsg {
@@ -22,20 +26,22 @@ interface ApphiaMsg {
   timestamp: Date;
   actions?: { label: string; href?: string; onClick?: () => void }[];
   list?: string[];
+  /** If set, this message offers a walkthrough the user can launch */
+  walkthroughId?: WalkthroughId;
 }
 
 // ── Page suggestion chips ─────────────────────────────────────────────
 const PAGE_CHIPS: Record<string, string[]> = {
-  "/":                  ["What needs my attention?", "Summarize my day", "What's blocked?", "Suggest workflows for today"],
-  "/action-items":      ["What's overdue?", "Read my top 3 items", "What's most critical?", "Mark items by department"],
-  "/initiatives":       ["What's blocked?", "Summarize initiative health", "What's at risk?", "Which initiative needs a push?"],
-  "/diagnostics":       ["How's our operational health?", "What should I fix first?", "What's our weakest area?", "Show gaps"],
+  "/":                  ["What needs my attention?", "Explain my health score", "Walk me through diagnostics", "What's blocked?"],
+  "/action-items":      ["What's overdue?", "Walk me through execution", "What's most critical?", "Read my top 3 items"],
+  "/initiatives":       ["Walk me through the portfolio", "What's blocked?", "What's at risk?", "Explain priority scores"],
+  "/diagnostics":       ["Explain my health score", "Walk me through diagnostics", "What should I fix first?", "Show me why"],
   "/departments":       ["Which department needs help?", "Summarize team capacity", "Where are the bottlenecks?"],
-  "/workflows":         ["What workflows should I run?", "Build a package for Sales", "What's suggested for today?"],
-  "/decisions":         ["What decisions are pending?", "Help me frame a decision", "What's overdue?"],
+  "/workflows":         ["Walk me through workflows", "What workflows should I run?", "Explain workflow packages"],
+  "/decisions":         ["Walk me through decisions", "What decisions are pending?", "Help me frame a decision"],
   "/knowledge":         ["Find a framework for strategy", "Suggest templates for onboarding", "What resources do I need?"],
   "/advisory":          ["Give me a strategic brief", "What's the biggest risk right now?", "Help me prioritize"],
-  "/reports":           ["Summarize recent performance", "What KPIs need attention?", "How are we tracking?"],
+  "/reports":           ["Walk me through the report", "Explain this report", "What KPIs need attention?"],
   "/projects":          ["What projects are delayed?", "What's overdue?", "Show me blocked projects"],
   "/agile":             ["What's in sprint?", "What's blocked on the board?", "How's velocity?"],
   "/crm":               ["How's the pipeline?", "Any at-risk accounts?", "What follow-ups are due?"],
@@ -262,6 +268,45 @@ function apphiaRespond(input: string, page: string): Omit<ApphiaMsg, "id" | "tim
     };
   }
 
+  // ── Walkthrough / screen share / explain why ──────────────────────
+  if (/walk(through| me through|through)|screen share|visual walkthrough|explain.*report|explain.*dashboard|show me the|explain.*why|why.*score|explain.*health|explain.*relationship|how.*connect|explain.*number|explain.*metric|explain.*kpi|explain.*initiative|explain.*priority|explain.*workflow|explain.*decision|explain.*execution/i.test(lower)) {
+    const pageWtMap: Record<string, WalkthroughId> = {
+      "/diagnostics":    "org-health",
+      "/":               "org-health",
+      "/initiatives":    "initiatives",
+      "/reports":        "reports",
+      "/decisions":      "decisions",
+      "/action-items":   "action-items",
+      "/workflows":      "workflows",
+    };
+
+    let wtId: WalkthroughId = pageWtMap[page] ?? "org-health";
+
+    if (/initiative|portfolio|blocked.*init|init.*blocked/i.test(lower)) wtId = "initiatives";
+    if (/report|kpi|metric|performance|dashboard/i.test(lower)) wtId = "reports";
+    if (/health|score|diagnostic|why.*score|explain.*score|maturity/i.test(lower)) wtId = "org-health";
+    if (/decision/i.test(lower)) wtId = "decisions";
+    if (/action item|execution|overdue.*item|task/i.test(lower)) wtId = "action-items";
+    if (/workflow|automation|package/i.test(lower)) wtId = "workflows";
+    if (/connect|relationship|how.*work.*together|system|architecture/i.test(lower)) wtId = "relationships";
+
+    const titles: Record<WalkthroughId, string> = {
+      "org-health":    "your org health score",
+      "initiatives":   "your initiative portfolio",
+      "reports":       "your performance report",
+      "decisions":     "your decision queue",
+      "action-items":  "your execution layer",
+      "workflows":     "the workflow system",
+      "relationships": "how all modules connect",
+    };
+
+    return {
+      role: "apphia",
+      text: `I'll walk you through ${titles[wtId]} now — with live highlights on the actual data so you can see exactly what each number means and why it matters.`,
+      walkthroughId: wtId,
+    };
+  }
+
   // ── Navigation / go to ────────────────────────────────────────────
   const navMap: [RegExp, string, string][] = [
     [/dashboard|home/i,       "/",            "Dashboard"],
@@ -343,18 +388,33 @@ export function openApphia() { _apphiaOpen?.(true); }
 
 export default function ApphiaPanel() {
   const location = useLocation();
-  const [open, setOpen]           = useState(false);
-  const [messages, setMessages]   = useState<ApphiaMsg[]>([]);
-  const [input, setInput]         = useState("");
-  const [loading, setLoading]     = useState(false);
-  const [listening, setListening] = useState(false);
-  const [wakeEnabled, setWakeEnabled] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [open, setOpen]                   = useState(false);
+  const [messages, setMessages]           = useState<ApphiaMsg[]>([]);
+  const [input, setInput]                 = useState("");
+  const [loading, setLoading]             = useState(false);
+  const [listening, setListening]         = useState(false);
+  const [wakeEnabled, setWakeEnabled]     = useState(false);
+  const [activeWT, setActiveWT]           = useState<WalkthroughScript | null>(null);
   const inputRef   = useRef<HTMLInputElement>(null);
   const bottomRef  = useRef<HTMLDivElement>(null);
   const recRef     = useRef<SpeechRecognition | null>(null);
 
   _apphiaOpen = setOpen;
+
+  /** Launch a walkthrough: close the panel, build the script, start player */
+  function launchWalkthrough(id: WalkthroughId) {
+    const ctx = buildCtx();
+    const wtCtx = {
+      healthScore: ctx.healthScore,
+      overdue:     ctx.overdue.length,
+      blocked:     ctx.blocked.length,
+      atRisk:      ctx.atRisk.length,
+      delayed:     ctx.delayed.length,
+      orgName:     ctx.profile.orgName || "Your Organization",
+    };
+    setOpen(false);
+    setActiveWT(getWalkthrough(id, wtCtx));
+  }
 
   // Global keyboard shortcut Ctrl+K
   useEffect(() => {
@@ -470,19 +530,28 @@ export default function ApphiaPanel() {
 
   if (!open) {
     return (
-      <button
-        onClick={() => setOpen(true)}
-        title="Ask Apphia (Ctrl+K)"
-        className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 w-13 h-13 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95 select-none"
-        style={{
-          width: 52, height: 52,
-          background: "linear-gradient(135deg, hsl(268 72% 52%), hsl(183 62% 42%))",
-          boxShadow: "0 8px 28px hsl(268 72% 52% / 0.45), 0 2px 8px hsl(0 0% 0% / 0.2)",
-        }}>
-        <span className="text-white font-black text-lg tracking-tight select-none">A</span>
-        <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white animate-pulse"
-          style={{ background: "hsl(160 56% 46%)" }} />
-      </button>
+      <>
+        {/* Walkthrough player — runs when Apphia panel is closed */}
+        {activeWT && (
+          <WalkthroughPlayer
+            script={activeWT}
+            onClose={() => setActiveWT(null)}
+          />
+        )}
+        <button
+          onClick={() => setOpen(true)}
+          title="Ask Apphia (Ctrl+K)"
+          className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-40 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-105 active:scale-95 select-none"
+          style={{
+            width: 52, height: 52,
+            background: "linear-gradient(135deg, hsl(268 72% 52%), hsl(183 62% 42%))",
+            boxShadow: "0 8px 28px hsl(268 72% 52% / 0.45), 0 2px 8px hsl(0 0% 0% / 0.2)",
+          }}>
+          <span className="text-white font-black text-lg tracking-tight select-none">A</span>
+          <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white animate-pulse"
+            style={{ background: "hsl(160 56% 46%)" }} />
+        </button>
+      </>
     );
   }
 
@@ -525,7 +594,7 @@ export default function ApphiaPanel() {
           <ApphiaContextStrip />
 
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0" style={{ scrollbarWidth: "none" }}>
-            {messages.map(msg => <MessageBubble key={msg.id} msg={msg} />)}
+            {messages.map(msg => <MessageBubble key={msg.id} msg={msg} onLaunchWT={launchWalkthrough} />)}
             {loading && (
               <div className="flex items-center gap-2 py-1">
                 <div className="w-6 h-6 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -546,6 +615,20 @@ export default function ApphiaPanel() {
 
           <div className="px-4 pb-2 flex-shrink-0">
             <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+              {/* Walkthrough quick-launch chip */}
+              {PAGE_DEFAULT_WALKTHROUGH[location.pathname] && (
+                <button
+                  onClick={() => launchWalkthrough(PAGE_DEFAULT_WALKTHROUGH[location.pathname] as WalkthroughId)}
+                  className="flex-shrink-0 flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-xl border font-semibold whitespace-nowrap"
+                  style={{
+                    borderColor: "hsl(268 72% 52% / 0.45)",
+                    color: "hsl(268 72% 72%)",
+                    background: "hsl(268 72% 52% / 0.10)",
+                  }}>
+                  <PlayCircle className="w-3 h-3" />
+                  Watch Walkthrough
+                </button>
+              )}
               {chips.map(chip => (
                 <button key={chip} onClick={() => send(chip)}
                   className="flex-shrink-0 text-[11px] px-2.5 py-1.5 rounded-xl border font-medium whitespace-nowrap"
@@ -645,7 +728,7 @@ export default function ApphiaPanel() {
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-0"
           style={{ scrollbarWidth: "none" }}>
           {messages.map(msg => (
-            <MessageBubble key={msg.id} msg={msg} />
+            <MessageBubble key={msg.id} msg={msg} onLaunchWT={launchWalkthrough} />
           ))}
           {loading && (
             <div className="flex items-center gap-2 py-1">
@@ -672,6 +755,20 @@ export default function ApphiaPanel() {
         {/* Suggestion chips */}
         <div className="px-4 pb-2 flex-shrink-0">
           <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+            {/* Walkthrough quick-launch chip */}
+            {PAGE_DEFAULT_WALKTHROUGH[location.pathname] && (
+              <button
+                onClick={() => launchWalkthrough(PAGE_DEFAULT_WALKTHROUGH[location.pathname] as WalkthroughId)}
+                className="flex-shrink-0 flex items-center gap-1 text-[11px] px-2.5 py-1.5 rounded-xl border font-semibold whitespace-nowrap"
+                style={{
+                  borderColor: "hsl(268 72% 52% / 0.45)",
+                  color: "hsl(268 72% 72%)",
+                  background: "hsl(268 72% 52% / 0.10)",
+                }}>
+                <PlayCircle className="w-3 h-3" />
+                Watch Walkthrough
+              </button>
+            )}
             {chips.map(chip => (
               <button key={chip}
                 onClick={() => send(chip)}
@@ -763,7 +860,13 @@ function CtxChip({ label, color }: { label: string; color: string }) {
 }
 
 // ── Message bubble ────────────────────────────────────────────────────
-function MessageBubble({ msg }: { msg: ApphiaMsg }) {
+function MessageBubble({
+  msg,
+  onLaunchWT,
+}: {
+  msg: ApphiaMsg;
+  onLaunchWT: (id: WalkthroughId) => void;
+}) {
   const isApphia = msg.role === "apphia";
   return (
     <div className={cn("flex gap-2", isApphia ? "items-start" : "items-start justify-end")}>
@@ -782,6 +885,7 @@ function MessageBubble({ msg }: { msg: ApphiaMsg }) {
           }}>
           {msg.text}
         </div>
+
         {msg.list && msg.list.length > 0 && (
           <div className="rounded-xl overflow-hidden"
             style={{ background: "hsl(226 40% 13%)", border: "1px solid hsl(226 40% 20%)" }}>
@@ -797,6 +901,29 @@ function MessageBubble({ msg }: { msg: ApphiaMsg }) {
             ))}
           </div>
         )}
+
+        {/* Walkthrough CTA — prominent button when message offers a walkthrough */}
+        {msg.walkthroughId && (
+          <button
+            onClick={() => onLaunchWT(msg.walkthroughId!)}
+            className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-[12px] font-bold transition-all hover:opacity-90 active:scale-[0.97] w-full"
+            style={{
+              background: "linear-gradient(135deg, hsl(268 72% 52% / 0.28), hsl(183 62% 42% / 0.20))",
+              color: "hsl(268 72% 78%)",
+              border: "1px solid hsl(268 72% 52% / 0.40)",
+            }}
+          >
+            <div
+              className="w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: "hsl(268 72% 52%)" }}
+            >
+              <PlayCircle className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span>Watch Walkthrough</span>
+            <span className="ml-auto text-[10px] opacity-60">Live highlights</span>
+          </button>
+        )}
+
         {msg.actions && msg.actions.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {msg.actions.map(action => (
