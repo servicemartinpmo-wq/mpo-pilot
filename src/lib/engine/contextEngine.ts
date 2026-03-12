@@ -540,19 +540,3 @@ export function getContextFactors(ctx: OrgContext): { label: string; value: stri
   return factors;
 }
 
-export function getNeutralContext(): OrgContext {
-  return {
-    industry: "",
-    companyStage: "growth",
-    teamSizeBand: "small",
-    teamSizeNum: 30,
-    revenueStage: "",
-    userMode: "operator",
-    fiscalQuarter: (Math.floor(new Date().getMonth() / 3) + 1) as 1 | 2 | 3 | 4,
-    isQ4: new Date().getMonth() >= 9,
-    goalUrgency: "optimize",
-    currentStateRaw: "",
-    futureStateRaw: "",
-    orgName: "",
-  };
-}
