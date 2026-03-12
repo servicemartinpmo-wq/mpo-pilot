@@ -6,10 +6,21 @@ import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { Pool } from "pg";
+import { createClient } from "@supabase/supabase-js";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-async function upsertUser(claims: Record<string, unknown>) {
+const SUPABASE_URL = "https://okgpcsfqkshdzbfuigfq.supabase.co";
+
+function getSupabaseAdmin() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set");
+  return createClient(SUPABASE_URL, key, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
+async function upsertReplitUser(claims: Record<string, unknown>) {
   await pool.query(
     `INSERT INTO replit_users (id, email, first_name, last_name, profile_image_url)
      VALUES ($1, $2, $3, $4, $5)
@@ -29,12 +40,44 @@ async function upsertUser(claims: Record<string, unknown>) {
   );
 }
 
-async function getUser(id: string) {
-  const { rows } = await pool.query(
-    "SELECT * FROM replit_users WHERE id = $1",
-    [id]
-  );
-  return rows[0] ?? null;
+async function provisionSupabaseSession(
+  claims: Record<string, unknown>
+): Promise<string | null> {
+  const email = claims["email"] as string | undefined;
+  if (!email) return null;
+
+  const supabaseAdmin = getSupabaseAdmin();
+  const displayName = [claims["first_name"], claims["last_name"]]
+    .filter(Boolean)
+    .join(" ") || undefined;
+
+  const { error: createError } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    email_confirm: true,
+    user_metadata: {
+      full_name: displayName,
+      avatar_url: claims["profile_image_url"],
+      replit_id: claims["sub"],
+    },
+  });
+
+  if (createError && createError.message !== "A user with this email address has already been registered") {
+    console.error("[replitAuth] createUser error:", createError.message);
+  }
+
+  const { data: linkData, error: linkError } =
+    await supabaseAdmin.auth.admin.generateLink({
+      type: "magiclink",
+      email,
+      options: { redirectTo: `${SUPABASE_URL}` },
+    });
+
+  if (linkError || !linkData?.properties?.action_link) {
+    console.error("[replitAuth] generateLink error:", linkError?.message);
+    return null;
+  }
+
+  return linkData.properties.action_link;
 }
 
 const getOidcConfig = memoize(
@@ -93,7 +136,10 @@ export async function setupAuth(app: Express) {
   ) => {
     const user: Record<string, unknown> = {};
     updateUserSession(user, tokens);
-    await upsertUser(tokens.claims() as Record<string, unknown>);
+    const claims = tokens.claims() as Record<string, unknown>;
+    await upsertReplitUser(claims);
+    const actionLink = await provisionSupabaseSession(claims);
+    user.supabase_action_link = actionLink;
     verified(null, user);
   };
 
@@ -129,10 +175,28 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/callback", (req, res, next) => {
     ensureStrategy(req.hostname);
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
-    })(req, res, next);
+    passport.authenticate(
+      `replitauth:${req.hostname}`,
+      { failureRedirect: "/auth?error=replit_auth_failed" },
+      (err: unknown, user: Record<string, unknown> | false) => {
+        if (err || !user) {
+          return res.redirect("/auth?error=replit_auth_failed");
+        }
+        req.logIn(user, (loginErr) => {
+          if (loginErr) return res.redirect("/auth?error=replit_auth_failed");
+          const actionLink = user.supabase_action_link as string | undefined;
+          if (actionLink) {
+            const redirectUrl = new URL(actionLink);
+            redirectUrl.searchParams.set(
+              "redirect_to",
+              `${req.protocol}://${req.hostname}/`
+            );
+            return res.redirect(redirectUrl.toString());
+          }
+          return res.redirect("/");
+        });
+      }
+    )(req, res, next);
   });
 
   app.get("/api/logout", (req, res) => {
@@ -148,9 +212,16 @@ export async function setupAuth(app: Express) {
 
   app.get("/api/auth/user", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as Record<string, unknown> & { claims: Record<string, unknown> }).claims.sub as string;
-      const user = await getUser(userId);
-      res.json(user);
+      const userId = (
+        req.user as Record<string, unknown> & {
+          claims: Record<string, unknown>;
+        }
+      ).claims.sub as string;
+      const { rows } = await pool.query(
+        "SELECT * FROM replit_users WHERE id = $1",
+        [userId]
+      );
+      res.json(rows[0] ?? null);
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Failed to fetch user" });
@@ -177,8 +248,8 @@ const isAuthenticated: RequestHandler = async (req, res, next) => {
   }
 
   try {
-    const config = await getOidcConfig();
-    const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
+    const oidcConfig = await getOidcConfig();
+    const tokenResponse = await client.refreshTokenGrant(oidcConfig, refreshToken);
     updateUserSession(user, tokenResponse);
     return next();
   } catch {

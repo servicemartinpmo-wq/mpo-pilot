@@ -48,7 +48,7 @@ const queryClient = new QueryClient({
 });
 
 function AppRoutes() {
-  const { user, replitUser, profile, loading, updateProfile } = useAuth();
+  const { user, profile, loading, updateProfile } = useAuth();
   const [seeded, setSeeded] = useState(false);
   const [onboardingDone, setOnboardingDone] = useState(false);
   const [cmdOpen, setCmdOpen] = useState(false);
@@ -67,9 +67,7 @@ function AppRoutes() {
     return () => window.removeEventListener("keydown", handle);
   }, []);
 
-  const effectiveUserId = user?.id ?? replitUser?.id ?? undefined;
-
-  useRealtimeSync(effectiveUserId);
+  useRealtimeSync(user?.id);
 
   // Apply theme from DB profile whenever it changes.
   // In demo mode, fall back to the locally-stored demo profile for theme.
@@ -116,7 +114,7 @@ function AppRoutes() {
   }
 
   // Not logged in — redirect to auth unless demo mode is active
-  if (!user && !replitUser && !isDemoMode()) {
+  if (!user && !isDemoMode()) {
     return (
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
