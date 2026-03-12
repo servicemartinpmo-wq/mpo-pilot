@@ -5,22 +5,75 @@ import { setupAuth } from "./replitAuth";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
-app.use(express.json());
+
+// Middleware
+app.use(express.json({ limit: "10mb" }));
+
+// Track request count for monitoring
+let requestCount = 0;
+app.use((req, res, next) => {
+  requestCount++;
+  if (requestCount % 1000 === 0) {
+    console.log(`[Health] Processed ${requestCount} requests`);
+  }
+  next();
+});
 
 async function main() {
-  await setupAuth(app);
+  try {
+    await setupAuth(app);
+  } catch (authError) {
+    console.warn("[Auth] Setup failed, continuing without auth:", authError);
+  }
 
-  // Serve static files from the Vite build output
-  app.use(express.static(join(__dirname, "../dist")));
-
-  // Fallback to index.html for client-side routing
-  app.get("*", (req, res) => {
-    res.sendFile(join(__dirname, "../dist/index.html"));
+  // API routes (before static files)
+  app.get("/health", (req, res) => {
+    res.json({ status: "ok", uptime: process.uptime() });
   });
 
-  const PORT = 3001;
-  app.listen(PORT, "0.0.0.0", () => {
+  // Serve static files from the Vite build output
+  const distPath = join(__dirname, "../dist");
+  app.use(express.static(distPath, { 
+    maxAge: "1d",
+    etag: false 
+  }));
+
+  // Fallback to index.html for client-side routing
+  app.use((req, res) => {
+    const indexPath = join(distPath, "index.html");
+    res.type("text/html");
+    res.sendFile(indexPath, (err) => {
+      if (err && !res.headersSent) {
+        console.error("[Error] Failed to send index.html:", err.message);
+        res.status(404).send("Not found");
+      }
+    });
+  });
+
+  // Error handler
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error("[Error]", err.message || err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  const PORT = process.env.PORT || 3001;
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on port ${PORT}`);
+  });
+
+  // Graceful shutdown
+  process.on("SIGTERM", () => {
+    console.log("[Shutdown] SIGTERM received, closing gracefully...");
+    server.close(() => {
+      console.log("[Shutdown] Server closed");
+      process.exit(0);
+    });
+    setTimeout(() => {
+      console.error("[Shutdown] Forcing exit after 10s");
+      process.exit(1);
+    }, 10000);
   });
 }
 
