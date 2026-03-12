@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Info, X, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { explainScore, getContextMultipliers, buildOrgContext } from "@/lib/engine/contextEngine";
+import { explainScore, getContextMultipliers, buildOrgContext, getNeutralContext } from "@/lib/engine/contextEngine";
 import type { OrgContext, ScoreExplanation } from "@/lib/engine/contextEngine";
 import { loadProfile } from "@/lib/companyStore";
 
@@ -13,12 +13,12 @@ interface Props {
   size?: "sm" | "md";
 }
 
-function getOrgContext(): OrgContext | null {
+function getOrgContext(): OrgContext {
   try {
     const profile = loadProfile();
     if (profile.onboardingComplete) return buildOrgContext(profile);
   } catch {}
-  return null;
+  return getNeutralContext();
 }
 
 const positionColors: Record<ScoreExplanation["stagePosition"], string> = {
@@ -49,7 +49,7 @@ export default function ScoreExplainer({ metricName, rawScore, className, varian
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  if (!ctx) return null;
+  if (!rawScore) return null;
 
   const explanation = explainScore(metricName, rawScore, ctx);
   const multi = getContextMultipliers(ctx);

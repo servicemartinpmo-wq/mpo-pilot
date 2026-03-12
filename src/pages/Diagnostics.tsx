@@ -519,7 +519,10 @@ export default function Diagnostics() {
                 <p className="text-sm text-foreground/80 leading-snug line-clamp-2">{ins.situation}</p>
                 <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{ins.recommendation}</p>
               </div>
-              <ScoreBadge score={ins.executivePriorityScore} signal={ins.signal} size="sm" />
+              <div className="flex flex-col items-end gap-1 shrink-0">
+                <ScoreBadge score={ins.executivePriorityScore} signal={ins.signal} size="sm" />
+                <ScoreExplainer metricName={ins.type} rawScore={ins.executivePriorityScore} size="sm" />
+              </div>
             </div>
           ))}
         </div>

@@ -186,6 +186,30 @@ function deriveUserMode(orgType: string, teamSize: string): UserMode {
   return "operator";
 }
 
+/**
+ * Returns a neutral, middle-ground OrgContext for use when no onboarding
+ * profile exists yet. Ensures ScoreExplainer and all scoring paths
+ * always have a valid context rather than returning null / crashing.
+ */
+export function getNeutralContext(): OrgContext {
+  const now = new Date();
+  const quarter = (Math.floor(now.getMonth() / 3) + 1) as 1 | 2 | 3 | 4;
+  return {
+    industry: "General",
+    companyStage: "growth",
+    teamSizeBand: "small",
+    teamSizeNum: 30,
+    revenueStage: "Unknown",
+    userMode: "operator",
+    fiscalQuarter: quarter,
+    isQ4: quarter === 4,
+    goalUrgency: "optimize",
+    currentStateRaw: "",
+    futureStateRaw: "",
+    orgName: "Your Organization",
+  };
+}
+
 export function buildOrgContext(profile: CompanyProfile): OrgContext {
   const now = new Date();
   const quarter = (Math.floor(now.getMonth() / 3) + 1) as 1 | 2 | 3 | 4;
