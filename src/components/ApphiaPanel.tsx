@@ -7,12 +7,14 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   X, Send, Mic, MicOff, ChevronRight,
-  Volume2, RefreshCw, Zap, PlayCircle,
+  Volume2, RefreshCw, Zap, PlayCircle, Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { actionItems, initiatives, departments } from "@/lib/pmoData";
 import { loadProfile } from "@/lib/companyStore";
 import { runMaturityScoring, runOrgHealthScoring } from "@/lib/engine/maturity";
+import { buildOrgContext, getContextFactors } from "@/lib/engine/contextEngine";
+import type { OrgContext } from "@/lib/engine/contextEngine";
 import WalkthroughPlayer, { type WalkthroughScript } from "@/components/WalkthroughPlayer";
 import {
   getWalkthrough, PAGE_DEFAULT_WALKTHROUGH, type WalkthroughId,
@@ -828,25 +830,74 @@ export default function ApphiaPanel() {
 // ── Org context strip ─────────────────────────────────────────────────
 function ApphiaContextStrip() {
   const [ctx] = useState(() => buildCtx());
+  const [showCtxPanel, setShowCtxPanel] = useState(false);
   const healthColor = ctx.healthScore >= 70 ? "hsl(160 56% 46%)" : ctx.healthScore >= 50 ? "hsl(38 92% 52%)" : "hsl(0 84% 60%)";
 
+  let orgCtx: OrgContext | null = null;
+  try {
+    const profile = loadProfile();
+    if (profile.onboardingComplete) orgCtx = buildOrgContext(profile);
+  } catch {}
+
+  const factors = orgCtx ? getContextFactors(orgCtx) : [];
+
   return (
-    <div className="px-4 py-2 flex items-center gap-2 overflow-x-auto flex-shrink-0"
-      style={{ scrollbarWidth: "none", borderBottom: "1px solid hsl(226 40% 14%)" }}>
-      <CtxChip label={`Health ${ctx.healthScore}`} color={healthColor} />
-      {ctx.overdue.length > 0 && (
-        <CtxChip label={`${ctx.overdue.length} overdue`} color="hsl(0 84% 60%)" />
+    <>
+      <div className="px-4 py-2 flex items-center gap-2 overflow-x-auto flex-shrink-0"
+        style={{ scrollbarWidth: "none", borderBottom: "1px solid hsl(226 40% 14%)" }}>
+        <CtxChip label={`Health ${ctx.healthScore}`} color={healthColor} />
+        {ctx.overdue.length > 0 && (
+          <CtxChip label={`${ctx.overdue.length} overdue`} color="hsl(0 84% 60%)" />
+        )}
+        {ctx.blocked.length > 0 && (
+          <CtxChip label={`${ctx.blocked.length} blocked`} color="hsl(38 92% 52%)" />
+        )}
+        {ctx.atRisk.length > 0 && (
+          <CtxChip label={`${ctx.atRisk.length} at risk`} color="hsl(38 92% 52%)" />
+        )}
+        {ctx.overdue.length === 0 && ctx.blocked.length === 0 && (
+          <CtxChip label="All clear" color="hsl(160 56% 46%)" />
+        )}
+        {orgCtx && (
+          <button
+            onClick={() => setShowCtxPanel(!showCtxPanel)}
+            className="flex-shrink-0 flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap transition-all"
+            style={{
+              background: showCtxPanel ? "hsl(183 62% 42% / 0.20)" : "hsl(183 62% 42% / 0.10)",
+              color: "hsl(183 62% 68%)",
+              border: `1px solid hsl(183 62% 42% / ${showCtxPanel ? "0.45" : "0.25"})`,
+            }}>
+            <Target className="w-2.5 h-2.5" />
+            Context
+          </button>
+        )}
+      </div>
+
+      {showCtxPanel && orgCtx && factors.length > 0 && (
+        <div className="px-4 py-3 space-y-2 flex-shrink-0"
+          style={{ borderBottom: "1px solid hsl(226 40% 14%)", background: "hsl(226 48% 7%)" }}>
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: "hsl(183 62% 58%)" }}>
+              Active Context Factors
+            </span>
+            <button onClick={() => setShowCtxPanel(false)} className="p-0.5 rounded hover:bg-white/10">
+              <X className="w-3 h-3" style={{ color: "hsl(0 0% 100% / 0.30)" }} />
+            </button>
+          </div>
+          <div className="space-y-1.5">
+            {factors.map(f => (
+              <div key={f.label} className="flex items-start gap-2 text-[11px]">
+                <span className="font-semibold flex-shrink-0 w-[80px]" style={{ color: "hsl(0 0% 100% / 0.55)" }}>{f.label}</span>
+                <div className="flex-1 min-w-0">
+                  <span className="font-bold" style={{ color: "hsl(0 0% 100% / 0.78)" }}>{f.value}</span>
+                  <p className="text-[10px] leading-snug mt-0.5" style={{ color: "hsl(0 0% 100% / 0.35)" }}>{f.influence}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
-      {ctx.blocked.length > 0 && (
-        <CtxChip label={`${ctx.blocked.length} blocked`} color="hsl(38 92% 52%)" />
-      )}
-      {ctx.atRisk.length > 0 && (
-        <CtxChip label={`${ctx.atRisk.length} at risk`} color="hsl(38 92% 52%)" />
-      )}
-      {ctx.overdue.length === 0 && ctx.blocked.length === 0 && (
-        <CtxChip label="All clear" color="hsl(160 56% 46%)" />
-      )}
-    </div>
+    </>
   );
 }
 

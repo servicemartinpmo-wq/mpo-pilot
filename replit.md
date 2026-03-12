@@ -37,7 +37,7 @@ The PMO-Ops Command Center is built as a Single Page Application (SPA) using a m
 - **Routing**: React Router v6 manages client-side navigation.
 - **State Management**: React Query is used for server-state management, complemented by local React hooks for UI state.
 - **Charting**: Recharts is utilized for data visualization and analytics outputs.
-- **AI Engine**: An internal AI engine, located in `src/lib/engine/`, provides advisory, maturity assessments, and signal generation for organizational health.
+- **AI Engine**: An internal AI engine, located in `src/lib/engine/`, provides advisory, maturity assessments, and signal generation for organizational health. The **Contextual Scoring Layer** (`contextEngine.ts`) calibrates all scores, signals, and recommendations based on the organization's profile: industry, company stage, team size, revenue, fiscal quarter, and goal urgency. It exports `OrgContext`, `buildOrgContext()`, `getContextMultipliers()`, `explainScore()`, and `getContextFactors()`. All engine functions (`maturity.ts`, `signals.ts`, `advisory.ts`) accept optional `OrgContext` — `runFullEngine()` in `systemChains.ts` automatically builds and passes context from the stored company profile.
 - **Core Components**: Key reusable components include `AppLayout`, `CompanyHealthScore` (animated SVG ring gauge), `NotificationsPanel`, `InsightCard`, `OrgHealthOrb` (3D-style health orb), `OnboardingWizard`, and `PageBanner`.
 - **Data Services**: `supabaseDataService.ts` centralizes all CRUD operations with Supabase.
 - **Project Structure**: Organized into `pages/`, `components/` (with `components/ui/` for shadcn components), `hooks/`, `lib/` (for services, stores, engine logic, and static data), and `integrations/supabase/`.

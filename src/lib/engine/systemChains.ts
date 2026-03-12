@@ -19,6 +19,9 @@ import type { DiagnosisResult } from "./diagnosis";
 import type { AdvisoryRecommendation, ActionGenerated } from "./advisory";
 import type { DependencyMap } from "./dependency";
 import type { MaturityScore, OrgHealthScore } from "./maturity";
+import type { OrgContext } from "./contextEngine";
+import { buildOrgContext } from "./contextEngine";
+import { loadProfile } from "@/lib/companyStore";
 
 // ── System Chain IDs — All 25 Core AI Systems ────────────────────────────────
 export type SystemChainId =
@@ -710,6 +713,7 @@ export interface EngineState {
   maturityScores: MaturityScore[];
   orgHealth: OrgHealthScore;
   activeChains: SystemChainId[];
+  orgContext: OrgContext | null;
   lastFullRun: string;
 }
 
@@ -722,18 +726,26 @@ let _engineState: EngineState | null = null;
  * Feeds all 25 System Chains.
  */
 export function runFullEngine(): EngineState {
-  // Layer 1: Signal Detection
-  const signals = runSignalDetection();
+  let orgContext: OrgContext | null = null;
+  try {
+    const profile = loadProfile();
+    if (profile.onboardingComplete) {
+      orgContext = buildOrgContext(profile);
+    }
+  } catch { /* neutral defaults if profile unavailable */ }
+
+  // Layer 1: Signal Detection (context-aware thresholds + severity)
+  const signals = runSignalDetection(orgContext ?? undefined);
 
   // Layer 2: Diagnosis
   const diagnoses = runDiagnosis(signals);
 
-  // Layer 3: Advisory
-  const { recommendations, generatedActions } = runAdvisory(diagnoses, signals);
+  // Layer 3: Advisory (context-aware priority re-ranking)
+  const { recommendations, generatedActions } = runAdvisory(diagnoses, signals, orgContext ?? undefined);
 
-  // Layer 4 (parallel): Maturity Scoring
-  const maturityScores = runMaturityScoring();
-  const orgHealth = runOrgHealthScoring(maturityScores);
+  // Layer 4 (parallel): Maturity Scoring (context-aware dimension weights)
+  const maturityScores = runMaturityScoring(orgContext ?? undefined);
+  const orgHealth = runOrgHealthScoring(maturityScores, orgContext ?? undefined);
 
   // Layer 5: Dependency Intelligence
   const dependencyMap = runDependencyIntelligence();
@@ -785,6 +797,7 @@ export function runFullEngine(): EngineState {
     maturityScores,
     orgHealth,
     activeChains: [...new Set(activeChains)] as SystemChainId[],
+    orgContext,
     lastFullRun: new Date().toISOString(),
   };
 

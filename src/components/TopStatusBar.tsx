@@ -12,6 +12,7 @@ import { useCountUp } from "@/hooks/useCountUp";
 import { cn } from "@/lib/utils";
 import { departments, actionItems, insights } from "@/lib/pmoData";
 import pmoLogoNoBg from "@/assets/pmo-logo-nobg.png";
+import ScoreExplainer from "@/components/ScoreExplainer";
 
 interface Props {
   onOpenCommandPalette: () => void;
@@ -96,6 +97,7 @@ export default function TopStatusBar({ onOpenCommandPalette }: Props) {
             <span className="text-[11px] font-black font-mono" style={{ color: orgColor }}>
               {orgDisplay}
             </span>
+            <ScoreExplainer metricName="Org Health" rawScore={orgHealth} variant="dark" size="sm" />
           </Link>
 
           <span className="w-px h-3" style={{ background: "hsl(0 0% 100% / 0.12)" }} />
@@ -113,6 +115,7 @@ export default function TopStatusBar({ onOpenCommandPalette }: Props) {
             <span className="text-[11px] font-black font-mono" style={{ color: opsColor }}>
               {opsDisplay}
             </span>
+            <ScoreExplainer metricName="Ops Health" rawScore={opsHealth} variant="dark" size="sm" />
           </Link>
 
           {/* Critical alert count */}

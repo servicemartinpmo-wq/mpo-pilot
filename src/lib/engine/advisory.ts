@@ -14,6 +14,8 @@
 import type { DiagnosisResult, RootCauseCategory } from "./diagnosis";
 import type { DetectedSignal } from "./signals";
 import type { ToneMode } from "@/hooks/useUserMode";
+import type { OrgContext } from "./contextEngine";
+import { getContextMultipliers } from "./contextEngine";
 
 export type AdvisoryCategory =
   | "Strategic Realignment"
@@ -208,10 +210,14 @@ function generateActionItems(rec: AdvisoryRecommendation): ActionGenerated[] {
  * Takes diagnosis results and generates structured recommendations.
  * Each recommendation includes rationale (Drucker), action (Bossidy), and behavioral insight (Cialdini/Kahneman).
  */
-export function runAdvisory(diagnoses: DiagnosisResult[], signals: DetectedSignal[]): {
+export function runAdvisory(diagnoses: DiagnosisResult[], signals: DetectedSignal[], ctx?: OrgContext): {
   recommendations: AdvisoryRecommendation[];
   generatedActions: ActionGenerated[];
 } {
+  const bias = ctx ? getContextMultipliers(ctx).advisoryBias : {
+    prioritizeExecution: false, prioritizeStrategy: false, prioritizeProcess: false,
+    prioritizeRisk: false, quarterlyUrgency: false, compressRoadmap: false,
+  };
   const recommendations: AdvisoryRecommendation[] = [];
   const generatedActions: ActionGenerated[] = [];
 
@@ -223,10 +229,21 @@ export function runAdvisory(diagnoses: DiagnosisResult[], signals: DetectedSigna
       const template = ADVISORY_TEMPLATES[trigger];
       if (!template) continue;
 
-      const priority: AdvisoryPriority =
+      let priority: AdvisoryPriority =
         signal.severity === "Critical" ? "Immediate" :
         signal.severity === "High" ? "This Week" :
         signal.severity === "Medium" ? "This Month" : "This Quarter";
+
+      if (bias.quarterlyUrgency && priority === "This Month") priority = "This Week";
+      if (bias.compressRoadmap && priority === "This Quarter") priority = "This Month";
+      const isExecCategory = trigger === "Execution Acceleration" || trigger === "Resource Reallocation";
+      const isStratCategory = trigger === "Strategic Realignment" || trigger === "Initiative Reprioritization";
+      const isProcessCategory = trigger === "Process Redesign" || trigger === "Structural Remediation";
+      const isRiskCategory = trigger === "Risk Mitigation";
+      if (bias.prioritizeExecution && isExecCategory && priority !== "Immediate") priority = "This Week";
+      if (bias.prioritizeStrategy && isStratCategory && priority !== "Immediate") priority = "This Week";
+      if (bias.prioritizeProcess && isProcessCategory && priority !== "Immediate") priority = "This Week";
+      if (bias.prioritizeRisk && isRiskCategory && priority !== "Immediate") priority = "This Week";
 
       const rec: AdvisoryRecommendation = {
         id: `adv-${diag.signalId}-${trigger.replace(/\s+/g, "")}`,

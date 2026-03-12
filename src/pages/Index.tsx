@@ -4,6 +4,7 @@ import pmoLogoLight from "@/assets/pmo-logo-light.png";
 import onboardNetwork from "@/assets/onboard-network.png";
 import InsightCard from "@/components/InsightCard";
 import ProgressRing from "@/components/ProgressRing";
+import ScoreExplainer from "@/components/ScoreExplainer";
 import DeltaPill from "@/components/DeltaPill";
 import CompanyHealthScore from "@/components/CompanyHealthScore";
 import StrategyScoreCard from "@/components/StrategyScoreCard";
@@ -1090,7 +1091,10 @@ function ExecutiveDashboard({
               animDelay={200}
             />
             <div>
-              <div className="text-2xl font-black" style={{ color: white }}>{orgHealth}%</div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-2xl font-black" style={{ color: white }}>{orgHealth}%</span>
+                <ScoreExplainer metricName="Org Health" rawScore={orgHealth} variant="dark" size="md" />
+              </div>
               <div className="text-xs mt-0.5" style={{ color: muted }}>Overall organizational health</div>
               <div className="flex items-center gap-1.5 mt-2">
                 {[...Array(5)].map((_, i) => (

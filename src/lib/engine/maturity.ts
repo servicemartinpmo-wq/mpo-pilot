@@ -12,6 +12,8 @@
 
 import { departments, insights, initiatives, actionItems } from "@/lib/pmoData";
 import type { MaturityTier, Department } from "@/lib/pmoData";
+import type { OrgContext, DimensionWeights } from "./contextEngine";
+import { getContextMultipliers } from "./contextEngine";
 
 export interface MaturityScore {
   departmentId: string;
@@ -117,7 +119,11 @@ function generateMaturityInsights(dept: Department, dims: MaturityScore["dimensi
  * Calculates CMMI-based maturity scores for each department.
  * Outputs to Dashboard and Reports.
  */
-export function runMaturityScoring(): MaturityScore[] {
+export function runMaturityScoring(ctx?: OrgContext): MaturityScore[] {
+  const w: DimensionWeights = ctx
+    ? getContextMultipliers(ctx).dimensionWeights
+    : { strategicAlignment: 0.25, executionDiscipline: 0.25, operationalCapacity: 0.20, processStructure: 0.15, riskManagement: 0.15 };
+
   return departments.map(dept => {
     const dims = {
       strategicAlignment: calcStrategicAlignment(dept),
@@ -127,13 +133,12 @@ export function runMaturityScoring(): MaturityScore[] {
       riskManagement: calcRiskManagement(dept),
     };
 
-    // Weighted composite (BSC-inspired weights)
     const overall = Math.round(
-      dims.strategicAlignment * 0.25 +
-      dims.executionDiscipline * 0.25 +
-      dims.operationalCapacity * 0.20 +
-      dims.processStructure * 0.15 +
-      dims.riskManagement * 0.15
+      dims.strategicAlignment * w.strategicAlignment +
+      dims.executionDiscipline * w.executionDiscipline +
+      dims.operationalCapacity * w.operationalCapacity +
+      dims.processStructure * w.processStructure +
+      dims.riskManagement * w.riskManagement
     );
 
     // Trend: compare computed score vs stored maturityScore
@@ -160,7 +165,7 @@ export function runMaturityScoring(): MaturityScore[] {
  * Aggregates department scores into an organizational health composite.
  * Primary output for Dashboard Executive Command Center.
  */
-export function runOrgHealthScoring(maturityScores: MaturityScore[]): OrgHealthScore {
+export function runOrgHealthScoring(maturityScores: MaturityScore[], ctx?: OrgContext): OrgHealthScore {
   const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
 
   const overallArr = maturityScores.map(m => m.overall);
@@ -195,11 +200,11 @@ export function runOrgHealthScoring(maturityScores: MaturityScore[]): OrgHealthS
     governanceScore,
     trend,
     scoreBreakdown: [
-      { label: "Execution Discipline", score: Math.round(avg(execArr)), weight: 25 },
-      { label: "Strategic Alignment", score: Math.round(avg(stratArr)), weight: 25 },
-      { label: "Operational Capacity", score: Math.round(avg(capArr)), weight: 20 },
-      { label: "Process Structure", score: Math.round(avg(maturityScores.map(m => m.dimensions.processStructure))), weight: 15 },
-      { label: "Risk Management", score: Math.round(avg(riskArr)), weight: 15 },
+      { label: "Execution Discipline", score: Math.round(avg(execArr)), weight: ctx ? Math.round(getContextMultipliers(ctx).dimensionWeights.executionDiscipline * 100) : 25 },
+      { label: "Strategic Alignment", score: Math.round(avg(stratArr)), weight: ctx ? Math.round(getContextMultipliers(ctx).dimensionWeights.strategicAlignment * 100) : 25 },
+      { label: "Operational Capacity", score: Math.round(avg(capArr)), weight: ctx ? Math.round(getContextMultipliers(ctx).dimensionWeights.operationalCapacity * 100) : 20 },
+      { label: "Process Structure", score: Math.round(avg(maturityScores.map(m => m.dimensions.processStructure))), weight: ctx ? Math.round(getContextMultipliers(ctx).dimensionWeights.processStructure * 100) : 15 },
+      { label: "Risk Management", score: Math.round(avg(riskArr)), weight: ctx ? Math.round(getContextMultipliers(ctx).dimensionWeights.riskManagement * 100) : 15 },
     ],
     updatedAt: new Date().toISOString(),
   };

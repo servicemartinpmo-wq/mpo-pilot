@@ -4,6 +4,7 @@ import { ScoreBadge, MaturityBadge, ScoreBar } from "@/components/ScoreBadge";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { X, Target, Shield, FileText, Users, ChevronRight, AlertTriangle, BarChart3, Activity, Loader2 } from "lucide-react";
+import ScoreExplainer from "@/components/ScoreExplainer";
 import { getScoreSignal } from "@/lib/pmoData";
 import type { MaturityTier } from "@/lib/pmoData";
 import MiniSparkline from "@/components/MiniSparkline";
@@ -101,8 +102,18 @@ function DepartmentDetailPanel({ dept, deptInsights, onClose }: {
               <span className="text-xs font-bold text-foreground uppercase tracking-wide">Performance Dimensions</span>
             </div>
             <div className="p-4 space-y-3">
-              <ScoreBar value={dept.maturity_score ?? 0} signal={getScoreSignal(dept.maturity_score ?? 0)} label="Operational Maturity" />
-              <ScoreBar value={dept.execution_health ?? 0} signal={getScoreSignal(dept.execution_health ?? 0)} label="Execution Health" />
+              <div className="flex items-center gap-1">
+                <div className="flex-1 min-w-0">
+                  <ScoreBar value={dept.maturity_score ?? 0} signal={getScoreSignal(dept.maturity_score ?? 0)} label="Operational Maturity" />
+                </div>
+                <ScoreExplainer metricName={`${dept.name} Maturity`} rawScore={dept.maturity_score ?? 0} size="sm" />
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="flex-1 min-w-0">
+                  <ScoreBar value={dept.execution_health ?? 0} signal={getScoreSignal(dept.execution_health ?? 0)} label="Execution Health" />
+                </div>
+                <ScoreExplainer metricName={`${dept.name} Execution`} rawScore={dept.execution_health ?? 0} size="sm" />
+              </div>
               <ScoreBar value={dept.capacity_used ?? 0} signal={(dept.capacity_used ?? 0) > 90 ? "red" : (dept.capacity_used ?? 0) > 75 ? "yellow" : "green"} label="Capacity Utilization" />
               <ScoreBar value={100 - (dept.risk_score ?? 0)} signal={getScoreSignal(100 - (dept.risk_score ?? 0))} label="Risk Index (inverted)" />
               <ScoreBar value={dept.sop_adherence ?? 0} signal={getScoreSignal(dept.sop_adherence ?? 0)} label="SOP Adherence" />

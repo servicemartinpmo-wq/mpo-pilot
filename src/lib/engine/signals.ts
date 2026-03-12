@@ -14,6 +14,8 @@
 
 import { insights, departments, initiatives, actionItems } from "@/lib/pmoData";
 import type { SignalLevel } from "@/lib/pmoData";
+import type { OrgContext, SignalThresholds } from "./contextEngine";
+import { getContextMultipliers } from "./contextEngine";
 
 export type SignalCategory =
   // Core operational signals (existing)
@@ -58,18 +60,33 @@ export interface DetectedSignal {
 }
 
 // ── Threshold Constants (Canonical: Heizer & Render, PMBOK) ──────────────────
-const CAPACITY_THRESHOLD = 85;       // % utilization → constraint signal
-const DEADLINE_VARIANCE_PCT = 10;    // % overdue → execution delay signal
-const NPS_ALERT_THRESHOLD = 50;      // NPS below → performance anomaly
-const BLOCKED_TASK_THRESHOLD = 3;    // blocked tasks → risk escalation
-const DEPENDENCY_AGE_DAYS = 7;       // unresolved dep → bottleneck
-const DECISION_DELAY_DAYS = 5;       // days → decision bottleneck
-const ACTION_ITEM_OVERDUE_THRESHOLD = 5; // overdue items → execution discipline
+// These are defaults; the context engine may override them per org profile.
+let CAPACITY_THRESHOLD = 85;
+let DEADLINE_VARIANCE_PCT = 10;
+let NPS_ALERT_THRESHOLD = 50;
+let BLOCKED_TASK_THRESHOLD = 3;
+let DEPENDENCY_AGE_DAYS = 7;
+let DECISION_DELAY_DAYS = 5;
+let ACTION_ITEM_OVERDUE_THRESHOLD = 5;
+
+let _severityMultiplier = 1.0;
+
+function applyContextThresholds(t: SignalThresholds, multiplier: number) {
+  CAPACITY_THRESHOLD = t.capacityThreshold;
+  DEADLINE_VARIANCE_PCT = t.deadlineVariancePct;
+  NPS_ALERT_THRESHOLD = t.npsAlertThreshold;
+  BLOCKED_TASK_THRESHOLD = t.blockedTaskThreshold;
+  DEPENDENCY_AGE_DAYS = t.dependencyAgeDays;
+  DECISION_DELAY_DAYS = t.decisionDelayDays;
+  ACTION_ITEM_OVERDUE_THRESHOLD = t.actionItemOverdueThreshold;
+  _severityMultiplier = multiplier;
+}
 
 function toSeverity(score: number): SignalSeverity {
-  if (score >= 85) return "Critical";
-  if (score >= 70) return "High";
-  if (score >= 50) return "Medium";
+  const adjusted = Math.min(100, Math.round(score * _severityMultiplier));
+  if (adjusted >= 85) return "Critical";
+  if (adjusted >= 70) return "High";
+  if (adjusted >= 50) return "Medium";
   return "Low";
 }
 
@@ -456,7 +473,21 @@ function detectBenchmarkingGaps(): DetectedSignal[] {
  * Covers all 25 System Chain triggers.
  * Called by SystemChain orchestrators and Diagnostics engine.
  */
-export function runSignalDetection(): DetectedSignal[] {
+export function runSignalDetection(ctx?: OrgContext): DetectedSignal[] {
+  if (ctx) {
+    const multi = getContextMultipliers(ctx);
+    applyContextThresholds(multi.signalThresholds, multi.severityMultiplier);
+  } else {
+    CAPACITY_THRESHOLD = 85;
+    DEADLINE_VARIANCE_PCT = 10;
+    NPS_ALERT_THRESHOLD = 50;
+    BLOCKED_TASK_THRESHOLD = 3;
+    DEPENDENCY_AGE_DAYS = 7;
+    DECISION_DELAY_DAYS = 5;
+    ACTION_ITEM_OVERDUE_THRESHOLD = 5;
+    _severityMultiplier = 1.0;
+  }
+
   const allSignals: DetectedSignal[] = [
     // Core signals (Systems 1-10)
     ...detectCapacitySignals(),
