@@ -332,7 +332,6 @@ const ROUTE_LABELS: Record<string, string> = {
 
 export default function AppLayout({ children, profile, onProfileUpdate }: Props) {
   const { user } = useAuth();
-  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [demoBannerDismissed, setDemoBannerDismissed] = useState(false);
   const inDemoMode = isDemoMode();
