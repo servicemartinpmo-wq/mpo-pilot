@@ -3,12 +3,15 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://okgpcsfqkshdzbfuigfq.supabase.co';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const SUPABASE_ANON_KEY =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  '';
 
 if (!SUPABASE_ANON_KEY) {
   console.error(
-    '[Martin PMO] VITE_SUPABASE_ANON_KEY is not set. ' +
-    'Add it to your environment secrets so authentication works correctly.'
+    '[Martin PMO] Supabase anon key is not set. ' +
+    'Set VITE_SUPABASE_ANON_KEY or VITE_SUPABASE_PUBLISHABLE_KEY in your environment.'
   );
 }
 
