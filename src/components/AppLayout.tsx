@@ -9,7 +9,7 @@ import {
   Network, ShoppingBag, CreditCard, Tag,
   Menu, X, MoreHorizontal,
 } from "lucide-react";
-import pmoLogoDark from "@/assets/pmo-logo-dark.png";
+import pmoLogoIcon from "@/assets/pmo-logo-icon.png";
 import { useUserMode } from "@/hooks/useUserMode";
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
@@ -878,7 +878,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
             {mobileDrawerOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
           <div className="flex-1 flex items-center gap-2.5">
-            <img src={pmoLogoDark} alt="PMO-Ops" className="h-6 w-auto flex-shrink-0 object-contain" style={{ maxWidth: 72 }} />
+            <img src={pmoLogoIcon} alt="PMO-Ops" className="h-6 w-6 flex-shrink-0 object-contain" />
             <span className="text-[13px] font-black text-white leading-none tracking-tight">PMO-Ops</span>
           </div>
           <div className="flex items-center gap-2">
@@ -954,10 +954,10 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           <div className="flex items-center gap-2.5 px-3 py-3 border-b" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
             {/* Logo — always visible */}
             <img
-              src={pmoLogoDark}
+              src={pmoLogoIcon}
               alt="PMO-Ops"
-              className="h-8 w-auto flex-shrink-0 object-contain"
-              style={{ maxWidth: 90 }}
+              className="h-7 w-auto flex-shrink-0 object-contain"
+              style={{ maxWidth: 28 }}
             />
 
             {/* Company + app name — only when expanded */}

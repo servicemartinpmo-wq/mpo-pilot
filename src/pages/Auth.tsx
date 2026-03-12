@@ -7,7 +7,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, CheckCircle, AlertCircle, Building2, Sparkles } from "lucide-react";
-import pmoLogoDark from "@/assets/pmo-logo-dark.png";
+import pmoLogoIcon from "@/assets/pmo-logo-icon.png";
 import { SiGoogle } from "react-icons/si";
 import { activateDemo } from "@/lib/companyStore";
 
@@ -150,7 +150,7 @@ export default function AuthPage() {
       <div className="relative z-10 w-full max-w-md px-6 py-10">
         {/* Brand */}
         <div className="text-center mb-8">
-          <img src={pmoLogoDark} alt="PMO-Ops" className="h-20 w-auto mx-auto mb-4 object-contain" style={{ maxWidth: 180, filter: `drop-shadow(0 0 18px ${ACCENT}55)` }} />
+          <img src={pmoLogoIcon} alt="PMO-Ops" className="h-16 w-16 mx-auto mb-4 object-contain flex-shrink-0" style={{ filter: `drop-shadow(0 0 18px ${ACCENT}55)` }} />
           <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1">PMO-Ops</div>
           <h1 className="text-2xl font-black text-foreground tracking-tight">
             {mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}

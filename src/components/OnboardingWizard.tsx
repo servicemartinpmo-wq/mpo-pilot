@@ -17,7 +17,7 @@ import { saveProfile } from "@/lib/companyStore";
 import collageImage from "@/assets/onboard-collage.jpg";
 import onboardHero from "@/assets/onboard-hero.jpg";
 import onboardNetwork from "@/assets/onboard-network.png";
-import pmoLogoDark from "@/assets/pmo-logo-dark.png";
+import pmoLogoIcon from "@/assets/pmo-logo-icon.png";
 import slideBg1 from "@/assets/diag-slide-bg-1.jpg";
 import slideBg2 from "@/assets/diag-slide-bg-2.jpg";
 import slideBg3 from "@/assets/diag-slide-bg-3.jpg";
@@ -963,7 +963,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
 
                 {/* Brand mark */}
                 <div className="mb-8 flex flex-col items-center">
-                  <img src={pmoLogoDark} alt="Martin PMO" style={{ height: 80, width: "auto", maxWidth: 200 }} />
+                  <img src={pmoLogoIcon} alt="Martin PMO" style={{ height: 64, width: 64 }} />
                 </div>
 
                 {/* Tagline */}
@@ -1594,8 +1594,8 @@ export default function OnboardingWizard({ onComplete }: Props) {
           style={{ background: `linear-gradient(to bottom, transparent, ${ACCENT}, transparent)`, opacity: 0.4 }} />
 
         <div className="relative z-10 p-8 xl:p-12">
-          <img src={pmoLogoDark} alt="Martin PMO"
-            style={{ height: 44, width: "auto", filter: "invert(1) brightness(2)", opacity: 0.82 }} />
+          <img src={pmoLogoIcon} alt="Martin PMO"
+            style={{ height: 40, width: 40, filter: "invert(1) brightness(2)", opacity: 0.82 }} />
         </div>
 
         <div className="relative z-10 flex-1 flex flex-col justify-center px-8 xl:px-12">
