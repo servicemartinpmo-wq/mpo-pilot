@@ -11,7 +11,7 @@ import {
   FileText, TrendingUp, AlertTriangle, CheckCircle, BarChart3,
   Download, ChevronDown, ChevronUp, Upload, X, Plus, Image, Folder,
   Calendar, CalendarDays, Award, Clock, DollarSign, Activity,
-  ThumbsUp, Save, BookOpen, Info, Shield, Target, Zap
+  ThumbsUp, Save, BookOpen, Info
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend, AreaChart, Area } from "recharts";
 import {
@@ -26,7 +26,7 @@ const SIGNAL_COLORS = {
   green: "hsl(var(--signal-green))", blue: "hsl(var(--electric-blue))",
 };
 
-type ReportTab = "executive" | "operations" | "departments" | "initiatives" | "quarterly" | "ytd" | "yearend" | "readiness" | "kpi" | "lessons" | "custom";
+type ReportTab = "executive" | "operations" | "departments" | "initiatives" | "quarterly" | "ytd" | "yearend" | "custom" | "kpi" | "lessons";
 
 const LESSONS_DATA = [
   {
@@ -263,81 +263,6 @@ export default function Reports() {
     { month: "Dec", health: execHealth, maturity: overallMaturity, revenue: 6.1 },
   ];
 
-  // ── Readiness Report Computed Values ────────────────────────────────────────
-  const sopCoverage = orgMetrics?.sop_coverage ?? 65;
-  const avgDeptMaturity = departments.length
-    ? Math.round(departments.reduce((s, d) => s + (d.maturity_score ?? 0), 0) / departments.length)
-    : 60;
-  const initiativeOnTrackPct = initiatives.length
-    ? Math.round((onTrackInitiatives / initiatives.length) * 100)
-    : 60;
-
-  const changeReadiness = Math.min(100, Math.round(
-    sopCoverage * 0.4 + (completedInitiatives > 2 ? 20 : 10) + (departments.length >= 4 ? 15 : 8) + 10
-  ));
-  const operationalReadiness = Math.min(100, execHealth);
-  const strategicReadiness = Math.min(100, Math.round(overallMaturity * 0.6 + initiativeOnTrackPct * 0.4));
-  const techReadiness = Math.min(100, avgDeptMaturity + 5);
-  const financialReadiness = Math.min(100, Math.round(overallMaturity * 0.5 + sopCoverage * 0.3 + 15));
-
-  const overallReadiness = Math.round(
-    changeReadiness * 0.25 +
-    operationalReadiness * 0.25 +
-    strategicReadiness * 0.20 +
-    techReadiness * 0.15 +
-    financialReadiness * 0.15
-  );
-
-  const readinessDimensions = [
-    { label: "Change Readiness", score: changeReadiness, icon: Zap, color: "hsl(var(--electric-blue))", desc: "SOP adoption, process documentation, and stakeholder alignment capacity." },
-    { label: "Operational Readiness", score: operationalReadiness, icon: Activity, color: "hsl(var(--signal-green))", desc: "Execution health, team capacity, and operational discipline." },
-    { label: "Strategic Readiness", score: strategicReadiness, icon: Target, color: "hsl(var(--teal))", desc: "Initiative clarity, OKR alignment, and goal completion momentum." },
-    { label: "Technology Readiness", score: techReadiness, icon: BarChart3, color: "hsl(var(--signal-yellow))", desc: "System maturity, digital workflow coverage, and tech infrastructure posture." },
-    { label: "Financial Readiness", score: financialReadiness, icon: DollarSign, color: "hsl(38 90% 55%)", desc: "Budget deployment, cost governance, and revenue growth trajectory." },
-  ];
-
-  const kotterSteps = [
-    { name: "Create Urgency", score: Math.min(100, 40 + (blockedInitiatives > 0 ? 30 : 15) + (pendingActions.length > 5 ? 15 : 5)) },
-    { name: "Build Guiding Coalition", score: Math.min(100, (departments.length >= 4 ? 70 : 45) + (execHealth > 70 ? 15 : 5)) },
-    { name: "Form Strategic Vision", score: Math.min(100, Math.round(overallMaturity * 0.6 + 20)) },
-    { name: "Enlist a Volunteer Army", score: Math.min(100, Math.round(initiativeOnTrackPct * 0.6 + 25)) },
-    { name: "Enable Action by Removing Barriers", score: Math.min(100, Math.round((100 - Math.min(blockedInitiatives * 15, 50)) * 0.7 + 20)) },
-    { name: "Generate Short-Term Wins", score: Math.min(100, completedInitiatives > 3 ? 80 : completedInitiatives > 1 ? 65 : 45) },
-    { name: "Sustain Acceleration", score: Math.min(100, Math.round(sopCoverage * 0.5 + execHealth * 0.3 + 10)) },
-    { name: "Institute Change", score: Math.min(100, Math.round(sopCoverage * 0.6 + avgDeptMaturity * 0.2 + 5)) },
-  ];
-
-  const readinessGaps: { title: string; action: string; severity: "high" | "medium" | "low" }[] = [
-    {
-      title: "SOP Coverage",
-      action: sopCoverage < 70 ? `Increase SOP coverage from ${sopCoverage}% to 80%+ before scaling initiatives` : "SOP coverage is on track — maintain documentation cadence",
-      severity: sopCoverage < 70 ? "high" : "low",
-    },
-    {
-      title: "Blocked Initiatives",
-      action: blockedInitiatives > 0 ? `${blockedInitiatives} initiative${blockedInitiatives > 1 ? "s" : ""} blocked — escalate and resolve dependencies before next quarter` : "No blocked initiatives — maintain forward momentum",
-      severity: blockedInitiatives > 2 ? "high" : blockedInitiatives > 0 ? "medium" : "low",
-    },
-    {
-      title: "Overdue Action Items",
-      action: pendingActions.length > 5 ? `${pendingActions.length} overdue items — assign clear owners and enforce due dates` : `${pendingActions.length} pending items — manageable, continue weekly review`,
-      severity: pendingActions.length > 10 ? "high" : pendingActions.length > 5 ? "medium" : "low",
-    },
-    {
-      title: "Execution Discipline",
-      action: execHealth < 65 ? `Execution health at ${execHealth} — implement weekly ops review cadence immediately` : `Execution health at ${execHealth} — above readiness threshold`,
-      severity: execHealth < 65 ? "high" : execHealth < 75 ? "medium" : "low",
-    },
-  ];
-
-  const readinessRoadmap = [
-    { action: "Run full stakeholder readiness assessment", timeframe: "Next 2 weeks", owner: "COO" },
-    { action: `Close SOP gaps — target ${Math.min(sopCoverage + 15, 95)}% coverage`, timeframe: "This quarter", owner: "Ops Lead" },
-    { action: "Resolve all blocked initiatives before quarter-end", timeframe: "This month", owner: "PMO" },
-    { action: "Launch change champion network across departments", timeframe: "Next 30 days", owner: "CEO / HR" },
-    { action: "Establish monthly readiness review cadence", timeframe: "Ongoing", owner: "Executive Team" },
-  ];
-
   const tabs: { id: ReportTab; label: string; icon?: React.ElementType }[] = [
     { id: "executive",  label: "Executive Summary" },
     { id: "operations", label: "Operations" },
@@ -346,7 +271,6 @@ export default function Reports() {
     { id: "quarterly",  label: "Quarterly", icon: Calendar },
     { id: "ytd",        label: "Year to Date", icon: TrendingUp },
     { id: "yearend",    label: "Year-End", icon: Award },
-    { id: "readiness",  label: "Readiness", icon: Shield },
     { id: "kpi",        label: "KPI Trends", icon: TrendingUp },
     { id: "lessons",    label: "Lessons Learned", icon: BookOpen },
     { id: "custom",     label: "Custom Report" },
@@ -1432,117 +1356,6 @@ export default function Reports() {
               ))}
             </div>
           </SectionCard>
-        </div>
-      )}
-
-      {/* ── READINESS REPORT ── */}
-      {tab === "readiness" && (
-        <div className="space-y-6 animate-fade-in">
-          {/* Header */}
-          <div className="flex items-center gap-3 px-5 py-4 rounded-xl border border-electric-blue/20 bg-electric-blue/5">
-            <Shield className="w-5 h-5 text-electric-blue flex-shrink-0" />
-            <div>
-              <div className="text-sm font-bold text-foreground">Organizational Readiness Report</div>
-              <div className="text-xs text-muted-foreground">Change readiness · Strategic alignment · Operational posture — live from your data</div>
-            </div>
-            <button className="ml-auto flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-electric-blue/30 text-electric-blue font-semibold hover:bg-electric-blue/10 transition-colors">
-              <Download className="w-3.5 h-3.5" /> Export
-            </button>
-          </div>
-
-          {/* Overall Score + Dimensions */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-            <div className="bg-card rounded-xl border-2 border-electric-blue/30 p-5 shadow-card flex flex-col items-center justify-center text-center gap-2">
-              <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Overall Readiness</div>
-              <div className={cn("text-6xl font-black font-mono", overallReadiness >= 75 ? "text-signal-green" : overallReadiness >= 55 ? "text-signal-yellow" : "text-signal-red")}>
-                {overallReadiness}
-              </div>
-              <div className={cn("text-xs font-bold px-3 py-1 rounded-full", overallReadiness >= 75 ? "bg-signal-green/10 text-signal-green" : overallReadiness >= 55 ? "bg-signal-yellow/10 text-signal-yellow" : "bg-signal-red/10 text-signal-red")}>
-                {overallReadiness >= 75 ? "Ready to Scale" : overallReadiness >= 55 ? "Conditionally Ready" : "Needs Preparation"}
-              </div>
-              <p className="text-[11px] text-muted-foreground leading-snug mt-1">
-                Weighted composite across 5 readiness dimensions based on your live operational data.
-              </p>
-            </div>
-
-            <div className="xl:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {readinessDimensions.map(dim => (
-                <div key={dim.label} className="bg-card rounded-xl border-2 border-border p-4 shadow-card">
-                  <div className="flex items-center gap-2 mb-2.5">
-                    <dim.icon className="w-4 h-4" style={{ color: dim.color }} />
-                    <span className="text-xs font-bold text-foreground">{dim.label}</span>
-                    <span className={cn("ml-auto text-xs font-bold font-mono", dim.score >= 75 ? "text-signal-green" : dim.score >= 55 ? "text-signal-yellow" : "text-signal-red")}>
-                      {dim.score}
-                    </span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-muted overflow-hidden mb-2">
-                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${dim.score}%`, background: dim.score >= 75 ? "hsl(var(--signal-green))" : dim.score >= 55 ? "hsl(var(--signal-yellow))" : "hsl(var(--signal-red))" }} />
-                  </div>
-                  <p className="text-[10px] text-muted-foreground leading-snug">{dim.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Kotter 8-Step Assessment */}
-          <SectionCard title="Change Readiness — Kotter 8-Step Model" icon={Zap}>
-            <div className="p-5 space-y-4">
-              <p className="text-xs text-muted-foreground">Scoring each of Kotter's 8 steps based on your active initiatives, team structure, SOP maturity, and execution data.</p>
-              <div className="space-y-3">
-                {kotterSteps.map((step, i) => (
-                  <div key={step.name} className="flex items-center gap-3">
-                    <div className={cn("w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-bold", step.score >= 70 ? "bg-signal-green/15 text-signal-green" : step.score >= 45 ? "bg-signal-yellow/15 text-signal-yellow" : "bg-signal-red/15 text-signal-red")}>
-                      {i + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[11px] font-semibold text-foreground truncate">{step.name}</span>
-                        <span className={cn("text-[10px] font-bold ml-2 flex-shrink-0", step.score >= 70 ? "text-signal-green" : step.score >= 45 ? "text-signal-yellow" : "text-signal-red")}>{step.score}%</span>
-                      </div>
-                      <div className="h-1 rounded-full bg-muted overflow-hidden">
-                        <div className="h-full rounded-full" style={{ width: `${step.score}%`, background: step.score >= 70 ? "hsl(var(--signal-green))" : step.score >= 45 ? "hsl(var(--signal-yellow))" : "hsl(var(--signal-red))" }} />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </SectionCard>
-
-          {/* Gaps + Roadmap */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-            <SectionCard title="Readiness Gaps" icon={AlertTriangle}>
-              <div className="divide-y divide-border">
-                {readinessGaps.map((gap, i) => (
-                  <div key={i} className="px-5 py-3 flex items-start gap-3">
-                    <span className={cn("w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0", gap.severity === "high" ? "bg-signal-red" : gap.severity === "medium" ? "bg-signal-yellow" : "bg-signal-green")} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-foreground">{gap.title}</p>
-                      <p className="text-[11px] text-muted-foreground leading-snug">{gap.action}</p>
-                    </div>
-                    <span className={cn("ml-2 text-[10px] font-bold flex-shrink-0 px-2 py-0.5 rounded-full whitespace-nowrap", gap.severity === "high" ? "bg-signal-red/10 text-signal-red" : gap.severity === "medium" ? "bg-signal-yellow/10 text-signal-yellow" : "bg-signal-green/10 text-signal-green")}>
-                      {gap.severity === "high" ? "Critical" : gap.severity === "medium" ? "Monitor" : "On Track"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </SectionCard>
-
-            <SectionCard title="Readiness Roadmap" icon={Target}>
-              <div className="divide-y divide-border">
-                {readinessRoadmap.map((item, i) => (
-                  <div key={i} className="px-5 py-3 flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-electric-blue/10 text-electric-blue flex items-center justify-center flex-shrink-0 text-[9px] font-bold mt-0.5">{i + 1}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-foreground">{item.action}</p>
-                      <p className="text-[11px] text-muted-foreground">{item.timeframe}</p>
-                    </div>
-                    <span className="text-[10px] font-semibold text-muted-foreground flex-shrink-0 ml-2">{item.owner}</span>
-                  </div>
-                ))}
-              </div>
-            </SectionCard>
-          </div>
         </div>
       )}
 
