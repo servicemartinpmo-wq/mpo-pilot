@@ -12,7 +12,7 @@
 
 import { departments, insights, initiatives, actionItems } from "@/lib/pmoData";
 import type { MaturityTier, Department } from "@/lib/pmoData";
-import type { OrgContext, DimensionWeights } from "./contextEngine";
+import type { OrgContext, DimensionWeights, StageNormalBand } from "./contextEngine";
 import { getContextMultipliers } from "./contextEngine";
 
 export interface MaturityScore {
@@ -59,6 +59,33 @@ function toTier(score: number): MaturityTier {
   if (score >= 50) return "Structured";
   if (score >= 30) return "Developing";
   return "Foundational";
+}
+
+const TIER_ORDER: MaturityTier[] = ["Foundational", "Developing", "Structured", "Managed", "Optimized"];
+
+function parseExpectedTier(raw: string): MaturityTier {
+  // Handle composite labels like "Managed/Optimized"
+  const first = raw.split("/")[0].trim() as MaturityTier;
+  return TIER_ORDER.includes(first) ? first : "Structured";
+}
+
+/**
+ * Returns the tier that reflects organizational performance relative to stage peers,
+ * rather than the absolute CMMI level. A pre-revenue company scoring 45 is "Developing"
+ * on the absolute scale, but "Above Stage" (expected "Foundational") — so the
+ * stage-calibrated tier surfaces as "Developing" (one tier above the expected floor).
+ */
+function toStageCalibratedTier(score: number, band: StageNormalBand): MaturityTier {
+  const expectedIdx = TIER_ORDER.indexOf(parseExpectedTier(band.expectedTier));
+  if (score >= band.high) {
+    return TIER_ORDER[Math.min(TIER_ORDER.length - 1, expectedIdx + 1)];
+  }
+  if (score >= band.low) {
+    return TIER_ORDER[Math.max(0, expectedIdx)];
+  }
+  // Below stage-normal floor — each 12pt gap below floor drops a tier
+  const gapTiers = Math.min(2, Math.floor((band.low - score) / 12));
+  return TIER_ORDER[Math.max(0, expectedIdx - 1 - gapTiers)];
 }
 
 // ── Dimension Calculators ─────────────────────────────────────────────────────
@@ -120,9 +147,12 @@ function generateMaturityInsights(dept: Department, dims: MaturityScore["dimensi
  * Outputs to Dashboard and Reports.
  */
 export function runMaturityScoring(ctx?: OrgContext): MaturityScore[] {
-  const w: DimensionWeights = ctx
-    ? getContextMultipliers(ctx).dimensionWeights
-    : { strategicAlignment: 0.25, executionDiscipline: 0.25, operationalCapacity: 0.20, processStructure: 0.15, riskManagement: 0.15 };
+  const multi = ctx ? getContextMultipliers(ctx) : null;
+  const w: DimensionWeights = multi?.dimensionWeights ?? {
+    strategicAlignment: 0.25, executionDiscipline: 0.25,
+    operationalCapacity: 0.20, processStructure: 0.15, riskManagement: 0.15,
+  };
+  const stageNormal = multi?.stageNormal ?? null;
 
   return departments.map(dept => {
     const dims = {
@@ -141,17 +171,23 @@ export function runMaturityScoring(ctx?: OrgContext): MaturityScore[] {
       dims.riskManagement * w.riskManagement
     );
 
-    // Trend: compare computed score vs stored maturityScore
+    // Stage-calibrated trend: use stage-normal midpoint as the "expected" baseline
+    // so early-stage orgs aren't penalized for not hitting enterprise-grade scores
     const storedScore = dept.maturityScore;
+    const stageMid = stageNormal?.mid ?? storedScore;
+    const trendBaseline = Math.max(storedScore, stageMid * 0.5 + storedScore * 0.5);
     const trend: MaturityScore["trend"] =
-      overall > storedScore + 3 ? "Improving" :
-      overall < storedScore - 3 ? "Declining" : "Stable";
+      overall > trendBaseline + 3 ? "Improving" :
+      overall < trendBaseline - 3 ? "Declining" : "Stable";
+
+    // Stage-calibrated tier: reflects performance relative to stage peers, not absolute CMMI
+    const tier = stageNormal ? toStageCalibratedTier(overall, stageNormal) : toTier(overall);
 
     return {
       departmentId: dept.id,
       departmentName: dept.name,
       overall,
-      tier: toTier(overall),
+      tier,
       dimensions: dims,
       trend,
       cmmLevel: toCMMILevel(overall),

@@ -248,19 +248,29 @@ export function getContextMultipliers(ctx: OrgContext): ContextMultipliers {
     weightAdjustments.push({ dimension: "executionDiscipline", delta, reason: `${ctx.companyStage}-stage companies face coordination risk at scale — execution discipline weighted higher` });
   }
 
+  // Team-size threshold calibration
+  // Small teams have LESS buffer per blocked item → LOWER thresholds (more sensitive)
+  // Large/enterprise teams have wider margins → HIGHER thresholds (less noise)
   if (ctx.teamSizeBand === "solo" || ctx.teamSizeBand === "micro") {
-    thresholds.capacityThreshold = 92;
+    thresholds.capacityThreshold = 92;            // relaxed: small teams always run hot
+    thresholds.blockedTaskThreshold = 2;          // strict: each blocker eats a larger share of bandwidth
+    thresholds.actionItemOverdueThreshold = 3;    // strict: overdue items compound quickly on small teams
+    thresholdAdjustments.push({ param: "capacityThreshold", original: 85, adjusted: 92, reason: "Small teams always run at high capacity — threshold relaxed to avoid false alerts" });
+    thresholdAdjustments.push({ param: "blockedTaskThreshold", original: 3, adjusted: 2, reason: "Solo/micro teams: each blocker consumes a proportionally larger share of total bandwidth — signal fires earlier" });
+    thresholdAdjustments.push({ param: "actionItemOverdueThreshold", original: 5, adjusted: 3, reason: "Small team overdue items compound faster — threshold tightened" });
+  } else if (ctx.teamSizeBand === "small") {
+    thresholds.blockedTaskThreshold = 3;          // default — no change, already calibrated
+  } else if (ctx.teamSizeBand === "mid") {
     thresholds.blockedTaskThreshold = 5;
     thresholds.actionItemOverdueThreshold = 8;
-    thresholdAdjustments.push({ param: "capacityThreshold", original: 85, adjusted: 92, reason: "Small teams always run hot — capacity threshold relaxed" });
-    thresholdAdjustments.push({ param: "blockedTaskThreshold", original: 3, adjusted: 5, reason: "With fewer parallel streams, a higher blocked count is tolerable" });
-    thresholdAdjustments.push({ param: "actionItemOverdueThreshold", original: 5, adjusted: 8, reason: "Solo/micro teams juggle more items per person — overdue threshold relaxed" });
+    thresholdAdjustments.push({ param: "blockedTaskThreshold", original: 3, adjusted: 5, reason: "Mid-size teams have more parallel workstreams — minor threshold relaxation" });
   } else if (ctx.teamSizeBand === "large" || ctx.teamSizeBand === "enterprise") {
     thresholds.capacityThreshold = 82;
     thresholds.blockedTaskThreshold = 8;
     thresholds.actionItemOverdueThreshold = 12;
-    thresholdAdjustments.push({ param: "capacityThreshold", original: 85, adjusted: 82, reason: "Larger organizations have more coordination overhead — tighter capacity threshold" });
-    thresholdAdjustments.push({ param: "blockedTaskThreshold", original: 3, adjusted: 8, reason: "Enterprise-scale organizations naturally have more blocked items — threshold raised to avoid noise" });
+    thresholdAdjustments.push({ param: "capacityThreshold", original: 85, adjusted: 82, reason: "Large organizations have more coordination overhead — tighter capacity threshold" });
+    thresholdAdjustments.push({ param: "blockedTaskThreshold", original: 3, adjusted: 8, reason: "Enterprise: naturally higher parallelism means more blocked items at any point — threshold raised to avoid noise" });
+    thresholdAdjustments.push({ param: "actionItemOverdueThreshold", original: 5, adjusted: 12, reason: "Enterprise-scale action item queues are larger — absolute overdue count threshold adjusted" });
   }
 
   if (ctx.isQ4) {
@@ -274,6 +284,45 @@ export function getContextMultipliers(ctx: OrgContext): ContextMultipliers {
   if (ctx.goalUrgency === "crisis") severityMultiplier = 1.5;
   else if (ctx.goalUrgency === "stabilize") severityMultiplier = 1.25;
   else if (ctx.isQ4) severityMultiplier = 1.15;
+
+  // User mode adjustments — calibrate urgency and strategic weighting by persona
+  if (ctx.userMode === "founder") {
+    // Founders wear all hats: every blocker and overdue item hits personal bandwidth
+    const prevBlocked = thresholds.blockedTaskThreshold;
+    const prevOverdue = thresholds.actionItemOverdueThreshold;
+    thresholds.blockedTaskThreshold = Math.max(1, thresholds.blockedTaskThreshold - 1);
+    thresholds.actionItemOverdueThreshold = Math.max(2, thresholds.actionItemOverdueThreshold - 1);
+    thresholds.decisionDelayDays = Math.max(2, thresholds.decisionDelayDays - 1);
+    severityMultiplier = Math.min(2.0, severityMultiplier * 1.15);
+    thresholdAdjustments.push({ param: "blockedTaskThreshold", original: prevBlocked, adjusted: thresholds.blockedTaskThreshold, reason: "Founder mode: every blocker directly impacts founder bandwidth — signal fires one step earlier" });
+    thresholdAdjustments.push({ param: "actionItemOverdueThreshold", original: prevOverdue, adjusted: thresholds.actionItemOverdueThreshold, reason: "Founder mode: overdue items represent personal capacity risk" });
+  } else if (ctx.userMode === "executive") {
+    // Executives: prioritize strategic alignment signals; decisions must not stall
+    const prevDelay = thresholds.decisionDelayDays;
+    thresholds.decisionDelayDays = Math.max(2, thresholds.decisionDelayDays - 1);
+    weights.strategicAlignment = Math.min(0.35, weights.strategicAlignment + 0.03);
+    // Normalize weights to sum to 1.0
+    const execTotal = Object.values(weights).reduce((a, b) => a + b, 0);
+    if (execTotal > 1.0) {
+      const excess = execTotal - 1.0;
+      weights.operationalCapacity = Math.max(0.08, weights.operationalCapacity - excess * 0.5);
+      weights.processStructure   = Math.max(0.08, weights.processStructure   - excess * 0.5);
+    }
+    weightAdjustments.push({ dimension: "strategicAlignment", delta: 3, reason: "Executive mode: strategic alignment and decision speed are primary leadership KPIs" });
+    thresholdAdjustments.push({ param: "decisionDelayDays", original: prevDelay, adjusted: thresholds.decisionDelayDays, reason: "Executive mode: stalled decisions have cascading downstream risk" });
+  } else if (ctx.userMode === "board" || ctx.userMode === "advisor") {
+    // Board/advisor view: elevate strategic and risk signals; execution details are less relevant
+    weights.strategicAlignment = Math.min(0.38, weights.strategicAlignment + 0.05);
+    weights.riskManagement     = Math.min(0.28, weights.riskManagement     + 0.05);
+    const boardTotal = Object.values(weights).reduce((a, b) => a + b, 0);
+    if (boardTotal > 1.0) {
+      const excess = boardTotal - 1.0;
+      weights.executionDiscipline = Math.max(0.10, weights.executionDiscipline - excess * 0.5);
+      weights.operationalCapacity = Math.max(0.08, weights.operationalCapacity - excess * 0.5);
+    }
+    weightAdjustments.push({ dimension: "strategicAlignment", delta: 5, reason: "Board/advisor view: governance, strategy, and risk are primary lenses" });
+    weightAdjustments.push({ dimension: "riskManagement", delta: 5, reason: "Board/advisor view: risk posture is a primary governance concern" });
+  }
 
   const advisoryBias = {
     prioritizeExecution: ctx.companyStage === "growth" || ctx.companyStage === "scale" || ctx.goalUrgency === "stabilize",
@@ -304,6 +353,8 @@ export interface ScoreExplanation {
   stageNote: string;
   contextAdjustments: string[];
   summary: string;
+  /** 2-sentence plain-English explanation: position vs. stage peers + recommended focus area. */
+  narrative: string;
 }
 
 const GLOBAL_SMB_AVG = 63;
@@ -367,6 +418,26 @@ export function explainScore(metricName: string, rawScore: number, ctx: OrgConte
     summary = `Your ${metricName} score of ${rawScore} is below the expected range for a ${sizeLabel} ${stageLabel}-stage organization (expected: ${band.low}+). ${band.tierNote} Focus on the highest-weighted dimensions first.${frameworkHint}`;
   }
 
+  // Compute 2-sentence plain-English narrative (spec: position vs. peers + recommended focus)
+  const topAdjustment = multi.weightAdjustments[0];
+  const focusDimension = topAdjustment
+    ? topAdjustment.dimension.replace(/([A-Z])/g, " $1").trim().toLowerCase()
+    : "execution discipline";
+  const actionHint = ctx.industryFrameworks?.length
+    ? `Apply ${ctx.industryFrameworks[0]} to accelerate improvement in ${focusDimension}.`
+    : `Prioritize ${focusDimension} — it carries the highest context-adjusted weight for your profile.`;
+
+  let narrative: string;
+  if (stagePosition === "Excellent") {
+    narrative = `Your ${metricName} score of ${rawScore} places you in the top quartile for ${stageLabel}-stage ${industryLabel} organizations (${vsIndustry >= 0 ? "+" : ""}${vsIndustry}pts vs. industry avg of ${industryAvg}). ${actionHint}`;
+  } else if (stagePosition === "Above Stage") {
+    narrative = `Your ${metricName} score of ${rawScore} is above the stage-normal midpoint of ${band.mid} — you're performing ahead of most ${stageLabel}-stage peers. ${actionHint}`;
+  } else if (stagePosition === "At Stage") {
+    narrative = `Your ${metricName} score of ${rawScore} is within the expected range for a ${stageLabel}-stage organization (${band.low}–${band.high}), but there is meaningful runway to improve. ${actionHint}`;
+  } else {
+    narrative = `Your ${metricName} score of ${rawScore} is below the ${band.low} floor expected for a ${stageLabel}-stage organization — this is your highest-priority area. ${actionHint}`;
+  }
+
   return {
     metricName,
     rawScore,
@@ -374,6 +445,7 @@ export function explainScore(metricName: string, rawScore: number, ctx: OrgConte
     stageNote: band.tierNote,
     contextAdjustments,
     summary,
+    narrative,
   };
 }
 
