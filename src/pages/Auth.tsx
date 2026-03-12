@@ -2,8 +2,8 @@
  * Auth — Sign in / Sign up / Forgot password
  * Google OAuth (primary) + Microsoft SSO + email/password fallback
  */
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, CheckCircle, AlertCircle, Building2, Sparkles } from "lucide-react";
@@ -13,8 +13,16 @@ import { activateDemo } from "@/lib/companyStore";
 
 type Mode = "signin" | "signup" | "forgot";
 
+const URL_ERROR_MESSAGES: Record<string, string> = {
+  replit_auth_failed: "Replit sign-in failed. Please try email login or another method.",
+  auth_failed: "Sign-in failed. Please try again.",
+  session_expired: "Your session expired. Please sign in again.",
+  unauthorized: "You need to sign in to access this page.",
+};
+
 export default function AuthPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn, signUp, resetPassword, signInWithGoogle, signInWithReplit } = useAuth();
 
   const [mode, setMode] = useState<Mode>("signin");
@@ -26,6 +34,17 @@ export default function AuthPage() {
   const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | "replit" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // Read ?error= from the URL and display a friendly message
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlError = params.get("error");
+    if (urlError) {
+      setError(URL_ERROR_MESSAGES[urlError] ?? "Sign-in failed. Please try a different method or use the demo below.");
+      // Clean the URL so a refresh doesn't re-show the error
+      window.history.replaceState({}, "", "/auth");
+    }
+  }, [location.search]);
 
   const handleDemoAccess = () => {
     // Use a full page load via ?demo=1 param — main.tsx detects this,
