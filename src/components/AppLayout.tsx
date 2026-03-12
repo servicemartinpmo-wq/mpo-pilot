@@ -9,7 +9,7 @@ import {
   Network, ShoppingBag, CreditCard, Tag,
   Menu, X, MoreHorizontal,
 } from "lucide-react";
-import pmoLogoIcon from "@/assets/pmo-logo-icon.png";
+import pmoLogoIcon from "@/assets/pmo-logo-icon.jpg";
 import { useUserMode } from "@/hooks/useUserMode";
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";

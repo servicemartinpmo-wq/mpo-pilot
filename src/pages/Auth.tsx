@@ -7,7 +7,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, CheckCircle, AlertCircle, Building2, Sparkles } from "lucide-react";
-import pmoLogoIcon from "@/assets/pmo-logo-icon.png";
+import pmoLogoIcon from "@/assets/pmo-logo-icon.jpg";
 import { SiGoogle } from "react-icons/si";
 import { activateDemo } from "@/lib/companyStore";
 

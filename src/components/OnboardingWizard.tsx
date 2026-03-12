@@ -17,7 +17,7 @@ import { saveProfile } from "@/lib/companyStore";
 import collageImage from "@/assets/onboard-collage.jpg";
 import onboardHero from "@/assets/onboard-hero.jpg";
 import onboardNetwork from "@/assets/onboard-network.png";
-import pmoLogoIcon from "@/assets/pmo-logo-icon.png";
+import pmoLogoIcon from "@/assets/pmo-logo-icon.jpg";
 import slideBg1 from "@/assets/diag-slide-bg-1.jpg";
 import slideBg2 from "@/assets/diag-slide-bg-2.jpg";
 import slideBg3 from "@/assets/diag-slide-bg-3.jpg";
