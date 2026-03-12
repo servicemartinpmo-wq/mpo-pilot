@@ -12,6 +12,10 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    headers: mode !== "production" ? {
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      "Pragma": "no-cache",
+    } : {},
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
