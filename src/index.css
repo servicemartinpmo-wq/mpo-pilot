@@ -395,11 +395,18 @@
     background: hsl(224 16% 22%);
   }
 
+  /* ── Scroll lock — applied via JS classList, immune to effect race conditions ── */
+  .layout-locked {
+    overflow: hidden !important;
+    height: 100vh !important;
+  }
+
   /* ── Layout ── */
   .pmo-grid {
     display: grid;
     height: 100vh;
     grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
   }
 
   /* ── Mobile safe area support ── */

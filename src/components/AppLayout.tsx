@@ -886,7 +886,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           "flex flex-col overflow-hidden transition-all duration-300 relative",
           isMobile
             ? "fixed z-50 h-[calc(100vh-28px)] top-7 left-0"
-            : "h-screen sticky top-0"
+            : "h-full sticky top-0"
         )}
         style={{
           width: isMobile ? 264 : sidebarWidth,
@@ -1399,6 +1399,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
 
       {/* Main content */}
       <main
+
         className="bg-background"
         style={isMobile ? {
           height: "calc(100dvh - 28px)",
@@ -1409,7 +1410,9 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           paddingBottom: 72,
         } : {
           minHeight: 0,
-          overflow: "auto",
+          height: "100%",
+          overflowY: "auto",
+          overflowX: "hidden",
         }}>
         {inDemoMode && !demoBannerDismissed && (
           <div className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium sticky top-0 z-40"
