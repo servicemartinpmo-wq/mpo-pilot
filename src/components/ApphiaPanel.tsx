@@ -22,6 +22,13 @@ import {
 import { upsertActionItem } from "@/lib/supabaseDataService";
 import { useAuth } from "@/hooks/useAuth";
 
+// ── SpeechRecognition helper ────────────────────────────────────────────
+type SpeechRecognitionCtor = new () => SpeechRecognition;
+function getSR(): SpeechRecognitionCtor | undefined {
+  const w = window as unknown as { SpeechRecognition?: SpeechRecognitionCtor; webkitSpeechRecognition?: SpeechRecognitionCtor };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition;
+}
+
 // ── Types ──────────────────────────────────────────────────────────────
 interface ApphiaMsg {
   id: string;
@@ -88,13 +95,17 @@ function buildCtx() {
   let orgCtx: OrgContext | undefined;
   try {
     if (profile.onboardingComplete) orgCtx = buildOrgContext(profile);
-  } catch {}
+  } catch {
+    // ignore — context unavailable before onboarding
+  }
 
   let healthScore = 0;
   try {
     const scores = runMaturityScoring(orgCtx);
     healthScore  = runOrgHealthScoring(scores, orgCtx).overall;
-  } catch { /* silent */ }
+  } catch {
+    // ignore — scoring unavailable before onboarding
+  }
 
   return { overdue, blocked, atRisk, delayed, healthScore, profile, orgCtx };
 }
@@ -399,7 +410,7 @@ function useApphiaWakeWord(onWake: () => void, enabled: boolean) {
 
   useEffect(() => {
     if (!enabled) return;
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SR = getSR();
     if (!SR) return;
 
     function start() {
@@ -431,6 +442,7 @@ function useApphiaWakeWord(onWake: () => void, enabled: boolean) {
 
 // ── Main component ────────────────────────────────────────────────────
 let _apphiaOpen: ((v: boolean) => void) | null = null;
+// eslint-disable-next-line react-refresh/only-export-components -- intentional imperative API
 export function openApphia() { _apphiaOpen?.(true); }
 
 export default function ApphiaPanel() {
@@ -520,7 +532,9 @@ export default function ApphiaPanel() {
     if (open) setTimeout(() => inputRef.current?.focus(), 120);
   }, [open]);
 
-  // Welcome message on first open
+  // Welcome message on first open — only runs when `open` changes.
+  // messages.length is read but intentionally omitted from deps so the
+  // greeting doesn't re-trigger on every new message.
   useEffect(() => {
     if (open && messages.length === 0) {
       const ctx = buildCtx();
@@ -539,7 +553,7 @@ export default function ApphiaPanel() {
         ] : [{ label: "Diagnostics", href: "/diagnostics" }],
       }]);
     }
-  }, [open]);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const wakeCallback = useCallback(() => {
     setOpen(true);
@@ -574,7 +588,7 @@ export default function ApphiaPanel() {
   }
 
   function startVoice() {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SR = getSR();
     if (!SR) return;
     const rec: SpeechRecognition = new SR();
     rec.lang = "en-US";
@@ -910,7 +924,9 @@ function ApphiaContextStrip() {
   try {
     const profile = loadProfile();
     if (profile.onboardingComplete) orgCtx = buildOrgContext(profile);
-  } catch {}
+  } catch {
+    // ignore — context unavailable before onboarding
+  }
 
   const factors = orgCtx ? getContextFactors(orgCtx) : [];
 

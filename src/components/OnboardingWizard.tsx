@@ -1394,7 +1394,9 @@ export default function OnboardingWizard({ onComplete }: Props) {
   }
 
   function selectMode(mode: "standard" | "guided") {
-    try { localStorage.setItem("apphia_user_mode", mode === "guided" ? "simple" : "founder"); } catch {}
+    try { localStorage.setItem("apphia_user_mode", mode === "guided" ? "simple" : "founder"); } catch {
+      // ignore — localStorage unavailable
+    }
     setShowModeSelect(false);
     setShowDiagnostic(true);
   }
@@ -1909,7 +1911,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
             ) : <div />}
 
             <button
-              onClick={() => { if (!canAdvance) return; step < INTAKE_STEPS.length - 1 ? goTo(step + 1) : finish(); }}
+              onClick={() => { if (!canAdvance) return; if (step < INTAKE_STEPS.length - 1) goTo(step + 1); else finish(); }}
               disabled={!canAdvance}
               className={cn("flex items-center gap-2 text-sm font-black px-6 py-3 rounded-xl text-white transition-all",
                 canAdvance ? "opacity-100" : "opacity-40 cursor-not-allowed")}

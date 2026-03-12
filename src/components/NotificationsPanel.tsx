@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, Bell, CheckCheck, AlertTriangle, Info, CheckCircle, Zap, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getNotifications, markAllNotificationsRead } from "@/lib/supabaseDataService";
@@ -50,6 +50,9 @@ export default function NotificationsPanel({ userId, open, onClose, onUnreadChan
   const [loading, setLoading] = useState(false);
   const [markingRead, setMarkingRead] = useState(false);
   const [pushPerm, setPushPerm] = useState<NotificationPermission>(() => getNotificationPermission());
+  // Stable ref so effects don't re-run each time the parent re-creates the callback
+  const onUnreadRef = useRef(onUnreadChange);
+  useEffect(() => { onUnreadRef.current = onUnreadChange; });
 
   async function handleEnablePush() {
     const granted = await requestNotificationPermission();
@@ -63,10 +66,10 @@ export default function NotificationsPanel({ userId, open, onClose, onUnreadChan
     getNotifications(userId, 30)
       .then((data) => {
         setNotifications(data as DbNotification[]);
-        const unreadItems = data.filter((n: any) => !n.read);
-        onUnreadChange?.(unreadItems.length);
+        const unreadItems = (data as DbNotification[]).filter((n) => !n.read);
+        onUnreadRef.current?.(unreadItems.length);
         if (unreadItems.length === 0) return;
-        const types = unreadItems.map((n: any) => (n.type ?? "").toLowerCase());
+        const types = unreadItems.map((n) => (n.type ?? "").toLowerCase());
         const hasUrgent = types.some((t: string) =>
           t.includes("risk") || t.includes("alert") || t.includes("critical") || t.includes("urgent")
         );
@@ -83,7 +86,7 @@ export default function NotificationsPanel({ userId, open, onClose, onUnreadChan
 
   useEffect(() => {
     const unread = notifications.filter((n) => !n.read).length;
-    onUnreadChange?.(unread);
+    onUnreadRef.current?.(unread);
   }, [notifications]);
 
   async function handleMarkAllRead() {

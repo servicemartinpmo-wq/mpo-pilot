@@ -10,6 +10,12 @@ import { openApphia } from "@/components/ApphiaPanel";
 
 type State = "idle" | "listening" | "processing" | "result" | "error";
 
+type SpeechRecognitionCtor = new () => SpeechRecognition;
+function getSR(): SpeechRecognitionCtor | undefined {
+  const w = window as unknown as { SpeechRecognition?: SpeechRecognitionCtor; webkitSpeechRecognition?: SpeechRecognitionCtor };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition;
+}
+
 interface RouteHint {
   keywords: string[];
   path: string;
@@ -64,7 +70,7 @@ export default function VoiceCommand() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SR = getSR();
     if (!SR) setSupported(false);
   }, []);
 
@@ -87,7 +93,7 @@ export default function VoiceCommand() {
   }, [handleKeyboard]);
 
   const startListening = () => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SR = getSR();
     if (!SR) { setErrorMsg("Voice input is not supported in this browser. Try Chrome or Edge."); setState("error"); return; }
 
     const recognition: SpeechRecognition = new SR();

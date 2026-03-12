@@ -17,12 +17,16 @@ function loadState(): StoredState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch {
+    // ignore — localStorage unavailable
+  }
   return { lastShown: 0, lastResponse: null };
 }
 
 function saveState(s: StoredState) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch {
+    // ignore — localStorage unavailable
+  }
 }
 
 function shouldShow(state: StoredState): boolean {

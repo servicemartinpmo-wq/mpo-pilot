@@ -21,7 +21,9 @@ export default function UpgradeBanner({ storageKey, message }: Props) {
     setDismissed(true);
     try {
       localStorage.setItem(storageKey, "dismissed");
-    } catch {}
+    } catch {
+      // ignore — localStorage unavailable
+    }
   };
 
   if (dismissed) return null;

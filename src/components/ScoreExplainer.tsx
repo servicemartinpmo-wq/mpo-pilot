@@ -17,7 +17,9 @@ function getOrgContext(): OrgContext {
   try {
     const profile = loadProfile();
     if (profile.onboardingComplete) return buildOrgContext(profile);
-  } catch {}
+  } catch {
+    // ignore — fall through to neutral context
+  }
   return getNeutralContext();
 }
 

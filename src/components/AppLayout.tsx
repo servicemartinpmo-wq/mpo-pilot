@@ -336,7 +336,9 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
         const parsed = JSON.parse(raw);
         if (parsed.until && new Date(parsed.until) > new Date()) return parsed;
       }
-    } catch {}
+    } catch {
+      // ignore — localStorage unavailable
+    }
     return { active: false, duration: "off", label: "Notifications on" };
   });
 
@@ -366,14 +368,15 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
     const poll = async () => {
       try {
         const data = await getNotifications(user.id, 30);
-        const unreadItems = (data as any[]).filter((n) => !n.read);
+        type NotifRow = { read: boolean | null; type: string | null };
+        const unreadItems = (data as NotifRow[]).filter((n) => !n.read);
         const count = unreadItems.length;
         const prev = prevUnreadRef.current;
         prevUnreadRef.current = count;
         setUnreadCount(count);
         if (count > prev && !snooze.active) {
           const savedRingtone = (localStorage.getItem("apphia_ringtone") ?? "default") as Parameters<typeof playAlertSound>[0];
-          const types = unreadItems.map((n: any) => (n.type ?? "").toLowerCase());
+          const types = unreadItems.map((n) => (n.type ?? "").toLowerCase());
           const hasUrgent = types.some((t: string) =>
             t.includes("risk") || t.includes("alert") || t.includes("critical") || t.includes("urgent")
           );

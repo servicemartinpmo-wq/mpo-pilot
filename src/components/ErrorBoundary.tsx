@@ -43,13 +43,17 @@ export class ErrorBoundary extends Component<Props, State> {
       localStorage.removeItem("apphia_knowledge_mode");
       localStorage.removeItem("apphia_banner_theme");
       localStorage.removeItem("apphia_hero_photo");
-    } catch {}
+    } catch {
+      // ignore — localStorage unavailable
+    }
     this.handleRetry();
   };
 
   handleFullReset = () => {
     if (window.confirm("This will clear all local data and restart the setup wizard. Continue?")) {
-      try { localStorage.clear(); } catch {}
+      try { localStorage.clear(); } catch {
+        // ignore — localStorage unavailable
+      }
       window.location.reload();
     }
   };

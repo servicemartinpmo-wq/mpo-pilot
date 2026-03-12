@@ -15,25 +15,33 @@ export default function MiniSparkline({ values, color = "hsl(222 88% 62%)", widt
   const polyRef = useRef<SVGPolylineElement>(null);
   const uid = useId().replace(/:/g, "");
 
-  if (!values || values.length < 2) return null;
+  const valid = Array.isArray(values) && values.length >= 2;
 
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const range = max - min || 1;
+  const min = valid ? Math.min(...values) : 0;
+  const max = valid ? Math.max(...values) : 0;
+  const range = (max - min) || 1;
   const pad = 2;
 
-  const pts = values.map((v, i) => {
-    const x = pad + (i / (values.length - 1)) * (width - pad * 2);
-    const y = pad + (1 - (v - min) / range) * (height - pad * 2);
-    return `${x},${y}`;
-  }).join(" ");
+  const pts = valid
+    ? values.map((v, i) => {
+        const x = pad + (i / (values.length - 1)) * (width - pad * 2);
+        const y = pad + (1 - (v - min) / range) * (height - pad * 2);
+        return `${x},${y}`;
+      }).join(" ")
+    : "";
 
-  const trend = values[values.length - 1] > values[0] ? "up" : values[values.length - 1] < values[0] ? "down" : "flat";
+  const trend = valid
+    ? values[values.length - 1] > values[0] ? "up" : values[values.length - 1] < values[0] ? "down" : "flat"
+    : "flat";
+
   const autoColor = color === "auto"
     ? trend === "up" ? "hsl(160 56% 44%)" : trend === "down" ? "hsl(350 72% 56%)" : "hsl(38 90% 52%)"
     : color;
 
+  const valuesKey = valid ? values.join(",") : "";
+
   useEffect(() => {
+    if (!valid) return;
     const el = polyRef.current;
     if (!el) return;
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -46,7 +54,9 @@ export default function MiniSparkline({ values, color = "hsl(222 88% 62%)", widt
       el.style.transition = "stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1)";
       el.style.strokeDashoffset = "0";
     });
-  }, [values.join(",")]);
+  }, [valid, valuesKey]);
+
+  if (!valid) return null;
 
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="inline-block flex-shrink-0">

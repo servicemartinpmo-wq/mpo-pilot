@@ -53,7 +53,9 @@ function saveRecent(cmd: Command) {
     const prev: string[] = JSON.parse(localStorage.getItem(RECENT_KEY) || "[]");
     const next = [cmd.id, ...prev.filter(id => id !== cmd.id)].slice(0, MAX_RECENT);
     localStorage.setItem(RECENT_KEY, JSON.stringify(next));
-  } catch {}
+  } catch {
+    // ignore — localStorage unavailable
+  }
 }
 
 function getRecent(): string[] {
