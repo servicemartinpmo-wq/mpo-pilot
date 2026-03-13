@@ -15,7 +15,7 @@ type NoteInsert = Database["public"]["Tables"]["notes"]["Insert"];
 type NoteUpdate = Database["public"]["Tables"]["notes"]["Update"];
 type Json = Database["public"]["Tables"]["notes"]["Row"]["action_items"];
 
-const FREE_TIER_NOTE_LIMIT = 3;
+const FREE_SESSION_DURATION_MINS = 30;
 const FREE_TIERS = ["free"];
 
 export interface CreateNoteInput {
@@ -36,6 +36,7 @@ export interface NoteTakerState {
   canCreateNote: boolean;
   remaining: number;
   limit: number;
+  sessionDurationMins: number;
   refresh: () => Promise<void>;
   createNote: (note: CreateNoteInput) => Promise<DbNote | null>;
   saveNote: (id: string, updates: NoteUpdate) => Promise<DbNote | null>;
@@ -50,8 +51,9 @@ export function useNoteTaker(): NoteTakerState {
   const [tier, setTier] = useState("free");
 
   const isFree = FREE_TIERS.includes(tier);
-  const canCreateNote = !isFree || noteCount < FREE_TIER_NOTE_LIMIT;
-  const remaining = isFree ? Math.max(0, FREE_TIER_NOTE_LIMIT - noteCount) : Infinity;
+  const canCreateNote = true;
+  const sessionDurationMins = isFree ? FREE_SESSION_DURATION_MINS : Infinity;
+  const remaining = Infinity;
 
   const refresh = useCallback(async () => {
     if (!user?.id) {
@@ -86,7 +88,6 @@ export function useNoteTaker(): NoteTakerState {
   const createNote = useCallback(
     async (note: CreateNoteInput): Promise<DbNote | null> => {
       if (!user?.id) return null;
-      if (isFree && noteCount >= FREE_TIER_NOTE_LIMIT) return null;
       const payload: NoteInsert = {
         user_id: user.id,
         title: note.title,
@@ -104,7 +105,7 @@ export function useNoteTaker(): NoteTakerState {
       }
       return data;
     },
-    [user?.id, isFree, noteCount, tier]
+    [user?.id, tier]
   );
 
   const saveNote = useCallback(
@@ -139,7 +140,8 @@ export function useNoteTaker(): NoteTakerState {
     isFree,
     canCreateNote,
     remaining,
-    limit: FREE_TIER_NOTE_LIMIT,
+    limit: FREE_SESSION_DURATION_MINS,
+    sessionDurationMins,
     refresh,
     createNote,
     saveNote,

@@ -51,8 +51,8 @@ function formatDate(dateStr: string | null) {
 
 export default function NoteTaker() {
   const {
-    notes, loading, noteCount, isFree, canCreateNote,
-    remaining, limit, createNote, saveNote, removeNote,
+    notes, loading, noteCount, isFree,
+    createNote, saveNote, removeNote, sessionDurationMins,
   } = useNoteTaker();
   const { mode } = useUserMode();
   const tone = toToneMode(mode);
@@ -64,7 +64,35 @@ export default function NoteTaker() {
   const [generating, setGenerating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [sessionElapsed, setSessionElapsed] = useState(0);
+  const sessionTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+
+  const FREE_SESSION_SECS = sessionDurationMins * 60;
+  const sessionRemainingSecs = Math.max(0, FREE_SESSION_SECS - sessionElapsed);
+  const sessionRemainingMins = Math.floor(sessionRemainingSecs / 60);
+  const sessionRemainingSec2 = sessionRemainingSecs % 60;
+  const sessionTimerDisplay = `${String(sessionRemainingMins).padStart(2, "0")}:${String(sessionRemainingSec2).padStart(2, "0")}`;
+  const sessionNearEnd = isFree && sessionRemainingSecs <= 300;
+
+  useEffect(() => {
+    if (isRecording && isFree) {
+      sessionTimerRef.current = setInterval(() => {
+        setSessionElapsed(prev => {
+          if (prev + 1 >= FREE_SESSION_SECS) {
+            recognitionRef.current?.stop();
+            setIsRecording(false);
+            clearInterval(sessionTimerRef.current!);
+            return FREE_SESSION_SECS;
+          }
+          return prev + 1;
+        });
+      }, 1000);
+    } else {
+      if (sessionTimerRef.current) clearInterval(sessionTimerRef.current);
+    }
+    return () => { if (sessionTimerRef.current) clearInterval(sessionTimerRef.current); };
+  }, [isRecording, isFree, FREE_SESSION_SECS]);
 
   const startRecording = useCallback(() => {
     const SpeechRecognitionCtor =
@@ -265,12 +293,17 @@ export default function NoteTaker() {
               <div
                 className="flex items-center gap-2 px-3 py-2 rounded-lg mb-4 text-xs font-medium"
                 style={{
-                  background: "hsl(0 72% 56% / 0.08)",
-                  color: sty.red,
+                  background: sessionNearEnd ? "hsl(38 92% 52% / 0.10)" : "hsl(0 72% 56% / 0.08)",
+                  color: sessionNearEnd ? sty.accent : sty.red,
                 }}
               >
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                Recording... Speak clearly into your microphone.
+                <span className={`w-2 h-2 rounded-full animate-pulse ${sessionNearEnd ? "bg-amber-400" : "bg-red-500"}`} />
+                Recording...
+                {isFree && (
+                  <span className="ml-auto font-bold tabular-nums">
+                    {sessionNearEnd ? "⚠ " : ""}{sessionTimerDisplay} remaining
+                  </span>
+                )}
               </div>
             )}
 
@@ -506,7 +539,7 @@ export default function NoteTaker() {
       {isFree && (
         <UpgradeBanner
           storageKey="notetaker_upgrade_banner"
-          message={`Note Taker trial — ${remaining} of ${limit} free notes remaining.`}
+          message={`Free plan · ${sessionDurationMins} min recording limit per session. Upgrade for unlimited session length.`}
         />
       )}
 
@@ -529,21 +562,21 @@ export default function NoteTaker() {
               <div
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
                 style={{
-                  background: remaining === 0 ? "hsl(0 72% 56% / 0.10)" : sty.accentBg,
-                  color: remaining === 0 ? sty.red : sty.accentSoft,
-                  border: `1px solid ${remaining === 0 ? "hsl(0 72% 56% / 0.2)" : "hsl(38 92% 52% / 0.2)"}`,
+                  background: sty.accentBg,
+                  color: sty.accentSoft,
+                  border: `1px solid hsl(38 92% 52% / 0.2)`,
                 }}
               >
                 <Tag className="w-3 h-3" />
-                {noteCount} / {limit} free notes
+                Free · {sessionDurationMins} min / session
               </div>
             )}
             <button
               onClick={() => {
-                if (!canCreateNote) return;
+                setSessionElapsed(0);
                 setView("capture");
               }}
-              disabled={!canCreateNote}
+              disabled={false}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-40"
               style={{
                 background: sty.accent,
@@ -554,40 +587,6 @@ export default function NoteTaker() {
             </button>
           </div>
         </div>
-
-        {!canCreateNote && isFree && (
-          <div
-            className="flex items-center gap-3 px-5 py-4 rounded-2xl border mb-6"
-            style={{
-              background: "hsl(38 92% 52% / 0.06)",
-              borderColor: "hsl(38 92% 52% / 0.15)",
-            }}
-          >
-            <AlertTriangle
-              className="w-5 h-5 flex-shrink-0"
-              style={{ color: sty.accent }}
-            />
-            <div>
-              <p
-                className="text-sm font-semibold"
-                style={{ color: sty.textPrimary }}
-              >
-                Free trial limit reached
-              </p>
-              <p className="text-xs" style={{ color: sty.textMuted }}>
-                Upgrade to Solo or higher for unlimited notes, full
-                summarization, and more.
-              </p>
-            </div>
-            <a
-              href="/pricing"
-              className="ml-auto flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all hover:opacity-90"
-              style={{ background: sty.accent, color: "hsl(224 22% 8%)" }}
-            >
-              <Sparkles className="w-3 h-3" /> Upgrade
-            </a>
-          </div>
-        )}
 
         <div className="relative mb-5">
           <Search

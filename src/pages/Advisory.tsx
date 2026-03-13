@@ -34,7 +34,7 @@ interface Advisor {
   icon: React.ElementType;
   color: string;
   bg: string;
-  tier: "free" | "t1" | "t2" | "t3";
+  tier: "t1" | "t2" | "t3";
   responseTime: string;
   activeRequests: number;
   tags: string[];
@@ -44,7 +44,7 @@ const ADVISORS: Advisor[] = [
   // ── Core Advisors ──
   {
     id: "strategy", name: "Strategy Advisory", shortName: "Strategy",
-    category: "core", tier: "free",
+    category: "core", tier: "t1",
     expertise: "Vision · Competitive Analysis · Strategic Prioritization · Goal Architecture",
     description: "Helps you figure out what to focus on and in what order. Spots when your team's work isn't lining up with your goals and gives you a clear plan to fix it.",
     icon: Brain, color: "hsl(var(--electric-blue))", bg: "hsl(var(--electric-blue) / 0.08)",
@@ -53,7 +53,7 @@ const ADVISORS: Advisor[] = [
   },
   {
     id: "operations", name: "Operations Advisory", shortName: "Operations",
-    category: "core", tier: "free",
+    category: "core", tier: "t1",
     expertise: "Process Design · Workflow Optimization · Capacity Planning · Performance Improvement",
     description: "Helps you run smoother operations. Finds where things are getting stuck, cuts out unnecessary steps, and makes sure your team can deliver consistently.",
     icon: Cog, color: "hsl(var(--teal))", bg: "hsl(var(--teal) / 0.08)",
@@ -62,7 +62,7 @@ const ADVISORS: Advisor[] = [
   },
   {
     id: "pmo", name: "Project & Program Management", shortName: "PMO",
-    category: "core", tier: "free",
+    category: "core", tier: "t1",
     expertise: "Initiative Governance · Accountability Design · Delivery Systems · Risk Management",
     description: "Helps you stay on top of your projects and make sure nothing falls through the cracks. Keeps track of who owns what, what's blocked, and what's due next.",
     icon: Rocket, color: "hsl(var(--signal-purple))", bg: "hsl(var(--signal-purple) / 0.08)",
@@ -71,7 +71,7 @@ const ADVISORS: Advisor[] = [
   },
   {
     id: "admin-systems", name: "Administrative Systems", shortName: "Admin Systems",
-    category: "core", tier: "free",
+    category: "core", tier: "t1",
     expertise: "SOP Design · Authority Matrix · Policy Architecture · Compliance Frameworks",
     description: "Helps you set up the basic rules and processes that keep your team running without confusion. Covers who can approve what, how things get done, and where to find the answers.",
     icon: Shield, color: "hsl(var(--signal-green))", bg: "hsl(var(--signal-green) / 0.08)",
@@ -80,7 +80,7 @@ const ADVISORS: Advisor[] = [
   },
   {
     id: "process", name: "Process & Operational Improvement", shortName: "Process Improvement",
-    category: "core", tier: "free",
+    category: "core", tier: "t1",
     expertise: "Continuous Improvement · Root Cause Analysis · KPI Design · Performance Systems",
     description: "Helps you figure out why things aren't working and fix them for good. Digs into root causes, tracks the right numbers, and sets up simple systems to keep improving.",
     icon: GitBranch, color: "hsl(var(--signal-yellow))", bg: "hsl(var(--signal-yellow) / 0.08)",
@@ -135,10 +135,15 @@ const ADVISORS: Advisor[] = [
   },
 ];
 
-const TIER_LABELS: Record<string, string> = { free: "Free", t1: "Tier 1", t2: "Tier 2", t3: "Tier 3" };
+const TIER_LABELS: Record<string, string> = { t1: "Consultant", t2: "Tier 2", t3: "Tier 3" };
 const TIER_COLORS: Record<string, string> = {
-  free: "hsl(var(--signal-green))", t1: "hsl(var(--electric-blue))",
+  t1: "hsl(var(--electric-blue))",
   t2: "hsl(var(--teal))", t3: "hsl(var(--signal-purple))"
+};
+const TIER_SESSIONS: Record<string, string> = {
+  t1: "1 session/mo · 30 min",
+  t2: "3 sessions/mo · 60 min",
+  t3: "5 sessions/mo · 90 min",
 };
 
 interface RequestModal {
@@ -159,9 +164,16 @@ export default function Advisory() {
   const [modalAttachments, setModalAttachments] = useState<{ id: string; name: string; words: number }[]>([]);
   const [pasteBadge, setPasteBadge] = useState<string | null>(null);
 
-  const isPaidTier = (() => {
-    try { return localStorage.getItem("apphia_tier") !== "free"; } catch { return true; }
+  const currentUserTier = (() => {
+    try { return localStorage.getItem("apphia_tier") || "free"; } catch { return "free"; }
   })();
+  const isPaidTier = currentUserTier !== "free";
+  const isAdvisorLocked = (advisor: Advisor) => {
+    if (!isPaidTier) return true;
+    if (advisor.tier === "t2" && currentUserTier === "t1") return true;
+    if (advisor.tier === "t3" && ["t1", "t2"].includes(currentUserTier)) return true;
+    return false;
+  };
 
   const handleAdvisoryPaste = useCallback((e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     if (!isPaidTier || !requestModal) return;
@@ -337,7 +349,7 @@ export default function Advisory() {
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-5 rounded-full" style={{ background: "hsl(var(--electric-blue))" }} />
           <h2 className="text-base font-bold text-foreground uppercase tracking-wide">Core Advisors</h2>
-          <span className="text-xs text-muted-foreground font-medium">Included on all tiers</span>
+          <span className="text-xs text-muted-foreground font-medium">Consultant tier and above</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {coreAdvisors.map(advisor => (
@@ -346,7 +358,8 @@ export default function Advisory() {
               onHover={setHoveredAdvisor}
               onSelect={setSelectedAdvisor}
               onRequest={openRequest}
-              selected={selectedAdvisor?.id === advisor.id} />
+              selected={selectedAdvisor?.id === advisor.id}
+              locked={isAdvisorLocked(advisor)} />
           ))}
         </div>
       </div>
@@ -356,7 +369,7 @@ export default function Advisory() {
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-5 rounded-full" style={{ background: "hsl(var(--teal))" }} />
           <h2 className="text-base font-bold text-foreground uppercase tracking-wide">Optional Advisors</h2>
-          <span className="text-xs text-muted-foreground font-medium">Tier 1+ required</span>
+          <span className="text-xs text-muted-foreground font-medium">Tier 2+ required for some</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {optionalAdvisors.map(advisor => (
@@ -366,7 +379,7 @@ export default function Advisory() {
               onSelect={setSelectedAdvisor}
               onRequest={openRequest}
               selected={selectedAdvisor?.id === advisor.id}
-              locked={advisor.tier !== "free"} />
+              locked={isAdvisorLocked(advisor)} />
           ))}
         </div>
       </div>
@@ -699,9 +712,9 @@ function AdvisorCard({ advisor, isHovered, onHover, onSelect, onRequest, selecte
           <span className="flex items-center gap-1.5">
             <Clock className="w-3 h-3" /> {advisor.responseTime}
           </span>
-          {advisor.activeRequests > 0 && (
-            <span className="text-signal-yellow font-bold">{advisor.activeRequests} active</span>
-          )}
+          <span className="font-medium" style={{ color: TIER_COLORS[advisor.tier] }}>
+            {TIER_SESSIONS[advisor.tier]}
+          </span>
         </div>
       </button>
 
@@ -713,7 +726,7 @@ function AdvisorCard({ advisor, isHovered, onHover, onSelect, onRequest, selecte
           <div className="flex gap-2 pt-1">
             {locked ? (
               <button className="flex-1 text-xs font-bold py-2.5 px-4 rounded-xl border-2 border-border text-muted-foreground flex items-center justify-center gap-2">
-                <Lock className="w-3.5 h-3.5" /> Upgrade to {TIER_LABELS[advisor.tier]}
+                <Lock className="w-3.5 h-3.5" /> {advisor.tier === "t1" ? "Upgrade to Consultant" : `Upgrade to ${TIER_LABELS[advisor.tier]}`}
               </button>
             ) : (
               <button
