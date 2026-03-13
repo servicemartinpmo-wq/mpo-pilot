@@ -3,6 +3,7 @@ import { join } from "path";
 import { setupAuth, closeAuth } from "./replitAuth";
 import { closePool } from "./db";
 import { runServerSync, runSyncForAllConnected, startScheduledSync, stopScheduledSync } from "./techOpsSyncService";
+import reportRoutes from "./reportRoutes";
 const app = express();
 
 app.use(express.json({ limit: "10mb" }));
@@ -26,6 +27,8 @@ async function main() {
   } catch (authError) {
     console.warn("[Auth] Setup failed, continuing without auth:", authError);
   }
+
+  app.use(reportRoutes);
 
   app.get("/health", (_req, res) => {
     res.json({

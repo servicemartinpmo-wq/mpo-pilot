@@ -14,6 +14,7 @@ The project's vision is to empower organizations with actionable insights and in
 - Knowledge management and resource hub
 - Expense management with receipt upload (camera capture on mobile + file picker), allocation lines (GL codes + cost centers), shared team notes, and financial document templates
 - Subscription Management with sortable table, ROI/waste scoring, summary dashboard cards (monthly spend, MoM change, projected YoY, flagged waste), and add/edit forms
+- Finance Report Templates: Upload CSV/Excel templates, auto-map columns to platform data, generate populated reports. Includes 3 built-in templates (Monthly Expense Summary, Subscription Cost & Waste Report, Department Budget vs. Actuals) and report history with download/regenerate
 
 ## User Preferences
 

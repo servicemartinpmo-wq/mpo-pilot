@@ -29,10 +29,11 @@ import {
   type ExpenseStatus, type ExpenseStore, type DocTemplate, type DocCategory,
   type Subscription, type SubscriptionStore, type SubscriptionStatus, type BillingCycle,
 } from "@/lib/expenseData";
+import FinanceReports from "@/components/FinanceReports";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type MainTab = "overview" | "expenses" | "subscriptions" | "applications" | "integrations" | "budget" | "documents";
+type MainTab = "overview" | "expenses" | "subscriptions" | "applications" | "integrations" | "budget" | "reports" | "documents";
 type AppType = "federal" | "state" | "donor" | "invoice" | null;
 
 const STATUS_META: Record<ExpenseStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
@@ -1372,6 +1373,7 @@ export default function Expenses() {
     { id:"applications"  as MainTab, label:"Applications",      icon:<Landmark className="w-3.5 h-3.5" /> },
     { id:"integrations"  as MainTab, label:"Integrations",      icon:<Link className="w-3.5 h-3.5" /> },
     { id:"budget"        as MainTab, label:"Budget & Reports",  icon:<BarChart2 className="w-3.5 h-3.5" /> },
+    { id:"reports"       as MainTab, label:"Finance Reports",   icon:<FileCheck className="w-3.5 h-3.5" /> },
     { id:"documents"     as MainTab, label:"Documents",         icon:<FileText className="w-3.5 h-3.5" /> },
   ];
 
@@ -1701,6 +1703,9 @@ export default function Expenses() {
             </div>
           </div>
         )}
+
+        {/* ── Finance Reports ── */}
+        {activeTab === "reports" && <FinanceReports />}
 
         {/* ── Documents ── */}
         {activeTab === "documents" && (

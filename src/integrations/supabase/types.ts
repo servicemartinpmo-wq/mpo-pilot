@@ -3299,6 +3299,129 @@ export type Database = {
           },
         ]
       }
+      report_templates: {
+        Row: {
+          id: string
+          profile_id: string
+          organization_id: string | null
+          name: string
+          type: string
+          source_format: string
+          column_mapping: Json
+          original_headers: string[] | null
+          created_by: string | null
+          is_builtin: boolean | null
+          builtin_key: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          organization_id?: string | null
+          name: string
+          type?: string
+          source_format?: string
+          column_mapping?: Json
+          original_headers?: string[] | null
+          created_by?: string | null
+          is_builtin?: boolean | null
+          builtin_key?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          organization_id?: string | null
+          name?: string
+          type?: string
+          source_format?: string
+          column_mapping?: Json
+          original_headers?: string[] | null
+          created_by?: string | null
+          is_builtin?: boolean | null
+          builtin_key?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_templates_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      generated_reports: {
+        Row: {
+          id: string
+          profile_id: string
+          organization_id: string | null
+          template_id: string | null
+          template_name: string
+          generated_at: string | null
+          row_count: number | null
+          file_format: string
+          file_data: string | null
+          download_url: string | null
+          created_by: string | null
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          profile_id: string
+          organization_id?: string | null
+          template_id?: string | null
+          template_name: string
+          generated_at?: string | null
+          row_count?: number | null
+          file_format?: string
+          file_data?: string | null
+          download_url?: string | null
+          created_by?: string | null
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          profile_id?: string
+          organization_id?: string | null
+          template_id?: string | null
+          template_name?: string
+          generated_at?: string | null
+          row_count?: number | null
+          file_format?: string
+          file_data?: string | null
+          download_url?: string | null
+          created_by?: string | null
+          created_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generated_reports_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generated_reports_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "report_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       risks: {
         Row: {
           created_at: string | null

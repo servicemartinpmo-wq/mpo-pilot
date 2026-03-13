@@ -1022,3 +1022,61 @@ export async function runIntegrationSync(_profileId: string, integrationId: stri
   }
 }
 
+// ── Report Templates ─────────────────────────────────────────────────
+
+type ReportTemplateRow = Database["public"]["Tables"]["report_templates"]["Row"];
+type ReportTemplateInsert = Database["public"]["Tables"]["report_templates"]["Insert"];
+type GeneratedReportRow = Database["public"]["Tables"]["generated_reports"]["Row"];
+type GeneratedReportInsert = Database["public"]["Tables"]["generated_reports"]["Insert"];
+
+export async function getReportTemplates(profileId: string): Promise<ReportTemplateRow[]> {
+  const { data, error } = await supabase
+    .from("report_templates")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(`Failed to load templates: ${error.message}`);
+  return data ?? [];
+}
+
+export async function upsertReportTemplate(template: ReportTemplateInsert) {
+  const { error } = await supabase
+    .from("report_templates")
+    .upsert(template, { onConflict: "id" });
+  if (error) throw new Error(`Failed to save template: ${error.message}`);
+}
+
+export async function deleteReportTemplate(id: string) {
+  const { error } = await supabase
+    .from("report_templates")
+    .delete()
+    .eq("id", id);
+  if (error) throw new Error(`Failed to delete template: ${error.message}`);
+}
+
+// ── Generated Reports ────────────────────────────────────────────────
+
+export async function getGeneratedReports(profileId: string): Promise<GeneratedReportRow[]> {
+  const { data, error } = await supabase
+    .from("generated_reports")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("generated_at", { ascending: false });
+  if (error) throw new Error(`Failed to load reports: ${error.message}`);
+  return data ?? [];
+}
+
+export async function insertGeneratedReport(report: GeneratedReportInsert) {
+  const { error } = await supabase
+    .from("generated_reports")
+    .insert(report);
+  if (error) throw new Error(`Failed to save report: ${error.message}`);
+}
+
+export async function deleteGeneratedReport(id: string) {
+  const { error } = await supabase
+    .from("generated_reports")
+    .delete()
+    .eq("id", id);
+  if (error) throw new Error(`Failed to delete report: ${error.message}`);
+}
