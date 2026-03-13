@@ -14,6 +14,7 @@ import {
   Zap, Link, CheckCircle, ArrowRight, Receipt,
   FileCheck, Shield, BarChart2, Briefcase,
   BookOpen, Landmark, Heart, Star, ExternalLink,
+  Camera, RefreshCw, TrendingUp, TrendingDown, Eye,
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -23,13 +24,15 @@ import {
   loadExpenseStore, saveExpenseStore, formatMoney, genId,
   spentByCategory, spentByMonth, ALL_CATEGORIES, CATEGORY_META,
   GL_CODES, COST_CENTERS, DOC_TEMPLATES, DOC_CATEGORY_META,
+  loadSubscriptionStore, saveSubscriptionStore, calcWasteMetrics, deriveSubscriptionStatus, uploadReceiptToStorage, getReceiptSignedUrl,
   type Expense, type AllocationLine, type ExpenseNote,
   type ExpenseStatus, type ExpenseStore, type DocTemplate, type DocCategory,
+  type Subscription, type SubscriptionStore, type SubscriptionStatus, type BillingCycle,
 } from "@/lib/expenseData";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type MainTab = "overview" | "expenses" | "applications" | "integrations" | "budget" | "documents";
+type MainTab = "overview" | "expenses" | "subscriptions" | "applications" | "integrations" | "budget" | "documents";
 type AppType = "federal" | "state" | "donor" | "invoice" | null;
 
 const STATUS_META: Record<ExpenseStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
@@ -693,7 +696,15 @@ function IntegrationsHub() {
 function ExpenseModal({ expense, onSave, onClose }: { expense: Expense; onSave: (e: Expense) => void; onClose: () => void }) {
   const [form, setForm] = useState<Expense>({ ...expense, allocations: expense.allocations.map(a => ({ ...a })), notes: [...expense.notes] });
   const [noteText, setNoteText] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (form.receipt?.storagePath) {
+      getReceiptSignedUrl(form.receipt.storagePath).then(url => { if (url) setPreviewUrl(url); });
+    }
+  }, [form.receipt?.storagePath]);
 
   const totalAllocated = form.allocations.reduce((s, a) => s + (a.amount || 0), 0);
   const diff = form.totalAmount - totalAllocated;
@@ -714,10 +725,38 @@ function ExpenseModal({ expense, onSave, onClose }: { expense: Expense; onSave: 
     setNoteText("");
   };
 
-  const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setForm(f => ({ ...f, receipt: { filename: file.name, size: `${(file.size / 1024).toFixed(0)} KB`, uploadedAt: new Date().toISOString(), uploadedBy: "You", mimeType: file.type } }));
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert("Receipt file is too large (max 5 MB). Please use a smaller image or PDF.");
+      return;
+    }
+
+    const sizeLabel = `${(file.size / 1024).toFixed(0)} KB`;
+    const baseReceipt = {
+      filename: file.name,
+      size: sizeLabel,
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: "You",
+      mimeType: file.type,
+    };
+
+    setForm(f => ({ ...f, receipt: { ...baseReceipt } }));
+
+    const result = await uploadReceiptToStorage(file, form.id);
+    if ("storageUrl" in result) {
+      setPreviewUrl(result.storageUrl);
+      setForm(f => ({ ...f, receipt: { ...baseReceipt, storageUrl: result.storageUrl, storagePath: result.storagePath } }));
+    } else {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreviewUrl(reader.result as string);
+        setForm(f => ({ ...f, receipt: { ...baseReceipt, dataUrl: reader.result as string } }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSave = (status?: ExpenseStatus) =>
@@ -766,21 +805,42 @@ function ExpenseModal({ expense, onSave, onClose }: { expense: Expense; onSave: 
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-2">Receipt</label>
             {form.receipt ? (
-              <div className="flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-card">
-                <Receipt className="w-4 h-4 text-electric-blue flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{form.receipt.filename}</p>
-                  <p className="text-xs text-muted-foreground">{form.receipt.size}</p>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 p-3 rounded-lg border border-border/60 bg-card">
+                  <Receipt className="w-4 h-4 text-electric-blue flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{form.receipt.filename}</p>
+                    <p className="text-xs text-muted-foreground">{form.receipt.size}</p>
+                  </div>
+                  {(form.receipt.storagePath || form.receipt.dataUrl) && (
+                    <button onClick={async () => {
+                      if (form.receipt?.storagePath) {
+                        const url = await getReceiptSignedUrl(form.receipt.storagePath);
+                        if (url) { window.open(url, "_blank"); return; }
+                      }
+                      if (form.receipt?.dataUrl) window.open(form.receipt.dataUrl, "_blank");
+                    }} className="text-muted-foreground hover:text-electric-blue"><Eye className="w-4 h-4" /></button>
+                  )}
+                  <button onClick={() => setForm(f => ({ ...f, receipt: undefined }))} className="text-muted-foreground hover:text-red-400"><X className="w-4 h-4" /></button>
                 </div>
-                <button onClick={() => setForm(f => ({ ...f, receipt: undefined }))} className="text-muted-foreground hover:text-red-400"><X className="w-4 h-4" /></button>
+                {(previewUrl || form.receipt.dataUrl) && form.receipt.mimeType?.startsWith("image/") && (
+                  <img src={previewUrl || form.receipt.dataUrl} alt="Receipt preview" className="w-full max-h-40 object-contain rounded-lg border border-border/40" />
+                )}
               </div>
             ) : (
-              <button onClick={() => fileInputRef.current?.click()}
-                className="w-full flex items-center justify-center gap-2 p-3 rounded-lg border border-dashed border-border/60 text-sm text-muted-foreground hover:border-electric-blue/40 hover:text-foreground transition-colors">
-                <Upload className="w-4 h-4" /> Upload receipt (PDF, JPG, PNG)
-              </button>
+              <div className="flex gap-2">
+                <button onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 flex items-center justify-center gap-2 p-3 rounded-lg border border-dashed border-border/60 text-sm text-muted-foreground hover:border-electric-blue/40 hover:text-foreground transition-colors">
+                  <Upload className="w-4 h-4" /> Upload file
+                </button>
+                <button onClick={() => cameraInputRef.current?.click()}
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-dashed border-border/60 text-sm text-muted-foreground hover:border-electric-blue/40 hover:text-foreground transition-colors">
+                  <Camera className="w-4 h-4" /> Capture
+                </button>
+              </div>
             )}
             <input ref={fileInputRef} type="file" accept="image/*,.pdf" className="hidden" onChange={handleReceiptUpload} />
+            <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleReceiptUpload} />
           </div>
 
           {/* Allocation lines */}
@@ -1111,6 +1171,108 @@ function exportToPDF(store: ExpenseStore, totalSpent: number, budgetRows: {categ
   if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
 }
 
+// ── Subscription Modal ────────────────────────────────────────────────────────
+
+function SubscriptionModal({ sub, onSave, onClose }: { sub: Subscription; onSave: (s: Subscription) => void; onClose: () => void }) {
+  const [form, setForm] = useState<Subscription>({ ...sub });
+
+  const handleSave = () => {
+    const autoStatus = form.status === "cancelled" ? "cancelled" : deriveSubscriptionStatus(form);
+    const updated = { ...form, status: autoStatus, updatedAt: new Date().toISOString() };
+    onSave(updated);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "hsl(0 0% 0% / 0.6)" }}>
+      <div className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl border border-border/60 bg-background shadow-2xl overflow-hidden">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border/40">
+          <h2 className="font-semibold text-foreground">{sub.name ? "Edit Subscription" : "New Subscription"}</h2>
+          <button onClick={onClose}><X className="w-5 h-5 text-muted-foreground" /></button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Tool / Service Name *</label>
+              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border border-border/60 bg-card text-sm text-foreground focus:outline-none" placeholder="e.g. Slack, AWS, Figma" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Vendor</label>
+              <input value={form.vendor} onChange={e => setForm(f => ({ ...f, vendor: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border border-border/60 bg-card text-sm text-foreground focus:outline-none" placeholder="Vendor name" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Category</label>
+              <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value as Subscription["category"] }))}
+                className="w-full px-3 py-2 rounded-lg border border-border/60 bg-card text-sm text-foreground focus:outline-none">
+                {ALL_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Monthly Cost ($) *</label>
+              <input type="number" min="0" step="0.01" value={form.monthlyCost || ""}
+                onChange={e => setForm(f => ({ ...f, monthlyCost: parseFloat(e.target.value) || 0 }))}
+                className="w-full px-3 py-2 rounded-lg border border-border/60 bg-card text-sm text-foreground focus:outline-none" placeholder="0.00" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Billing Cycle</label>
+              <select value={form.billingCycle} onChange={e => setForm(f => ({ ...f, billingCycle: e.target.value as BillingCycle }))}
+                className="w-full px-3 py-2 rounded-lg border border-border/60 bg-card text-sm text-foreground focus:outline-none">
+                {["monthly","quarterly","annual"].map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase()+c.slice(1)}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Renewal Date</label>
+              <input type="date" value={form.renewalDate} onChange={e => setForm(f => ({ ...f, renewalDate: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border border-border/60 bg-card text-sm text-foreground focus:outline-none" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Owner</label>
+              <input value={form.owner} onChange={e => setForm(f => ({ ...f, owner: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border border-border/60 bg-card text-sm text-foreground focus:outline-none" placeholder="e.g. Alex M." />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">ROI / Usage Score (0–100)</label>
+              <div className="flex items-center gap-3">
+                <input type="range" min="0" max="100" value={form.roiScore}
+                  onChange={e => setForm(f => ({ ...f, roiScore: parseInt(e.target.value) }))}
+                  className="flex-1 h-2 appearance-none bg-border/60 rounded-full accent-electric-blue" />
+                <span className={cn("text-sm font-bold w-10 text-center",
+                  form.roiScore >= 70 ? "text-green-400" : form.roiScore >= 40 ? "text-amber-400" : "text-red-400"
+                )}>{form.roiScore}</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {form.roiScore >= 70 ? "Active — good ROI" : form.roiScore >= 40 ? "At-Risk — review usage" : "Redundant — consider cancelling"}
+              </p>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">Last Used</label>
+              <input type="date" value={form.lastUsed || ""} onChange={e => setForm(f => ({ ...f, lastUsed: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border border-border/60 bg-card text-sm text-foreground focus:outline-none" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Notes</label>
+            <textarea value={form.notes || ""} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+              className="w-full px-3 py-2 rounded-lg border border-border/60 bg-card text-sm text-foreground focus:outline-none resize-none h-16" placeholder="Usage notes, considerations..." />
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={form.status === "cancelled"} onChange={e => setForm(f => ({ ...f, status: e.target.checked ? "cancelled" : "active" }))}
+              className="rounded border-border/60 accent-red-500" />
+            <span className="text-xs text-muted-foreground">Mark as cancelled</span>
+          </label>
+        </div>
+        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-border/40">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground">Cancel</button>
+          <button onClick={handleSave} disabled={!form.name.trim()} className="px-4 py-2 rounded-lg bg-electric-blue text-white text-sm font-medium hover:bg-electric-blue/90 disabled:opacity-40">
+            {sub.name ? "Save Changes" : "Add Subscription"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function Expenses() {
@@ -1123,8 +1285,15 @@ export default function Expenses() {
   const [filterCat, setFilterCat] = useState("all");
   const [selectedDoc, setSelectedDoc] = useState<DocTemplate | null>(null);
   const [docCategory, setDocCategory] = useState<DocCategory | "all">("all");
+  const [subStore, setSubStore] = useState<SubscriptionStore>(() => loadSubscriptionStore());
+  const [showSubModal, setShowSubModal] = useState(false);
+  const [editingSub, setEditingSub] = useState<Subscription | null>(null);
+  const [subSortField, setSubSortField] = useState<"name"|"monthlyCost"|"roiScore"|"renewalDate"|"status">("monthlyCost");
+  const [subSortAsc, setSubSortAsc] = useState(false);
+  const [subFilter, setSubFilter] = useState<SubscriptionStatus | "all">("all");
 
   useEffect(() => { saveExpenseStore(store); }, [store]);
+  useEffect(() => { saveSubscriptionStore(subStore); }, [subStore]);
 
   const saveExpense = useCallback((exp: Expense) => {
     setStore(s => {
@@ -1166,13 +1335,44 @@ export default function Expenses() {
 
   const filteredDocs = DOC_TEMPLATES.filter(d => docCategory === "all" || d.category === docCategory);
 
+  const saveSub = useCallback((sub: Subscription) => {
+    setSubStore(s => {
+      const idx = s.subscriptions.findIndex(x => x.id === sub.id);
+      return { subscriptions: idx >= 0 ? s.subscriptions.map(x => x.id === sub.id ? sub : x) : [...s.subscriptions, sub] };
+    });
+    setShowSubModal(false); setEditingSub(null);
+  }, []);
+
+  const deleteSub = useCallback((id: string) => {
+    setSubStore(s => ({ subscriptions: s.subscriptions.filter(x => x.id !== id) }));
+  }, []);
+
+  const wasteMetrics = calcWasteMetrics(subStore.subscriptions);
+  const filteredSubs = subStore.subscriptions
+    .filter(s => subFilter === "all" || s.status === subFilter)
+    .sort((a, b) => {
+      let cmp = 0;
+      if (subSortField === "name") cmp = a.name.localeCompare(b.name);
+      else if (subSortField === "monthlyCost") cmp = a.monthlyCost - b.monthlyCost;
+      else if (subSortField === "roiScore") cmp = a.roiScore - b.roiScore;
+      else if (subSortField === "renewalDate") cmp = a.renewalDate.localeCompare(b.renewalDate);
+      else if (subSortField === "status") cmp = a.status.localeCompare(b.status);
+      return subSortAsc ? cmp : -cmp;
+    });
+
+  const toggleSubSort = (field: typeof subSortField) => {
+    if (subSortField === field) setSubSortAsc(x => !x);
+    else { setSubSortField(field); setSubSortAsc(false); }
+  };
+
   const TABS = [
-    { id:"overview"     as MainTab, label:"Overview",          icon:<BarChart3 className="w-3.5 h-3.5" /> },
-    { id:"expenses"     as MainTab, label:"Expenses",          icon:<DollarSign className="w-3.5 h-3.5" /> },
-    { id:"applications" as MainTab, label:"Applications",      icon:<Landmark className="w-3.5 h-3.5" /> },
-    { id:"integrations" as MainTab, label:"Integrations",      icon:<Link className="w-3.5 h-3.5" /> },
-    { id:"budget"       as MainTab, label:"Budget & Reports",  icon:<BarChart2 className="w-3.5 h-3.5" /> },
-    { id:"documents"    as MainTab, label:"Documents",         icon:<FileText className="w-3.5 h-3.5" /> },
+    { id:"overview"      as MainTab, label:"Overview",          icon:<BarChart3 className="w-3.5 h-3.5" /> },
+    { id:"expenses"      as MainTab, label:"Expenses",          icon:<DollarSign className="w-3.5 h-3.5" /> },
+    { id:"subscriptions" as MainTab, label:"Subscriptions",     icon:<RefreshCw className="w-3.5 h-3.5" /> },
+    { id:"applications"  as MainTab, label:"Applications",      icon:<Landmark className="w-3.5 h-3.5" /> },
+    { id:"integrations"  as MainTab, label:"Integrations",      icon:<Link className="w-3.5 h-3.5" /> },
+    { id:"budget"        as MainTab, label:"Budget & Reports",  icon:<BarChart2 className="w-3.5 h-3.5" /> },
+    { id:"documents"     as MainTab, label:"Documents",         icon:<FileText className="w-3.5 h-3.5" /> },
   ];
 
   return (
@@ -1292,6 +1492,146 @@ export default function Expenses() {
                 {filteredExpenses.map(e=><ExpenseRow key={e.id} expense={e} onEdit={()=>openEdit(e)} onStatusChange={updateStatus}/>)}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── Subscriptions ── */}
+        {activeTab === "subscriptions" && (
+          <div className="space-y-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Subscription Management</p>
+                <p className="text-xs text-muted-foreground">Track software & tool costs, renewals, ROI, and waste</p>
+              </div>
+              <button onClick={() => { setEditingSub({ id: genId(), name: "", vendor: "", category: "Technology", monthlyCost: 0, billingCycle: "monthly", renewalDate: new Date().toISOString().slice(0,10), owner: "", roiScore: 50, status: "active", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }); setShowSubModal(true); }}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-electric-blue text-white text-sm font-medium hover:bg-electric-blue/90">
+                <Plus className="w-4 h-4" /> Add Subscription
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="rounded-xl border border-border/60 bg-card p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <RefreshCw className="w-4 h-4 text-electric-blue" />
+                  <p className="text-xs text-muted-foreground">Monthly Spend</p>
+                </div>
+                <p className="text-lg font-bold text-foreground">{formatMoney(wasteMetrics.totalMonthly)}</p>
+                <p className="text-[10px] text-muted-foreground">{formatMoney(wasteMetrics.totalAnnual)} / year</p>
+              </div>
+              <div className="rounded-xl border border-border/60 bg-card p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  {wasteMetrics.momPct >= 0 ? <TrendingUp className="w-4 h-4 text-amber-400" /> : <TrendingDown className="w-4 h-4 text-green-400" />}
+                  <p className="text-xs text-muted-foreground">MoM Change</p>
+                </div>
+                <p className="text-lg font-bold text-foreground">{wasteMetrics.momPct >= 0 ? "+" : ""}{wasteMetrics.momPct.toFixed(1)}%</p>
+                <p className="text-[10px] text-muted-foreground">{wasteMetrics.momChange >= 0 ? "+" : ""}{formatMoney(Math.abs(wasteMetrics.momChange))}</p>
+              </div>
+              <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <AlertTriangle className="w-4 h-4 text-amber-400" />
+                  <p className="text-xs text-muted-foreground">Flagged Waste</p>
+                </div>
+                <p className="text-lg font-bold text-amber-400">{formatMoney(wasteMetrics.wasteMonthly)}/mo</p>
+                <p className="text-[10px] text-amber-300/70">{wasteMetrics.flaggedCount} tool{wasteMetrics.flaggedCount !== 1 ? "s" : ""} · {formatMoney(wasteMetrics.wasteAnnual)}/yr lost</p>
+              </div>
+              <div className="rounded-xl border border-border/60 bg-card p-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Zap className="w-4 h-4 text-green-400" />
+                  <p className="text-xs text-muted-foreground">Active Tools</p>
+                </div>
+                <p className="text-lg font-bold text-foreground">{subStore.subscriptions.filter(s => s.status === "active").length}</p>
+                <p className="text-[10px] text-muted-foreground">{subStore.subscriptions.filter(s => s.status !== "cancelled").length} total · {wasteMetrics.redundantCount} redundant</p>
+              </div>
+            </div>
+
+            {wasteMetrics.flaggedCount > 0 && (
+              <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <AlertTriangle className="w-4 h-4 text-red-400" />
+                  <p className="text-sm font-semibold text-red-400">Waste Alert — {formatMoney(wasteMetrics.wasteAnnual)} projected annual loss</p>
+                </div>
+                <div className="space-y-2">
+                  {subStore.subscriptions.filter(s => s.status === "at-risk" || s.status === "redundant").map(s => (
+                    <div key={s.id} className="flex items-center gap-3 text-sm">
+                      <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full", s.status === "redundant" ? "bg-red-500/15 text-red-400" : "bg-amber-500/15 text-amber-400")}>
+                        {s.status === "redundant" ? "REDUNDANT" : "AT-RISK"}
+                      </span>
+                      <span className="text-foreground flex-1">{s.name}</span>
+                      <span className="text-muted-foreground">ROI: {s.roiScore}/100</span>
+                      <span className="font-medium text-foreground">{formatMoney(s.monthlyCost)}/mo</span>
+                      {s.notes && <span className="text-xs text-muted-foreground max-w-48 truncate">{s.notes}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-2 flex-wrap">
+              {(["all","active","at-risk","redundant","cancelled"] as (SubscriptionStatus|"all")[]).map(st => (
+                <button key={st} onClick={() => setSubFilter(st)}
+                  className={cn("px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                    subFilter === st ? "bg-electric-blue/10 text-electric-blue border border-electric-blue/25" : "bg-card border border-border/60 text-muted-foreground hover:text-foreground"
+                  )}>
+                  {st === "all" ? "All" : st === "at-risk" ? "At-Risk" : st.charAt(0).toUpperCase() + st.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            <div className="rounded-xl border border-border/60 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border/40 bg-muted/30">
+                    {([["name","Tool"],["vendor","Vendor"],["monthlyCost","Cost/mo"],["billingCycle","Cycle"],["renewalDate","Renewal"],["roiScore","ROI"],["status","Status"],["owner","Owner"]] as [typeof subSortField|string,string][]).map(([field,label]) => (
+                      <th key={field} className="px-3 py-2.5 text-left text-xs font-medium text-muted-foreground cursor-pointer hover:text-foreground select-none"
+                        onClick={() => ["name","monthlyCost","roiScore","renewalDate","status"].includes(field) && toggleSubSort(field as typeof subSortField)}>
+                        <span className="flex items-center gap-1">
+                          {label}
+                          {subSortField === field && (subSortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />)}
+                        </span>
+                      </th>
+                    ))}
+                    <th className="px-3 py-2.5 text-right text-xs font-medium text-muted-foreground w-20"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredSubs.map(sub => {
+                    const statusColors: Record<SubscriptionStatus, { text: string; bg: string }> = {
+                      active: { text: "text-green-400", bg: "bg-green-500/15" },
+                      "at-risk": { text: "text-amber-400", bg: "bg-amber-500/15" },
+                      redundant: { text: "text-red-400", bg: "bg-red-500/15" },
+                      cancelled: { text: "text-gray-400", bg: "bg-gray-500/15" },
+                    };
+                    const sc = statusColors[sub.status];
+                    const roiColor = sub.roiScore >= 70 ? "text-green-400" : sub.roiScore >= 40 ? "text-amber-400" : "text-red-400";
+                    return (
+                      <tr key={sub.id} className="border-b border-border/20 last:border-0 hover:bg-muted/10">
+                        <td className="px-3 py-2.5 font-medium text-foreground">{sub.name}</td>
+                        <td className="px-3 py-2.5 text-muted-foreground">{sub.vendor}</td>
+                        <td className="px-3 py-2.5 font-medium text-foreground">{formatMoney(sub.monthlyCost)}</td>
+                        <td className="px-3 py-2.5 text-muted-foreground capitalize">{sub.billingCycle}</td>
+                        <td className="px-3 py-2.5 text-muted-foreground">{sub.renewalDate}</td>
+                        <td className={cn("px-3 py-2.5 font-medium", roiColor)}>{sub.roiScore}/100</td>
+                        <td className="px-3 py-2.5">
+                          <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full", sc.text, sc.bg)}>
+                            {sub.status === "at-risk" ? "At-Risk" : sub.status.charAt(0).toUpperCase() + sub.status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2.5 text-muted-foreground">{sub.owner}</td>
+                        <td className="px-3 py-2.5 text-right">
+                          <div className="flex items-center gap-1 justify-end">
+                            <button onClick={() => { setEditingSub(sub); setShowSubModal(true); }} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground"><Edit3 className="w-3.5 h-3.5" /></button>
+                            <button onClick={() => deleteSub(sub.id)} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+              {filteredSubs.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground"><RefreshCw className="w-6 h-6 mx-auto mb-2 opacity-30" /><p className="text-sm">No subscriptions found</p></div>
+              )}
+            </div>
           </div>
         )}
 
@@ -1418,6 +1758,9 @@ export default function Expenses() {
 
       {showModal && editingExpense && (
         <ExpenseModal expense={editingExpense} onSave={saveExpense} onClose={()=>{setShowModal(false);setEditingExpense(null);}}/>
+      )}
+      {showSubModal && editingSub && (
+        <SubscriptionModal sub={editingSub} onSave={saveSub} onClose={() => { setShowSubModal(false); setEditingSub(null); }} />
       )}
       {selectedDoc && <DocModal template={selectedDoc} onClose={()=>setSelectedDoc(null)}/>}
     </div>

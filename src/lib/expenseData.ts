@@ -38,10 +38,38 @@ export interface ExpenseNote {
 // ── Receipt ───────────────────────────────────────────────────────────────────
 export interface Receipt {
   filename: string;
-  size?: string;         // display size e.g. "142 KB"
+  size?: string;
   uploadedAt: string;
   uploadedBy: string;
   mimeType?: string;
+  dataUrl?: string;
+  storageUrl?: string;
+  storagePath?: string;
+}
+
+// ── Subscription ─────────────────────────────────────────────────────────────
+export type SubscriptionStatus = "active" | "at-risk" | "redundant" | "cancelled";
+export type BillingCycle = "monthly" | "quarterly" | "annual";
+
+export interface Subscription {
+  id: string;
+  name: string;
+  vendor: string;
+  category: ExpenseCategory;
+  monthlyCost: number;
+  billingCycle: BillingCycle;
+  renewalDate: string;
+  owner: string;
+  roiScore: number;
+  status: SubscriptionStatus;
+  lastUsed?: string;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubscriptionStore {
+  subscriptions: Subscription[];
 }
 
 // ── Expense ───────────────────────────────────────────────────────────────────
@@ -263,6 +291,159 @@ export function loadExpenseStore(): ExpenseStore {
 
 export function saveExpenseStore(store: ExpenseStore): void {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); } catch {}
+}
+
+// ── Subscription storage ─────────────────────────────────────────────────────
+
+const SUB_STORAGE_KEY = "martin_subscriptions_v1";
+
+const SEED_SUBSCRIPTIONS: Subscription[] = [
+  {
+    id: "sub-001", name: "AWS", vendor: "Amazon Web Services", category: "Technology",
+    monthlyCost: 12400, billingCycle: "monthly", renewalDate: "2027-01-05",
+    owner: "Alex M.", roiScore: 92, status: "active", lastUsed: "2026-03-12",
+    createdAt: "2025-01-05T10:00:00Z", updatedAt: "2026-03-12T10:00:00Z",
+  },
+  {
+    id: "sub-002", name: "Slack", vendor: "Salesforce", category: "Technology",
+    monthlyCost: 1250, billingCycle: "monthly", renewalDate: "2026-09-01",
+    owner: "Jordan K.", roiScore: 88, status: "active", lastUsed: "2026-03-13",
+    createdAt: "2024-09-01T10:00:00Z", updatedAt: "2026-03-13T09:00:00Z",
+  },
+  {
+    id: "sub-003", name: "Figma", vendor: "Figma Inc.", category: "Technology",
+    monthlyCost: 450, billingCycle: "annual", renewalDate: "2026-06-15",
+    owner: "Sam P.", roiScore: 75, status: "active", lastUsed: "2026-03-10",
+    createdAt: "2025-06-15T10:00:00Z", updatedAt: "2026-03-10T15:00:00Z",
+  },
+  {
+    id: "sub-004", name: "HubSpot Marketing", vendor: "HubSpot", category: "Marketing",
+    monthlyCost: 3200, billingCycle: "monthly", renewalDate: "2026-12-01",
+    owner: "Sam P.", roiScore: 62, status: "at-risk", lastUsed: "2026-02-20",
+    notes: "Usage dropped 40% since Q4. Consider downgrade to Starter tier.",
+    createdAt: "2024-12-01T10:00:00Z", updatedAt: "2026-02-20T10:00:00Z",
+  },
+  {
+    id: "sub-005", name: "Jira", vendor: "Atlassian", category: "Technology",
+    monthlyCost: 890, billingCycle: "monthly", renewalDate: "2026-08-01",
+    owner: "Alex M.", roiScore: 45, status: "at-risk", lastUsed: "2026-01-15",
+    notes: "Team migrated most work to Linear. Only legacy projects remain.",
+    createdAt: "2023-08-01T10:00:00Z", updatedAt: "2026-01-15T10:00:00Z",
+  },
+  {
+    id: "sub-006", name: "Adobe Creative Cloud", vendor: "Adobe", category: "Marketing",
+    monthlyCost: 1800, billingCycle: "annual", renewalDate: "2026-04-20",
+    owner: "Sam P.", roiScore: 30, status: "redundant", lastUsed: "2025-11-10",
+    notes: "Only 2 of 15 licenses used. Team shifted to Figma and Canva.",
+    createdAt: "2024-04-20T10:00:00Z", updatedAt: "2025-11-10T10:00:00Z",
+  },
+  {
+    id: "sub-007", name: "Zoom Business", vendor: "Zoom", category: "Operations",
+    monthlyCost: 600, billingCycle: "monthly", renewalDate: "2026-07-15",
+    owner: "Jordan K.", roiScore: 82, status: "active", lastUsed: "2026-03-13",
+    createdAt: "2024-07-15T10:00:00Z", updatedAt: "2026-03-13T08:00:00Z",
+  },
+  {
+    id: "sub-008", name: "Salesforce CRM", vendor: "Salesforce", category: "Technology",
+    monthlyCost: 4500, billingCycle: "monthly", renewalDate: "2026-11-01",
+    owner: "Chris T.", roiScore: 70, status: "active", lastUsed: "2026-03-11",
+    createdAt: "2024-11-01T10:00:00Z", updatedAt: "2026-03-11T14:00:00Z",
+  },
+  {
+    id: "sub-009", name: "Notion", vendor: "Notion Labs", category: "Technology",
+    monthlyCost: 320, billingCycle: "monthly", renewalDate: "2026-05-01",
+    owner: "Jordan K.", roiScore: 25, status: "redundant", lastUsed: "2025-09-22",
+    notes: "Replaced by Confluence. No active users in 6 months.",
+    createdAt: "2024-05-01T10:00:00Z", updatedAt: "2025-09-22T10:00:00Z",
+  },
+  {
+    id: "sub-010", name: "GitHub Enterprise", vendor: "Microsoft", category: "Technology",
+    monthlyCost: 2100, billingCycle: "monthly", renewalDate: "2026-10-01",
+    owner: "Alex M.", roiScore: 95, status: "active", lastUsed: "2026-03-13",
+    createdAt: "2024-10-01T10:00:00Z", updatedAt: "2026-03-13T11:00:00Z",
+  },
+];
+
+export function loadSubscriptionStore(): SubscriptionStore {
+  try {
+    const raw = localStorage.getItem(SUB_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { subscriptions: SEED_SUBSCRIPTIONS };
+}
+
+export function saveSubscriptionStore(store: SubscriptionStore): void {
+  try { localStorage.setItem(SUB_STORAGE_KEY, JSON.stringify(store)); } catch {}
+}
+
+export function calcWasteMetrics(subs: Subscription[]) {
+  const active = subs.filter(s => s.status !== "cancelled");
+  const totalMonthly = active.reduce((s, sub) => s + sub.monthlyCost, 0);
+  const atRisk = active.filter(s => s.status === "at-risk");
+  const redundant = active.filter(s => s.status === "redundant");
+  const flagged = [...atRisk, ...redundant];
+  const wasteMonthly = flagged.reduce((s, sub) => s + sub.monthlyCost, 0);
+  const wasteAnnual = wasteMonthly * 12;
+  const prevMonthTotal = totalMonthly * 0.97;
+  const momChange = totalMonthly - prevMonthTotal;
+  const momPct = prevMonthTotal > 0 ? ((momChange / prevMonthTotal) * 100) : 0;
+  return { totalMonthly, totalAnnual: totalMonthly * 12, wasteMonthly, wasteAnnual, flaggedCount: flagged.length, atRiskCount: atRisk.length, redundantCount: redundant.length, momChange, momPct };
+}
+
+export function deriveSubscriptionStatus(sub: Subscription): SubscriptionStatus {
+  if (sub.status === "cancelled") return "cancelled";
+  if (sub.roiScore < 40) return "redundant";
+  if (sub.roiScore < 70) return "at-risk";
+  return "active";
+}
+
+// ── Receipt upload to Supabase Storage ───────────────────────────────────────
+
+export async function uploadReceiptToStorage(file: File, expenseId: string): Promise<{ storageUrl: string; storagePath: string } | { error: string }> {
+  try {
+    const { supabase } = await import("@/integrations/supabase/client");
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id ?? "anonymous";
+    const ext = file.name.split(".").pop() || "bin";
+    const path = `${userId}/${expenseId}/${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("receipts")
+      .upload(path, file, { contentType: file.type, upsert: true });
+
+    if (uploadError) {
+      console.error("[Receipt Upload] Supabase upload failed:", uploadError.message);
+      return { error: uploadError.message };
+    }
+
+    const { data: signedData, error: signError } = await supabase.storage
+      .from("receipts")
+      .createSignedUrl(path, 60 * 60 * 24 * 7);
+
+    if (signError || !signedData?.signedUrl) {
+      console.error("[Receipt Upload] Signed URL failed:", signError?.message);
+      return { error: signError?.message ?? "Failed to create signed URL" };
+    }
+
+    return { storageUrl: signedData.signedUrl, storagePath: path };
+  } catch (err) {
+    console.error("[Receipt Upload] Unexpected error:", err);
+    return { error: String(err) };
+  }
+}
+
+export async function getReceiptSignedUrl(storagePath: string): Promise<string | null> {
+  try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data, error } = await supabase.storage
+      .from("receipts")
+      .createSignedUrl(storagePath, 60 * 60);
+    if (error || !data?.signedUrl) return null;
+    return data.signedUrl;
+  } catch {
+    return null;
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
