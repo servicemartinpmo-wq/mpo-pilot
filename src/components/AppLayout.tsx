@@ -673,7 +673,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
         }}
       >
         {/* ── Creative top bar ── */}
-        <header className="sticky top-0 z-50 flex-shrink-0 overflow-hidden"
+        <header className="sticky top-0 z-50 flex-shrink-0"
           style={{ boxShadow: `0 1px 0 ${CREATIVE_NAV_BORDER}` }}>
 
           {/* Subtle noise gradient instead of photography */}

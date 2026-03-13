@@ -13,7 +13,7 @@ import {
   Shield, Database, Sparkles, Clock, Target,
   CheckCircle2, XCircle, Loader2, BarChart3,
   Cpu, Activity, Signal, TrendingDown, Award, Briefcase,
-  Trash2, Save, Info, ChevronUp,
+  Trash2, Save, Info, ChevronUp, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -21,6 +21,29 @@ import {
   SOURCE_CHANNEL_META, CONFIDENCE_META,
   type CRMSettings, type Confidence,
 } from "@/lib/crmConfig";
+import { useAuth } from "@/hooks/useAuth";
+import { useTierAccess, isTierAtLeast, type TierId } from "@/lib/tierSystem";
+
+const DISCO_QUOTA_KEY = "pmo_crm_disco_quota";
+function getWeekNumber() {
+  const d = new Date();
+  const onejan = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil((((d.getTime() - onejan.getTime()) / 86400000) + onejan.getDay() + 1) / 7);
+}
+function getDiscoQuota(): { weekNum: number; count: number } {
+  try { return JSON.parse(localStorage.getItem(DISCO_QUOTA_KEY) || "{}"); } catch { return { weekNum: 0, count: 0 }; }
+}
+function incrementDiscoQuota() {
+  const week = getWeekNumber();
+  const q = getDiscoQuota();
+  const next = q.weekNum === week ? { weekNum: week, count: q.count + 1 } : { weekNum: week, count: 1 };
+  localStorage.setItem(DISCO_QUOTA_KEY, JSON.stringify(next));
+  return next.count;
+}
+function getDiscoUsedThisWeek(): number {
+  const q = getDiscoQuota();
+  return q.weekNum === getWeekNumber() ? q.count : 0;
+}
 
 interface DiscoveryProgress {
   stage: string;
@@ -245,7 +268,7 @@ function SignalBadge({ signal }: { signal: BuyingSignal }) {
 }
 
 // ── Discover Tab ──────────────────────────────────────────────────────
-function DiscoverTab() {
+function DiscoverTab({ tier }: { tier: TierId }) {
   const [query, setQuery] = useState({ text: "", industry: "", location: "", sizeMin: "", sizeMax: "" });
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState<DiscoveryProgress | null>(null);
@@ -256,15 +279,25 @@ function DiscoverTab() {
   const [verifying, setVerifying] = useState<string | null>(null);
   const [verifyResult, setVerifyResult] = useState<Record<string, any>>({});
   const [error, setError] = useState("");
+  const [usedThisWeek, setUsedThisWeek] = useState(() => getDiscoUsedThisWeek());
+
+  const weeklyLimit = tier === "solo" ? 3 : tier === "growth" ? 50 : Infinity;
+  const quotaReached = weeklyLimit !== Infinity && usedThisWeek >= weeklyLimit;
 
   async function runDiscovery() {
     const hasQuery = query.text || query.industry || query.location;
     if (!hasQuery) return;
+    if (quotaReached) return;
 
     setRunning(true);
     setResults([]);
     setError("");
     setProgress({ stage: "searching", message: "Starting discovery…", percent: 0, companiesFound: 0, contactsFound: 0 });
+
+    if (weeklyLimit !== Infinity) {
+      const newCount = incrementDiscoQuota();
+      setUsedThisWeek(newCount);
+    }
 
     try {
       const resp = await fetch("/api/crm/discover/stream", {
@@ -381,15 +414,26 @@ function DiscoverTab() {
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
-          <button onClick={runDiscovery} disabled={!canRun || running}
+        <div className="flex items-center gap-3 flex-wrap">
+          <button onClick={runDiscovery} disabled={!canRun || running || quotaReached}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-electric-blue text-white hover:bg-electric-blue/90 disabled:opacity-40 transition-colors">
             {running ? <><Loader2 className="w-4 h-4 animate-spin" /> Discovering…</> : <><Zap className="w-4 h-4" /> Discover Leads</>}
           </button>
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
             <Shield className="w-3 h-3" />
-            <span>Only public data · Respects robots.txt · No login-required sources</span>
+            <span>Only public data sources</span>
           </div>
+          {weeklyLimit !== Infinity && (
+            <div className={cn("flex items-center gap-1.5 text-[10px] font-semibold px-2.5 py-1 rounded-lg border",
+              quotaReached
+                ? "text-signal-red bg-signal-red/10 border-signal-red/25"
+                : "text-signal-yellow bg-signal-yellow/10 border-signal-yellow/25")}>
+              <Clock className="w-3 h-3" />
+              {quotaReached
+                ? `Weekly limit reached (${weeklyLimit} searches)`
+                : `${usedThisWeek} / ${weeklyLimit} searches this week`}
+            </div>
+          )}
         </div>
       </div>
 
@@ -1029,6 +1073,8 @@ function PipelineTab({ opps, onAdd }: { opps: Opportunity[]; onAdd: (stage: Oppo
 type CRMTab = "discover" | "companies" | "contacts" | "pipeline";
 
 export default function CRM() {
+  const { profile } = useAuth();
+  const { effectiveTier } = useTierAccess(profile?.email);
   const [tab, setTab] = useState<CRMTab>("discover");
   const [search, setSearch] = useState("");
   const [settings, setSettings] = useState<CRMSettings>(() => loadCRMSettings());
@@ -1056,6 +1102,50 @@ export default function CRM() {
 
   const pipelineValue = opps.filter(o => !["closed_won", "closed_lost"].includes(o.stage)).reduce((s, o) => s + o.value, 0);
   const wonValue = opps.filter(o => o.stage === "closed_won").reduce((s, o) => s + o.value, 0);
+
+  if (effectiveTier === "free") {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "hsl(224 22% 10%)" }}>
+        <div className="max-w-md w-full text-center space-y-5">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto"
+            style={{ background: "hsl(222 88% 65% / 0.12)", border: "1px solid hsl(222 88% 65% / 0.2)" }}>
+            <Lock className="w-8 h-8" style={{ color: "hsl(222 88% 65%)" }} />
+          </div>
+          <div>
+            <h2 className="text-xl font-black mb-2" style={{ color: "hsl(38 15% 94%)" }}>CRM & Lead Discovery</h2>
+            <p className="text-sm leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+              Lead discovery, contact management, and sales intelligence are available on paid plans. Upgrade to Consultant to get started with 3 searches per week.
+            </p>
+          </div>
+          <div className="rounded-2xl border p-4 text-left space-y-3" style={{ background: "hsl(224 20% 12%)", borderColor: "hsl(0 0% 100% / 0.07)" }}>
+            {[
+              { tier: "Consultant · Solo", limit: "3 lead searches / week", color: "hsl(268 68% 62%)" },
+              { tier: "Growth", limit: "50 lead searches / week", color: "hsl(222 88% 65%)" },
+              { tier: "Command", limit: "Unlimited · Full access", color: "hsl(38 92% 52%)" },
+            ].map(({ tier: t, limit, color }) => (
+              <div key={t} className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
+                <div>
+                  <p className="text-xs font-bold" style={{ color: "hsl(38 15% 90%)" }}>{t}</p>
+                  <p className="text-[11px]" style={{ color: "hsl(0 0% 100% / 0.4)" }}>{limit}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <a href="/pricing" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold transition-all"
+            style={{ background: "hsl(222 88% 65%)", color: "white" }}>
+            View Plans <ArrowRight className="w-4 h-4" />
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  const tierBannerText = effectiveTier === "solo"
+    ? "Consultant plan · 3 lead searches / week"
+    : effectiveTier === "growth"
+    ? "Growth plan · 50 lead searches / week"
+    : null;
 
   const TABS = [
     { id: "discover" as CRMTab, label: "Discover", icon: <Sparkles className="w-3.5 h-3.5" /> },
@@ -1120,7 +1210,14 @@ export default function CRM() {
         )}
       </div>
 
-      {tab === "discover" && <DiscoverTab />}
+      {tierBannerText && (
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold"
+          style={{ background: "hsl(222 88% 65% / 0.08)", borderColor: "hsl(222 88% 65% / 0.2)", color: "hsl(222 88% 72%)" }}>
+          <Shield className="w-3.5 h-3.5 flex-shrink-0" />
+          {tierBannerText} · <a href="/pricing" className="underline underline-offset-2 opacity-70 hover:opacity-100">Upgrade for more</a>
+        </div>
+      )}
+      {tab === "discover" && <DiscoverTab tier={effectiveTier} />}
       {tab === "companies" && <CompaniesTab search={search} />}
       {tab === "contacts" && <ContactsTab search={search} />}
       {tab === "pipeline" && <PipelineTab opps={opps} onAdd={stage => setOpps(os => [...os, { id: `o${Date.now()}`, name: "New Opportunity", stage, value: 5000, probability: 30 }])} />}

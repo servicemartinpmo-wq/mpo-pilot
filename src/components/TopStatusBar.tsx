@@ -1,69 +1,24 @@
 /**
  * TopStatusBar — persistent 28px command-center anchor bar.
  * Always shows "Martin PMO-Ops Command Center" brand.
- * Two live health meters:
- *   • Org Health  — overall company health (avg dept execution scores)
- *   • Ops Health  — how well systems/departments work together
  */
 import { useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { AlertTriangle, Search, Activity } from "lucide-react";
-import { useCountUp } from "@/hooks/useCountUp";
+import { AlertTriangle, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { departments, actionItems, insights } from "@/lib/pmoData";
+import { insights } from "@/lib/pmoData";
 import pmoLogoNoBg from "@/assets/pmo-logo-nobg.png";
-import ScoreExplainer from "@/components/ScoreExplainer";
 
 interface Props {
   onOpenCommandPalette: () => void;
 }
 
-function healthColor(score: number) {
-  return score >= 75 ? "hsl(160 56% 44%)" : score >= 55 ? "hsl(38 90% 52%)" : "hsl(350 72% 56%)";
-}
-
 export default function TopStatusBar({ onOpenCommandPalette }: Props) {
   const location = useLocation();
-  const isDashboard = location.pathname === "/";
-
-  /** Org Health — mean execution_health across all departments */
-  const orgHealth = useMemo(() => {
-    if (!departments.length) return 72;
-    return Math.round(
-      departments.reduce((s, d) => s + (d.execution_health ?? 0), 0) / departments.length
-    );
-  }, []);
-
-  /**
-   * Operational Health — how well the systems work together.
-   * Derived from: non-blocked task ratio + no-critical-alert ratio + dept score variance penalty.
-   * Lower variance between departments = higher operational coherence.
-   */
-  const opsHealth = useMemo(() => {
-    const total = actionItems.length || 1;
-    const blocked = actionItems.filter(a => a.status === "Blocked").length;
-    const blockRatio = 1 - blocked / total;
-
-    const criticalCount = insights.filter(i => i.signal === "red").length;
-    const alertPenalty = Math.max(0, 1 - criticalCount * 0.06);
-
-    const scores = departments.map(d => d.execution_health ?? 50);
-    const mean = scores.reduce((s, v) => s + v, 0) / (scores.length || 1);
-    const variance = scores.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / (scores.length || 1);
-    const coherence = Math.max(0, 1 - Math.sqrt(variance) / 60);
-
-    return Math.round((blockRatio * 0.35 + alertPenalty * 0.35 + coherence * 0.30) * 100);
-  }, []);
 
   const criticalAlerts = useMemo(() =>
     insights.filter(i => i.signal === "red" || i.executivePriorityScore >= 85).length,
   []);
-
-  const orgDisplay = useCountUp(orgHealth, { duration: 1200, delay: 200 });
-  const opsDisplay = useCountUp(opsHealth, { duration: 1400, delay: 400 });
-
-  const orgColor = healthColor(orgHealth);
-  const opsColor = healthColor(opsHealth);
 
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
@@ -85,52 +40,17 @@ export default function TopStatusBar({ onOpenCommandPalette }: Props) {
           </span>
         </div>
 
-        {/* Two health meters — always visible */}
-        <div className="hidden sm:flex items-center gap-3">
-
-          {/* Org Health */}
-          <Link to="/diagnostics"
-            className="flex items-center gap-1.5 transition-opacity hover:opacity-80"
-            title="Org Health — overall company performance">
-            <Activity className="w-3 h-3" style={{ color: orgColor }} />
-            <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.38)" }}>Org</span>
-            <span className="text-[11px] font-black font-mono" style={{ color: orgColor }}>
-              {orgDisplay}
-            </span>
-            <ScoreExplainer metricName="Org Health" rawScore={orgHealth} variant="dark" size="sm" />
-          </Link>
-
-          <span className="w-px h-3" style={{ background: "hsl(0 0% 100% / 0.12)" }} />
-
-          {/* Operational Health */}
-          <Link to="/diagnostics"
-            className="flex items-center gap-1.5 transition-opacity hover:opacity-80"
-            title="Operational Health — how well your systems work together">
-            <div className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60"
-                style={{ background: opsColor }} />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5" style={{ background: opsColor }} />
-            </div>
-            <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.38)" }}>Ops</span>
-            <span className="text-[11px] font-black font-mono" style={{ color: opsColor }}>
-              {opsDisplay}
-            </span>
-            <ScoreExplainer metricName="Ops Health" rawScore={opsHealth} variant="dark" size="sm" />
-          </Link>
-
-          {/* Critical alert count */}
-          {criticalAlerts > 0 && (
-            <>
-              <span className="w-px h-3" style={{ background: "hsl(0 0% 100% / 0.10)" }} />
-              <Link to="/diagnostics" className="flex items-center gap-1 transition-opacity hover:opacity-80">
-                <AlertTriangle className="w-3 h-3" style={{ color: "hsl(350 72% 60%)" }} />
-                <span className="text-[10px] font-bold" style={{ color: "hsl(350 72% 60%)" }}>
-                  {criticalAlerts}
-                </span>
-              </Link>
-            </>
-          )}
-        </div>
+        {criticalAlerts > 0 && (
+          <div className="hidden sm:flex items-center gap-3">
+            <span className="w-px h-3" style={{ background: "hsl(0 0% 100% / 0.10)" }} />
+            <Link to="/diagnostics" className="flex items-center gap-1 transition-opacity hover:opacity-80">
+              <AlertTriangle className="w-3 h-3" style={{ color: "hsl(350 72% 60%)" }} />
+              <span className="text-[10px] font-bold" style={{ color: "hsl(350 72% 60%)" }}>
+                {criticalAlerts}
+              </span>
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Right — date + search */}

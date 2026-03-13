@@ -1184,19 +1184,19 @@ export const frameworks: FrameworkEngine[] = [
 // ──────────────────────────────────────────────
 
 export const orgMetrics = {
-  overallMaturityScore: 64,
-  activeInitiatives: 10,
-  criticalInsights: 4,
-  blockedTasks: 70,
-  totalHeadcount: 104,
-  totalBudgetAllocated: 2830000,
-  totalBudgetUsed: 1365000,
-  avgExecutionHealth: 62,
-  avgStrategicAlignment: 81,
-  sopCoverage: 78,
-  governanceOpenItems: 5,
-  decisionDeadlines: 3,
-  avgSopAdherence: 77,
+  overallMaturityScore: 0,
+  activeInitiatives: 0,
+  criticalInsights: 0,
+  blockedTasks: 0,
+  totalHeadcount: 0,
+  totalBudgetAllocated: 0,
+  totalBudgetUsed: 0,
+  avgExecutionHealth: 0,
+  avgStrategicAlignment: 0,
+  sopCoverage: 0,
+  governanceOpenItems: 0,
+  decisionDeadlines: 0,
+  avgSopAdherence: 0,
 };
 
 // ──────────────────────────────────────────────
