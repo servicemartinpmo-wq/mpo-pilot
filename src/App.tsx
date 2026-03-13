@@ -38,6 +38,7 @@ import Meetings from "./pages/Meetings";
 import Compliance from "./pages/Compliance";
 import TechOps from "./pages/TechOps";
 import MigrateHub from "./pages/MigrateHub";
+import NoteTaker from "./pages/NoteTaker";
 import AuthPage from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
@@ -223,6 +224,7 @@ function AppRoutes() {
             <Route path="/compliance" element={<Compliance />} />
             <Route path="/tech-ops" element={<TechOps />} />
             <Route path="/migrate" element={<MigrateHub />} />
+            <Route path="/note-taker" element={<NoteTaker />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>

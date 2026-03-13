@@ -8,7 +8,7 @@ import {
   FolderOpen, Scale, Layers, UserCircle, TrendingUp,
   Network, ShoppingBag, CreditCard, Tag,
   Menu, X, MoreHorizontal, WifiOff, DollarSign,
-  CalendarDays, Shield, Star, ArrowRightLeft,
+  CalendarDays, Shield, Star, ArrowRightLeft, Mic,
 } from "lucide-react";
 import pmoLogoIcon from "@/assets/pmo-logo-icon.jpg";
 import { useUserMode } from "@/hooks/useUserMode";
@@ -76,6 +76,8 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/graph",        label: "Graph View",   icon: Network     },
       { to: "/workflows",    label: "Workflows",    icon: GitBranch   },
       { to: "/advisory",     label: "Advisory",     icon: Headphones  },
+      { to: "/note-taker",   label: "Note Taker",       icon: Mic         },
+      { to: "/migrate-hub",  label: "Import / Migrate", icon: ArrowRightLeft },
       { to: "/expenses",     label: "Expenses",         icon: DollarSign  },
       { to: "/tech-ops",     label: "Tech-Ops",         icon: Shield      },
       { to: "/integrations", label: "Integrations", icon: Plug        },
@@ -113,6 +115,8 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/reports",      label: "Reports",      icon: FileText   },
       { to: "/diagnostics",  label: "Diagnostics",  icon: Activity   },
       { to: "/knowledge",    label: "Resource Hub", icon: BookOpen   },
+      { to: "/note-taker",   label: "Note Taker",   icon: Mic        },
+      { to: "/migrate-hub",  label: "Import / Migrate", icon: ArrowRightLeft },
       { to: "/expenses",     label: "Expenses",         icon: DollarSign },
       { to: "/tech-ops",     label: "Tech-Ops",         icon: Shield     },
       { to: "/advisory",     label: "Board",            icon: Headphones },
@@ -147,6 +151,8 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/marketing", label: "Growth",   icon: TrendingUp  },
     ],
     tools: [
+      { to: "/note-taker",   label: "Note Taker",       icon: Mic       },
+      { to: "/migrate-hub",  label: "Import / Migrate", icon: ArrowRightLeft },
       { to: "/expenses",     label: "Expenses",         icon: DollarSign },
       { to: "/tech-ops",     label: "Tech-Ops",         icon: Shield    },
       { to: "/diagnostics",  label: "Diagnostics",     icon: Activity  },
@@ -180,6 +186,8 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
     ],
     growth: [],
     tools: [
+      { to: "/note-taker",   label: "Note Taker",       icon: Mic      },
+      { to: "/migrate-hub",  label: "Import / Migrate", icon: ArrowRightLeft },
       { to: "/expenses",     label: "Expenses",         icon: DollarSign },
       { to: "/tech-ops",     label: "Tech-Ops",         icon: Shield   },
       { to: "/diagnostics",  label: "Diagnostics",  icon: Activity   },
@@ -209,6 +217,8 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
     ],
     growth: [],
     tools: [
+      { to: "/note-taker",  label: "Note Taker",       icon: Mic        },
+      { to: "/migrate-hub", label: "Import / Migrate", icon: ArrowRightLeft },
       { to: "/expenses",    label: "Expenses",         icon: DollarSign },
       { to: "/tech-ops",   label: "Tech-Ops",         icon: Shield     },
       { to: "/diagnostics", label: "Diagnostics",  icon: Activity   },
@@ -240,6 +250,8 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
     ],
     growth: [],
     tools: [
+      { to: "/note-taker",   label: "Note Taker",       icon: Mic      },
+      { to: "/migrate-hub",  label: "Import / Migrate", icon: ArrowRightLeft },
       { to: "/expenses",     label: "Expenses",         icon: DollarSign },
       { to: "/tech-ops",     label: "Tech-Ops",         icon: Shield   },
       { to: "/reports",      label: "Reports",      icon: FileText   },
@@ -360,6 +372,8 @@ const ROUTE_LABELS: Record<string, string> = {
   "/strategy":     "Strategy",
   "/settings":     "Settings",
   "/pricing":      "Pricing",
+  "/note-taker":   "Note Taker",
+  "/migrate-hub":  "Import / Migrate",
 };
 
 export default function AppLayout({ children, profile, onProfileUpdate }: Props) {
@@ -605,6 +619,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   const CREATIVE_ROSE       = "hsl(350 72% 62%)";
   const CREATIVE_NAV_BG     = "hsl(222 22% 6%)";
   const CREATIVE_NAV_BORDER = "hsl(220 18% 14%)";
+  const CREATIVE_CRIMSON    = "hsl(350 72% 58%)";
 
   if (mode === "creative") {
     return (

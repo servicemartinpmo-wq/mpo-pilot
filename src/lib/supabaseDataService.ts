@@ -1131,3 +1131,55 @@ export async function deleteGeneratedReport(id: string) {
     .eq("id", id);
   if (error) throw new Error(`Failed to delete report: ${error.message}`);
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// NOTES (AI Note Taker)
+// ─────────────────────────────────────────────────────────────────────
+type DbNote = Database["public"]["Tables"]["notes"]["Row"];
+export type { DbNote };
+
+export async function getNotes(userId: string): Promise<DbNote[]> {
+  const { data } = await supabase
+    .from("notes")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  return data ?? [];
+}
+
+export async function getNote(id: string): Promise<DbNote | null> {
+  const { data } = await supabase.from("notes").select("*").eq("id", id).single();
+  return data;
+}
+
+export async function getNotesCount(userId: string): Promise<number> {
+  const { count } = await supabase
+    .from("notes")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId);
+  return count ?? 0;
+}
+
+export async function insertNote(note: Database["public"]["Tables"]["notes"]["Insert"]) {
+  return supabase.from("notes").insert(note).select().single();
+}
+
+export async function updateNote(id: string, updates: Database["public"]["Tables"]["notes"]["Update"]) {
+  return supabase.from("notes").update(updates).eq("id", id).select().single();
+}
+
+export async function deleteNote(id: string) {
+  return supabase.from("notes").delete().eq("id", id);
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// USER PREFERENCES (subscription tier)
+// ─────────────────────────────────────────────────────────────────────
+export async function getUserSubscriptionTier(userId: string): Promise<string> {
+  const { data } = await supabase
+    .from("user_preferences")
+    .select("subscription_tier")
+    .eq("user_id", userId)
+    .single();
+  return data?.subscription_tier ?? "free";
+}

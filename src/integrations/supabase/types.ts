@@ -2490,6 +2490,48 @@ export type Database = {
           },
         ]
       }
+      notes: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          raw_transcript: string
+          ai_summary: string | null
+          action_items: Json | null
+          tags: string[] | null
+          is_ai_generated: boolean | null
+          tier_at_creation: string
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title?: string
+          raw_transcript?: string
+          ai_summary?: string | null
+          action_items?: Json | null
+          tags?: string[] | null
+          is_ai_generated?: boolean | null
+          tier_at_creation?: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          raw_transcript?: string
+          ai_summary?: string | null
+          action_items?: Json | null
+          tags?: string[] | null
+          is_ai_generated?: boolean | null
+          tier_at_creation?: string
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string | null
