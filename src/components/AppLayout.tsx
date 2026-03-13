@@ -8,10 +8,11 @@ import {
   FolderOpen, Scale, Layers, UserCircle, TrendingUp,
   Network, ShoppingBag, CreditCard, Tag,
   Menu, X, MoreHorizontal, WifiOff, DollarSign,
-  CalendarDays, Shield,
+  CalendarDays, Shield, Star, ArrowRightLeft,
 } from "lucide-react";
 import pmoLogoIcon from "@/assets/pmo-logo-icon.jpg";
 import { useUserMode } from "@/hooks/useUserMode";
+import { useStarredNav } from "@/hooks/useStarredNav";
 import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
 import { saveProfile, loadProfile, isDemoMode, clearDemo } from "@/lib/companyStore";
@@ -507,6 +508,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   }, [mobileDrawerOpen]);
 
   const { mode, setMode, label: modeLabel, allModes } = useUserMode();
+  const { starred, isStarred, toggleStar, removeStar } = useStarredNav();
   const theme = MODE_THEMES[mode] ?? MODE_THEMES.executive;
   const navCfg = MODE_NAV_CONFIGS[mode] ?? MODE_NAV_CONFIGS.executive;
   const commandNav = navCfg.command;
@@ -1061,6 +1063,48 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5" style={{ scrollbarWidth: "none" }}>
 
+            {/* Starred shortcuts section */}
+            {!collapsed && starred.length > 0 && (
+              <div className="mb-2">
+                <p className="text-[9px] font-bold uppercase tracking-[0.22em] px-2 pb-1 pt-1.5"
+                  style={{ color: "hsl(38 92% 52% / 0.55)" }}>
+                  Starred
+                </p>
+                {starred.map(({ to, label }) => (
+                  <div key={to} className="relative group/staritem">
+                    <NavLink
+                      to={to}
+                      end={to === "/"}
+                      className={({ isActive }) =>
+                        cn("flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-[12px] font-medium transition-all duration-150 pr-7",
+                          !isActive && "hover:bg-white/[0.04]")
+                      }
+                      style={({ isActive }) => ({
+                        background: isActive ? theme.accentBg : undefined,
+                        boxShadow: isActive ? theme.accentShadow : undefined,
+                      })}>
+                      {({ isActive }) => (
+                        <>
+                          <Star className="w-3 h-3 flex-shrink-0 fill-current"
+                            style={{ color: isActive ? "hsl(38 92% 62%)" : "hsl(38 92% 52% / 0.6)" }} />
+                          <span className="flex-1 truncate"
+                            style={{ color: isActive ? "hsl(38 10% 96%)" : "hsl(0 0% 100% / 0.58)" }}>
+                            {label}
+                          </span>
+                        </>
+                      )}
+                    </NavLink>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); e.preventDefault(); removeStar(to); }}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/staritem:opacity-100 transition-opacity p-1 rounded hover:bg-white/10 z-10">
+                      <X className="w-2.5 h-2.5" style={{ color: "hsl(0 0% 100% / 0.35)" }} />
+                    </button>
+                  </div>
+                ))}
+                <div className="mx-2 mt-2 mb-1 h-px" style={{ background: "hsl(0 0% 100% / 0.06)" }} />
+              </div>
+            )}
+
             {!collapsed && (
               <p className="text-[9px] font-bold uppercase tracking-[0.22em] px-2 pb-1 pt-1.5"
                 style={{ color: "hsl(0 0% 100% / 0.18)" }}>
@@ -1069,61 +1113,73 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
             )}
 
             {commandNav.map(({ to, label, icon: Icon }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={to === "/"}
-                className={({ isActive }) =>
-                  cn(
-                    "flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 group relative",
-                    !isActive && "hover:bg-white/[0.04]"
-                  )
-                }
-                style={({ isActive }) => ({
-                  color: isActive ? "#fff" : undefined,
-                  background: isActive ? theme.accentBg : undefined,
-                  boxShadow: isActive ? theme.accentShadow : undefined,
-                })}>
-                {({ isActive }) => {
-                  const trace = navTrace(to);
-                  const needsAttention = !isActive && trace === TRACE_RED && !viewedRedPaths.has(to);
-                  const isAmber = !isActive && trace === TRACE_AMBER;
-                  const iconCol = isActive
-                    ? theme.accentIcon
-                    : trace ? trace
-                    : "hsl(0 0% 100% / 0.38)";
-                  return (
-                    <>
-                      <div className="flex flex-col items-center gap-0.5 flex-shrink-0 relative">
-                        {/* Urgent halo — red attention */}
-                        {needsAttention && (
-                          <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
-                            style={{ background: "radial-gradient(circle, hsl(350 82% 62% / 0.16) 0%, transparent 70%)" }} />
+              <div key={to} className="relative group/navstar">
+                <NavLink
+                  to={to}
+                  end={to === "/"}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 group relative",
+                      !isActive && "hover:bg-white/[0.04]",
+                      !collapsed && "pr-8"
+                    )
+                  }
+                  style={({ isActive }) => ({
+                    color: isActive ? "#fff" : undefined,
+                    background: isActive ? theme.accentBg : undefined,
+                    boxShadow: isActive ? theme.accentShadow : undefined,
+                  })}>
+                  {({ isActive }) => {
+                    const trace = navTrace(to);
+                    const needsAttention = !isActive && trace === TRACE_RED && !viewedRedPaths.has(to);
+                    const isAmber = !isActive && trace === TRACE_AMBER;
+                    const iconCol = isActive
+                      ? theme.accentIcon
+                      : trace ? trace
+                      : "hsl(0 0% 100% / 0.38)";
+                    return (
+                      <>
+                        <div className="flex flex-col items-center gap-0.5 flex-shrink-0 relative">
+                          {/* Urgent halo — red attention */}
+                          {needsAttention && (
+                            <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                              style={{ background: "radial-gradient(circle, hsl(350 82% 62% / 0.16) 0%, transparent 70%)" }} />
+                          )}
+                          {/* Amber halo — warning */}
+                          {isAmber && (
+                            <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                              style={{ background: "radial-gradient(circle, hsl(38 92% 52% / 0.12) 0%, transparent 70%)" }} />
+                          )}
+                          <Icon
+                            className={cn("w-4 h-4 relative z-10", needsAttention && "nav-icon-nudge")}
+                            style={{ color: iconCol }}
+                          />
+                          {trace && <PulseTrace color={trace} />}
+                        </div>
+                        {!collapsed && (
+                          <>
+                            <span className="flex-1 truncate"
+                              style={{ color: isActive ? "hsl(38 10% 96%)" : "hsl(0 0% 100% / 0.58)" }}>
+                              {label}
+                            </span>
+                            {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: theme.accentDot }} />}
+                          </>
                         )}
-                        {/* Amber halo — warning */}
-                        {isAmber && (
-                          <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
-                            style={{ background: "radial-gradient(circle, hsl(38 92% 52% / 0.12) 0%, transparent 70%)" }} />
-                        )}
-                        <Icon
-                          className={cn("w-4 h-4 relative z-10", needsAttention && "nav-icon-nudge")}
-                          style={{ color: iconCol }}
-                        />
-                        {trace && <PulseTrace color={trace} />}
-                      </div>
-                      {!collapsed && (
-                        <>
-                          <span className="flex-1 truncate"
-                            style={{ color: isActive ? "hsl(38 10% 96%)" : "hsl(0 0% 100% / 0.58)" }}>
-                            {label}
-                          </span>
-                          {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: theme.accentDot }} />}
-                        </>
-                      )}
-                    </>
-                  );
-                }}
-              </NavLink>
+                      </>
+                    );
+                  }}
+                </NavLink>
+                {!collapsed && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleStar(to, label); }}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/navstar:opacity-100 transition-opacity p-1 rounded hover:bg-white/10 z-10">
+                    <Star
+                      className={cn("w-3 h-3 transition-colors", isStarred(to) ? "fill-current" : "")}
+                      style={{ color: isStarred(to) ? "hsl(38 92% 55%)" : "hsl(0 0% 100% / 0.28)" }}
+                    />
+                  </button>
+                )}
+              </div>
             ))}
 
             {/* Work section — pinned (startup) or collapsible (all other modes) */}
@@ -1322,58 +1378,112 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                 </p>
               )}
               {toolsNav.map(({ to, label, icon: Icon }) => (
+                <div key={to} className="relative group/toolstar">
+                  <NavLink
+                    to={to}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 group relative",
+                        !isActive && "hover:bg-white/[0.07]",
+                        !collapsed && "pr-8"
+                      )
+                    }
+                    style={({ isActive }) => ({
+                      background: isActive ? "hsl(272 60% 52% / 0.14)" : undefined,
+                      boxShadow: isActive ? "inset 2px 0 0 hsl(272 60% 52% / 0.65)" : undefined,
+                    })}>
+                    {({ isActive }) => {
+                      const trace = navTrace(to);
+                      const needsAttention = !isActive && trace === TRACE_RED && !viewedRedPaths.has(to);
+                      const isAmber = !isActive && trace === TRACE_AMBER;
+                      const iconCol = isActive
+                        ? "hsl(272 60% 70%)"
+                        : trace ? trace
+                        : "hsl(220 50% 92% / 0.45)";
+                      return (
+                        <>
+                          <div className="relative flex-shrink-0">
+                            {needsAttention && (
+                              <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                                style={{ background: "radial-gradient(circle, hsl(350 82% 62% / 0.16) 0%, transparent 70%)" }} />
+                            )}
+                            {isAmber && (
+                              <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
+                                style={{ background: "radial-gradient(circle, hsl(38 92% 52% / 0.12) 0%, transparent 70%)" }} />
+                            )}
+                            <Icon
+                              className={cn("w-4 h-4 relative z-10", needsAttention && "nav-icon-nudge")}
+                              style={{ color: iconCol }}
+                            />
+                            {trace && <PulseTrace color={trace} />}
+                          </div>
+                          {!collapsed && (
+                            <>
+                              <span className="flex-1 truncate"
+                                style={{ color: isActive ? "#fff" : "hsl(220 20% 88% / 0.65)" }}>
+                                {label}
+                              </span>
+                              {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(272 60% 52%)" }} />}
+                            </>
+                          )}
+                        </>
+                      );
+                    }}
+                  </NavLink>
+                  {!collapsed && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleStar(to, label); }}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/toolstar:opacity-100 transition-opacity p-1 rounded hover:bg-white/10 z-10">
+                      <Star
+                        className={cn("w-3 h-3 transition-colors", isStarred(to) ? "fill-current" : "")}
+                        style={{ color: isStarred(to) ? "hsl(38 92% 55%)" : "hsl(220 50% 92% / 0.3)" }}
+                      />
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              {/* Migrate / Import link */}
+              <div className="relative group/toolstar">
                 <NavLink
-                  key={to}
-                  to={to}
+                  to="/migrate"
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 group relative",
-                      !isActive && "hover:bg-white/[0.07]"
+                      "flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 relative",
+                      !isActive && "hover:bg-white/[0.07]",
+                      !collapsed && "pr-8"
                     )
                   }
                   style={({ isActive }) => ({
                     background: isActive ? "hsl(272 60% 52% / 0.14)" : undefined,
                     boxShadow: isActive ? "inset 2px 0 0 hsl(272 60% 52% / 0.65)" : undefined,
                   })}>
-                  {({ isActive }) => {
-                    const trace = navTrace(to);
-                    const needsAttention = !isActive && trace === TRACE_RED && !viewedRedPaths.has(to);
-                    const isAmber = !isActive && trace === TRACE_AMBER;
-                    const iconCol = isActive
-                      ? "hsl(272 60% 70%)"
-                      : trace ? trace
-                      : "hsl(220 50% 92% / 0.45)";
-                    return (
-                      <>
-                        <div className="relative flex-shrink-0">
-                          {needsAttention && (
-                            <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
-                              style={{ background: "radial-gradient(circle, hsl(350 82% 62% / 0.16) 0%, transparent 70%)" }} />
-                          )}
-                          {isAmber && (
-                            <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
-                              style={{ background: "radial-gradient(circle, hsl(38 92% 52% / 0.12) 0%, transparent 70%)" }} />
-                          )}
-                          <Icon
-                            className={cn("w-4 h-4 relative z-10", needsAttention && "nav-icon-nudge")}
-                            style={{ color: iconCol }}
-                          />
-                          {trace && <PulseTrace color={trace} />}
-                        </div>
-                        {!collapsed && (
-                          <>
-                            <span className="flex-1 truncate"
-                              style={{ color: isActive ? "#fff" : "hsl(220 20% 88% / 0.65)" }}>
-                              {label}
-                            </span>
-                            {isActive && <div className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: "hsl(272 60% 52%)" }} />}
-                          </>
-                        )}
-                      </>
-                    );
-                  }}
+                  {({ isActive }) => (
+                    <>
+                      <ArrowRightLeft
+                        className="w-4 h-4 flex-shrink-0"
+                        style={{ color: isActive ? "hsl(272 60% 70%)" : "hsl(220 50% 92% / 0.45)" }}
+                      />
+                      {!collapsed && (
+                        <span className="flex-1 truncate"
+                          style={{ color: isActive ? "#fff" : "hsl(220 20% 88% / 0.65)" }}>
+                          Import / Migrate
+                        </span>
+                      )}
+                    </>
+                  )}
                 </NavLink>
-              ))}
+                {!collapsed && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleStar("/migrate", "Import / Migrate"); }}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/toolstar:opacity-100 transition-opacity p-1 rounded hover:bg-white/10 z-10">
+                    <Star
+                      className={cn("w-3 h-3 transition-colors", isStarred("/migrate") ? "fill-current" : "")}
+                      style={{ color: isStarred("/migrate") ? "hsl(38 92% 55%)" : "hsl(220 50% 92% / 0.3)" }}
+                    />
+                  </button>
+                )}
+              </div>
             </div>
           </nav>
 
