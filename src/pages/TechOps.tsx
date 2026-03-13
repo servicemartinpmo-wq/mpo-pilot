@@ -1,12 +1,17 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import {
   HardDrive, FolderPlus, RefreshCw, ChevronRight, ChevronDown,
   Folder, FolderOpen, File, Trash2, Edit3, Check, X, Clock,
   AlertCircle, CheckCircle, Search, GripVertical,
   MessageSquare, FileText, DollarSign, Users, GitBranch,
   Layers, BarChart2, Mail, Calendar, Video, Database,
-  Activity, Shield, Plus,
+  Activity, Shield, Plus, Crown, Key, UserX, ExternalLink, Timer,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import {
+  fetchTierGrants, revokeTierGrant, DEFAULT_TIER_DEFINITIONS,
+  type UserTierGrant, type TierId,
+} from "@/lib/tierSystem";
 import { cn } from "@/lib/utils";
 import {
   useIntegrationBackups, useIntegrationSyncLogs,
@@ -40,9 +45,10 @@ function getColor(integrationId: string) {
   return INTEGRATION_COLORS[integrationId] ?? "#3b82f6";
 }
 
-type ViewTab = "files" | "sync-log";
+type ViewTab = "files" | "sync-log" | "access";
 
 export default function TechOps() {
+  const navigate = useNavigate();
   const { data: backups = [], isLoading: loadingBackups } = useIntegrationBackups();
   const { data: syncLogs = [], isLoading: loadingLogs } = useIntegrationSyncLogs();
   const { data: folders = [] } = useTechOpsFolders();
@@ -71,6 +77,21 @@ export default function TechOps() {
   const [renameItemValue, setRenameItemValue] = useState("");
   const [syncing, setSyncing] = useState<Set<string>>(new Set());
   const [draggedItem, setDraggedItem] = useState<TechOpsBackup | null>(null);
+
+  // Access & Tier grants
+  const [grants, setGrants] = useState<UserTierGrant[]>([]);
+  const [loadingGrants, setLoadingGrants] = useState(false);
+
+  const loadGrants = useCallback(async () => {
+    setLoadingGrants(true);
+    const data = await fetchTierGrants();
+    setGrants(data);
+    setLoadingGrants(false);
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === "access") loadGrants();
+  }, [activeTab, loadGrants]);
 
   const prevConnectionsRef = useRef<string[] | null>(null);
 
@@ -408,15 +429,16 @@ export default function TechOps() {
       </div>
 
       <div className="flex items-center gap-1 border-b border-white/10 pb-0">
-        {(["files", "sync-log"] as ViewTab[]).map(tab => (
+        {(["files", "sync-log", "access"] as ViewTab[]).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={cn(
-              "px-4 py-2.5 text-xs font-medium border-b-2 transition-colors -mb-[1px]",
+              "px-4 py-2.5 text-xs font-medium border-b-2 transition-colors -mb-[1px] flex items-center gap-1.5",
               activeTab === tab
                 ? "border-blue-500 text-blue-400"
                 : "border-transparent text-white/50 hover:text-white/70"
             )}>
-            {tab === "files" ? "File Manager" : "Sync Log"}
+            {tab === "access" && <Crown className="w-3 h-3" />}
+            {tab === "files" ? "File Manager" : tab === "sync-log" ? "Sync Log" : "Access"}
           </button>
         ))}
       </div>
@@ -672,8 +694,101 @@ export default function TechOps() {
             </div>
           </div>
         </div>
-      ) : (
+      ) : activeTab === "sync-log" ? (
         <SyncLogView syncLogs={syncLogs} loading={loadingLogs} />
+      ) : (
+        /* Access & Tier Grants panel */
+        <div className="rounded-xl border border-white/10 bg-[#0d1117] overflow-y-auto flex-1 p-6 space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Crown className="w-4 h-4 text-amber-400" />
+              <span className="text-sm font-bold text-white">Access & Tier Management</span>
+            </div>
+            <button onClick={() => navigate("/creator-lab")}
+              className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors border border-blue-500/30 px-3 py-1.5 rounded-lg">
+              <ExternalLink className="w-3 h-3" /> Full Editor in Creator Lab
+            </button>
+          </div>
+
+          {/* Tier overview */}
+          <div>
+            <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest mb-2">Tier Levels</p>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+              {DEFAULT_TIER_DEFINITIONS.map(t => (
+                <div key={t.id} className="rounded-lg border border-white/10 p-3 text-center" style={{ borderColor: `${t.color}30` }}>
+                  <div className="text-xs font-black mb-0.5" style={{ color: t.color }}>{t.display_name}</div>
+                  <div className="text-[10px] text-white/40">{t.price_label}</div>
+                  <div className="text-[10px] text-white/30 mt-1">{t.features.length} features</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Active grants */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Key className="w-3.5 h-3.5 text-white/40" />
+                <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">Active Tier Grants</p>
+              </div>
+              <button onClick={loadGrants}
+                className="flex items-center gap-1 text-[10px] text-white/40 hover:text-white/60 transition-colors">
+                <RefreshCw className={cn("w-3 h-3", loadingGrants && "animate-spin")} /> Refresh
+              </button>
+            </div>
+            {loadingGrants ? (
+              <div className="flex items-center gap-2 py-8 justify-center">
+                <RefreshCw className="w-4 h-4 text-white/20 animate-spin" />
+              </div>
+            ) : grants.length === 0 ? (
+              <div className="rounded-lg border border-white/10 bg-[#0c0f14] p-6 text-center">
+                <p className="text-xs text-white/30">No manual grants yet.</p>
+                <button onClick={() => navigate("/creator-lab")}
+                  className="mt-2 text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                  Grant access in Creator Lab →
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {grants.map(g => {
+                  const expired = g.is_temp && g.expires_at ? new Date(g.expires_at) < new Date() : false;
+                  const tierDef = DEFAULT_TIER_DEFINITIONS.find(t => t.id === g.granted_tier);
+                  return (
+                    <div key={g.id} className={cn("rounded-lg border p-3 flex items-center gap-3 flex-wrap",
+                      expired ? "border-red-500/20 bg-red-500/5" : "border-white/10 bg-[#0c0f14]")}>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-semibold text-white truncate">{g.user_email}</span>
+                          <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wide"
+                            style={{ background: `${tierDef?.color ?? "#888"}22`, color: tierDef?.color ?? "#aaa" }}>
+                            {tierDef?.display_name ?? g.granted_tier}
+                          </span>
+                          {g.is_temp && (
+                            <span className={cn("text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5",
+                              expired ? "text-red-400 bg-red-400/10" : "text-amber-400 bg-amber-400/10")}>
+                              <Timer className="w-2.5 h-2.5" />
+                              {expired ? "Expired" : `Until ${g.expires_at ? new Date(g.expires_at).toLocaleDateString() : "?"}`}
+                            </span>
+                          )}
+                        </div>
+                        {g.note && <p className="text-[10px] text-white/30 mt-0.5">{g.note}</p>}
+                      </div>
+                      <button
+                        onClick={async () => {
+                          await revokeTierGrant(g.id);
+                          setGrants(prev => prev.filter(x => x.id !== g.id));
+                        }}
+                        className="flex items-center gap-1 text-[10px] text-red-400 hover:bg-red-500/10 px-2 py-1.5 rounded transition-colors border border-red-500/20 shrink-0">
+                        <UserX className="w-3 h-3" /> Revoke
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

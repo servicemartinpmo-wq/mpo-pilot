@@ -41,7 +41,13 @@ import {
   Clock, Plus, Trash2, CheckCircle, Activity, BarChart2, Target,
   ChevronDown, ChevronUp, Info, ArrowRight, Lightbulb, BookOpen,
   FlaskConical, Settings, Flame, MemoryStick, GitBranch,
+  Crown, Users, UserCheck, UserX, Key, Edit2, Timer,
 } from "lucide-react";
+import {
+  TIER_ORDER, DEFAULT_TIER_DEFINITIONS, fetchTierDefinitions, saveTierDefinition,
+  fetchTierGrants, upsertTierGrant, revokeTierGrant,
+  type TierId, type TierDefinition, type UserTierGrant,
+} from "@/lib/tierSystem";
 
 const PASSPHRASE = "apphia-creator";
 const STORAGE_KEY = "apphia_creator_unlocked";
@@ -699,9 +705,345 @@ function PatternsPredictionsSection({ profileId }: { profileId: string | null })
   );
 }
 
+// ── Access Section ─────────────────────────────────────────────────────────────
+
+const TIER_COLORS: Record<TierId, string> = {
+  free:       "hsl(220 70% 65%)",
+  solo:       "hsl(174 72% 50%)",
+  growth:     "hsl(38 92% 55%)",
+  command:    "hsl(268 68% 65%)",
+  enterprise: "hsl(38 92% 52%)",
+};
+
+function TierBadge({ tier }: { tier: TierId }) {
+  const def = DEFAULT_TIER_DEFINITIONS.find(d => d.id === tier);
+  const color = TIER_COLORS[tier];
+  return (
+    <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider"
+      style={{ background: `${color}22`, color, border: `1px solid ${color}44` }}>
+      {def?.display_name ?? tier}
+    </span>
+  );
+}
+
+function AccessSection() {
+  const [tiers, setTiers] = useState<TierDefinition[]>(DEFAULT_TIER_DEFINITIONS);
+  const [grants, setGrants] = useState<UserTierGrant[]>([]);
+  const [expandedTier, setExpandedTier] = useState<TierId | null>(null);
+  const [editingTier, setEditingTier] = useState<TierId | null>(null);
+  const [draftFeatures, setDraftFeatures] = useState<string[]>([]);
+  const [newFeature, setNewFeature] = useState("");
+  const [savingTier, setSavingTier] = useState<TierId | null>(null);
+  const [loadingGrants, setLoadingGrants] = useState(true);
+
+  // Grant form
+  const [grantEmail, setGrantEmail] = useState("");
+  const [grantTier, setGrantTier] = useState<TierId>("solo");
+  const [grantTemp, setGrantTemp] = useState(false);
+  const [grantDays, setGrantDays] = useState(30);
+  const [grantNote, setGrantNote] = useState("");
+  const [granting, setGranting] = useState(false);
+
+  const loadAll = useCallback(async () => {
+    const [tierData, grantData] = await Promise.all([fetchTierDefinitions(), fetchTierGrants()]);
+    setTiers(tierData);
+    setGrants(grantData);
+    setLoadingGrants(false);
+  }, []);
+
+  useEffect(() => { loadAll(); }, [loadAll]);
+
+  function startEditTier(t: TierDefinition) {
+    setEditingTier(t.id);
+    setDraftFeatures([...t.features]);
+    setNewFeature("");
+  }
+
+  function cancelEdit() { setEditingTier(null); setDraftFeatures([]); }
+
+  async function saveEdit(id: TierId) {
+    setSavingTier(id);
+    await saveTierDefinition(id, draftFeatures);
+    setTiers(prev => prev.map(t => t.id === id ? { ...t, features: draftFeatures } : t));
+    setEditingTier(null);
+    setSavingTier(null);
+  }
+
+  async function handleGrant() {
+    if (!grantEmail.trim()) return;
+    setGranting(true);
+    const expires = grantTemp
+      ? new Date(Date.now() + grantDays * 86400000).toISOString()
+      : null;
+    await upsertTierGrant(grantEmail.trim(), grantTier, grantTemp, expires, grantNote || undefined);
+    setGrantEmail(""); setGrantNote(""); setGrantTemp(false); setGrantDays(30);
+    await loadAll();
+    setGranting(false);
+  }
+
+  async function handleRevoke(id: string) {
+    await revokeTierGrant(id);
+    setGrants(prev => prev.filter(g => g.id !== id));
+  }
+
+  const isExpired = (g: UserTierGrant) =>
+    g.is_temp && g.expires_at ? new Date(g.expires_at) < new Date() : false;
+
+  return (
+    <div className="space-y-6">
+      {/* Creator's own access badge */}
+      <div className="rounded-2xl p-5 border-2" style={{ background: "hsl(38 92% 52% / 0.08)", borderColor: "hsl(38 92% 52% / 0.3)" }}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "hsl(38 92% 52% / 0.15)" }}>
+            <Crown className="w-5 h-5" style={{ color: "hsl(38 92% 62%)" }} />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-black text-foreground">Your Access</span>
+              <span className="text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest"
+                style={{ background: "hsl(38 92% 52% / 0.2)", color: "hsl(38 92% 62%)", border: "1px solid hsl(38 92% 52% / 0.4)" }}>
+                Enterprise
+              </span>
+              <span className="text-[10px] text-muted-foreground font-medium">Creator Override · All Features Unlocked</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              While Creator Lab is unlocked, you automatically have full enterprise-tier access to every feature in the app — no restrictions.
+            </p>
+          </div>
+          <Shield className="w-5 h-5 shrink-0" style={{ color: "hsl(38 92% 52%)" }} />
+        </div>
+      </div>
+
+      {/* Tier Editor */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Layers className="w-4 h-4 text-muted-foreground" />
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Tier Editor — Manage Features Per Tier</span>
+        </div>
+        <div className="space-y-2">
+          {tiers.map(tier => {
+            const isExpanded = expandedTier === tier.id;
+            const isEditing = editingTier === tier.id;
+            const color = TIER_COLORS[tier.id];
+            return (
+              <div key={tier.id} className="rounded-xl border border-border overflow-hidden">
+                <button
+                  onClick={() => setExpandedTier(isExpanded ? null : tier.id)}
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-secondary hover:bg-secondary/80 transition-colors text-left">
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
+                  <span className="text-sm font-bold text-foreground flex-1">{tier.display_name}</span>
+                  <span className="text-xs text-muted-foreground">{tier.price_label}</span>
+                  <span className="text-xs text-muted-foreground">{tier.features.length} features</span>
+                  {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-muted-foreground" /> : <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />}
+                </button>
+
+                {isExpanded && (
+                  <div className="px-4 py-3 border-t border-border bg-card space-y-3">
+                    {!isEditing ? (
+                      <>
+                        <ul className="space-y-1.5">
+                          {tier.features.map((f, i) => (
+                            <li key={i} className="flex items-start gap-2">
+                              <Check className="w-3 h-3 mt-0.5 shrink-0" style={{ color }} />
+                              <span className="text-xs text-foreground">{f}</span>
+                            </li>
+                          ))}
+                        </ul>
+                        <button onClick={() => startEditTier(tier)}
+                          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg border border-border">
+                          <Edit2 className="w-3 h-3" /> Edit Features
+                        </button>
+                      </>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide">Features for {tier.display_name}</p>
+                        {draftFeatures.map((f, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <input
+                              value={f}
+                              onChange={e => setDraftFeatures(prev => prev.map((x, j) => j === i ? e.target.value : x))}
+                              className="flex-1 bg-secondary border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-electric-blue/40"
+                            />
+                            <button onClick={() => setDraftFeatures(prev => prev.filter((_, j) => j !== i))}
+                              className="p-1 rounded hover:bg-signal-red/10 transition-colors">
+                              <X className="w-3.5 h-3.5 text-signal-red" />
+                            </button>
+                          </div>
+                        ))}
+                        <div className="flex items-center gap-2">
+                          <input
+                            placeholder="Add feature…"
+                            value={newFeature}
+                            onChange={e => setNewFeature(e.target.value)}
+                            onKeyDown={e => {
+                              if (e.key === "Enter" && newFeature.trim()) {
+                                setDraftFeatures(prev => [...prev, newFeature.trim()]);
+                                setNewFeature("");
+                              }
+                            }}
+                            className="flex-1 bg-secondary border border-border rounded-lg px-3 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-electric-blue/40"
+                          />
+                          <button onClick={() => { if (newFeature.trim()) { setDraftFeatures(prev => [...prev, newFeature.trim()]); setNewFeature(""); } }}
+                            className="p-1.5 rounded-lg border border-border hover:bg-secondary transition-colors">
+                            <Plus className="w-3.5 h-3.5 text-muted-foreground" />
+                          </button>
+                        </div>
+                        <div className="flex items-center gap-2 pt-1">
+                          <button onClick={() => saveEdit(tier.id)} disabled={savingTier === tier.id}
+                            className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-all"
+                            style={{ background: color }}>
+                            {savingTier === tier.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                            Save
+                          </button>
+                          <button onClick={cancelEdit}
+                            className="text-xs text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-lg border border-border transition-colors">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Grant Form */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Key className="w-4 h-4 text-muted-foreground" />
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Grant Tier Access</span>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide block mb-1">User Email</label>
+              <input
+                placeholder="user@example.com"
+                value={grantEmail}
+                onChange={e => setGrantEmail(e.target.value)}
+                className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-electric-blue/40"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide block mb-1">Tier to Grant</label>
+              <select
+                value={grantTier}
+                onChange={e => setGrantTier(e.target.value as TierId)}
+                className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none">
+                {TIER_ORDER.map(id => {
+                  const t = DEFAULT_TIER_DEFINITIONS.find(d => d.id === id);
+                  return <option key={id} value={id}>{t?.display_name} ({t?.price_label})</option>;
+                })}
+              </select>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 flex-wrap">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <button onClick={() => setGrantTemp(v => !v)}
+                className="relative w-9 h-5 rounded-full transition-colors shrink-0"
+                style={{ background: grantTemp ? "hsl(var(--signal-yellow))" : "hsl(var(--border))" }}>
+                <span className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform", grantTemp ? "translate-x-4" : "translate-x-0.5")} />
+              </button>
+              <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                <Timer className="w-3 h-3" /> Temporary access
+              </span>
+            </label>
+            {grantTemp && (
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-muted-foreground">Duration:</label>
+                {[7, 14, 30, 90].map(d => (
+                  <button key={d} onClick={() => setGrantDays(d)}
+                    className={cn("text-xs px-2.5 py-1 rounded-lg font-semibold transition-colors border",
+                      grantDays === d ? "text-foreground border-electric-blue/50" : "text-muted-foreground border-border")}
+                    style={grantDays === d ? { background: "hsl(var(--electric-blue) / 0.12)", color: "hsl(var(--electric-blue))" } : {}}>
+                    {d}d
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <input
+            placeholder="Note (optional)"
+            value={grantNote}
+            onChange={e => setGrantNote(e.target.value)}
+            className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-electric-blue/40"
+          />
+          <button onClick={handleGrant} disabled={!grantEmail.trim() || granting}
+            className={cn("flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white transition-all",
+              (!grantEmail.trim() || granting) ? "opacity-40 cursor-not-allowed" : "hover:opacity-90")}
+            style={{ background: "var(--gradient-electric)" }}>
+            {granting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <UserCheck className="w-3.5 h-3.5" />}
+            {grantTemp ? `Grant ${grantDays}-Day Access` : "Grant Permanent Access"}
+          </button>
+        </div>
+      </div>
+
+      {/* Active Grants */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <Users className="w-4 h-4 text-muted-foreground" />
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Active Grants</span>
+          {grants.length > 0 && (
+            <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
+              style={{ background: "hsl(var(--electric-blue) / 0.15)", color: "hsl(var(--electric-blue))" }}>
+              {grants.length}
+            </span>
+          )}
+        </div>
+        {loadingGrants ? (
+          <div className="flex items-center gap-2 py-6 text-muted-foreground">
+            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            <span className="text-xs">Loading grants…</span>
+          </div>
+        ) : grants.length === 0 ? (
+          <div className="rounded-xl border border-border bg-secondary p-6 text-center">
+            <Users className="w-6 h-6 mx-auto mb-2 text-muted-foreground opacity-40" />
+            <p className="text-sm text-muted-foreground">No manual grants yet. Grant access to users above.</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {grants.map(g => {
+              const expired = isExpired(g);
+              return (
+                <div key={g.id} className={cn("rounded-xl border p-3 flex items-center gap-3 flex-wrap", expired ? "border-signal-red/30 bg-signal-red/5" : "border-border bg-card")}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-sm font-semibold text-foreground truncate">{g.user_email}</span>
+                      <TierBadge tier={g.granted_tier as TierId} />
+                      {g.is_temp && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                          style={{ background: expired ? "hsl(0 72% 52% / 0.15)" : "hsl(38 92% 52% / 0.15)", color: expired ? "hsl(0 72% 62%)" : "hsl(38 92% 62%)" }}>
+                          {expired ? "EXPIRED" : `Temp · ${g.expires_at ? new Date(g.expires_at).toLocaleDateString() : "?"}`}
+                        </span>
+                      )}
+                    </div>
+                    {g.note && <p className="text-[10px] text-muted-foreground mt-0.5">{g.note}</p>}
+                    <p className="text-[10px] text-muted-foreground">Granted {new Date(g.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <button onClick={() => handleRevoke(g.id)}
+                    className="flex items-center gap-1 text-xs text-signal-red hover:bg-signal-red/10 px-2.5 py-1.5 rounded-lg transition-colors border border-signal-red/20 shrink-0">
+                    <UserX className="w-3 h-3" /> Revoke
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <button onClick={loadAll}
+          className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mt-2 transition-colors">
+          <RefreshCw className="w-3 h-3" /> Refresh
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Main page ──────────────────────────────────────────────────────────────────
 
-type CreatorTab = "ai" | "memory" | "patterns" | "customize" | "engine";
+type CreatorTab = "ai" | "memory" | "patterns" | "customize" | "engine" | "access";
 
 export default function CreatorLab() {
   const navigate = useNavigate();
@@ -817,10 +1159,11 @@ export default function CreatorLab() {
 
   const TABS: { id: CreatorTab; label: string; icon: React.ElementType; badge?: string | number }[] = [
     { id: "ai",       label: "Prompt Console", icon: Terminal },
-    { id: "memory",   label: "Memory",        icon: MemoryStick, badge: memoryCount || undefined },
-    { id: "patterns", label: "Patterns",      icon: GitBranch },
-    { id: "customize",label: "Customize",     icon: Palette },
-    { id: "engine",   label: "Engine",        icon: Cpu },
+    { id: "access",   label: "Access",         icon: Crown },
+    { id: "memory",   label: "Memory",         icon: MemoryStick, badge: memoryCount || undefined },
+    { id: "patterns", label: "Patterns",       icon: GitBranch },
+    { id: "customize",label: "Customize",      icon: Palette },
+    { id: "engine",   label: "Engine",         icon: Cpu },
   ];
 
   // ── Unlocked view ──
@@ -876,6 +1219,12 @@ export default function CreatorLab() {
       {tab === "ai" && (
         <Section title="Prompt Console" icon={Terminal} accent="purple">
           <PromptConsoleSection profileId={profileId} />
+        </Section>
+      )}
+
+      {tab === "access" && (
+        <Section title="Access & Tier Management" icon={Crown} accent="yellow">
+          <AccessSection />
         </Section>
       )}
 
