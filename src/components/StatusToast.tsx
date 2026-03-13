@@ -12,36 +12,15 @@ export interface ToastMessage {
   autoClose?: number;
 }
 
-const TYPE_CONFIG: Record<ToastType, {
-  icon: typeof AlertTriangle;
-  borderColor: string;
-  iconColor: string;
-  bgColor: string;
-}> = {
-  critical: {
-    icon: AlertTriangle,
-    borderColor: "hsl(350 84% 62% / 0.4)",
-    iconColor: "hsl(350 84% 62%)",
-    bgColor: "hsl(350 84% 62% / 0.08)",
-  },
-  warning: {
-    icon: Zap,
-    borderColor: "hsl(28 94% 58% / 0.4)",
-    iconColor: "hsl(28 94% 58%)",
-    bgColor: "hsl(28 94% 58% / 0.08)",
-  },
-  success: {
-    icon: CheckCircle,
-    borderColor: "hsl(160 56% 42% / 0.4)",
-    iconColor: "hsl(160 56% 42%)",
-    bgColor: "hsl(160 56% 42% / 0.08)",
-  },
-  info: {
-    icon: Info,
-    borderColor: "hsl(222 88% 65% / 0.4)",
-    iconColor: "hsl(222 88% 65%)",
-    bgColor: "hsl(222 88% 65% / 0.08)",
-  },
+const TEAL       = "hsl(174 72% 42%)";
+const TEAL_BG    = "hsl(174 72% 42% / 0.10)";
+const TEAL_BORDER= "hsl(174 72% 42% / 0.38)";
+
+const TYPE_CONFIG: Record<ToastType, { icon: typeof AlertTriangle }> = {
+  critical: { icon: AlertTriangle },
+  warning:  { icon: Zap },
+  success:  { icon: CheckCircle },
+  info:     { icon: Info },
 };
 
 interface ToastItemProps {
@@ -51,42 +30,50 @@ interface ToastItemProps {
 
 function ToastItem({ toast, onDismiss }: ToastItemProps) {
   const [visible, setVisible] = useState(false);
-  const { icon: Icon, borderColor, iconColor, bgColor } = TYPE_CONFIG[toast.type];
-  const autoClose = toast.autoClose ?? 12000;
+  const { icon: Icon } = TYPE_CONFIG[toast.type];
+  const autoClose = toast.autoClose ?? 4000;
+
+  const dismiss = useCallback(() => {
+    setVisible(false);
+    setTimeout(() => onDismiss(toast.id), 300);
+  }, [toast.id, onDismiss]);
 
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true));
-    const timer = setTimeout(() => {
-      setVisible(false);
-      setTimeout(() => onDismiss(toast.id), 700);
-    }, autoClose);
+    const timer = setTimeout(dismiss, autoClose);
     return () => clearTimeout(timer);
-  }, [toast.id, autoClose, onDismiss]);
+  }, [dismiss, autoClose]);
 
   return (
     <div
       className={cn(
-        "flex items-start gap-3 p-4 rounded-2xl border shadow-deep transition-all duration-700",
-        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        "flex items-start gap-1.5 px-2.5 py-2 rounded-xl border shadow-deep transition-all duration-300",
+        visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
       )}
       style={{
-        background: `hsl(224 22% 10%)`,
-        borderColor,
+        background: `hsl(174 30% 10%)`,
+        borderColor: TEAL_BORDER,
         backdropFilter: "blur(12px)",
-        minWidth: 300,
-        maxWidth: 380,
+        minWidth: 160,
+        maxWidth: 220,
       }}>
-      <div className="w-7 h-7 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: bgColor }}>
-        <Icon className="w-4 h-4" style={{ color: iconColor }} />
+      <div
+        className="w-4 h-4 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+        style={{ background: TEAL_BG }}>
+        <Icon className="w-2.5 h-2.5" style={{ color: TEAL }} />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-semibold mb-0.5" style={{ color: "hsl(38 15% 94%)" }}>{toast.title}</div>
-        <div className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.55)" }}>{toast.message}</div>
+        <div className="text-[11px] font-semibold leading-tight" style={{ color: TEAL }}>
+          {toast.title}
+        </div>
+        <div className="text-[10px] leading-snug mt-0.5" style={{ color: "hsl(174 20% 72%)" }}>
+          {toast.message}
+        </div>
       </div>
       <button
-        onClick={() => { setVisible(false); setTimeout(() => onDismiss(toast.id), 700); }}
-        className="w-5 h-5 rounded flex items-center justify-center hover:bg-white/[0.08] transition-all flex-shrink-0 mt-0.5">
-        <X className="w-3 h-3" style={{ color: "hsl(0 0% 100% / 0.35)" }} />
+        onClick={dismiss}
+        className="w-3.5 h-3.5 rounded flex items-center justify-center hover:bg-white/[0.08] transition-all flex-shrink-0 mt-0.5">
+        <X className="w-2 h-2" style={{ color: "hsl(0 0% 100% / 0.35)" }} />
       </button>
     </div>
   );
@@ -118,7 +105,7 @@ export default function StatusToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none">
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
       {toasts.map(toast => (
         <div key={toast.id} className="pointer-events-auto">
           <ToastItem toast={toast} onDismiss={dismiss} />
