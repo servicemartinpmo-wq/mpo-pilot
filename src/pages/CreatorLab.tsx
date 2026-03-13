@@ -37,7 +37,7 @@ import {
   Lock, Unlock, Terminal, Palette, Type, Layout, Zap, Eye, EyeOff,
   RefreshCw, Save, ChevronRight, Code2, Database, Shield, Cpu,
   ToggleLeft, ToggleRight, Star, Layers, Globe, ArrowLeft, Check,
-  Paperclip, X, FileText, Brain, Sparkles, TrendingUp, AlertTriangle,
+  Paperclip, X, FileText, TrendingUp, AlertTriangle,
   Clock, Plus, Trash2, CheckCircle, Activity, BarChart2, Target,
   ChevronDown, ChevronUp, Info, ArrowRight, Lightbulb, BookOpen,
   FlaskConical, Settings, Flame, MemoryStick, GitBranch,
@@ -112,9 +112,10 @@ function formatTime(iso: string) {
   return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
-// ── AI Assistant Section ───────────────────────────────────────────────────────
+// ── Prompt Console Section ─────────────────────────────────────────────────────
 
-function AIAssistantSection({ profileId }: { profileId: string | null }) {
+function PromptConsoleSection({ profileId }: { profileId: string | null }) {
+  const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
   const [attachments, setAttachments] = useState<{ id: string; name: string; content: string; words: number }[]>([]);
   const [pasteBadge, setPasteBadge] = useState<string | null>(null);
@@ -143,7 +144,6 @@ function AIAssistantSection({ profileId }: { profileId: string | null }) {
     setResult(null);
     setAppliedChanges(new Set());
 
-    // Simulate processing delay
     await new Promise(r => setTimeout(r, 900));
 
     const fullPrompt = [prompt, ...attachments.map(a => a.content)].join("\n\n");
@@ -151,17 +151,16 @@ function AIAssistantSection({ profileId }: { profileId: string | null }) {
     setResult(res);
     setHistory(prev => [{ prompt, result: res, ts: new Date().toISOString() }, ...prev.slice(0, 9)]);
 
-    // Log to Supabase creator_prompts + save to memory
     if (profileId) {
       logCreatorPrompt(profileId, prompt, res.changes[0]?.area ?? "General").catch(() => {});
       saveMemoryEntry(profileId, {
         entry_type: "ai_change",
         category: "engine",
-        title: `AI change: ${prompt.slice(0, 60)}`,
+        title: `cmd: ${prompt.slice(0, 60)}`,
         content: { prompt, changes: res.changes, warnings: res.warnings },
-        metadata: { confidence: res.confidence, changeCount: res.changes.length },
+        metadata: { matchScore: res.confidence, changeCount: res.changes.length },
         importance: res.changes.some(c => c.effort === "high") ? 4 : 3,
-        tags: ["ai-change", ...res.changes.map(c => c.area.toLowerCase())],
+        tags: ["cmd", ...res.changes.map(c => c.area.toLowerCase())],
         source: "creator-lab",
       }).catch(() => {});
     }
@@ -173,142 +172,173 @@ function AIAssistantSection({ profileId }: { profileId: string | null }) {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-muted-foreground leading-relaxed">
-        Type an instruction to customize, configure, or change the app. The intelligence engine will analyze your request, identify the relevant system areas, and propose concrete changes with effort estimates and impact assessments.
-      </p>
-
-      {/* Input area */}
-      <div className="space-y-3">
-        <div className="relative">
-          {pasteBadge && (
-            <div className="absolute -top-8 left-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-electric-blue bg-electric-blue/10 border border-electric-blue/20 z-10">
-              <Paperclip className="w-3 h-3" /> {pasteBadge}
-            </div>
-          )}
-          <textarea
-            value={prompt}
-            onChange={e => setPrompt(e.target.value)}
-            onPaste={handlePaste}
-            onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit(); }}
-            placeholder='e.g. "Add a revenue health KPI to the dashboard" or "Increase signal sensitivity for finance alerts" or "Lock tier 3 features for free users"'
-            rows={4}
-            className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-electric-blue/30 resize-none text-foreground placeholder:text-muted-foreground"
-          />
+      {/* Terminal-style prompt box */}
+      <div className="rounded-xl overflow-hidden border border-border" style={{ background: "hsl(224 22% 8%)" }}>
+        {/* Title bar */}
+        <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/8" style={{ background: "hsl(224 22% 10%)" }}>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-signal-red/70" />
+            <div className="w-3 h-3 rounded-full bg-signal-yellow/70" />
+            <div className="w-3 h-3 rounded-full bg-signal-green/70" />
+          </div>
+          <span className="ml-2 text-[11px] font-mono text-white/30">creator-lab — prompt console</span>
+          <div className="ml-auto flex items-center gap-1.5 text-[11px] font-mono text-white/25">
+            <Terminal className="w-3 h-3" />
+            <span>v2</span>
+          </div>
         </div>
 
+        {/* Prompt input */}
+        <div className="relative">
+          {pasteBadge && (
+            <div className="absolute top-2 right-3 flex items-center gap-1.5 px-2.5 py-1 rounded text-[10px] font-mono font-semibold z-10"
+              style={{ background: "hsl(222 88% 65% / 0.15)", color: "hsl(222 88% 72%)", border: "1px solid hsl(222 88% 65% / 0.2)" }}>
+              <Paperclip className="w-2.5 h-2.5" /> {pasteBadge}
+            </div>
+          )}
+          <div className="flex items-start px-4 py-3">
+            <span className="text-xs font-mono mt-0.5 mr-3 select-none" style={{ color: "hsl(160 56% 52%)" }}>$</span>
+            <textarea
+              value={prompt}
+              onChange={e => setPrompt(e.target.value)}
+              onPaste={handlePaste}
+              onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit(); }}
+              placeholder='add-kpi --name "Revenue Health" --page dashboard&#10;set-signal-threshold --category finance --level high&#10;lock-feature --tier 3 --scope free-users'
+              rows={5}
+              className="flex-1 bg-transparent border-none outline-none resize-none text-sm font-mono leading-relaxed placeholder:text-white/15"
+              style={{ color: "hsl(38 15% 88%)" }}
+            />
+          </div>
+        </div>
+
+        {/* Attachments */}
         {attachments.length > 0 && (
-          <div className="space-y-1.5">
+          <div className="px-4 pb-3 space-y-1.5">
             {attachments.map(att => (
-              <div key={att.id} className="flex items-center gap-3 p-2.5 rounded-xl border border-border bg-secondary/50 text-xs">
-                <FileText className="w-3.5 h-3.5 text-electric-blue flex-shrink-0" />
-                <span className="flex-1 text-foreground/80 font-mono truncate">{att.name}</span>
-                <span className="text-muted-foreground">{att.words}w</span>
-                <button onClick={() => setAttachments(prev => prev.filter(a => a.id !== att.id))} className="opacity-30 hover:opacity-70">
-                  <X className="w-3 h-3" />
+              <div key={att.id} className="flex items-center gap-3 px-3 py-2 rounded-lg text-[11px] font-mono"
+                style={{ background: "hsl(222 88% 65% / 0.08)", border: "1px solid hsl(222 88% 65% / 0.15)" }}>
+                <FileText className="w-3 h-3 flex-shrink-0" style={{ color: "hsl(222 88% 65%)" }} />
+                <span className="flex-1 truncate" style={{ color: "hsl(38 15% 80%)" }}>{att.name}</span>
+                <span style={{ color: "hsl(0 0% 40%)" }}>{att.words}w</span>
+                <button onClick={() => setAttachments(prev => prev.filter(a => a.id !== att.id))} className="opacity-40 hover:opacity-80">
+                  <X className="w-3 h-3 text-white" />
                 </button>
               </div>
             ))}
           </div>
         )}
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        {/* Footer bar */}
+        <div className="flex items-center justify-between px-4 py-2.5 border-t border-white/6">
+          <div className="flex items-center gap-3 text-[11px] font-mono" style={{ color: "hsl(0 0% 35%)" }}>
             <span>{prompt.length}/1000</span>
-            <span className="opacity-50">·</span>
-            <span>Paste long text to attach as context</span>
-            <span className="opacity-50">·</span>
-            <span>⌘↵ to submit</span>
+            <span>·</span>
+            <span>paste to attach</span>
+            <span>·</span>
+            <span>⌘↵ run</span>
           </div>
-          <button onClick={submit} disabled={!prompt.trim() || processing}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-30"
-            style={{ background: "var(--gradient-electric)" }}>
-            {processing
-              ? <><RefreshCw className="w-4 h-4 animate-spin" /> Processing…</>
-              : <><Zap className="w-4 h-4" /> Submit to AI</>}
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => navigate("/tech-ops")}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono font-semibold transition-colors"
+              style={{ background: "hsl(38 92% 52% / 0.10)", color: "hsl(38 92% 62%)", border: "1px solid hsl(38 92% 52% / 0.2)" }}>
+              <Database className="w-3 h-3" /> Tech-Ops
+            </button>
+            <button onClick={submit} disabled={!prompt.trim() || processing}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[11px] font-mono font-bold text-white transition-all hover:opacity-90 disabled:opacity-30"
+              style={{ background: "hsl(160 56% 38%)" }}>
+              {processing
+                ? <><RefreshCw className="w-3 h-3 animate-spin" /> running…</>
+                : <><Zap className="w-3 h-3" /> run</>}
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Result */}
+      {/* Output */}
       {result && (
-        <div className="space-y-3 border border-border rounded-2xl p-5" style={{ background: "hsl(var(--secondary))" }}>
-          <div className="flex items-center justify-between">
+        <div className="rounded-xl overflow-hidden border border-border" style={{ background: "hsl(224 22% 8%)" }}>
+          {/* Output header */}
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/8" style={{ background: "hsl(224 22% 10%)" }}>
             <div className="flex items-center gap-2">
-              <Brain className="w-4 h-4 text-electric-blue" />
-              <p className="text-sm font-bold text-foreground">Analysis Result</p>
+              <Terminal className="w-3.5 h-3.5" style={{ color: "hsl(160 56% 52%)" }} />
+              <span className="text-[11px] font-mono font-bold" style={{ color: "hsl(160 56% 52%)" }}>output</span>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <span>Confidence</span>
-              <span className="font-bold text-signal-green">{Math.round(result.confidence * 100)}%</span>
+            <div className="flex items-center gap-1.5 text-[11px] font-mono" style={{ color: "hsl(0 0% 35%)" }}>
+              <span>match-score</span>
+              <span className="font-bold" style={{ color: "hsl(160 56% 60%)" }}>{Math.round(result.confidence * 100)}%</span>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">{result.summary}</p>
+          <div className="p-4 space-y-3">
+            <p className="text-xs font-mono" style={{ color: "hsl(38 15% 55%)" }}>{result.summary}</p>
 
-          {result.warnings.length > 0 && (
+            {result.warnings.length > 0 && (
+              <div className="space-y-1.5">
+                {result.warnings.map((w, i) => (
+                  <div key={i} className="flex items-start gap-2 p-2.5 rounded-lg text-[11px] font-mono"
+                    style={{ background: "hsl(38 92% 52% / 0.08)", border: "1px solid hsl(38 92% 52% / 0.2)", color: "hsl(38 92% 65%)" }}>
+                    <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                    <span>{w}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="space-y-1.5">
-              {result.warnings.map((w, i) => (
-                <div key={i} className="flex items-start gap-2 p-3 rounded-xl bg-signal-yellow/8 border border-signal-yellow/20 text-xs text-signal-yellow">
-                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                  <span>{w}</span>
+              {result.changes.map((change, i) => (
+                <div key={i}
+                  className="flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-all"
+                  style={{
+                    background: appliedChanges.has(i) ? "hsl(160 56% 38% / 0.12)" : "hsl(224 22% 11%)",
+                    border: `1px solid ${appliedChanges.has(i) ? "hsl(160 56% 42% / 0.35)" : "hsl(0 0% 100% / 0.07)"}`,
+                  }}
+                  onClick={() => setAppliedChanges(prev => {
+                    const next = new Set(prev);
+                    next.has(i) ? next.delete(i) : next.add(i);
+                    return next;
+                  })}>
+                  <span className="text-[11px] font-mono mt-0.5 select-none" style={{ color: appliedChanges.has(i) ? "hsl(160 56% 52%)" : "hsl(0 0% 30%)" }}>
+                    {appliedChanges.has(i) ? "✓" : "○"}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                      <span className="text-xs font-mono font-semibold" style={{ color: "hsl(38 15% 82%)" }}>{change.action}</span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded"
+                        style={{ background: "hsl(222 88% 65% / 0.10)", color: "hsl(222 88% 65%)" }}>{change.area}</span>
+                      <span className={cn("text-[10px] font-mono px-1.5 py-0.5 rounded",
+                        change.effort === "low" ? "text-signal-green bg-signal-green/10" :
+                          change.effort === "medium" ? "text-signal-yellow bg-signal-yellow/10" :
+                            "text-signal-red bg-signal-red/10")}>
+                        {change.effort}
+                      </span>
+                    </div>
+                    <p className="text-[11px] font-mono" style={{ color: "hsl(0 0% 45%)" }}>{change.impact}</p>
+                  </div>
                 </div>
               ))}
             </div>
-          )}
 
-          <div className="space-y-2">
-            {result.changes.map((change, i) => (
-              <div key={i} className={cn(
-                "flex items-start gap-3 p-3.5 rounded-xl border transition-all",
-                appliedChanges.has(i)
-                  ? "border-signal-green/30 bg-signal-green/5"
-                  : "border-border bg-background/50"
-              )}>
-                <div className={cn(
-                  "w-5 h-5 rounded-full flex-shrink-0 mt-0.5 flex items-center justify-center cursor-pointer transition-all",
-                  appliedChanges.has(i) ? "bg-signal-green" : "border-2 border-muted hover:border-electric-blue"
-                )} onClick={() => setAppliedChanges(prev => {
-                  const next = new Set(prev);
-                  next.has(i) ? next.delete(i) : next.add(i);
-                  return next;
-                })}>
-                  {appliedChanges.has(i) && <Check className="w-3 h-3 text-white" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <span className="text-xs font-bold text-foreground">{change.action}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded border border-border text-muted-foreground uppercase tracking-wide">{change.area}</span>
-                    <span className={cn(
-                      "text-[10px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wide",
-                      change.effort === "low" ? "text-signal-green bg-signal-green/10" :
-                        change.effort === "medium" ? "text-signal-yellow bg-signal-yellow/10" :
-                          "text-signal-red bg-signal-red/10"
-                    )}>{change.effort} effort</span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">{change.impact}</p>
-                </div>
-              </div>
-            ))}
+            {appliedChanges.size > 0 && (
+              <p className="text-[11px] font-mono" style={{ color: "hsl(160 56% 52%)" }}>
+                {appliedChanges.size} directive{appliedChanges.size !== 1 ? "s" : ""} marked applied — logged.
+              </p>
+            )}
           </div>
-
-          {appliedChanges.size > 0 && (
-            <p className="text-xs text-signal-green font-medium">
-              {appliedChanges.size} change{appliedChanges.size !== 1 ? "s" : ""} marked as applied — logged to memory.
-            </p>
-          )}
         </div>
       )}
 
-      {/* History */}
+      {/* Run history */}
       {history.length > 0 && (
-        <div className="border-t border-border pt-4 space-y-2">
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Prompt History</p>
-          <div className="space-y-1.5 max-h-40 overflow-y-auto">
+        <div className="rounded-xl overflow-hidden border border-border" style={{ background: "hsl(224 22% 8%)" }}>
+          <div className="px-4 py-2.5 border-b border-white/6" style={{ background: "hsl(224 22% 10%)" }}>
+            <span className="text-[11px] font-mono" style={{ color: "hsl(0 0% 35%)" }}>run history</span>
+          </div>
+          <div className="divide-y divide-white/5 max-h-40 overflow-y-auto">
             {history.map((entry, i) => (
-              <div key={i} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-secondary text-xs cursor-pointer hover:bg-secondary/80"
+              <div key={i} className="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-white/3 transition-colors"
                 onClick={() => setResult(entry.result)}>
-                <span className="text-electric-blue font-mono flex-shrink-0">{formatTime(entry.ts)}</span>
-                <span className="text-foreground/80 font-mono leading-relaxed flex-1 truncate">{entry.prompt}</span>
-                <span className="text-muted-foreground flex-shrink-0">{entry.result.changes.length} changes</span>
+                <span className="text-[10px] font-mono flex-shrink-0" style={{ color: "hsl(222 88% 52%)" }}>{formatTime(entry.ts)}</span>
+                <span className="text-[11px] font-mono flex-1 truncate" style={{ color: "hsl(38 15% 65%)" }}>$ {entry.prompt}</span>
+                <span className="text-[10px] font-mono flex-shrink-0" style={{ color: "hsl(0 0% 35%)" }}>{entry.result.changes.length} changes</span>
               </div>
             ))}
           </div>
@@ -786,7 +816,7 @@ export default function CreatorLab() {
   }
 
   const TABS: { id: CreatorTab; label: string; icon: React.ElementType; badge?: string | number }[] = [
-    { id: "ai",       label: "AI Assistant",  icon: Sparkles },
+    { id: "ai",       label: "Prompt Console", icon: Terminal },
     { id: "memory",   label: "Memory",        icon: MemoryStick, badge: memoryCount || undefined },
     { id: "patterns", label: "Patterns",      icon: GitBranch },
     { id: "customize",label: "Customize",     icon: Palette },
@@ -805,7 +835,7 @@ export default function CreatorLab() {
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">Creator Lab</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            AI-assisted app management · Lifelong memory · Pattern recognition · Prediction engine
+            Prompt console · Lifelong memory · Pattern recognition · Prediction engine
           </p>
         </div>
         <div className="flex items-center gap-3 self-start sm:self-auto">
@@ -844,8 +874,8 @@ export default function CreatorLab() {
 
       {/* Tab content */}
       {tab === "ai" && (
-        <Section title="AI-Assisted App Changes" icon={Sparkles} accent="purple">
-          <AIAssistantSection profileId={profileId} />
+        <Section title="Prompt Console" icon={Terminal} accent="purple">
+          <PromptConsoleSection profileId={profileId} />
         </Section>
       )}
 
