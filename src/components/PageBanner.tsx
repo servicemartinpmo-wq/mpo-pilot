@@ -163,7 +163,8 @@ export default function PageBanner({ autoAdvance = true, className }: Props) {
     if (typeof window === "undefined") return 0;
     const saved = localStorage.getItem("apphia_banner_theme");
     const idx = BANNER_THEMES.findIndex(t => t.id === saved);
-    return idx >= 0 ? idx : 0;
+    if (idx >= 0) return idx;
+    return Math.floor(Date.now() / 86400000) % BANNER_THEMES.length;
   });
   const [isPaused, setIsPaused] = useState(false);
 

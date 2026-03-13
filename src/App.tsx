@@ -39,6 +39,7 @@ import Compliance from "./pages/Compliance";
 import TechOps from "./pages/TechOps";
 import MigrateHub from "./pages/MigrateHub";
 import NoteTaker from "./pages/NoteTaker";
+import CollaboratorView from "./pages/CollaboratorView";
 import AuthPage from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
@@ -116,6 +117,15 @@ function AppRoutes() {
             style={{ borderColor: "rgba(59,130,246,0.18)", borderTopColor: "#3b82f6" }} />
         </div>
       </div>
+    );
+  }
+
+  // Collaborator portal — always accessible without sign-in
+  if (window.location.pathname.startsWith("/collab/")) {
+    return (
+      <Routes>
+        <Route path="/collab/:token" element={<CollaboratorView />} />
+      </Routes>
     );
   }
 

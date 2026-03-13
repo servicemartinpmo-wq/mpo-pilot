@@ -51,8 +51,21 @@ function Block({ title, icon: Icon, children, badge, accent }: {
 }
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState<"system" | "org" | "frameworks" | "authority" | "sops" | "access" | "customize" | "banner" | "crm">("system");
+  const [activeTab, setActiveTab] = useState<"system" | "org" | "frameworks" | "authority" | "sops" | "access" | "customize" | "banner" | "crm" | "collab">("system");
   const [crmSettings, setCrmSettings] = useState<CRMSettings>(() => loadCRMSettings());
+
+  const [collabDefaults, setCollabDefaults] = useState(() => {
+    try {
+      const raw = localStorage.getItem("pmo_collab_defaults");
+      return raw ? JSON.parse(raw) : { requireName: true, showAmount: true, showNote: true, allowNewReport: true, expiryDays: 0 };
+    } catch { return { requireName: true, showAmount: true, showNote: true, allowNewReport: true, expiryDays: 0 }; }
+  });
+
+  function updateCollabDefaults(patch: Partial<typeof collabDefaults>) {
+    const next = { ...collabDefaults, ...patch };
+    setCollabDefaults(next);
+    localStorage.setItem("pmo_collab_defaults", JSON.stringify(next));
+  }
 
   function updateCrm(patch: Partial<CRMSettings>) {
     const next = { ...crmSettings, ...patch };
@@ -123,6 +136,7 @@ export default function Admin() {
     { key: "customize", label: "Customize" },
     { key: "banner", label: "Banner & Theme" },
     { key: "crm", label: "CRM Settings" },
+    { key: "collab", label: "Collaborator" },
   ] as const;
 
   const signalMetrics = [
@@ -991,6 +1005,58 @@ export default function Admin() {
             </div>
           </Block>
 
+        </div>
+      )}
+
+      {/* ═══ COLLABORATOR TAB ═══ */}
+      {activeTab === "collab" && (
+        <div className="space-y-5">
+          <Block title="Collaborator Link Defaults" icon={Users} accent="blue">
+            <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+              These defaults pre-fill the options when a new collaborator receipt link is generated from Finance Hub. They can still be overridden per-link.
+            </p>
+            <div className="space-y-3">
+              {[
+                { key: "requireName",    label: "Require submitter name",      desc: "Submitters must enter their name before sending a receipt" },
+                { key: "showAmount",     label: "Show amount field",            desc: "Collaborators can enter the expense amount" },
+                { key: "showNote",       label: "Show notes field",             desc: "Collaborators can add a free-text note to their submission" },
+                { key: "allowNewReport", label: "Allow new report creation",    desc: "Collaborators can create a new expense report if none matches" },
+              ].map(({ key, label, desc }) => (
+                <label key={key} className="flex items-center gap-3 cursor-pointer p-3 rounded-xl bg-background border border-border/50 hover:border-border transition-colors">
+                  <div onClick={() => updateCollabDefaults({ [key]: !collabDefaults[key] })}
+                    className={cn("w-9 h-5 rounded-full transition-colors relative flex-shrink-0",
+                      collabDefaults[key] ? "bg-electric-blue" : "bg-muted border border-border")}>
+                    <div className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform",
+                      collabDefaults[key] ? "left-4" : "left-0.5")} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground">{label}</p>
+                    <p className="text-xs text-muted-foreground">{desc}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Default Link Expiry (days)</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="number"
+                  min={0}
+                  max={365}
+                  value={collabDefaults.expiryDays}
+                  onChange={e => updateCollabDefaults({ expiryDays: Math.max(0, parseInt(e.target.value) || 0) })}
+                  className="w-28 px-3 py-2 rounded-xl border border-border/60 bg-background text-sm text-foreground focus:outline-none focus:border-electric-blue/40" />
+                <span className="text-xs text-muted-foreground">days (0 = no expiry)</span>
+              </div>
+            </div>
+          </Block>
+
+          <Block title="Submission Inbox" icon={FileText} accent="blue">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Pending collaborator receipt submissions appear in the Expenses tab under Finance Hub. Accepted submissions create a new expense entry automatically. Dismissed submissions are archived.
+            </p>
+          </Block>
         </div>
       )}
 

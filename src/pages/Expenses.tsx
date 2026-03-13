@@ -29,6 +29,10 @@ import {
   type ExpenseStatus, type ExpenseStore, type DocTemplate, type DocCategory,
   type Subscription, type SubscriptionStore, type SubscriptionStatus, type BillingCycle,
 } from "@/lib/expenseData";
+import {
+  loadCollabLinks, saveCollabLinks, loadCollabSubmissions, saveCollabSubmissions,
+  type CollabLink, type CollabSubmission,
+} from "@/pages/CollaboratorView";
 import FinanceReports from "@/components/FinanceReports";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -1292,9 +1296,24 @@ export default function Expenses() {
   const [subSortField, setSubSortField] = useState<"name"|"monthlyCost"|"roiScore"|"renewalDate"|"status">("monthlyCost");
   const [subSortAsc, setSubSortAsc] = useState(false);
   const [subFilter, setSubFilter] = useState<SubscriptionStatus | "all">("all");
+  const [collabLinks, setCollabLinks] = useState<CollabLink[]>(() => loadCollabLinks());
+  const [collabSubs, setCollabSubs] = useState<CollabSubmission[]>(() => loadCollabSubmissions());
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [newLinkName, setNewLinkName] = useState("");
+  const [newLinkExpiry, setNewLinkExpiry] = useState("");
+  const [newLinkAllowNew, setNewLinkAllowNew] = useState(true);
+  const [newLinkRequireName, setNewLinkRequireName] = useState(true);
+  const [newLinkShowAmount, setNewLinkShowAmount] = useState(true);
+  const [newLinkShowNote, setNewLinkShowNote] = useState(true);
+  const [newLinkReports, setNewLinkReports] = useState<{ id: string; name: string }[]>([]);
+  const [newLinkReportName, setNewLinkReportName] = useState("");
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => { saveExpenseStore(store); }, [store]);
   useEffect(() => { saveSubscriptionStore(subStore); }, [subStore]);
+  useEffect(() => { saveCollabLinks(collabLinks); }, [collabLinks]);
+  useEffect(() => { saveCollabSubmissions(collabSubs); }, [collabSubs]);
 
   const saveExpense = useCallback((exp: Expense) => {
     setStore(s => {
@@ -1306,6 +1325,57 @@ export default function Expenses() {
 
   const openNew = () => { setEditingExpense(newExpense()); setShowModal(true); };
   const openEdit = (e: Expense) => { setEditingExpense(e); setShowModal(true); };
+
+  const generateCollabLink = useCallback(() => {
+    const token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    const link: CollabLink = {
+      token,
+      name: newLinkName.trim() || "Receipt Submission Link",
+      orgName: "PMO-Ops",
+      created: new Date().toISOString(),
+      expires: newLinkExpiry || undefined,
+      expenseReports: newLinkReports,
+      allowNewReport: newLinkAllowNew,
+      requireName: newLinkRequireName,
+      allowedCategories: ALL_CATEGORIES,
+      showAmountField: newLinkShowAmount,
+      showNoteField: newLinkShowNote,
+      active: true,
+    };
+    const updated = [link, ...collabLinks];
+    setCollabLinks(updated);
+    const url = `${window.location.origin}/collab/${token}`;
+    setGeneratedLink(url);
+  }, [newLinkName, newLinkExpiry, newLinkReports, newLinkAllowNew, newLinkRequireName, newLinkShowAmount, newLinkShowNote, collabLinks]);
+
+  const copyLink = useCallback((url: string) => {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+    });
+  }, []);
+
+  const deactivateLink = useCallback((token: string) => {
+    setCollabLinks(prev => prev.map(l => l.token === token ? { ...l, active: false } : l));
+  }, []);
+
+  const acceptSubmission = useCallback((sub: CollabSubmission) => {
+    const newExp = newExpense();
+    newExp.title = sub.description;
+    newExp.vendor = sub.submitterName;
+    newExp.totalAmount = typeof sub.amount === "number" ? sub.amount : 0;
+    newExp.allocations = [{ id: genId(), category: sub.category, amount: newExp.totalAmount, description: sub.description, glCode: "", costCenter: "" }];
+    newExp.notes = [{ id: genId(), text: `Submitted by ${sub.submitterName} via collaborator link "${sub.linkName}"`, author: "Collaborator", timestamp: sub.createdAt }];
+    if (sub.receiptDataUrl) {
+      newExp.receipts = [{ id: genId(), url: sub.receiptDataUrl, filename: sub.receiptFileName ?? "receipt.jpg", uploadedAt: sub.createdAt, storagePath: null }];
+    }
+    setStore(s => ({ ...s, expenses: [newExp, ...s.expenses] }));
+    setCollabSubs(prev => prev.map(s => s.id === sub.id ? { ...s, status: "accepted" as const } : s));
+  }, []);
+
+  const dismissSubmission = useCallback((id: string) => {
+    setCollabSubs(prev => prev.map(s => s.id === id ? { ...s, status: "dismissed" as const } : s));
+  }, []);
   const updateStatus = (id: string, status: ExpenseStatus) =>
     setStore(s => ({ ...s, expenses: s.expenses.map(e => e.id === id ? { ...e, status, updatedAt: new Date().toISOString() } : e) }));
 
@@ -1386,9 +1456,20 @@ export default function Expenses() {
             <h1 className="text-lg font-bold text-foreground">Finance Hub</h1>
             <p className="text-sm text-muted-foreground">Expenses · Grant applications · Invoicing · Integrations · Reports</p>
           </div>
-          <button onClick={openNew} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-electric-blue text-white text-sm font-medium hover:bg-electric-blue/90">
-            <Plus className="w-4 h-4" /> Add Expense
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => { setGeneratedLink(null); setNewLinkName(""); setNewLinkReports([]); setShowShareModal(true); }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-border/60 bg-card text-sm font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+              <Users className="w-4 h-4" /> Collaborator Link
+              {collabSubs.filter(s => s.status === "pending").length > 0 && (
+                <span className="ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-signal-yellow/20 text-signal-yellow border border-signal-yellow/30">
+                  {collabSubs.filter(s => s.status === "pending").length}
+                </span>
+              )}
+            </button>
+            <button onClick={openNew} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-electric-blue text-white text-sm font-medium hover:bg-electric-blue/90">
+              <Plus className="w-4 h-4" /> Add Expense
+            </button>
+          </div>
         </div>
 
         {/* KPIs */}
@@ -1472,6 +1553,53 @@ export default function Expenses() {
         {/* ── Expenses ── */}
         {activeTab === "expenses" && (
           <div className="space-y-4">
+            {/* Collaborator Submissions Inbox */}
+            {collabSubs.filter(s => s.status === "pending").length > 0 && (
+              <div className="rounded-2xl border border-signal-yellow/20 bg-signal-yellow/5 p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="w-4 h-4 text-signal-yellow" />
+                  <h3 className="text-sm font-bold text-foreground">Collaborator Submissions</h3>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-signal-yellow/15 text-signal-yellow">
+                    {collabSubs.filter(s => s.status === "pending").length} pending
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {collabSubs.filter(s => s.status === "pending").map(sub => (
+                    <div key={sub.id} className="flex items-center gap-3 bg-card rounded-xl border border-border/50 p-3">
+                      {sub.receiptDataUrl && (
+                        <img src={sub.receiptDataUrl} alt="Receipt"
+                          className="w-10 h-10 object-cover rounded-lg border border-border/50 flex-shrink-0" />
+                      )}
+                      {!sub.receiptDataUrl && (
+                        <div className="w-10 h-10 rounded-lg border border-border/50 bg-secondary flex items-center justify-center flex-shrink-0">
+                          <Receipt className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-foreground truncate">{sub.description}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {sub.submitterName} · {sub.category}
+                          {typeof sub.amount === "number" && sub.amount > 0 && ` · ${formatMoney(sub.amount)}`}
+                          {" · "}{new Date(sub.createdAt).toLocaleDateString()}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground/60 truncate">Link: {sub.linkName} · Report: {sub.reportName}</p>
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <button onClick={() => acceptSubmission(sub)}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-signal-green/10 text-signal-green border border-signal-green/20 hover:bg-signal-green/20 transition-colors">
+                          <Check className="w-3 h-3" /> Accept
+                        </button>
+                        <button onClick={() => dismissSubmission(sub.id)}
+                          className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-card text-muted-foreground border border-border/50 hover:text-foreground transition-colors">
+                          <X className="w-3 h-3" /> Dismiss
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-wrap gap-2">
               <div className="relative flex-1 min-w-48">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground"/>
@@ -1768,6 +1896,161 @@ export default function Expenses() {
         <SubscriptionModal sub={editingSub} onSave={saveSub} onClose={() => { setShowSubModal(false); setEditingSub(null); }} />
       )}
       {selectedDoc && <DocModal template={selectedDoc} onClose={()=>setSelectedDoc(null)}/>}
+
+      {/* ── Collaborator Share Modal ── */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "hsl(0 0% 0% / 0.6)" }}>
+          <div className="bg-card border border-border rounded-2xl shadow-elevated w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-border flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-electric-blue" />
+                <h2 className="text-base font-bold text-foreground">Collaborator Receipt Link</h2>
+              </div>
+              <button onClick={() => { setShowShareModal(false); setGeneratedLink(null); }}
+                className="text-muted-foreground hover:text-foreground transition-colors"><X className="w-5 h-5" /></button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
+              {!generatedLink ? (
+                <>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Generate a shareable link that opens a receipt submission form — no account required. Recipients can take a photo or upload a file, and their submission appears in your Expenses inbox for review.
+                  </p>
+
+                  {/* Link name */}
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Link Label</label>
+                    <input value={newLinkName} onChange={e => setNewLinkName(e.target.value)}
+                      placeholder="e.g. October Expense Drive, Team Offsite Receipts"
+                      className="w-full px-3 py-2.5 rounded-xl border border-border/60 bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-electric-blue/40" />
+                  </div>
+
+                  {/* Expiry */}
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Link Expiry (optional)</label>
+                    <input type="date" value={newLinkExpiry} onChange={e => setNewLinkExpiry(e.target.value)}
+                      className="w-full px-3 py-2.5 rounded-xl border border-border/60 bg-background text-sm text-foreground focus:outline-none focus:border-electric-blue/40" />
+                    <p className="text-[11px] text-muted-foreground mt-1">Leave blank for a permanent link</p>
+                  </div>
+
+                  {/* Attach to reports */}
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Attach to Expense Reports</label>
+                    <div className="flex gap-2 mb-2">
+                      <input value={newLinkReportName} onChange={e => setNewLinkReportName(e.target.value)}
+                        placeholder="Report name (e.g. October 2025)"
+                        className="flex-1 px-3 py-2 rounded-xl border border-border/60 bg-background text-sm text-foreground placeholder:text-muted-foreground focus:outline-none" />
+                      <button
+                        onClick={() => { if (newLinkReportName.trim()) { setNewLinkReports(r => [...r, { id: genId(), name: newLinkReportName.trim() }]); setNewLinkReportName(""); } }}
+                        className="px-3 py-2 rounded-xl bg-electric-blue/10 text-electric-blue text-xs font-semibold hover:bg-electric-blue/20 transition-colors">
+                        Add
+                      </button>
+                    </div>
+                    {newLinkReports.map(r => (
+                      <div key={r.id} className="flex items-center gap-2 mb-1">
+                        <span className="flex-1 text-xs bg-secondary px-3 py-1.5 rounded-lg border border-border/50 text-foreground">{r.name}</span>
+                        <button onClick={() => setNewLinkReports(prev => prev.filter(x => x.id !== r.id))}
+                          className="text-muted-foreground hover:text-red-400 transition-colors"><X className="w-3.5 h-3.5" /></button>
+                      </div>
+                    ))}
+                    {newLinkReports.length === 0 && (
+                      <p className="text-[11px] text-muted-foreground">No reports added — submissions will be listed as General</p>
+                    )}
+                  </div>
+
+                  {/* Permissions */}
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-2">Collaborator Permissions</label>
+                    <div className="space-y-2">
+                      {[
+                        { key: "newLinkRequireName", label: "Require submitter name", val: newLinkRequireName, set: setNewLinkRequireName },
+                        { key: "newLinkShowAmount",  label: "Show amount field",      val: newLinkShowAmount,  set: setNewLinkShowAmount },
+                        { key: "newLinkShowNote",    label: "Show notes field",       val: newLinkShowNote,    set: setNewLinkShowNote },
+                        { key: "newLinkAllowNew",    label: "Allow new report creation", val: newLinkAllowNew, set: setNewLinkAllowNew },
+                      ].map(({ key, label, val, set }) => (
+                        <label key={key} className="flex items-center gap-3 cursor-pointer group">
+                          <div onClick={() => set((v: boolean) => !v)}
+                            className={cn("w-9 h-5 rounded-full transition-colors relative flex-shrink-0",
+                              val ? "bg-electric-blue" : "bg-muted border border-border")}>
+                            <div className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform",
+                              val ? "left-4" : "left-0.5")} />
+                          </div>
+                          <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Existing links */}
+                  {collabLinks.filter(l => l.active).length > 0 && (
+                    <div>
+                      <label className="block text-xs font-semibold text-muted-foreground mb-2">Active Links</label>
+                      <div className="space-y-2">
+                        {collabLinks.filter(l => l.active).map(l => {
+                          const url = `${window.location.origin}/collab/${l.token}`;
+                          return (
+                            <div key={l.token} className="flex items-center gap-2 bg-secondary rounded-xl px-3 py-2.5 border border-border/50">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-foreground truncate">{l.name}</p>
+                                <p className="text-[10px] text-muted-foreground truncate">{url}</p>
+                              </div>
+                              <button onClick={() => copyLink(url)}
+                                className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-card border border-border/50 text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
+                                Copy
+                              </button>
+                              <button onClick={() => deactivateLink(l.token)}
+                                className="text-muted-foreground hover:text-red-400 transition-colors ml-1">
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* Generated link view */
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-signal-green/8 border border-signal-green/20">
+                    <CheckCircle className="w-5 h-5 text-signal-green flex-shrink-0" />
+                    <p className="text-sm font-semibold text-foreground">Link created successfully</p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-muted-foreground mb-2">Collaborator Link</label>
+                    <div className="flex gap-2">
+                      <input readOnly value={generatedLink}
+                        className="flex-1 px-3 py-2.5 rounded-xl border border-border/60 bg-background text-xs text-muted-foreground font-mono focus:outline-none select-all" />
+                      <button onClick={() => copyLink(generatedLink)}
+                        className={cn("px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap",
+                          copiedLink ? "bg-signal-green/10 text-signal-green border border-signal-green/20" : "bg-electric-blue text-white hover:bg-electric-blue/90")}>
+                        {copiedLink ? "Copied!" : "Copy Link"}
+                      </button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Share this link via email, Slack, or text. Recipients can submit receipts without signing in. Submissions appear in the Expenses tab for your review.
+                  </p>
+                  <button onClick={() => { setGeneratedLink(null); setNewLinkName(""); setNewLinkReports([]); }}
+                    className="w-full py-2.5 rounded-xl border border-border/60 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                    Create Another Link
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {!generatedLink && (
+              <div className="px-6 py-4 border-t border-border flex-shrink-0">
+                <button onClick={generateCollabLink}
+                  className="w-full py-2.5 rounded-xl bg-electric-blue text-white text-sm font-bold hover:bg-electric-blue/90 transition-colors flex items-center justify-center gap-2">
+                  <Link className="w-4 h-4" /> Generate Link
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
