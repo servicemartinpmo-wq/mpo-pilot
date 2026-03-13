@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "start": "node dist/index.cjs",
     "dev": "concurrently \"npx tsx server/index.ts\" \"vite\"",
     "dev:server": "npx tsx server/index.ts",
     "build": "vite build && npm run build:server",
