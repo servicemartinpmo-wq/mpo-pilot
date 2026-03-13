@@ -36,6 +36,7 @@ import FallbackMode from "./pages/FallbackMode";
 import Expenses from "./pages/Expenses";
 import Meetings from "./pages/Meetings";
 import Compliance from "./pages/Compliance";
+import TechOps from "./pages/TechOps";
 import AuthPage from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
@@ -219,6 +220,7 @@ function AppRoutes() {
             <Route path="/expenses" element={<Expenses />} />
             <Route path="/meetings" element={<Meetings />} />
             <Route path="/compliance" element={<Compliance />} />
+            <Route path="/tech-ops" element={<TechOps />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>

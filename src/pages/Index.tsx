@@ -16,13 +16,14 @@ import {
   Brain, Sparkles, TrendingUp, ArrowRight, Star,
   Coffee, Sunrise, Sun, Moon, ChevronDown, ListChecks,
   BarChart3, BookOpen, Settings, Tag, Palette, FolderOpen,
-  Rocket, Image, FileText, ExternalLink, History, MapPin,
+  Rocket, Image, FileText, ExternalLink, History, MapPin, Shield, HardDrive,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppData } from "@/hooks/useAppData";
 import { useAuth } from "@/hooks/useAuth";
 import { getNextBestActions } from "@/lib/supabaseDataService";
+import { useIntegrationBackups, useIntegrationSyncLogs, useIntegrationConnections } from "@/hooks/useLiveData";
 import { useStrategyScores } from "@/hooks/useStrategyScores";
 import { useUserMode } from "@/hooks/useUserMode";
 import IndustrySnapshot from "@/components/IndustrySnapshot";
@@ -1384,6 +1385,20 @@ export default function Dashboard() {
   const pendingActions = kpis.pendingActions;
   const atRiskCount    = kpis.atRisk + kpis.blocked;
   const onTrackCount   = kpis.onTrack;
+
+  const { data: techOpsBackups = [] } = useIntegrationBackups();
+  const { data: techOpsSyncLogs = [] } = useIntegrationSyncLogs();
+  const { data: techOpsConnections = [] } = useIntegrationConnections();
+  const connectedCount = techOpsConnections.filter((c: { status: string }) => c.status === "connected").length;
+  const syncedSources = new Set(techOpsBackups.map(b => b.integration_id)).size;
+  const lastSyncLog = techOpsSyncLogs.length > 0 ? techOpsSyncLogs[0] : null;
+  const backupHealthSignal: "green" | "yellow" | "red" | "blue" = connectedCount === 0
+    ? "blue"
+    : syncedSources >= connectedCount
+      ? "green"
+      : syncedSources > 0
+        ? "yellow"
+        : "red";
   const completedCount = kpis.completed;
   const budgetPct      = kpis.budgetPct;
   const liveHealth     = engine.orgHealth;
@@ -1542,6 +1557,32 @@ export default function Dashboard() {
             onClick={() => navigate("/diagnostics")} />
           <KpiTile label="Open Actions" value={pendingActions} sub="Tasks in progress" signal="blue" icon={Activity}
             onClick={() => navigate("/action-items")} />
+        </div>
+
+        <div className="rounded-xl border p-4 flex items-center gap-4 cursor-pointer hover:border-white/15 transition-colors"
+          onClick={() => navigate("/tech-ops")}
+          style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", boxShadow: "var(--shadow-card)" }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "linear-gradient(135deg, #3b82f6, #1d4ed8)" }}>
+            <Shield className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-white/80">Backup Health</span>
+              <span className={cn("w-2 h-2 rounded-full",
+                backupHealthSignal === "green" ? "bg-green-400" :
+                backupHealthSignal === "yellow" ? "bg-yellow-400" :
+                backupHealthSignal === "red" ? "bg-red-400" : "bg-blue-400"
+              )} />
+            </div>
+            <div className="text-[11px] text-white/40 mt-0.5">
+              {connectedCount === 0
+                ? "No integrations connected"
+                : `${syncedSources}/${connectedCount} synced · ${techOpsBackups.length} records backed up`}
+              {lastSyncLog && ` · Last: ${new Date(lastSyncLog.started_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
+            </div>
+          </div>
+          <ArrowRight className="w-4 h-4 text-white/20" />
         </div>
 
         {/* ════════════════════════════════════════

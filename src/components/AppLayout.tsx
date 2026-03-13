@@ -76,6 +76,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/workflows",    label: "Workflows",    icon: GitBranch   },
       { to: "/advisory",     label: "Advisory",     icon: Headphones  },
       { to: "/expenses",     label: "Expenses",         icon: DollarSign  },
+      { to: "/tech-ops",     label: "Tech-Ops",         icon: Shield      },
       { to: "/integrations", label: "Integrations", icon: Plug        },
       { to: "/admin",        label: "Systems",          icon: Settings    },
       { to: "/fallback",     label: "Offline Guidance", icon: WifiOff     },
@@ -112,6 +113,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/diagnostics",  label: "Diagnostics",  icon: Activity   },
       { to: "/knowledge",    label: "Resource Hub", icon: BookOpen   },
       { to: "/expenses",     label: "Expenses",         icon: DollarSign },
+      { to: "/tech-ops",     label: "Tech-Ops",         icon: Shield     },
       { to: "/advisory",     label: "Board",            icon: Headphones },
       { to: "/integrations", label: "Integrations",    icon: Plug       },
       { to: "/admin",        label: "Systems",          icon: Settings   },
@@ -145,6 +147,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
     ],
     tools: [
       { to: "/expenses",     label: "Expenses",         icon: DollarSign },
+      { to: "/tech-ops",     label: "Tech-Ops",         icon: Shield    },
       { to: "/diagnostics",  label: "Diagnostics",     icon: Activity  },
       { to: "/graph",        label: "Dependency Map",  icon: Network   },
       { to: "/workflows",    label: "Workflows",       icon: GitBranch },
@@ -177,6 +180,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
     growth: [],
     tools: [
       { to: "/expenses",     label: "Expenses",         icon: DollarSign },
+      { to: "/tech-ops",     label: "Tech-Ops",         icon: Shield   },
       { to: "/diagnostics",  label: "Diagnostics",  icon: Activity   },
       { to: "/knowledge",    label: "Resource Hub", icon: BookOpen   },
       { to: "/advisory",     label: "Mentors",      icon: Headphones },
@@ -205,6 +209,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
     growth: [],
     tools: [
       { to: "/expenses",    label: "Expenses",         icon: DollarSign },
+      { to: "/tech-ops",   label: "Tech-Ops",         icon: Shield     },
       { to: "/diagnostics", label: "Diagnostics",  icon: Activity   },
       { to: "/reports",     label: "Reports",      icon: FileText   },
       { to: "/knowledge",   label: "Resource Hub", icon: BookOpen   },
@@ -235,6 +240,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
     growth: [],
     tools: [
       { to: "/expenses",     label: "Expenses",         icon: DollarSign },
+      { to: "/tech-ops",     label: "Tech-Ops",         icon: Shield   },
       { to: "/reports",      label: "Reports",      icon: FileText   },
       { to: "/diagnostics",  label: "Diagnostics",  icon: Activity   },
       { to: "/knowledge",    label: "Resource Hub", icon: BookOpen   },
@@ -349,6 +355,7 @@ const ROUTE_LABELS: Record<string, string> = {
   "/reports":      "Reports",
   "/diagnostics":  "Diagnostics",
   "/integrations": "Integrations",
+  "/tech-ops":     "Tech-Ops",
   "/strategy":     "Strategy",
   "/settings":     "Settings",
   "/pricing":      "Pricing",

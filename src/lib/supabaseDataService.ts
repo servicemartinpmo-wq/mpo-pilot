@@ -857,3 +857,168 @@ export async function seedUserData(userId: string) {
     total_budget_used: orgMetrics.totalBudgetUsed,
   }, { onConflict: "profile_id" });
 }
+
+// ─────────────────────────────────────────────────────────────────────
+// TECH-OPS: Backups, Sync Logs, Folders, Folder Items
+// ─────────────────────────────────────────────────────────────────────
+
+export interface TechOpsBackup {
+  id: string;
+  profile_id: string;
+  integration_id: string;
+  integration_name: string;
+  record_type: string;
+  record_id: string;
+  record_name: string;
+  record_data: Record<string, unknown>;
+  parent_record_id: string | null;
+  source_hierarchy: string[] | null;
+  synced_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TechOpsSyncLog {
+  id: string;
+  profile_id: string;
+  integration_id: string;
+  integration_name: string;
+  status: string;
+  records_added: number;
+  records_updated: number;
+  records_removed: number;
+  error_message: string | null;
+  started_at: string;
+  completed_at: string | null;
+  created_at: string;
+}
+
+export interface TechOpsFolder {
+  id: string;
+  profile_id: string;
+  name: string;
+  parent_id: string | null;
+  icon: string;
+  color: string;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TechOpsFolderItem {
+  id: string;
+  profile_id: string;
+  folder_id: string;
+  backup_id: string;
+  custom_name: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+export async function getIntegrationBackups(profileId: string): Promise<TechOpsBackup[]> {
+  const { data } = await supabase
+    .from("integration_backups")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("synced_at", { ascending: false });
+  return (data as TechOpsBackup[] | null) ?? [];
+}
+
+export async function upsertIntegrationBackup(backup: Partial<TechOpsBackup> & { profile_id: string; integration_id: string; record_type: string; record_id: string }) {
+  const { data, error } = await supabase
+    .from("integration_backups")
+    .upsert(backup as never, { onConflict: "profile_id,integration_id,record_type,record_id" })
+    .select()
+    .single();
+  return { data: data as TechOpsBackup | null, error };
+}
+
+export async function deleteIntegrationBackup(id: string) {
+  return supabase.from("integration_backups").delete().eq("id", id);
+}
+
+export async function getIntegrationSyncLogs(profileId: string): Promise<TechOpsSyncLog[]> {
+  const { data } = await supabase
+    .from("integration_sync_log")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("started_at", { ascending: false });
+  return (data as TechOpsSyncLog[] | null) ?? [];
+}
+
+export async function insertSyncLog(log: Omit<TechOpsSyncLog, "id" | "created_at">) {
+  const { data, error } = await supabase
+    .from("integration_sync_log")
+    .insert(log as never)
+    .select()
+    .single();
+  return { data: data as TechOpsSyncLog | null, error };
+}
+
+export async function updateSyncLog(id: string, updates: Partial<TechOpsSyncLog>) {
+  return supabase.from("integration_sync_log").update(updates as never).eq("id", id);
+}
+
+export async function getTechOpsFolders(profileId: string): Promise<TechOpsFolder[]> {
+  const { data } = await supabase
+    .from("techops_folders")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("sort_order");
+  return (data as TechOpsFolder[] | null) ?? [];
+}
+
+export async function upsertTechOpsFolder(folder: Partial<TechOpsFolder> & { profile_id: string; name: string }) {
+  const { data, error } = await supabase
+    .from("techops_folders")
+    .upsert(folder as never, { onConflict: "id" })
+    .select()
+    .single();
+  return { data: data as TechOpsFolder | null, error };
+}
+
+export async function deleteTechOpsFolder(id: string) {
+  return supabase.from("techops_folders").delete().eq("id", id);
+}
+
+export async function getTechOpsFolderItems(profileId: string): Promise<TechOpsFolderItem[]> {
+  const { data } = await supabase
+    .from("techops_folder_items")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("sort_order");
+  return (data as TechOpsFolderItem[] | null) ?? [];
+}
+
+export async function upsertTechOpsFolderItem(item: Partial<TechOpsFolderItem> & { profile_id: string; folder_id: string; backup_id: string }) {
+  const { data, error } = await supabase
+    .from("techops_folder_items")
+    .upsert(item as never, { onConflict: "folder_id,backup_id" })
+    .select()
+    .single();
+  return { data: data as TechOpsFolderItem | null, error };
+}
+
+export async function deleteTechOpsFolderItem(id: string) {
+  return supabase.from("techops_folder_items").delete().eq("id", id);
+}
+
+export async function runIntegrationSync(_profileId: string, integrationId: string, integrationName: string) {
+  try {
+    const res = await fetch("/api/techops/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ integrationId, integrationName }),
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({ error: "Sync request failed" }));
+      throw new Error(errData.error || `HTTP ${res.status}`);
+    }
+    return await res.json();
+  } catch (err) {
+    console.error("[TechOps] Client sync error:", err);
+    return null;
+  }
+}
+

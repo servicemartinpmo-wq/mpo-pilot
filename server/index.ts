@@ -2,6 +2,7 @@ import express from "express";
 import { join } from "path";
 import { setupAuth, closeAuth } from "./replitAuth";
 import { closePool } from "./db";
+import { runServerSync, runSyncForAllConnected, startScheduledSync, stopScheduledSync } from "./techOpsSyncService";
 const app = express();
 
 app.use(express.json({ limit: "10mb" }));
@@ -33,6 +34,42 @@ async function main() {
       memory: Math.floor(process.memoryUsage().rss / 1024 / 1024),
     });
   });
+
+  app.post("/api/techops/sync", async (req, res) => {
+    try {
+      const user = (req as any).user as Record<string, unknown> & { claims?: Record<string, unknown> } | undefined;
+      const profileId = user?.claims?.sub as string;
+      if (!profileId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      const { integrationId, integrationName } = req.body;
+      if (!integrationId || !integrationName) {
+        return res.status(400).json({ error: "integrationId and integrationName are required" });
+      }
+      const result = await runServerSync(profileId, integrationId, integrationName);
+      res.json(result);
+    } catch (err: unknown) {
+      console.error("[TechOps] Sync error:", err);
+      res.status(500).json({ error: err instanceof Error ? err.message : "Sync failed" });
+    }
+  });
+
+  app.post("/api/techops/sync-all", async (req, res) => {
+    try {
+      const user = (req as any).user as Record<string, unknown> & { claims?: Record<string, unknown> } | undefined;
+      const profileId = user?.claims?.sub as string;
+      if (!profileId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+      await runSyncForAllConnected(profileId);
+      res.json({ success: true });
+    } catch (err: unknown) {
+      console.error("[TechOps] Sync all error:", err);
+      res.status(500).json({ error: err instanceof Error ? err.message : "Sync failed" });
+    }
+  });
+
+  startScheduledSync();
 
   const distPath = join(process.cwd(), "dist");
   app.use(express.static(distPath, { maxAge: "1d" }));
@@ -77,6 +114,7 @@ async function main() {
 
     server.close(async () => {
       try {
+        stopScheduledSync();
         await closeAuth();
         await closePool();
       } catch {}

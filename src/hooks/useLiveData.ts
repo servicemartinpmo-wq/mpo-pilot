@@ -15,6 +15,12 @@ import {
   deleteInsight, deleteSopRecord, deleteGovernanceLog,
   getTeamMembers, upsertTeamMember, deleteTeamMember,
   type DbTeamMember,
+  getIntegrationBackups, upsertIntegrationBackup, deleteIntegrationBackup,
+  getIntegrationSyncLogs, insertSyncLog, updateSyncLog,
+  getTechOpsFolders, upsertTechOpsFolder, deleteTechOpsFolder,
+  getTechOpsFolderItems, upsertTechOpsFolderItem, deleteTechOpsFolderItem,
+  runIntegrationSync,
+  type TechOpsBackup, type TechOpsSyncLog, type TechOpsFolder, type TechOpsFolderItem,
 } from "@/lib/supabaseDataService";
 
 // ── Get current user ID ──────────────────────────────────────────────
@@ -215,7 +221,18 @@ export function useUpsertIntegration() {
       if (!uid) throw new Error("Not authenticated");
       return upsertIntegration(uid, integrationId, status, config);
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["integration_connections"] }),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ["integration_connections"] });
+      if (variables.status === "connected") {
+        const name = variables.integrationId.charAt(0).toUpperCase() + variables.integrationId.slice(1);
+        runIntegrationSync("", variables.integrationId, name)
+          .then(() => {
+            qc.invalidateQueries({ queryKey: ["integration_backups"] });
+            qc.invalidateQueries({ queryKey: ["integration_sync_logs"] });
+          })
+          .catch(() => {});
+      }
+    },
   });
 }
 
@@ -351,3 +368,122 @@ export function useLiveKPIs() {
     sopAdherence:     orgMetrics?.avg_sop_adherence ?? 0,
   };
 }
+
+// ── Tech-Ops: Backups ─────────────────────────────────────────────────
+export function useIntegrationBackups() {
+  return useQuery({
+    queryKey: ["integration_backups"],
+    queryFn: async () => {
+      const uid = await getCurrentUserId();
+      if (!uid) return [];
+      return getIntegrationBackups(uid);
+    },
+  });
+}
+
+export function useUpsertIntegrationBackup() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (backup: Parameters<typeof upsertIntegrationBackup>[0]) => upsertIntegrationBackup(backup),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["integration_backups"] }),
+  });
+}
+
+export function useDeleteIntegrationBackup() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteIntegrationBackup(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["integration_backups"] }),
+  });
+}
+
+// ── Tech-Ops: Sync Logs ──────────────────────────────────────────────
+export function useIntegrationSyncLogs() {
+  return useQuery({
+    queryKey: ["integration_sync_logs"],
+    queryFn: async () => {
+      const uid = await getCurrentUserId();
+      if (!uid) return [];
+      return getIntegrationSyncLogs(uid);
+    },
+  });
+}
+
+// ── Tech-Ops: Folders ────────────────────────────────────────────────
+export function useTechOpsFolders() {
+  return useQuery({
+    queryKey: ["techops_folders"],
+    queryFn: async () => {
+      const uid = await getCurrentUserId();
+      if (!uid) return [];
+      return getTechOpsFolders(uid);
+    },
+  });
+}
+
+export function useUpsertTechOpsFolder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (folder: Parameters<typeof upsertTechOpsFolder>[0]) => upsertTechOpsFolder(folder),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["techops_folders"] });
+    },
+  });
+}
+
+export function useDeleteTechOpsFolder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteTechOpsFolder(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["techops_folders"] });
+      qc.invalidateQueries({ queryKey: ["techops_folder_items"] });
+    },
+  });
+}
+
+// ── Tech-Ops: Folder Items ──────────────────────────────────────────
+export function useTechOpsFolderItems() {
+  return useQuery({
+    queryKey: ["techops_folder_items"],
+    queryFn: async () => {
+      const uid = await getCurrentUserId();
+      if (!uid) return [];
+      return getTechOpsFolderItems(uid);
+    },
+  });
+}
+
+export function useUpsertTechOpsFolderItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (item: Parameters<typeof upsertTechOpsFolderItem>[0]) => upsertTechOpsFolderItem(item),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["techops_folder_items"] }),
+  });
+}
+
+export function useDeleteTechOpsFolderItem() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteTechOpsFolderItem(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["techops_folder_items"] }),
+  });
+}
+
+// ── Tech-Ops: Run Sync ──────────────────────────────────────────────
+export function useRunIntegrationSync() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ integrationId, integrationName }: { integrationId: string; integrationName: string }) => {
+      const uid = await getCurrentUserId();
+      if (!uid) throw new Error("Not authenticated");
+      return runIntegrationSync(uid, integrationId, integrationName);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["integration_backups"] });
+      qc.invalidateQueries({ queryKey: ["integration_sync_logs"] });
+    },
+  });
+}
+
+export type { TechOpsBackup, TechOpsSyncLog, TechOpsFolder, TechOpsFolderItem };
