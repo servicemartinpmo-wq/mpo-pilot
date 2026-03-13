@@ -60,9 +60,9 @@ function useTrialState() {
 // ── Trial UI components ───────────────────────────────────────────────────────
 
 const TRIAL_FEATURES = [
-  { icon: FileText,   label: "Post-Meeting Recaps",       desc: "AI-generated summaries of every meeting, ready to share" },
+  { icon: FileText,   label: "Post-Meeting Recaps",       desc: "Auto-generated summaries of every meeting, ready to share" },
   { icon: CheckSquare,label: "Action Item Extraction",    desc: "Automatically pull tasks, owners and deadlines from any transcript" },
-  { icon: Mic,        label: "Full Transcript Analysis",  desc: "Upload audio notes or paste text — the AI reads it all" },
+  { icon: Mic,        label: "Full Transcript Analysis",  desc: "Upload audio notes or paste text — reads and analyzes it all" },
   { icon: Mail,       label: "Email Thread Context",      desc: "Link meetings to related email threads for audit trails" },
 ];
 
@@ -86,9 +86,9 @@ function TrialCTA({ onStart }: { onStart: () => void }) {
                 <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ background: "hsl(268 68% 62% / 0.2)", color: "hsl(268 68% 80%)" }}>Limited Time</span>
                 <span className="text-[10px] font-bold text-white/40">{TRIAL_DAYS}-day free trial</span>
               </div>
-              <h3 className="text-lg font-black text-white mb-1">Unlock AI Meeting Intelligence</h3>
+              <h3 className="text-lg font-black text-white mb-1">Unlock Meeting Intelligence</h3>
               <p className="text-sm text-white/55 leading-relaxed max-w-lg">
-                Get {TRIAL_DAYS} days of full access to post-meeting recaps, action item extraction, transcript analysis, and email-thread context linking — all powered by AI. No credit card required.
+                Get {TRIAL_DAYS} days of full access to post-meeting recaps, action item extraction, transcript analysis, and email-thread context linking — no credit card required.
               </p>
             </div>
           </div>
@@ -156,7 +156,7 @@ function TrialExpiredPaywall({ onRestart }: { onRestart: () => void }) {
         </div>
         <h3 className="text-lg font-black text-white mb-2">Your 14-day trial has ended</h3>
         <p className="text-sm text-white/50 max-w-md leading-relaxed mb-6">
-          Upgrade to continue using AI Meeting Intelligence — post-meeting recaps, action item extraction, full transcript analysis, and email thread linking.
+          Upgrade to continue using Meeting Intelligence — post-meeting recaps, action item extraction, full transcript analysis, and email thread linking.
         </p>
 
         {/* Feature list */}
@@ -496,7 +496,7 @@ function MeetingsTab({
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {pendingAIs > 0 && (
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse" style={{ background: "hsl(38 92% 52% / 0.15)", color: "hsl(38 92% 62%)" }}>
-                        {pendingAIs} AI items pending
+                        {pendingAIs} items pending
                       </span>
                     )}
                     <ChevronDown className={cn("w-4 h-4 text-white/25 transition-transform", exp && "rotate-180")} />
@@ -531,7 +531,7 @@ function MeetingsTab({
                 {/* Summary */}
                 {m.summary && (
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/30 mb-1.5">AI Summary</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-white/30 mb-1.5">Smart Summary</p>
                     <p className="text-sm text-white/65 leading-relaxed">{m.summary}</p>
                   </div>
                 )}
@@ -713,9 +713,9 @@ function NoteTakerTab({ meetings }: { meetings: Meeting[] }) {
             <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(222 88% 65% / 0.12)" }}>
               <Brain className="w-3.5 h-3.5 text-electric-blue" />
             </div>
-            <p className="text-sm font-bold text-white">AI Note Taker</p>
+            <p className="text-sm font-bold text-white">Note Taker</p>
           </div>
-          <p className="text-xs text-white/45 leading-relaxed">Paste a meeting transcript, upload audio notes, or type key points — the AI extracts action items, detects owners, and checks for duplicates before pushing to your board.</p>
+          <p className="text-xs text-white/45 leading-relaxed">Paste a meeting transcript, upload audio notes, or type key points — extracts action items, detects owners, and checks for duplicates before pushing to your board.</p>
 
           <div>
             <label className="text-[10px] font-bold uppercase tracking-wider text-white/35 mb-1.5 block">Meeting context</label>
@@ -824,7 +824,7 @@ function NoteTakerTab({ meetings }: { meetings: Meeting[] }) {
                 <Brain className="w-4 h-4 text-electric-blue animate-pulse" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-white">AI Processing</p>
+                <p className="text-sm font-semibold text-white">Processing</p>
                 <p className="text-xs text-white/45">{AI_PHASES[phaseIndex]?.label}</p>
               </div>
             </div>
@@ -954,7 +954,7 @@ function NoteTakerTab({ meetings }: { meetings: Meeting[] }) {
               <Mic className="w-6 h-6 text-electric-blue/40" />
             </div>
             <p className="text-sm font-semibold text-white/30 mb-1">Paste a transcript to get started</p>
-            <p className="text-xs text-white/20 text-center max-w-xs">Works with Otter AI exports, Zoom transcripts, Google Meet notes, or any raw text</p>
+            <p className="text-xs text-white/20 text-center max-w-xs">Works with Otter exports, Zoom transcripts, Google Meet notes, or any raw text</p>
           </div>
         )}
       </div>
@@ -1062,7 +1062,7 @@ export default function Meetings() {
         <div className="flex-1">
           <h1 className="text-xl sm:text-2xl font-black mb-0.5" style={{ color: "hsl(38 15% 94%)" }}>Meetings & Note Taker</h1>
           <p className="text-sm" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
-            AI-powered transcript analysis · Action item extraction · Email context linking · Dedup detection
+            Transcript analysis · Action item extraction · Email context linking · Dedup detection
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -1121,7 +1121,7 @@ export default function Meetings() {
             {t.icon}
             {t.label}
             {t.id === "note-taker" && (
-              <span className="ml-0.5 text-[9px] font-black px-1 rounded" style={{ background: "hsl(222 88% 65% / 0.2)", color: "hsl(222 88% 72%)" }}>AI</span>
+              <span className="ml-0.5 text-[9px] font-black px-1 rounded" style={{ background: "hsl(222 88% 65% / 0.2)", color: "hsl(222 88% 72%)" }}>Auto</span>
             )}
             {t.id === "note-taker" && noteTakerNeedsUnlock && (
               <Lock className="w-3 h-3 ml-0.5 text-white/30" />
@@ -1139,12 +1139,12 @@ export default function Meetings() {
           <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "hsl(268 68% 72%)" }} />
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-0.5">
-              <p className="text-xs font-semibold text-white/70">AI Meeting Intelligence — Trial Active</p>
+              <p className="text-xs font-semibold text-white/70">Meeting Intelligence — Trial Active</p>
               <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(268 68% 62% / 0.15)", color: "hsl(268 68% 78%)" }}>
                 {trial.daysRemaining}d left
               </span>
             </div>
-            <p className="text-xs text-white/40 leading-relaxed">Paste any transcript (Otter AI, Zoom, Google Meet, handwritten notes). The AI identifies action items, detects ownership by name mentions, sets smart deadlines, checks against your board for duplicates, and tags action items to related email threads for a complete audit trail.</p>
+            <p className="text-xs text-white/40 leading-relaxed">Paste any transcript (Otter, Zoom, Google Meet, handwritten notes). Identifies action items, detects ownership by name mentions, sets smart deadlines, checks against your board for duplicates, and tags action items to related email threads for a complete audit trail.</p>
           </div>
         </div>
       )}
@@ -1161,7 +1161,7 @@ export default function Meetings() {
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "hsl(268 68% 62% / 0.10)" }}>
                   <Lock className="w-6 h-6" style={{ color: "hsl(268 68% 62%)" }} />
                 </div>
-                <p className="text-sm font-semibold text-white/40 text-center">Start your free trial to access the AI Note Taker</p>
+                <p className="text-sm font-semibold text-white/40 text-center">Start your free trial to access the Note Taker</p>
                 <button onClick={handleStartTrial}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm"
                   style={{ background: "linear-gradient(135deg, hsl(268 68% 62%) 0%, hsl(248 68% 62%) 100%)", color: "white" }}>

@@ -667,7 +667,7 @@ function PatternsPredictionsSection({ profileId }: { profileId: string | null })
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" style={{ color: "hsl(268 68% 62%)" }} />
-                <p className="text-sm font-bold text-foreground">AI Predictions</p>
+                <p className="text-sm font-bold text-foreground">Trend Predictions</p>
                 <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{ background: "hsl(268 68% 62% / 0.15)", color: "hsl(268 68% 75%)" }}>{predictions.length}</span>
               </div>
               <div className="space-y-2.5">
@@ -1048,10 +1048,10 @@ const DEFAULT_SECTIONS = [
   { id: "kpi",        label: "KPI Strip",            description: "Top metrics: on track, at risk, health, budget", icon: "📊", visible: true },
   { id: "ops-health", label: "Operational Health",   description: "Org performance score with breakdown dimensions", icon: "❤️", visible: true },
   { id: "portfolio",  label: "Initiative Portfolio", description: "Status breakdown and list of key initiatives",   icon: "🎯", visible: true },
-  { id: "insights",   label: "Insights & Team Wins", description: "AI signals, action items, and team celebration", icon: "⭐", visible: true },
+  { id: "insights",   label: "Insights & Team Wins", description: "Signals, action items, and team celebration", icon: "⭐", visible: true },
   { id: "strategy",   label: "Strategy Scores",      description: "Executive strategy scorecard across 4 axes",    icon: "📈", visible: true },
   { id: "tech-ops",   label: "Tech-Ops Health",      description: "Integration backups, sync logs, connections",   icon: "🔧", visible: true },
-  { id: "actions",    label: "Next Best Actions",     description: "AI-recommended priority tasks for today",       icon: "⚡", visible: true },
+  { id: "actions",    label: "Next Best Actions",     description: "Recommended priority tasks for today",          icon: "⚡", visible: true },
 ];
 
 const BUILDER_STORAGE_KEY = "pmo_section_layout_v1";
@@ -1591,7 +1591,7 @@ export default function CreatorLab() {
           <div className="space-y-5">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
-                { label: "AI Systems",      value: "25",    icon: Cpu,      color: "text-electric-blue" },
+                { label: "Active Systems",  value: "25",    icon: Cpu,      color: "text-electric-blue" },
                 { label: "Frameworks",      value: "100+",  icon: Layers,   color: "text-teal" },
                 { label: "Signal Modules",  value: "7",     icon: Code2,    color: "text-signal-green" },
                 { label: "Data Points",     value: "1,200+",icon: Database, color: "text-signal-yellow" },
@@ -1609,7 +1609,7 @@ export default function CreatorLab() {
                 <span className="text-xs font-bold text-signal-green uppercase tracking-wide">Engine Status · All Systems Operational</span>
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                All 25 AI system chains are active. Signal detection, diagnostic intelligence, advisory, maturity scoring, and dependency intelligence are live. Frameworks: CMMI, BSC, ISO 31000, McKinsey 7S, TOC, Porter, APQC, OKR, Lean, Six Sigma, and 90+ more.
+                All 25 system chains are active. Signal detection, diagnostic intelligence, advisory, maturity scoring, and dependency intelligence are live. Frameworks: CMMI, BSC, ISO 31000, McKinsey 7S, TOC, Porter, APQC, OKR, Lean, Six Sigma, and 90+ more.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-secondary border border-border">

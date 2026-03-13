@@ -185,7 +185,7 @@ export default function VoiceCommand() {
             <div>
               <span className="text-sm font-bold text-white block">Voice Navigation</span>
               <span className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.28)" }}>
-                Say "Hey Apphia" to open AI assistant
+                Say "Hey Apphia" to open your assistant
               </span>
             </div>
           </div>

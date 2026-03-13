@@ -298,7 +298,7 @@ export default function NoteTaker() {
               }}
             >
               <Sparkles className="w-4 h-4" />
-              {generating ? "Generating..." : "Generate AI Summary"}
+              {generating ? "Generating..." : "Generate Summary"}
             </button>
             <button
               onClick={handleSaveRaw}
@@ -369,7 +369,7 @@ export default function NoteTaker() {
                       color: sty.green,
                     }}
                   >
-                    <Sparkles className="w-3 h-3" /> AI Enhanced
+                    <Sparkles className="w-3 h-3" /> Enhanced
                   </span>
                 )}
               </div>
@@ -421,7 +421,7 @@ export default function NoteTaker() {
                     className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5"
                     style={{ color: sty.accent }}
                   >
-                    <Sparkles className="w-3 h-3" /> AI Summary
+                    <Sparkles className="w-3 h-3" /> Smart Summary
                   </h3>
                   <div
                     className="text-sm leading-relaxed whitespace-pre-wrap"
@@ -444,7 +444,7 @@ export default function NoteTaker() {
                     className="text-sm mb-3"
                     style={{ color: sty.textMuted }}
                   >
-                    No AI summary yet.
+                    No summary yet.
                   </p>
                   <button
                     onClick={() => handleGenerateForExisting(selectedNote)}
@@ -506,7 +506,7 @@ export default function NoteTaker() {
       {isFree && (
         <UpgradeBanner
           storageKey="notetaker_upgrade_banner"
-          message={`AI Note Taker trial — ${remaining} of ${limit} free notes remaining.`}
+          message={`Note Taker trial — ${remaining} of ${limit} free notes remaining.`}
         />
       )}
 
@@ -520,7 +520,7 @@ export default function NoteTaker() {
               Note Taker
             </h1>
             <p className="text-sm" style={{ color: sty.textMuted }}>
-              Record, transcribe, and summarize meeting notes with AI.
+              Record, transcribe, and summarize meeting notes.
             </p>
           </div>
 
@@ -575,7 +575,7 @@ export default function NoteTaker() {
                 Free trial limit reached
               </p>
               <p className="text-xs" style={{ color: sty.textMuted }}>
-                Upgrade to Solo or higher for unlimited notes, full AI
+                Upgrade to Solo or higher for unlimited notes, full
                 summarization, and more.
               </p>
             </div>

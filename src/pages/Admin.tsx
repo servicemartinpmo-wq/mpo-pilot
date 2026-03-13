@@ -581,7 +581,7 @@ export default function Admin() {
                 {[
                   { label: "Workflow builder & SOP automation", tier: "Tier 2", locked: true },
                   { label: "G-Suite & Microsoft integrations", tier: "Tier 1", locked: true },
-                  { label: "AI inbox intelligence", tier: "Tier 3", locked: true },
+                  { label: "Smart inbox intelligence", tier: "Tier 3", locked: true },
                   { label: "Custom reporting & exports", tier: "Tier 1", locked: true },
                 ].map(({ label, tier, locked }) => (
                   <div key={label} className="flex items-center gap-2 text-xs">

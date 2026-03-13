@@ -758,7 +758,7 @@ function Slide6Roadmap({ scores, form, onPrev, onLaunch }: { scores: ReturnType<
   const quickWins = [
     hasSops ? "Audit your existing SOPs — find the 3 with lowest adherence and rebuild them first." : "Create your first 3 SOPs: Operations, Finance Approval, and Team Onboarding.",
     depts < 3 ? "Define your full department structure before scaling operations." : "Map authority levels and decision rights for each department head.",
-    !futureState ? "Define your 12-month vision — this unlocks AI-driven prioritization across the entire Command Center." : "Break your vision into 3 strategic pillars and define OKRs for each.",
+    !futureState ? "Define your 12-month vision — this unlocks smart prioritization across the entire Command Center." : "Break your vision into 3 strategic pillars and define OKRs for each.",
     "Run your first Full Org Diagnostic inside the Diagnostics module.",
     "Set up your Initiative Tracker — every major effort needs an owner, timeline, and health signal.",
   ];
@@ -1898,7 +1898,7 @@ export default function OnboardingWizard({ onComplete }: Props) {
                     <div>
                       <div className="text-xs font-bold text-foreground mb-0.5">Higher Tiers = Deeper Analysis</div>
                       <p className="text-xs text-muted-foreground leading-relaxed">
-                        Tier 1+ unlocks unlimited document uploads with AI-powered extraction across all 8 diagnostic dimensions — including financial ratio analysis, SWOT synthesis, and department-level reporting.
+                        Tier 1+ unlocks unlimited document uploads with automated extraction across all 8 diagnostic dimensions — including financial ratio analysis, SWOT synthesis, and department-level reporting.
                       </p>
                     </div>
                   </div>

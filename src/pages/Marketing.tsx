@@ -150,7 +150,7 @@ export default function Marketing() {
       <div className="flex items-center gap-1 p-1 rounded-xl w-fit border" style={{ background: "hsl(224 20% 12%)", borderColor: "hsl(0 0% 100% / 0.06)" }}>
         {([
           { id: "scores", label: "Campaign Scores", icon: Target },
-          { id: "insights", label: "AI Insights", icon: Zap },
+          { id: "insights", label: "Insights", icon: Zap },
           { id: "trends", label: "Performance Trends", icon: TrendingUp },
         ] as const).map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}

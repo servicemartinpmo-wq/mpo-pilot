@@ -298,7 +298,7 @@ function apphiaRespond(input: string, page: string): Omit<ApphiaMsg, "id" | "tim
   if (/help|what.*can.*you|how.*work|capability|feature|what.*do/i.test(lower)) {
     return {
       role: "apphia",
-      text: "I'm Apphia — your executive AI engine. I specialize in pattern recognition, decision intelligence, and operational efficiency. Here's what I do:",
+      text: "I'm Apphia — your executive command engine. I specialize in pattern recognition, decision intelligence, and operational efficiency. Here's what I do:",
       list: [
         "Recognize patterns across tasks, initiatives, and KPIs — before they become problems",
         "Frame and prioritize executive decisions with structured intelligence",

@@ -34,8 +34,8 @@ interface Integration {
 const GSUITE: Integration[] = [
   {
     id: "gmail", suite: "Google Workspace", name: "Gmail", category: "Email Intelligence",
-    description: "AI reads starred emails, extracts action items, assigns priority, and flags risks — added directly to your Command Center.",
-    aiFeature: "AI extracts tasks · assigns priority · flags risks · starred items prioritized",
+    description: "Reads starred emails, extracts action items, assigns priority, and flags risks — added directly to your Command Center.",
+    aiFeature: "Auto-extracts tasks · assigns priority · flags risks · starred items prioritized",
     features: ["Inbox → action item extraction", "Starred emails prioritized", "Side-by-side snapshot for quality checks", "Task creation with owner + due date", "Risk flagging and escalation alerts"],
     icon: Mail, iconColor: "hsl(4 82% 55%)", iconBg: "hsl(4 82% 55% / 0.08)",
     status: "coming_soon", tier: "t1",
@@ -63,9 +63,9 @@ const GSUITE: Integration[] = [
     status: "coming_soon", tier: "t2",
   },
   {
-    id: "gmeet", suite: "Google Workspace", name: "Google Meet / Gemini", category: "Meetings & AI",
+    id: "gmeet", suite: "Google Workspace", name: "Google Meet / Gemini", category: "Meetings",
     description: "Meetings logged automatically in Events page. Gemini-generated summaries linked to action items.",
-    features: ["Meeting auto-log in Events page", "AI-generated meeting summaries", "Action items extracted from transcripts", "Linked to initiative and department context"],
+    features: ["Meeting auto-log in Events page", "Auto-generated meeting summaries", "Action items extracted from transcripts", "Linked to initiative and department context"],
     icon: Video, iconColor: "hsl(268 62% 54%)", iconBg: "hsl(268 62% 54% / 0.08)",
     status: "coming_soon", tier: "t3",
   },
@@ -81,9 +81,9 @@ const GSUITE: Integration[] = [
 const MICROSOFT: Integration[] = [
   {
     id: "outlook", suite: "Microsoft 365", name: "Outlook", category: "Email Intelligence",
-    description: "AI reads and extracts tasks from Outlook inbox. Starred/flagged emails prioritized and added to dashboard.",
-    aiFeature: "AI extracts tasks · flags risks · starred items first",
-    features: ["Inbox → task extraction with AI prioritization", "Flagged emails promoted to Today's Priorities", "Risk flagging and escalation alerts", "Side-by-side snapshot view for quality checks"],
+    description: "Reads and extracts tasks from Outlook inbox. Starred/flagged emails prioritized and added to dashboard.",
+    aiFeature: "Auto-extracts tasks · flags risks · starred items first",
+    features: ["Inbox → task extraction with smart prioritization", "Flagged emails promoted to Today's Priorities", "Risk flagging and escalation alerts", "Side-by-side snapshot view for quality checks"],
     icon: Mail, iconColor: "hsl(214 72% 51%)", iconBg: "hsl(214 72% 51% / 0.08)",
     status: "coming_soon", tier: "t1",
   },
@@ -128,8 +128,8 @@ const MICROSOFT: Integration[] = [
 const COMMS: Integration[] = [
   {
     id: "whatsapp", suite: "Messaging & Comms", name: "WhatsApp Business", category: "Messaging Intelligence",
-    description: "WhatsApp messages scanned by AI. Starred messages prioritized, tasks extracted, and risks flagged — added to Action Items.",
-    aiFeature: "AI reads messages · extracts tasks · starred chats prioritized",
+    description: "WhatsApp messages scanned automatically. Starred messages prioritized, tasks extracted, and risks flagged — added to Action Items.",
+    aiFeature: "Reads messages · extracts tasks · starred chats prioritized",
     features: ["Starred chats prioritized in Today's view", "Task extraction from messages", "Risk and escalation flagging", "Snapshot attachments saved for quality checks", "Links back to original messages"],
     icon: MessageSquare, iconColor: "hsl(142 52% 40%)", iconBg: "hsl(142 52% 40% / 0.08)",
     status: "coming_soon", tier: "t1", badge: "High Priority",
@@ -143,7 +143,7 @@ const COMMS: Integration[] = [
   },
   {
     id: "zoom", suite: "Messaging & Comms", name: "Zoom", category: "Meetings & Transcripts",
-    description: "Zoom meetings auto-logged to Events. AI-generated transcripts surfaced as action items and summaries.",
+    description: "Zoom meetings auto-logged to Events. Auto-generated transcripts surfaced as action items and summaries.",
     aiFeature: "Meeting transcripts → action items · summaries · risk detection",
     features: ["Auto-log meetings to Events page", "Transcript → action item extraction", "Meeting summaries linked to initiatives", "Risk phrase detection in recordings", "Attendance tracking without manual entry"],
     icon: Video, iconColor: "hsl(214 72% 52%)", iconBg: "hsl(214 72% 52% / 0.08)",
@@ -168,8 +168,8 @@ const COMMS: Integration[] = [
 const FINANCE_INTEGRATIONS: Integration[] = [
   {
     id: "quickbooks", suite: "Finance", name: "QuickBooks", category: "Accounting & P&L",
-    description: "Pull budget actuals, P&L summaries, and variance data into financial dashboards. AI flags overspend risks.",
-    aiFeature: "AI overspend alerts · variance analysis · cash flow signals",
+    description: "Pull budget actuals, P&L summaries, and variance data into financial dashboards. Flags overspend risks automatically.",
+    aiFeature: "Overspend alerts · variance analysis · cash flow signals",
     features: ["Budget actuals vs. plan auto-pull", "P&L and cash flow signals", "KPI mapping to departmental data", "Variance threshold alerts", "Automated month-end reconciliation summary"],
     icon: DollarSign, iconColor: "hsl(148 60% 38%)", iconBg: "hsl(148 60% 38% / 0.08)",
     status: "coming_soon", tier: "t3",
@@ -255,8 +255,8 @@ const HR_INTEGRATIONS: Integration[] = [
 const PROCUREMENT: Integration[] = [
   {
     id: "amazon-business", suite: "Procurement & Purchasing", name: "Amazon Business", category: "Purchase History & Spend",
-    description: "Full purchase history, order tracking, and spend analytics from Amazon Business. AI identifies cost reduction opportunities and flags anomalous spend.",
-    aiFeature: "AI spend analysis · duplicate purchase detection · cost-saving opportunities",
+    description: "Full purchase history, order tracking, and spend analytics from Amazon Business. Identifies cost reduction opportunities and flags anomalous spend.",
+    aiFeature: "Spend analysis · duplicate purchase detection · cost-saving opportunities",
     features: [
       "Full order & purchase history by department",
       "Spend analytics — category, vendor, period",
@@ -264,7 +264,7 @@ const PROCUREMENT: Integration[] = [
       "Price change alerts on recurring items",
       "Approval workflow status tracking",
       "Spend vs. budget by cost center",
-      "AI-flagged cost reduction opportunities",
+      "Auto-flagged cost reduction opportunities",
     ],
     icon: ShoppingCart, iconColor: "hsl(36 90% 50%)", iconBg: "hsl(36 90% 50% / 0.08)",
     status: "coming_soon", tier: "t2", badge: "New",
@@ -313,7 +313,7 @@ const PROCUREMENT: Integration[] = [
   {
     id: "coupa", suite: "Procurement & Purchasing", name: "Coupa", category: "Procurement Platform",
     description: "Enterprise procurement and spend management from Coupa. Full requisition-to-payment cycle tracked and surfaced in dashboards.",
-    aiFeature: "AI spend classification · compliance monitoring · savings opportunity detection",
+    aiFeature: "Spend classification · compliance monitoring · savings opportunity detection",
     features: [
       "Requisition-to-PO-to-payment tracking",
       "Supplier performance scoring",
@@ -622,7 +622,7 @@ function IntegrationRow({ intg, isConnected, onConnect, onDisconnect }: {
           </div>
           {intg.aiFeature ? (
             <p className="text-xs text-muted-foreground truncate">
-              <span className="text-electric-blue font-medium">AI: </span>{intg.aiFeature}
+              <span className="text-electric-blue font-medium">Smart: </span>{intg.aiFeature}
             </p>
           ) : (
             <p className="text-xs text-muted-foreground truncate">{intg.description}</p>
@@ -805,7 +805,7 @@ export default function Integrations() {
             <p className="section-label mb-2">Command Center</p>
             <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight">Integrations</h1>
             <p className="text-sm text-muted-foreground mt-1.5 max-w-lg">
-              Connect your tools — procurement, finance, HR, CRM, and more. AI reads everything and surfaces what matters.
+              Connect your tools — procurement, finance, HR, CRM, and more. Reads everything and surfaces what matters.
             </p>
           </div>
           <div className="flex items-center gap-4 sm:gap-6 mt-2 sm:mt-0">
@@ -842,10 +842,10 @@ export default function Integrations() {
             <Inbox className="w-5 h-5 text-electric-blue" />
           </div>
           <div className="flex-1">
-            <h3 className="text-sm font-bold text-foreground mb-1">AI Integration Intelligence</h3>
+            <h3 className="text-sm font-bold text-foreground mb-1">Integration Intelligence</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              All connected tools feed into a unified AI layer — purchases, emails, tasks, financial data, and HR signals.
-              AI extracts what matters, surfaces risks, and adds action items directly to your Command Center dashboard.
+              All connected tools feed into a unified intelligence layer — purchases, emails, tasks, financial data, and HR signals.
+              Extracts what matters, surfaces risks, and adds action items directly to your Command Center dashboard.
             </p>
           </div>
           <div className="flex-shrink-0">
@@ -899,7 +899,7 @@ export default function Integrations() {
                 <div>
                   <p className="text-sm font-semibold text-foreground">Finance × Procurement Intelligence</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Connect your Finance integrations above alongside the Procurement suite to unlock AI cross-analysis — spend vs. budget variance, vendor cost trends, and automated cost-reduction recommendations using TCO, Pareto, and maverick spend frameworks.
+                    Connect your Finance integrations above alongside the Procurement suite to unlock cross-analysis — spend vs. budget variance, vendor cost trends, and automated cost-reduction recommendations using TCO, Pareto, and maverick spend frameworks.
                   </p>
                 </div>
               </div>

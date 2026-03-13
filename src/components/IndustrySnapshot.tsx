@@ -673,7 +673,7 @@ function ContentSnapshot() {
     { title: "Q1 Brand Report",           type: "Report",    channel: "Web / PDF", due: "Mar 15", author: "J. Osei",   status: "In Progress" },
     { title: "Spring Campaign Video",     type: "Video",     channel: "YouTube",   due: "Mar 18", author: "C. Berger", status: "Pending" },
     { title: "Weekly Newsletter — Wk 11", type: "Email",     channel: "Mailchimp", due: "Mar 12", author: "P. Nair",   status: "In Progress" },
-    { title: "Podcast — EP 44: AI Ethics",type: "Podcast",   channel: "Spotify",   due: "Mar 14", author: "S. Reyes",  status: "In Progress" },
+    { title: "Podcast — EP 44: Tech Ethics",type: "Podcast",   channel: "Spotify",   due: "Mar 14", author: "S. Reyes",  status: "In Progress" },
     { title: "Product Launch Blog Series",type: "Blog",      channel: "Website",   due: "Mar 20", author: "D. Torres", status: "Pending" },
     { title: "Social Reels — March Pack", type: "Social",    channel: "Instagram", due: "Mar 11", author: "A. Diallo", status: "Delayed" },
   ];

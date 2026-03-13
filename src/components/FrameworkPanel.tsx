@@ -90,7 +90,7 @@ export default function FrameworkPanel({ frameworks }: FrameworkPanelProps) {
       {/* Footer note */}
       <div className="px-4 py-2 bg-secondary/20 border-t border-border/60">
         <p className="text-[10px] text-muted-foreground">
-          AI-supported interpretation · Framework-driven logic · Real-time signal processing
+          Automated interpretation · Framework-driven logic · Real-time signal processing
         </p>
       </div>
     </div>

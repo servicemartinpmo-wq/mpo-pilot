@@ -255,7 +255,7 @@ export default function Reports() {
     { q: "Q1", months: "Jan–Mar", revenue: 4.2, burn: 3.1, health: 61, maturity: 54, completed: 3, atRisk: 5, highlight: "Onboarding of new CTO; Infrastructure migration began" },
     { q: "Q2", months: "Apr–Jun", revenue: 4.9, burn: 3.4, health: 65, maturity: 57, completed: 5, atRisk: 4, highlight: "Customer Portal v1 shipped; SOP coverage +12%" },
     { q: "Q3", months: "Jul–Sep", revenue: 5.4, burn: 3.8, health: 69, maturity: 61, completed: 6, atRisk: 3, highlight: "Series B close; Headcount grew from 84 to 118" },
-    { q: "Q4", months: "Oct–Dec", revenue: 6.1, burn: 4.1, health: execHealth, maturity: overallMaturity, completed: completedInitiatives, atRisk: initiatives.filter(i => i.status !== "On Track" && i.status !== "Completed").length, highlight: "AI integration roadmap approved; Full diagnostic capability live" },
+    { q: "Q4", months: "Oct–Dec", revenue: 6.1, burn: 4.1, health: execHealth, maturity: overallMaturity, completed: completedInitiatives, atRisk: initiatives.filter(i => i.status !== "On Track" && i.status !== "Completed").length, highlight: "Integration roadmap approved; Full diagnostic capability live" },
   ];
 
   const ANNUAL_TREND = [
@@ -859,7 +859,7 @@ export default function Reports() {
                   { text: "Customer Portal v1 shipped — 3 months ahead of schedule", owner: "Ryan Torres", dept: "Technology" },
                   { text: "SOP coverage grew from 64% to 78% across all departments", owner: "David Kim", dept: "Operations" },
                   { text: "Headcount scaled from 84 to 118 FTE with no attrition spike", owner: "Elena Vasquez", dept: "People" },
-                  { text: "AI integration roadmap approved and diagnostic capability live", owner: "Ryan Torres", dept: "Technology" },
+                  { text: "Integration roadmap approved and diagnostic capability live", owner: "Ryan Torres", dept: "Technology" },
                 ].map((item, i) => (
                   <li key={i} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/50">
                     <span className="w-5 h-5 rounded-full bg-signal-yellow/15 text-signal-yellow text-[10px] font-bold flex items-center justify-center flex-shrink-0">{i + 1}</span>
@@ -914,7 +914,7 @@ export default function Reports() {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
               {[
                 { priority: "Scale to 150 FTE", owner: "Elena Vasquez", target: "Q2", type: "People" },
-                { priority: "Launch AI-native workflow builder", owner: "Ryan Torres", target: "Q1", type: "Product" },
+                { priority: "Launch native workflow builder", owner: "Ryan Torres", target: "Q1", type: "Product" },
                 { priority: "Achieve Tier 4 Maturity in all 5 core depts", owner: "David Kim", target: "Q3", type: "Operations" },
                 { priority: "Close enterprise anchor client (>$2M ARR)", owner: "Sarah Chen", target: "Q1", type: "Revenue" },
                 { priority: "Full SOP coverage (95%+)", owner: "David Kim", target: "Q2", type: "Governance" },
