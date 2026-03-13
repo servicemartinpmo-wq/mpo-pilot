@@ -269,15 +269,11 @@ function downloadFile(content: Blob | string, filename: string, mimeType?: strin
 }
 
 async function downloadAsXLSX(data: string[][], filename: string) {
-  const ExcelJS = await import("exceljs");
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet("Report");
-  for (const row of data) {
-    worksheet.addRow(row.map(sanitizeCSVCell));
-  }
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-  downloadFile(blob, filename);
+  const { default: writeXlsxFile } = await import("write-excel-file/browser");
+  const rows = data.map(row => row.map(cell => ({ value: sanitizeCSVCell(cell) })));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const blob = await (writeXlsxFile as any)(rows, {});
+  downloadFile(blob as Blob, filename);
 }
 
 interface DbTemplateRow {
@@ -417,44 +413,26 @@ export default function FinanceReports() {
       });
     } else if (ext === "xlsx" || ext === "xls") {
       setSourceFormat("xlsx");
-      const reader = new FileReader();
-      reader.onload = async (evt) => {
-        try {
-          const ExcelJS = await import("exceljs");
-          const arrayBuffer = evt.target?.result as ArrayBuffer;
-          const workbook = new ExcelJS.Workbook();
-          await workbook.xlsx.load(arrayBuffer);
-          const worksheet = workbook.worksheets[0];
-          if (!worksheet) {
-            setUploadError("File appears to be empty.");
-            return;
-          }
-          const rows: string[][] = [];
-          worksheet.eachRow((row) => {
-            const values = (row.values as (string | number | boolean | null | undefined)[]).slice(1);
-            rows.push(values.map(v => String(v ?? "").trim()));
-          });
-          if (rows.length === 0) {
-            setUploadError("File appears to be empty.");
-            return;
-          }
-          const headers = rows[0].filter(Boolean);
-          if (headers.length === 0) {
-            setUploadError("No column headers detected in the first row.");
-            return;
-          }
-          setUploadedHeaders(headers);
-          setColumnMapping(autoMapHeaders(headers));
-          setTemplateName(file.name.replace(/\.\w+$/, ""));
-          setView("mapping");
-        } catch (err) {
-          setUploadError(`Failed to parse Excel file: ${err instanceof Error ? err.message : "unknown error"}`);
+      try {
+        const { default: readXlsxFile } = await import("read-excel-file/browser");
+        const xlsRows = await readXlsxFile(file);
+        const rows: string[][] = xlsRows.map(row => row.map(cell => String(cell ?? "").trim()));
+        if (rows.length === 0) {
+          setUploadError("File appears to be empty.");
+          return;
         }
-      };
-      reader.onerror = () => {
-        setUploadError("Failed to read the file. Please try again.");
-      };
-      reader.readAsArrayBuffer(file);
+        const headers = rows[0].filter(Boolean);
+        if (headers.length === 0) {
+          setUploadError("No column headers detected in the first row.");
+          return;
+        }
+        setUploadedHeaders(headers);
+        setColumnMapping(autoMapHeaders(headers));
+        setTemplateName(file.name.replace(/\.\w+$/, ""));
+        setView("mapping");
+      } catch (err) {
+        setUploadError(`Failed to parse Excel file: ${err instanceof Error ? err.message : "unknown error"}`);
+      }
     } else {
       setUploadError("Please upload a CSV or Excel (.xlsx) file.");
     }

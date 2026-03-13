@@ -28,7 +28,6 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "exceljs": path.resolve(__dirname, "node_modules/exceljs/dist/exceljs.bare.js"),
     },
   },
 }));
