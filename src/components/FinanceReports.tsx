@@ -269,12 +269,14 @@ function downloadFile(content: Blob | string, filename: string, mimeType?: strin
 }
 
 async function downloadAsXLSX(data: string[][], filename: string) {
-  const XLSX = await import("xlsx");
-  const ws = XLSX.utils.aoa_to_sheet(data.map(row => row.map(sanitizeCSVCell)));
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Report");
-  const xlsxData = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-  const blob = new Blob([xlsxData], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+  const ExcelJS = await import("exceljs");
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Report");
+  for (const row of data) {
+    worksheet.addRow(row.map(sanitizeCSVCell));
+  }
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   downloadFile(blob, filename);
 }
 
@@ -418,17 +420,25 @@ export default function FinanceReports() {
       const reader = new FileReader();
       reader.onload = async (evt) => {
         try {
-          const XLSX = await import("xlsx");
-          const data = new Uint8Array(evt.target?.result as ArrayBuffer);
-          const workbook = XLSX.read(data, { type: "array" });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const json = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1 });
-          if (json.length === 0) {
+          const ExcelJS = await import("exceljs");
+          const arrayBuffer = evt.target?.result as ArrayBuffer;
+          const workbook = new ExcelJS.Workbook();
+          await workbook.xlsx.load(arrayBuffer);
+          const worksheet = workbook.worksheets[0];
+          if (!worksheet) {
             setUploadError("File appears to be empty.");
             return;
           }
-          const headers = (json[0] as string[]).map(h => String(h ?? "").trim()).filter(Boolean);
+          const rows: string[][] = [];
+          worksheet.eachRow((row) => {
+            const values = (row.values as (string | number | boolean | null | undefined)[]).slice(1);
+            rows.push(values.map(v => String(v ?? "").trim()));
+          });
+          if (rows.length === 0) {
+            setUploadError("File appears to be empty.");
+            return;
+          }
+          const headers = rows[0].filter(Boolean);
           if (headers.length === 0) {
             setUploadError("No column headers detected in the first row.");
             return;

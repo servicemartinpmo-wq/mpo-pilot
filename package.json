@@ -64,6 +64,7 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.6.0",
     "esbuild": "^0.21.5",
+    "exceljs": "^4.4.0",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "input-otp": "^1.4.2",
@@ -89,7 +90,6 @@
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.21.0",
     "vaul": "^0.9.9",
-    "xlsx": "^0.18.5",
     "zod": "^3.25.76"
   },
   "devDependencies": {
