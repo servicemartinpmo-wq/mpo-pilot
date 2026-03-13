@@ -34,6 +34,8 @@ import Marketing from "./pages/Marketing";
 import GraphView from "./pages/GraphView";
 import FallbackMode from "./pages/FallbackMode";
 import Expenses from "./pages/Expenses";
+import Meetings from "./pages/Meetings";
+import Compliance from "./pages/Compliance";
 import AuthPage from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
@@ -215,6 +217,8 @@ function AppRoutes() {
             <Route path="/graph" element={<GraphView />} />
             <Route path="/fallback" element={<FallbackMode />} />
             <Route path="/expenses" element={<Expenses />} />
+            <Route path="/meetings" element={<Meetings />} />
+            <Route path="/compliance" element={<Compliance />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>

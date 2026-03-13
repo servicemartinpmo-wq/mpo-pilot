@@ -8,6 +8,7 @@ import {
   FolderOpen, Scale, Layers, UserCircle, TrendingUp,
   Network, ShoppingBag, CreditCard, Tag,
   Menu, X, MoreHorizontal, WifiOff, DollarSign,
+  CalendarDays, Shield,
 } from "lucide-react";
 import pmoLogoIcon from "@/assets/pmo-logo-icon.jpg";
 import { useUserMode } from "@/hooks/useUserMode";
@@ -26,7 +27,9 @@ import { playAlertSound, playSuccessSound, playPingSound } from "@/lib/notificat
 // workAlwaysOpen: true = work items rendered as a pinned primary section (Startup).
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type NavItem = { to: string; label: string; icon: React.ComponentType<any> };
+type SubNavItem = { to: string; label: string; icon: React.ComponentType<any> };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type NavItem = { to: string; label: string; icon: React.ComponentType<any>; subItems?: SubNavItem[] };
 interface ModeNavConfig {
   commandLabel: string;
   workLabel: string;
@@ -55,7 +58,10 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
     work: [
       { to: "/initiatives",  label: "Initiatives",  icon: Rocket      },
       { to: "/projects",     label: "Projects",     icon: FolderOpen  },
-      { to: "/action-items", label: "Action Items", icon: CheckSquare },
+      { to: "/action-items", label: "Action Items", icon: CheckSquare, subItems: [
+        { to: "/meetings",   label: "Meetings & Notes", icon: CalendarDays },
+        { to: "/compliance", label: "Compliance",       icon: Shield       },
+      ]},
       { to: "/agile",        label: "Agile Board",  icon: Layers      },
     ],
     growth: [
@@ -92,7 +98,10 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
     work: [
       { to: "/initiatives",  label: "Initiatives",  icon: Rocket      },
       { to: "/projects",     label: "Projects",     icon: FolderOpen  },
-      { to: "/action-items", label: "Action Items", icon: CheckSquare },
+      { to: "/action-items", label: "Action Items", icon: CheckSquare, subItems: [
+        { to: "/meetings",   label: "Meetings & Notes", icon: CalendarDays },
+        { to: "/compliance", label: "Compliance",       icon: Shield       },
+      ]},
     ],
     growth: [
       { to: "/crm",       label: "CRM",       icon: ShoppingBag },
@@ -125,7 +134,10 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/initiatives",  label: "Roadmap",     icon: Rocket      },
       { to: "/projects",     label: "Projects",    icon: FolderOpen  },
       { to: "/agile",        label: "Agile Board", icon: Layers      },
-      { to: "/action-items", label: "Backlog",     icon: CheckSquare },
+      { to: "/action-items", label: "Backlog",     icon: CheckSquare, subItems: [
+        { to: "/meetings",   label: "Meetings & Notes", icon: CalendarDays },
+        { to: "/compliance", label: "Compliance",       icon: Shield       },
+      ]},
     ],
     growth: [
       { to: "/crm",       label: "Pipeline", icon: ShoppingBag },
@@ -495,8 +507,29 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   const toolsNav   = navCfg.tools;
   const workItems  = navCfg.work;
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
-  const isOnWorkMgmt = workItems.some(i => location.pathname.startsWith(i.to));
+  const isOnWorkMgmt = workItems.some(i =>
+    i.to === location.pathname ||
+    location.pathname.startsWith(i.to + "/") ||
+    i.subItems?.some(s => location.pathname.startsWith(s.to))
+  );
   const [workMgmtOpen, setWorkMgmtOpen] = useState(() => isOnWorkMgmt);
+  const [expandedSubItems, setExpandedSubItems] = useState<Set<string>>(() => {
+    const expanded = new Set<string>();
+    for (const item of workItems) {
+      if (item.subItems?.some(s => location.pathname.startsWith(s.to))) {
+        expanded.add(item.to);
+      }
+    }
+    return expanded;
+  });
+
+  function toggleSubItems(parentTo: string) {
+    setExpandedSubItems(prev => {
+      const next = new Set(prev);
+      next.has(parentTo) ? next.delete(parentTo) : next.add(parentTo);
+      return next;
+    });
+  }
 
   const scoreColor =
     animatedScore >= 70 ? "hsl(160 56% 46%)" :
@@ -1115,56 +1148,92 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
               {(navCfg.workAlwaysOpen || workMgmtOpen) && (
                 <div className={navCfg.workAlwaysOpen ? "" : (collapsed ? "" : "ml-3 pl-2.5 border-l")}
                   style={{ borderColor: "hsl(0 0% 100% / 0.08)" }}>
-                  {workItems.map(({ to, label, icon: Icon }) => (
-                    <NavLink
-                      key={to}
-                      to={to}
-                      className={({ isActive }) =>
-                        cn(
-                          "flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] font-medium transition-all duration-150",
-                          !isActive && "hover:bg-white/[0.04]"
-                        )
-                      }
-                      style={({ isActive }) => ({
-                        background: isActive ? theme.accentBg : undefined,
-                        boxShadow: isActive ? theme.accentShadow : undefined,
-                      })}>
-                      {({ isActive }) => {
-                        const trace = navTrace(to);
-                        const needsAttention = !isActive && trace === TRACE_RED && !viewedRedPaths.has(to);
-                        const isAmber = !isActive && trace === TRACE_AMBER;
-                        const iconCol = isActive
-                          ? theme.accentIcon
-                          : trace ? trace
-                          : "hsl(0 0% 100% / 0.30)";
-                        return (
-                          <>
-                            <div className="flex flex-col items-center gap-0.5 flex-shrink-0 relative">
-                              {needsAttention && (
-                                <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
-                                  style={{ background: "radial-gradient(circle, hsl(350 82% 62% / 0.16) 0%, transparent 70%)" }} />
-                              )}
-                              {isAmber && (
-                                <div className="absolute -inset-1.5 rounded-lg pointer-events-none"
-                                  style={{ background: "radial-gradient(circle, hsl(38 92% 52% / 0.12) 0%, transparent 70%)" }} />
-                              )}
-                              <Icon
-                                className={cn("w-3.5 h-3.5 relative z-10", needsAttention && "nav-icon-nudge")}
-                                style={{ color: iconCol }}
+                  {workItems.map(({ to, label, icon: Icon, subItems }) => {
+                    const subExpanded = expandedSubItems.has(to);
+                    const hasChildren = !!(subItems && subItems.length > 0);
+                    const isChildActive = hasChildren && subItems!.some(s => location.pathname.startsWith(s.to));
+                    const showSubs = hasChildren && (subExpanded || isChildActive);
+                    return (
+                      <div key={to}>
+                        {/* Parent item row */}
+                        <div className="flex items-center gap-0.5">
+                          <NavLink
+                            to={to}
+                            className={({ isActive }) =>
+                              cn(
+                                "flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-[12px] font-medium transition-all duration-150 flex-1 min-w-0",
+                                !isActive && "hover:bg-white/[0.04]"
+                              )
+                            }
+                            style={({ isActive }) => ({
+                              background: isActive ? theme.accentBg : undefined,
+                              boxShadow: isActive ? theme.accentShadow : undefined,
+                            })}>
+                            {({ isActive }) => {
+                              const trace = navTrace(to);
+                              const needsAttention = !isActive && trace === TRACE_RED && !viewedRedPaths.has(to);
+                              const isAmber = !isActive && trace === TRACE_AMBER;
+                              const iconCol = isActive ? theme.accentIcon : trace ? trace : "hsl(0 0% 100% / 0.30)";
+                              return (
+                                <>
+                                  <div className="flex flex-col items-center gap-0.5 flex-shrink-0 relative">
+                                    {needsAttention && <div className="absolute -inset-1.5 rounded-lg pointer-events-none" style={{ background: "radial-gradient(circle, hsl(350 82% 62% / 0.16) 0%, transparent 70%)" }} />}
+                                    {isAmber && <div className="absolute -inset-1.5 rounded-lg pointer-events-none" style={{ background: "radial-gradient(circle, hsl(38 92% 52% / 0.12) 0%, transparent 70%)" }} />}
+                                    <Icon className={cn("w-3.5 h-3.5 relative z-10", needsAttention && "nav-icon-nudge")} style={{ color: iconCol }} />
+                                    {trace && <PulseTrace color={trace} />}
+                                  </div>
+                                  {!collapsed && (
+                                    <span className="flex-1 truncate" style={{ color: isActive ? "hsl(38 10% 96%)" : "hsl(0 0% 100% / 0.50)" }}>
+                                      {label}
+                                    </span>
+                                  )}
+                                </>
+                              );
+                            }}
+                          </NavLink>
+                          {/* Expand toggle for items with subpages */}
+                          {hasChildren && !collapsed && (
+                            <button
+                              onClick={() => toggleSubItems(to)}
+                              className="flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center transition-all hover:bg-white/[0.06]"
+                              title={showSubs ? "Collapse subpages" : "Expand subpages"}>
+                              <ChevronRight
+                                className="w-3 h-3 transition-transform duration-200"
+                                style={{ color: "hsl(0 0% 100% / 0.25)", transform: showSubs ? "rotate(90deg)" : "rotate(0deg)" }}
                               />
-                              {trace && <PulseTrace color={trace} />}
-                            </div>
-                            {!collapsed && (
-                              <span className="flex-1 truncate"
-                                style={{ color: isActive ? "hsl(38 10% 96%)" : "hsl(0 0% 100% / 0.50)" }}>
-                                {label}
-                              </span>
-                            )}
-                          </>
-                        );
-                      }}
-                    </NavLink>
-                  ))}
+                            </button>
+                          )}
+                        </div>
+                        {/* Sub-pages */}
+                        {showSubs && !collapsed && (
+                          <div className="ml-3 mt-0.5 pl-2.5 border-l space-y-0.5 pb-1" style={{ borderColor: "hsl(0 0% 100% / 0.08)" }}>
+                            {subItems!.map(({ to: subTo, label: subLabel, icon: SubIcon }) => (
+                              <NavLink
+                                key={subTo}
+                                to={subTo}
+                                className={({ isActive }) =>
+                                  cn(
+                                    "flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-[11px] font-medium transition-all duration-150",
+                                    !isActive && "hover:bg-white/[0.04]"
+                                  )
+                                }
+                                style={({ isActive }) => ({
+                                  background: isActive ? "hsl(268 68% 62% / 0.12)" : undefined,
+                                  boxShadow: isActive ? "inset 2px 0 0 hsl(268 68% 62% / 0.6)" : undefined,
+                                })}>
+                                {({ isActive }) => (
+                                  <>
+                                    <SubIcon className="w-3 h-3 flex-shrink-0" style={{ color: isActive ? "hsl(268 68% 72%)" : "hsl(0 0% 100% / 0.28)" }} />
+                                    <span className="truncate" style={{ color: isActive ? "hsl(268 68% 82%)" : "hsl(0 0% 100% / 0.42)" }}>{subLabel}</span>
+                                  </>
+                                )}
+                              </NavLink>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
