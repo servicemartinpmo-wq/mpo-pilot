@@ -287,6 +287,57 @@ export async function deleteTeamMember(id: string) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// ORG MEMORY
+// ─────────────────────────────────────────────────────────────────────
+export async function getOrgMemory(profileId: string, limit = 200) {
+  const { data } = await supabase
+    .from("org_memory")
+    .select("*")
+    .eq("profile_id", profileId)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return data ?? [];
+}
+
+export async function insertOrgMemory(profileId: string, entry: {
+  entry_type: string;
+  category: string;
+  title: string;
+  content?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+  importance?: number;
+  tags?: string[];
+  source?: string;
+}) {
+  const { data, error } = await supabase
+    .from("org_memory")
+    .insert({
+      profile_id: profileId,
+      entry_type: entry.entry_type,
+      category: entry.category,
+      title: entry.title,
+      content: entry.content ?? {},
+      metadata: entry.metadata ?? {},
+      importance: entry.importance ?? 3,
+      tags: entry.tags ?? [],
+      source: entry.source ?? null,
+      resolved: false,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteOrgMemory(id: string) {
+  return supabase.from("org_memory").delete().eq("id", id);
+}
+
+export async function resolveOrgMemory(id: string) {
+  return supabase.from("org_memory").update({ resolved: true }).eq("id", id);
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // CREATOR PROMPTS
 // ─────────────────────────────────────────────────────────────────────
 export async function logCreatorPrompt(profileId: string, promptText: string, category?: string) {
