@@ -12,6 +12,7 @@ The project's vision is to empower organizations with actionable insights and in
 - Comprehensive reporting and analytics
 - Workflow automation and integrations
 - Knowledge management and resource hub
+- Expense management with receipt upload, allocation lines (GL codes + cost centers), shared team notes, and financial document templates
 
 ## User Preferences
 

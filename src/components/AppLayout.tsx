@@ -7,7 +7,7 @@ import {
   GitBranch, Brain, BarChart3, Moon, Bell, Clock,
   FolderOpen, Scale, Layers, UserCircle, TrendingUp,
   Network, ShoppingBag, CreditCard, Tag,
-  Menu, X, MoreHorizontal, WifiOff,
+  Menu, X, MoreHorizontal, WifiOff, DollarSign,
 } from "lucide-react";
 import pmoLogoIcon from "@/assets/pmo-logo-icon.jpg";
 import { useUserMode } from "@/hooks/useUserMode";
@@ -69,6 +69,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/graph",        label: "Graph View",   icon: Network     },
       { to: "/workflows",    label: "Workflows",    icon: GitBranch   },
       { to: "/advisory",     label: "Advisory",     icon: Headphones  },
+      { to: "/expenses",     label: "Expenses",         icon: DollarSign  },
       { to: "/integrations", label: "Integrations", icon: Plug        },
       { to: "/admin",        label: "Systems",          icon: Settings    },
       { to: "/fallback",     label: "Offline Guidance", icon: WifiOff     },
@@ -101,6 +102,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/reports",      label: "Reports",      icon: FileText   },
       { to: "/diagnostics",  label: "Diagnostics",  icon: Activity   },
       { to: "/knowledge",    label: "Resource Hub", icon: BookOpen   },
+      { to: "/expenses",     label: "Expenses",         icon: DollarSign },
       { to: "/advisory",     label: "Board",            icon: Headphones },
       { to: "/integrations", label: "Integrations",    icon: Plug       },
       { to: "/admin",        label: "Systems",          icon: Settings   },
@@ -130,6 +132,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/marketing", label: "Growth",   icon: TrendingUp  },
     ],
     tools: [
+      { to: "/expenses",     label: "Expenses",         icon: DollarSign },
       { to: "/diagnostics",  label: "Diagnostics",     icon: Activity  },
       { to: "/graph",        label: "Dependency Map",  icon: Network   },
       { to: "/workflows",    label: "Workflows",       icon: GitBranch },
@@ -161,6 +164,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
     ],
     growth: [],
     tools: [
+      { to: "/expenses",     label: "Expenses",         icon: DollarSign },
       { to: "/diagnostics",  label: "Diagnostics",  icon: Activity   },
       { to: "/knowledge",    label: "Resource Hub", icon: BookOpen   },
       { to: "/advisory",     label: "Mentors",      icon: Headphones },
@@ -188,6 +192,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
     ],
     growth: [],
     tools: [
+      { to: "/expenses",    label: "Expenses",         icon: DollarSign },
       { to: "/diagnostics", label: "Diagnostics",  icon: Activity   },
       { to: "/reports",     label: "Reports",      icon: FileText   },
       { to: "/knowledge",   label: "Resource Hub", icon: BookOpen   },
@@ -217,6 +222,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
     ],
     growth: [],
     tools: [
+      { to: "/expenses",     label: "Expenses",         icon: DollarSign },
       { to: "/reports",      label: "Reports",      icon: FileText   },
       { to: "/diagnostics",  label: "Diagnostics",  icon: Activity   },
       { to: "/knowledge",    label: "Resource Hub", icon: BookOpen   },
