@@ -6,15 +6,184 @@
  * – Email thread tagging for context & tracking
  * – Action items pushed to board with full provenance
  */
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Mic, Brain, Upload, FileText, Users, Clock, Mail,
   CheckSquare, Plus, ChevronRight, ChevronDown, AlertCircle,
   Check, Copy, Trash2, RefreshCw, Tag, Link2, Calendar,
   Target, Zap, MessageSquare, ArrowRight, Shield, Star,
   Video, Phone as PhoneIcon, X, Send, Download,
+  Sparkles, Lock, Gift, Timer, Crown, ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// ── Trial state management ────────────────────────────────────────────────────
+
+const TRIAL_KEY = "pmo_ai_meetings_trial_v1";
+const TRIAL_DAYS = 14;
+
+type TrialStatus = "none" | "active" | "expired";
+
+interface TrialState {
+  status: TrialStatus;
+  startDate: string | null;
+  daysRemaining: number;
+  daysUsed: number;
+}
+
+function getTrialState(): TrialState {
+  const raw = localStorage.getItem(TRIAL_KEY);
+  if (!raw) return { status: "none", startDate: null, daysRemaining: TRIAL_DAYS, daysUsed: 0 };
+  const startDate = raw;
+  const elapsed = Math.floor((Date.now() - new Date(startDate).getTime()) / 86400000);
+  const daysRemaining = Math.max(0, TRIAL_DAYS - elapsed);
+  const daysUsed = Math.min(elapsed, TRIAL_DAYS);
+  const status: TrialStatus = daysRemaining > 0 ? "active" : "expired";
+  return { status, startDate, daysRemaining, daysUsed };
+}
+
+function startTrial() {
+  localStorage.setItem(TRIAL_KEY, new Date().toISOString());
+}
+
+function useTrialState() {
+  const [trial, setTrial] = useState<TrialState>(getTrialState);
+
+  function activate() {
+    startTrial();
+    setTrial(getTrialState());
+  }
+
+  return { trial, activate };
+}
+
+// ── Trial UI components ───────────────────────────────────────────────────────
+
+const TRIAL_FEATURES = [
+  { icon: FileText,   label: "Post-Meeting Recaps",       desc: "AI-generated summaries of every meeting, ready to share" },
+  { icon: CheckSquare,label: "Action Item Extraction",    desc: "Automatically pull tasks, owners and deadlines from any transcript" },
+  { icon: Mic,        label: "Full Transcript Analysis",  desc: "Upload audio notes or paste text — the AI reads it all" },
+  { icon: Mail,       label: "Email Thread Context",      desc: "Link meetings to related email threads for audit trails" },
+];
+
+/** Full CTA card shown when no trial has been started */
+function TrialCTA({ onStart }: { onStart: () => void }) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+  return (
+    <div className="relative rounded-2xl overflow-hidden border" style={{ background: "linear-gradient(135deg, hsl(260 60% 14%) 0%, hsl(222 50% 13%) 60%, hsl(222 88% 12%) 100%)", borderColor: "hsl(268 68% 62% / 0.25)" }}>
+      {/* Glow */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 60% 50% at 70% 50%, hsl(268 68% 62% / 0.08) 0%, transparent 70%)" }} />
+      <div className="relative p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-4">
+            {/* Icon */}
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ background: "hsl(268 68% 62% / 0.15)", border: "1px solid hsl(268 68% 62% / 0.3)" }}>
+              <Gift className="w-6 h-6" style={{ color: "hsl(268 68% 75%)" }} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ background: "hsl(268 68% 62% / 0.2)", color: "hsl(268 68% 80%)" }}>Limited Time</span>
+                <span className="text-[10px] font-bold text-white/40">{TRIAL_DAYS}-day free trial</span>
+              </div>
+              <h3 className="text-lg font-black text-white mb-1">Unlock AI Meeting Intelligence</h3>
+              <p className="text-sm text-white/55 leading-relaxed max-w-lg">
+                Get {TRIAL_DAYS} days of full access to post-meeting recaps, action item extraction, transcript analysis, and email-thread context linking — all powered by AI. No credit card required.
+              </p>
+            </div>
+          </div>
+          <button onClick={() => setDismissed(true)} className="flex-shrink-0 p-1 rounded-lg text-white/20 hover:text-white/60 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Feature grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+          {TRIAL_FEATURES.map(({ icon: Icon, label, desc }) => (
+            <div key={label} className="p-3 rounded-xl" style={{ background: "hsl(0 0% 100% / 0.05)", border: "1px solid hsl(0 0% 100% / 0.07)" }}>
+              <Icon className="w-4 h-4 mb-1.5" style={{ color: "hsl(268 68% 72%)" }} />
+              <p className="text-xs font-semibold text-white/80 mb-0.5">{label}</p>
+              <p className="text-[10px] text-white/40 leading-snug">{desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA row */}
+        <div className="flex items-center gap-3 mt-5">
+          <button onClick={onStart}
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 active:scale-95"
+            style={{ background: "linear-gradient(135deg, hsl(268 68% 62%) 0%, hsl(248 68% 62%) 100%)", color: "white", boxShadow: "0 4px 20px hsl(268 68% 62% / 0.35)" }}>
+            <Sparkles className="w-4 h-4" /> Start {TRIAL_DAYS}-Day Free Trial
+          </button>
+          <p className="text-xs text-white/30">No credit card · Cancel anytime · Full access from day 1</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Compact active-trial banner shown in the header when trial is running */
+function TrialActiveBadge({ trial }: { trial: TrialState }) {
+  const pct = ((TRIAL_DAYS - trial.daysRemaining) / TRIAL_DAYS) * 100;
+  const urgency = trial.daysRemaining <= 3;
+  return (
+    <div className="flex items-center gap-3 px-3.5 py-2 rounded-xl border" style={{ background: urgency ? "hsl(38 92% 52% / 0.08)" : "hsl(268 68% 62% / 0.08)", borderColor: urgency ? "hsl(38 92% 52% / 0.25)" : "hsl(268 68% 62% / 0.25)" }}>
+      <Timer className="w-3.5 h-3.5 flex-shrink-0" style={{ color: urgency ? "hsl(38 92% 62%)" : "hsl(268 68% 72%)" }} />
+      <div>
+        <p className="text-xs font-bold" style={{ color: urgency ? "hsl(38 92% 72%)" : "hsl(268 68% 80%)" }}>
+          {trial.daysRemaining === 0 ? "Last day of trial" : `${trial.daysRemaining} day${trial.daysRemaining !== 1 ? "s" : ""} remaining`}
+        </p>
+        {/* Progress bar */}
+        <div className="w-24 h-1 rounded-full mt-1" style={{ background: "hsl(0 0% 100% / 0.10)" }}>
+          <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: urgency ? "hsl(38 92% 52%)" : "hsl(268 68% 62%)" }} />
+        </div>
+      </div>
+      <a href="/pricing" className="text-[10px] font-bold px-2.5 py-1 rounded-lg transition-colors" style={{ background: urgency ? "hsl(38 92% 52% / 0.15)" : "hsl(268 68% 62% / 0.15)", color: urgency ? "hsl(38 92% 72%)" : "hsl(268 68% 80%)" }}>
+        Upgrade
+      </a>
+    </div>
+  );
+}
+
+/** Paywall overlay for the Note Taker tab when the trial has expired */
+function TrialExpiredPaywall({ onRestart }: { onRestart: () => void }) {
+  return (
+    <div className="relative rounded-2xl overflow-hidden border" style={{ background: "hsl(224 22% 11%)", borderColor: "hsl(0 0% 100% / 0.08)" }}>
+      {/* Blurred preview of content behind */}
+      <div className="p-6 flex flex-col items-center text-center py-16">
+        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: "hsl(350 84% 62% / 0.12)", border: "1px solid hsl(350 84% 62% / 0.25)" }}>
+          <Lock className="w-7 h-7" style={{ color: "hsl(350 84% 72%)" }} />
+        </div>
+        <h3 className="text-lg font-black text-white mb-2">Your 14-day trial has ended</h3>
+        <p className="text-sm text-white/50 max-w-md leading-relaxed mb-6">
+          Upgrade to continue using AI Meeting Intelligence — post-meeting recaps, action item extraction, full transcript analysis, and email thread linking.
+        </p>
+
+        {/* Feature list */}
+        <div className="grid grid-cols-2 gap-2 mb-8 text-left w-full max-w-sm">
+          {TRIAL_FEATURES.map(({ icon: Icon, label }) => (
+            <div key={label} className="flex items-center gap-2 text-xs text-white/55">
+              <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color: "hsl(268 68% 62%)" }} />
+              {label}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-3">
+          <a href="/pricing"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm"
+            style={{ background: "linear-gradient(135deg, hsl(268 68% 62%) 0%, hsl(248 68% 62%) 100%)", color: "white", boxShadow: "0 4px 16px hsl(268 68% 62% / 0.3)" }}>
+            <Crown className="w-4 h-4" /> View Plans & Upgrade
+          </a>
+          <button onClick={onRestart} className="text-xs text-white/30 hover:text-white/60 transition-colors">
+            Extend trial
+          </button>
+        </div>
+        <p className="text-[10px] text-white/25 mt-3">14-day free trial · then from $49/month · cancel anytime</p>
+      </div>
+    </div>
+  );
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -864,8 +1033,15 @@ export default function Meetings() {
   const [tab, setTab] = useState<MeetingsTab>("meetings");
   const [meetings] = useState<Meeting[]>(SAMPLE_MEETINGS);
   const [showNewModal, setShowNewModal] = useState(false);
+  const { trial, activate } = useTrialState();
 
-  function handleSelectMeeting(m: Meeting) {
+  function handleSelectMeeting(_m: Meeting) {
+    setTab("note-taker");
+  }
+
+  // When user starts trial and clicks Note Taker, auto-open it
+  function handleStartTrial() {
+    activate();
     setTab("note-taker");
   }
 
@@ -876,6 +1052,8 @@ export default function Meetings() {
   ];
 
   const pendingTotal = meetings.reduce((s, m) => s + m.actionItems.filter(a => !a.addedToBoard).length, 0);
+  const noteTakerLocked = trial.status === "expired";
+  const noteTakerNeedsUnlock = trial.status === "none";
 
   return (
     <div className="min-h-screen p-4 sm:p-6 space-y-5" style={{ background: "hsl(224 22% 10%)" }}>
@@ -887,10 +1065,26 @@ export default function Meetings() {
             AI-powered transcript analysis · Action item extraction · Email context linking · Dedup detection
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Trial status badge */}
+          {trial.status === "active" && <TrialActiveBadge trial={trial} />}
+          {trial.status === "none" && (
+            <button onClick={handleStartTrial}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105"
+              style={{ background: "linear-gradient(135deg, hsl(268 68% 62%) 0%, hsl(248 68% 62%) 100%)", color: "white", boxShadow: "0 2px 12px hsl(268 68% 62% / 0.3)" }}>
+              <Sparkles className="w-3.5 h-3.5" /> Start {TRIAL_DAYS}-Day Free Trial
+            </button>
+          )}
+          {trial.status === "expired" && (
+            <a href="/pricing"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold"
+              style={{ background: "hsl(350 84% 62% / 0.12)", color: "hsl(350 84% 72%)", border: "1px solid hsl(350 84% 62% / 0.25)" }}>
+              <Crown className="w-3.5 h-3.5" /> Trial Ended · Upgrade
+            </a>
+          )}
           {pendingTotal > 0 && (
-            <span className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold animate-pulse" style={{ background: "hsl(38 92% 52% / 0.12)", color: "hsl(38 92% 62%)", border: "1px solid hsl(38 92% 52% / 0.2)" }}>
-              <CheckSquare className="w-3.5 h-3.5" /> {pendingTotal} items pending board push
+            <span className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold" style={{ background: "hsl(38 92% 52% / 0.12)", color: "hsl(38 92% 62%)", border: "1px solid hsl(38 92% 52% / 0.2)" }}>
+              <CheckSquare className="w-3.5 h-3.5" /> {pendingTotal} pending
             </span>
           )}
           <button onClick={() => setShowNewModal(true)}
@@ -903,10 +1097,10 @@ export default function Meetings() {
       {/* Stats row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: "Total Meetings",      value: meetings.length,                                                       color: "hsl(222 88% 65%)" },
-          { label: "Completed",           value: meetings.filter(m => m.status === "completed").length,                  color: "hsl(160 56% 42%)" },
-          { label: "Action Items Found",  value: meetings.reduce((s, m) => s + m.actionItems.length, 0),                color: "hsl(38 92% 52%)"  },
-          { label: "Email Threads Linked",value: meetings.reduce((s, m) => s + m.linkedEmails.length, 0),               color: "hsl(268 68% 62%)" },
+          { label: "Total Meetings",      value: meetings.length,                                                        color: "hsl(222 88% 65%)" },
+          { label: "Completed",           value: meetings.filter(m => m.status === "completed").length,                   color: "hsl(160 56% 42%)" },
+          { label: "Action Items Found",  value: meetings.reduce((s, m) => s + m.actionItems.length, 0),                 color: "hsl(38 92% 52%)"  },
+          { label: "Email Threads Linked",value: meetings.reduce((s, m) => s + m.linkedEmails.length, 0),                color: "hsl(268 68% 62%)" },
         ].map(({ label, value, color }) => (
           <div key={label} className="rounded-xl border p-4" style={{ background: "hsl(224 20% 12%)", borderColor: "hsl(0 0% 100% / 0.07)" }}>
             <p className="text-xs text-white/40 mb-1">{label}</p>
@@ -915,31 +1109,69 @@ export default function Meetings() {
         ))}
       </div>
 
+      {/* Free trial CTA — only shown when no trial started yet */}
+      {trial.status === "none" && <TrialCTA onStart={handleStartTrial} />}
+
       {/* Tabs */}
       <div className="flex items-center gap-1 p-1 rounded-xl w-fit border" style={{ background: "hsl(224 20% 12%)", borderColor: "hsl(0 0% 100% / 0.06)" }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className={cn("flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all")}
+            className={cn("flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all relative")}
             style={tab === t.id ? { background: "hsl(222 88% 65% / 0.15)", color: "hsl(222 88% 72%)" } : { color: "hsl(0 0% 100% / 0.40)" }}>
-            {t.icon} {t.label}
-            {t.id === "note-taker" && <span className="ml-0.5 text-[9px] font-black px-1 rounded" style={{ background: "hsl(222 88% 65% / 0.2)", color: "hsl(222 88% 72%)" }}>AI</span>}
+            {t.icon}
+            {t.label}
+            {t.id === "note-taker" && (
+              <span className="ml-0.5 text-[9px] font-black px-1 rounded" style={{ background: "hsl(222 88% 65% / 0.2)", color: "hsl(222 88% 72%)" }}>AI</span>
+            )}
+            {t.id === "note-taker" && noteTakerNeedsUnlock && (
+              <Lock className="w-3 h-3 ml-0.5 text-white/30" />
+            )}
+            {t.id === "note-taker" && noteTakerLocked && (
+              <Lock className="w-3 h-3 ml-0.5" style={{ color: "hsl(350 84% 62%)" }} />
+            )}
           </button>
         ))}
       </div>
 
-      {/* AI info banner */}
-      {tab === "note-taker" && (
-        <div className="flex items-start gap-3 p-4 rounded-2xl border" style={{ background: "hsl(222 88% 65% / 0.05)", borderColor: "hsl(222 88% 65% / 0.15)" }}>
-          <Brain className="w-4 h-4 text-electric-blue flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-xs font-semibold text-white/70">How it works</p>
-            <p className="text-xs text-white/45 leading-relaxed">Paste any transcript (Otter AI, Zoom, Google Meet, handwritten notes). The AI identifies action items, detects ownership by name mentions, sets smart deadlines, checks against your existing board for duplicates, and tags action items to related email threads for a complete audit trail — so no item gets submitted twice.</p>
+      {/* AI info banner — only when trial active */}
+      {tab === "note-taker" && trial.status === "active" && (
+        <div className="flex items-start gap-3 p-4 rounded-2xl border" style={{ background: "hsl(268 68% 62% / 0.05)", borderColor: "hsl(268 68% 62% / 0.18)" }}>
+          <Sparkles className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: "hsl(268 68% 72%)" }} />
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-0.5">
+              <p className="text-xs font-semibold text-white/70">AI Meeting Intelligence — Trial Active</p>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "hsl(268 68% 62% / 0.15)", color: "hsl(268 68% 78%)" }}>
+                {trial.daysRemaining}d left
+              </span>
+            </div>
+            <p className="text-xs text-white/40 leading-relaxed">Paste any transcript (Otter AI, Zoom, Google Meet, handwritten notes). The AI identifies action items, detects ownership by name mentions, sets smart deadlines, checks against your board for duplicates, and tags action items to related email threads for a complete audit trail.</p>
           </div>
         </div>
       )}
 
       {tab === "meetings"   && <MeetingsTab meetings={meetings} onSelectMeeting={handleSelectMeeting} />}
-      {tab === "note-taker" && <NoteTakerTab meetings={meetings} />}
+      {tab === "note-taker" && (
+        noteTakerLocked
+          ? <TrialExpiredPaywall onRestart={handleStartTrial} />
+          : noteTakerNeedsUnlock
+          ? (
+            <div className="space-y-5">
+              <TrialCTA onStart={handleStartTrial} />
+              <div className="flex flex-col items-center justify-center py-10 gap-4">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "hsl(268 68% 62% / 0.10)" }}>
+                  <Lock className="w-6 h-6" style={{ color: "hsl(268 68% 62%)" }} />
+                </div>
+                <p className="text-sm font-semibold text-white/40 text-center">Start your free trial to access the AI Note Taker</p>
+                <button onClick={handleStartTrial}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm"
+                  style={{ background: "linear-gradient(135deg, hsl(268 68% 62%) 0%, hsl(248 68% 62%) 100%)", color: "white" }}>
+                  <Sparkles className="w-4 h-4" /> Start Free Trial
+                </button>
+              </div>
+            </div>
+          )
+          : <NoteTakerTab meetings={meetings} />
+      )}
       {tab === "upcoming"   && <UpcomingTab meetings={meetings} />}
     </div>
   );
