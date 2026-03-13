@@ -376,7 +376,7 @@ export default function FinanceReports() {
     return [...builtins, ...templates];
   }, [templates]);
 
-  const handleFileUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploadError(null);
