@@ -18,8 +18,13 @@ import {
   AlertTriangle, CheckCircle, Clock, Target, GitBranch, BarChart3,
   Activity, TrendingUp, TrendingDown, Minus, ChevronDown, Zap,
   UserCheck, Lock, ArrowUpRight, RefreshCw, Bell, Layout, Check, FlaskConical,
-  PlayCircle, Volume2
+  PlayCircle, Volume2, SlidersHorizontal, Globe, Linkedin, Link2,
 } from "lucide-react";
+import {
+  loadCRMSettings, saveCRMSettings,
+  SOURCE_CHANNEL_META, CONFIDENCE_META,
+  type CRMSettings, type SourceChannel, type Confidence,
+} from "@/lib/crmConfig";
 
 function Block({ title, icon: Icon, children, badge, accent }: {
   title: string; icon: React.ElementType; children: React.ReactNode;
@@ -46,7 +51,14 @@ function Block({ title, icon: Icon, children, badge, accent }: {
 }
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState<"system" | "org" | "frameworks" | "authority" | "sops" | "access" | "customize" | "banner">("system");
+  const [activeTab, setActiveTab] = useState<"system" | "org" | "frameworks" | "authority" | "sops" | "access" | "customize" | "banner" | "crm">("system");
+  const [crmSettings, setCrmSettings] = useState<CRMSettings>(() => loadCRMSettings());
+
+  function updateCrm(patch: Partial<CRMSettings>) {
+    const next = { ...crmSettings, ...patch };
+    setCrmSettings(next);
+    saveCRMSettings(next);
+  }
   const [bannerTheme, setBannerTheme] = useState(
     typeof window !== "undefined" ? (localStorage.getItem("apphia_banner_theme") || "deep-space") : "deep-space"
   )
@@ -110,6 +122,7 @@ export default function Admin() {
     { key: "access", label: "Access & Roles" },
     { key: "customize", label: "Customize" },
     { key: "banner", label: "Banner & Theme" },
+    { key: "crm", label: "CRM Settings" },
   ] as const;
 
   const signalMetrics = [
@@ -827,6 +840,157 @@ export default function Admin() {
               Open Creator Lab
             </Link>
           </Block>
+        </div>
+      )}
+
+      {/* ═══ CRM SETTINGS TAB ═══ */}
+      {activeTab === "crm" && (
+        <div className="space-y-5">
+
+          {/* Email display preferences */}
+          <Block title="Email Display Preferences" icon={SlidersHorizontal} accent="blue">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div>
+                <p className="text-xs font-bold text-foreground uppercase tracking-wide mb-3">Email Types Shown</p>
+                <div className="space-y-2">
+                  {[
+                    { key:"showDirectEmail", label:"🎯 Direct Email", sub:"Personal leadership emails (firstname@domain, last@domain)" },
+                    { key:"showGeneralEmail", label:"📧 General Email", sub:"Company info emails (info@…, service@…) or inferred" },
+                    { key:"showEmailSource", label:"Source Badges", sub:"Show where each email came from and confidence level" },
+                  ].map(({ key, label, sub }) => (
+                    <label key={key} className="flex items-start gap-3 p-3 rounded-xl border border-border/60 cursor-pointer hover:bg-secondary/50 transition-colors">
+                      <input type="checkbox" checked={crmSettings[key as keyof CRMSettings] as boolean}
+                        onChange={e => updateCrm({ [key]: e.target.checked })}
+                        className="mt-0.5 rounded" />
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{label}</p>
+                        <p className="text-xs text-muted-foreground">{sub}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-foreground uppercase tracking-wide mb-3">Default Contact View</p>
+                <div className="space-y-2">
+                  {[["card","Card grid (Ken Burns covers, score bars)"],["table","Table view (compact, sortable)"]] .map(([v,l]) => (
+                    <label key={v} className="flex items-center gap-3 p-3 rounded-xl border border-border/60 cursor-pointer hover:bg-secondary/50 transition-colors">
+                      <input type="radio" checked={crmSettings.contactView === v}
+                        onChange={() => updateCrm({ contactView: v as "card"|"table" })} />
+                      <span className="text-sm text-foreground">{l}</span>
+                    </label>
+                  ))}
+                </div>
+
+                <p className="text-xs font-bold text-foreground uppercase tracking-wide mb-3 mt-5">Confidence Threshold</p>
+                <p className="text-xs text-muted-foreground mb-2">Only show data at or above this confidence level</p>
+                <div className="space-y-2">
+                  {(["verified","high","medium","inferred"] as Confidence[]).map(c => {
+                    const m = CONFIDENCE_META[c];
+                    return (
+                      <label key={c} className="flex items-center gap-3 p-2.5 rounded-xl border border-border/60 cursor-pointer hover:bg-secondary/50 transition-colors">
+                        <input type="radio" checked={crmSettings.confidenceThreshold === c}
+                          onChange={() => updateCrm({ confidenceThreshold: c })} />
+                        <span className="flex items-center gap-2 text-sm">
+                          <span className="w-2 h-2 rounded-full" style={{ background: m.color }} />
+                          <span className="text-foreground font-medium">{m.label}</span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-bold text-foreground uppercase tracking-wide mb-3">Quick Links</p>
+                <div className="space-y-2">
+                  <Link to="/crm" className="flex items-center gap-2 p-3 rounded-xl border border-border/60 hover:bg-secondary/50 transition-colors text-sm text-electric-blue">
+                    <Link2 className="w-4 h-4" /> Open CRM
+                  </Link>
+                  <div className="p-3 rounded-xl border border-border/60 bg-secondary/30">
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Column changes take effect immediately in the CRM. Source settings apply on the next sourcing run.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Block>
+
+          {/* Sourcing channels */}
+          <Block title="Assisted Sourcing Channels" icon={Globe} accent="teal">
+            <p className="text-sm text-muted-foreground mb-4">Select which data sources are active when running assisted sourcing. Verified sources (Business Registry, Chamber, BBB) produce the highest confidence data.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {(Object.keys(SOURCE_CHANNEL_META) as SourceChannel[]).map(ch => {
+                const m = SOURCE_CHANNEL_META[ch];
+                const enabled = crmSettings.enabledSources.includes(ch);
+                return (
+                  <div key={ch} className={cn("rounded-xl border p-4 transition-all", enabled ? "border-electric-blue/30 bg-electric-blue/5" : "border-border/50")}>
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{m.icon}</span>
+                        <p className="text-sm font-semibold text-foreground">{m.label}</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const next = enabled
+                            ? crmSettings.enabledSources.filter(s => s !== ch)
+                            : [...crmSettings.enabledSources, ch];
+                          updateCrm({ enabledSources: next });
+                        }}
+                        className={cn("px-2.5 py-1 rounded-lg text-[11px] font-bold transition-colors flex-shrink-0",
+                          enabled ? "bg-electric-blue/15 text-electric-blue border border-electric-blue/25 hover:bg-electric-blue/25" : "bg-muted text-muted-foreground border border-border hover:text-foreground"
+                        )}>
+                        {enabled ? "✓ Active" : "Enable"}
+                      </button>
+                    </div>
+                    <div className="space-y-0.5">
+                      {m.provides.map(p => <p key={p} className="text-[11px] text-muted-foreground flex items-center gap-1.5"><span className="w-1 h-1 rounded-full bg-muted-foreground/40 flex-shrink-0" />{p}</p>)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </Block>
+
+          {/* Contact columns */}
+          <Block title="Contact Table Columns" icon={Users} accent="green">
+            <p className="text-sm text-muted-foreground mb-4">Configure which columns appear in the Contacts table view. Locked columns (Name) are always shown.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {crmSettings.contactColumns.map(col => (
+                <label key={col.id} className={cn("flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors hover:bg-secondary/50",
+                  col.enabled ? "border-electric-blue/30 bg-electric-blue/5" : "border-border/60"
+                )}>
+                  <input type="checkbox" checked={col.enabled} disabled={col.locked}
+                    onChange={e => updateCrm({ contactColumns: crmSettings.contactColumns.map(c => c.id === col.id ? { ...c, enabled: e.target.checked } : c) })}
+                    className={cn("mt-0.5 rounded", col.locked && "opacity-50")} />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{col.label} {col.locked && <span className="text-[10px] text-muted-foreground">(locked)</span>}</p>
+                    {col.description && <p className="text-[11px] text-muted-foreground">{col.description}</p>}
+                  </div>
+                </label>
+              ))}
+            </div>
+          </Block>
+
+          {/* Company columns */}
+          <Block title="Company Table Columns" icon={Building2} accent="yellow">
+            <p className="text-sm text-muted-foreground mb-4">Configure which columns appear in the Companies table. Includes enriched data from Business Registry, Chamber, and BBB.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {crmSettings.companyColumns.map(col => (
+                <label key={col.id} className={cn("flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-colors hover:bg-secondary/50",
+                  col.enabled ? "border-electric-blue/30 bg-electric-blue/5" : "border-border/60"
+                )}>
+                  <input type="checkbox" checked={col.enabled} disabled={col.locked}
+                    onChange={e => updateCrm({ companyColumns: crmSettings.companyColumns.map(c => c.id === col.id ? { ...c, enabled: e.target.checked } : c) })}
+                    className={cn("mt-0.5 rounded", col.locked && "opacity-50")} />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{col.label} {col.locked && <span className="text-[10px] text-muted-foreground">(locked)</span>}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </Block>
+
         </div>
       )}
 
