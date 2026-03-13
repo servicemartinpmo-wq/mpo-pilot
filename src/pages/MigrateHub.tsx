@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import {
   Upload, ChevronLeft, ChevronRight, Check, X, AlertCircle,
   FileText, Copy, ExternalLink, RefreshCw, Download, Eye,
-  Layers, GitBranch, ClipboardList, Database, BookOpen,
+  Layers, GitBranch, ClipboardList, Database, BookOpen, Table2,
 } from "lucide-react";
+import { SiAsana, SiTrello, SiClickup, SiJira, SiNotion } from "react-icons/si";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,6 +15,7 @@ interface ToolDef {
   id: string;
   name: string;
   logo: string;
+  LogoIcon: React.ElementType;
   color: string;
   bg: string;
   border: string;
@@ -28,7 +30,8 @@ const TOOLS: ToolDef[] = [
   {
     id: "asana",
     name: "Asana",
-    logo: "🗂",
+    logo: "asana",
+    LogoIcon: SiAsana,
     color: "hsl(348 82% 60%)",
     bg: "hsl(348 82% 60% / 0.08)",
     border: "hsl(348 82% 60% / 0.25)",
@@ -53,7 +56,8 @@ const TOOLS: ToolDef[] = [
   {
     id: "trello",
     name: "Trello",
-    logo: "📋",
+    logo: "trello",
+    LogoIcon: SiTrello,
     color: "hsl(206 82% 47%)",
     bg: "hsl(206 82% 47% / 0.08)",
     border: "hsl(206 82% 47% / 0.25)",
@@ -78,7 +82,8 @@ const TOOLS: ToolDef[] = [
   {
     id: "clickup",
     name: "ClickUp",
-    logo: "⚡",
+    logo: "clickup",
+    LogoIcon: SiClickup,
     color: "hsl(262 52% 55%)",
     bg: "hsl(262 52% 55% / 0.08)",
     border: "hsl(262 52% 55% / 0.25)",
@@ -103,7 +108,8 @@ const TOOLS: ToolDef[] = [
   {
     id: "jira",
     name: "Jira",
-    logo: "🔷",
+    logo: "jira",
+    LogoIcon: SiJira,
     color: "hsl(214 72% 52%)",
     bg: "hsl(214 72% 52% / 0.08)",
     border: "hsl(214 72% 52% / 0.25)",
@@ -129,7 +135,8 @@ const TOOLS: ToolDef[] = [
   {
     id: "notion",
     name: "Notion",
-    logo: "📓",
+    logo: "notion",
+    LogoIcon: SiNotion,
     color: "hsl(0 0% 55%)",
     bg: "hsl(0 0% 55% / 0.08)",
     border: "hsl(0 0% 55% / 0.25)",
@@ -154,7 +161,8 @@ const TOOLS: ToolDef[] = [
   {
     id: "csv",
     name: "Generic CSV",
-    logo: "📊",
+    logo: "csv",
+    LogoIcon: Table2,
     color: "hsl(148 52% 42%)",
     bg: "hsl(148 52% 42% / 0.08)",
     border: "hsl(148 52% 42% / 0.25)",
@@ -403,8 +411,8 @@ export default function MigrateHub() {
           </p>
         </div>
         {step !== "pick" && selectedTool && (
-          <div className="text-3xl px-3 py-2 rounded-xl" style={{ background: selectedTool.bg, border: `1px solid ${selectedTool.border}` }}>
-            {selectedTool.logo}
+          <div className="w-12 h-12 flex items-center justify-center rounded-xl" style={{ background: selectedTool.bg, border: `1px solid ${selectedTool.border}` }}>
+            <selectedTool.LogoIcon style={{ color: selectedTool.color, fontSize: "1.6rem" }} />
           </div>
         )}
       </div>
@@ -440,7 +448,7 @@ export default function MigrateHub() {
               className="group text-left rounded-2xl p-4 border transition-all hover:scale-[1.02] hover:shadow-elevated"
               style={{ background: tool.bg, borderColor: tool.border }}>
               <div className="flex items-start gap-3 mb-2">
-                <span className="text-2xl">{tool.logo}</span>
+                <tool.LogoIcon style={{ color: tool.color, fontSize: "1.75rem", flexShrink: 0 }} />
                 {tool.badge && (
                   <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full ml-auto"
                     style={{ background: `${tool.color}20`, color: tool.color }}>

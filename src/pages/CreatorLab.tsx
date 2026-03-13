@@ -1041,9 +1041,246 @@ function AccessSection() {
   );
 }
 
+// ── Builder Tab — Drag-and-Drop UI Editor ──────────────────────────────────────
+
+const DEFAULT_SECTIONS = [
+  { id: "hero",       label: "Hero Banner",          description: "Cinematic banner with greeting and quick stats", icon: "🎬", visible: true },
+  { id: "kpi",        label: "KPI Strip",            description: "Top metrics: on track, at risk, health, budget", icon: "📊", visible: true },
+  { id: "ops-health", label: "Operational Health",   description: "Org performance score with breakdown dimensions", icon: "❤️", visible: true },
+  { id: "portfolio",  label: "Initiative Portfolio", description: "Status breakdown and list of key initiatives",   icon: "🎯", visible: true },
+  { id: "insights",   label: "Insights & Team Wins", description: "AI signals, action items, and team celebration", icon: "⭐", visible: true },
+  { id: "strategy",   label: "Strategy Scores",      description: "Executive strategy scorecard across 4 axes",    icon: "📈", visible: true },
+  { id: "tech-ops",   label: "Tech-Ops Health",      description: "Integration backups, sync logs, connections",   icon: "🔧", visible: true },
+  { id: "actions",    label: "Next Best Actions",     description: "AI-recommended priority tasks for today",       icon: "⚡", visible: true },
+];
+
+const BUILDER_STORAGE_KEY = "pmo_section_layout_v1";
+const EDIT_MODE_KEY       = "pmo_edit_mode_v1";
+
+function BuilderTab() {
+  const navigate = useNavigate();
+  const [editMode, setEditMode] = useState(() => {
+    try { return localStorage.getItem(EDIT_MODE_KEY) === "true"; } catch { return false; }
+  });
+  const [sections, setSections] = useState<typeof DEFAULT_SECTIONS>(() => {
+    try {
+      const raw = localStorage.getItem(BUILDER_STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return DEFAULT_SECTIONS;
+  });
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [saved, setSaved] = useState(false);
+
+  const toggleEditMode = (val: boolean) => {
+    setEditMode(val);
+    localStorage.setItem(EDIT_MODE_KEY, String(val));
+  };
+
+  const toggleVisibility = (id: string) => {
+    setSections(prev => prev.map(s => s.id === id ? { ...s, visible: !s.visible } : s));
+  };
+
+  const move = (from: number, to: number) => {
+    if (to < 0 || to >= sections.length) return;
+    const next = [...sections];
+    const [item] = next.splice(from, 1);
+    next.splice(to, 0, item);
+    setSections(next);
+  };
+
+  const handleDragStart = (idx: number) => setDragIdx(idx);
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (dragIdx === null || dragIdx === idx) return;
+    move(dragIdx, idx);
+    setDragIdx(idx);
+  };
+  const handleDragEnd = () => setDragIdx(null);
+
+  const handleSave = () => {
+    localStorage.setItem(BUILDER_STORAGE_KEY, JSON.stringify(sections));
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleReset = () => {
+    setSections(DEFAULT_SECTIONS);
+    localStorage.removeItem(BUILDER_STORAGE_KEY);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
+
+  return (
+    <div className="space-y-5">
+      {/* Edit Mode Banner */}
+      <Section title="UI Builder — Edit Mode" icon={Layout} accent="blue">
+        <div className="space-y-4">
+          <div className="flex items-center gap-4 p-4 rounded-xl bg-secondary border border-border">
+            <div className="flex-1">
+              <p className="text-sm font-bold text-foreground">Dashboard Edit Mode</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                When enabled, the live app shows a visual overlay on sections — indicating their order and visibility. Drag sections in the list below to reorder them on the dashboard.
+              </p>
+            </div>
+            <button
+              onClick={() => toggleEditMode(!editMode)}
+              className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border",
+                editMode
+                  ? "bg-electric-blue/15 border-electric-blue/40 text-electric-blue"
+                  : "bg-secondary border-border text-muted-foreground"
+              )}>
+              {editMode ? <><Eye className="w-4 h-4" /> Edit Mode ON</> : <><EyeOff className="w-4 h-4" /> Edit Mode OFF</>}
+            </button>
+          </div>
+
+          <div className="p-3 rounded-lg border border-electric-blue/20 bg-electric-blue/5">
+            <p className="text-[11px] text-electric-blue/80 leading-relaxed">
+              <span className="font-bold">How it works:</span> Drag any section by its handle to reorder it. Toggle the eye icon to show or hide it on the dashboard. Click Save to apply your layout. Reset to restore the default order.
+            </p>
+          </div>
+        </div>
+      </Section>
+
+      {/* Section Reorder List */}
+      <Section title="Dashboard Sections" icon={Layers} accent="purple">
+        <div className="space-y-2 select-none">
+          {sections.map((section, idx) => (
+            <div
+              key={section.id}
+              draggable
+              onDragStart={() => handleDragStart(idx)}
+              onDragOver={e => handleDragOver(e, idx)}
+              onDragEnd={handleDragEnd}
+              className={cn(
+                "flex items-center gap-3 p-3 rounded-xl border transition-all cursor-grab active:cursor-grabbing",
+                dragIdx === idx
+                  ? "bg-electric-blue/10 border-electric-blue/40 scale-[0.98]"
+                  : section.visible
+                    ? "bg-secondary border-border hover:border-border/80"
+                    : "bg-secondary/40 border-border/40 opacity-50"
+              )}>
+              {/* Drag handle */}
+              <div className="text-muted-foreground/40 hover:text-muted-foreground transition-colors flex-shrink-0">
+                <svg width="14" height="20" viewBox="0 0 14 20" fill="currentColor">
+                  <circle cx="4" cy="5" r="1.5"/><circle cx="10" cy="5" r="1.5"/>
+                  <circle cx="4" cy="10" r="1.5"/><circle cx="10" cy="10" r="1.5"/>
+                  <circle cx="4" cy="15" r="1.5"/><circle cx="10" cy="15" r="1.5"/>
+                </svg>
+              </div>
+
+              {/* Position badge */}
+              <div className="w-6 h-6 rounded-full bg-background border border-border flex items-center justify-center flex-shrink-0">
+                <span className="text-[10px] font-black text-muted-foreground">{idx + 1}</span>
+              </div>
+
+              {/* Icon */}
+              <span className="text-lg flex-shrink-0">{section.icon}</span>
+
+              {/* Label + description */}
+              <div className="flex-1 min-w-0">
+                <p className={cn("text-sm font-semibold", section.visible ? "text-foreground" : "text-muted-foreground")}>{section.label}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{section.description}</p>
+              </div>
+
+              {/* Up/Down buttons */}
+              <div className="flex flex-col gap-0.5 flex-shrink-0">
+                <button onClick={() => move(idx, idx - 1)} disabled={idx === 0}
+                  className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background disabled:opacity-20 transition-all">
+                  <ChevronUp className="w-3 h-3" />
+                </button>
+                <button onClick={() => move(idx, idx + 1)} disabled={idx === sections.length - 1}
+                  className="w-5 h-5 rounded flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-background disabled:opacity-20 transition-all">
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+              </div>
+
+              {/* Visibility toggle */}
+              <button onClick={() => toggleVisibility(section.id)}
+                className={cn(
+                  "w-8 h-8 rounded-lg flex items-center justify-center transition-all flex-shrink-0",
+                  section.visible
+                    ? "text-signal-green hover:bg-signal-green/10"
+                    : "text-muted-foreground/40 hover:bg-background"
+                )}>
+                {section.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-3 mt-4">
+          <button onClick={handleSave}
+            className={cn("flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all", saved ? "bg-signal-green" : "")}
+            style={!saved ? { background: "var(--gradient-electric)" } : {}}>
+            {saved ? <><Check className="w-4 h-4" /> Saved!</> : <><Save className="w-4 h-4" /> Save Layout</>}
+          </button>
+          <button onClick={handleReset}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-muted-foreground border border-border hover:border-foreground/20 hover:text-foreground transition-all">
+            <RefreshCw className="w-3.5 h-3.5" /> Reset to Default
+          </button>
+          <button onClick={() => navigate("/")}
+            className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-electric-blue border border-electric-blue/20 bg-electric-blue/5 hover:bg-electric-blue/10 transition-all">
+            <ArrowRight className="w-3.5 h-3.5" /> Preview Dashboard
+          </button>
+        </div>
+      </Section>
+
+      {/* Color & Theme Quick Access */}
+      <Section title="Quick Theme Controls" icon={Palette} accent="orange">
+        <p className="text-xs text-muted-foreground mb-3">
+          Full theme controls are in the Customize tab. Quick adjustments below.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-3 rounded-xl bg-secondary border border-border">
+            <p className="text-xs font-semibold text-foreground mb-2">Button Accent</p>
+            <div className="flex gap-2 flex-wrap">
+              {[
+                { name: "PMO Blue", hue: 218, hex: "#1E6FE0" },
+                { name: "Navy",     hue: 230, hex: "#0F2040" },
+                { name: "Teal",     hue: 174, hex: "#0D9488" },
+                { name: "Green",    hue: 152, hex: "#16A34A" },
+                { name: "Purple",   hue: 272, hex: "#9333EA" },
+              ].map(c => (
+                <button key={c.hue}
+                  onClick={() => {
+                    const profile = loadProfile();
+                    saveProfile({ ...profile, accentHue: c.hue });
+                    applyAccentColor(c.hue);
+                  }}
+                  className="w-7 h-7 rounded-full border-2 border-background hover:scale-110 transition-transform"
+                  style={{ background: c.hex }}
+                  title={c.name}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="p-3 rounded-xl bg-secondary border border-border">
+            <p className="text-xs font-semibold text-foreground mb-2">Sidebar Density</p>
+            <div className="flex gap-2">
+              {(["compact", "comfortable", "spacious"] as const).map(d => (
+                <button key={d}
+                  onClick={() => {
+                    const profile = loadProfile();
+                    saveProfile({ ...profile, density: d });
+                    document.documentElement.setAttribute("data-density", d);
+                  }}
+                  className="flex-1 text-[10px] font-semibold px-2 py-1.5 rounded-lg border border-border bg-background text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-all capitalize">
+                  {d.slice(0, 4)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Section>
+    </div>
+  );
+}
+
 // ── Main page ──────────────────────────────────────────────────────────────────
 
-type CreatorTab = "ai" | "memory" | "patterns" | "customize" | "engine" | "access";
+type CreatorTab = "ai" | "memory" | "patterns" | "customize" | "engine" | "access" | "builder";
 
 export default function CreatorLab() {
   const navigate = useNavigate();
@@ -1159,6 +1396,7 @@ export default function CreatorLab() {
 
   const TABS: { id: CreatorTab; label: string; icon: React.ElementType; badge?: string | number }[] = [
     { id: "ai",       label: "Prompt Console", icon: Terminal },
+    { id: "builder",  label: "UI Builder",     icon: Layout },
     { id: "access",   label: "Access",         icon: Crown },
     { id: "memory",   label: "Memory",         icon: MemoryStick, badge: memoryCount || undefined },
     { id: "patterns", label: "Patterns",       icon: GitBranch },
@@ -1342,6 +1580,10 @@ export default function CreatorLab() {
             </div>
           </Section>
         </div>
+      )}
+
+      {tab === "builder" && (
+        <BuilderTab />
       )}
 
       {tab === "engine" && (

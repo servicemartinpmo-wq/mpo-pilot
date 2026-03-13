@@ -219,14 +219,14 @@ function NbaItem({ title, description, priority, category, idx, isLast }: {
   );
 }
 
-// ── Win Reactions ──────────────────────────────────────
+// ── Win Reactions (emoji-based) ──────────────────────────────────────
 type WinReactionKey = "star" | "zap" | "check" | "trend" | "activity";
-const WIN_ICON_MAP: Record<WinReactionKey, React.ElementType> = {
-  star:     Star,
-  zap:      Zap,
-  check:    CheckCircle,
-  trend:    TrendingUp,
-  activity: Activity,
+const WIN_EMOJI_MAP: Record<WinReactionKey, string> = {
+  star:     "⭐",
+  zap:      "⚡",
+  check:    "✅",
+  trend:    "📈",
+  activity: "🎯",
 };
 const WIN_ITEMS: { id: string; text: string; owner: string; reactions: Partial<Record<WinReactionKey, number>> }[] = [
   { id: "w1", text: "Customer Portal v2 design completed ahead of schedule", owner: "E. Vasquez", reactions: { star: 4, zap: 2 } },
@@ -506,18 +506,17 @@ function HeroBanner({ firstName, orgName, industry, liveOverallHealth, onTrackCo
                         <div className="flex items-center gap-1 flex-wrap">
                           <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.45)" }}>{win.owner}</span>
                           {(Object.entries(winReactions[win.id] ?? win.reactions) as [WinReactionKey, number][]).map(([key, count]) => {
-                            const IconComp = WIN_ICON_MAP[key];
-                            if (!IconComp) return null;
+                            const emoji = WIN_EMOJI_MAP[key];
+                            if (!emoji) return null;
                             return (
                               <button key={key} onClick={() => onReact(win.id, key)}
-                                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] border transition-all"
+                                className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] border transition-all"
                                 style={{
                                   background: reactedTo[win.id] === key ? "rgba(255,255,255,0.20)" : "rgba(255,255,255,0.08)",
                                   borderColor: reactedTo[win.id] === key ? "rgba(255,255,255,0.50)" : "rgba(255,255,255,0.18)",
-                                  color: "rgba(255,255,255,0.80)",
                                 }}>
-                                <IconComp className="w-2.5 h-2.5 flex-shrink-0" />
-                                <span className="font-mono">{count}</span>
+                                <span>{emoji}</span>
+                                <span className="font-mono text-[10px]" style={{ color: "rgba(255,255,255,0.80)" }}>{count}</span>
                               </button>
                             );
                           })}
@@ -614,7 +613,7 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
     <div className="flex flex-col min-h-screen" style={{ background: "hsl(210 20% 98%)" }}>
 
       {/* ── Top welcome strip ── */}
-      <div className="border-b px-8 py-6 flex items-center gap-5" style={{ background: "white", borderColor: "hsl(213 20% 91%)" }}>
+      <div className="border-b px-8 py-6 flex items-center gap-5" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
         <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-lg flex-shrink-0"
           style={{ background: `linear-gradient(135deg, ${accent} 0%, hsl(238 82% 62%) 100%)` }}>
           {initials}
@@ -638,12 +637,12 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Progress ring */}
           <div className="rounded-2xl border p-6 flex flex-col items-center justify-center gap-3"
-            style={{ background: "white", borderColor: "hsl(213 20% 91%)" }}>
+            style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
             <div className="relative w-24 h-24 flex items-center justify-center flex-shrink-0">
               <div className="absolute inset-0 rounded-full" style={{
                 background: `conic-gradient(${accent} ${progressPct * 3.6}deg, hsl(213 20% 91%) 0deg)`,
               }} />
-              <div className="absolute inset-2 rounded-full bg-white flex items-center justify-center">
+              <div className="absolute inset-2 rounded-full bg-card flex items-center justify-center">
                 <span className="text-xl font-black" style={{ color: accent }}>{progressPct}%</span>
               </div>
             </div>
@@ -671,7 +670,7 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
         </div>
 
         {/* ── Top priorities ── */}
-        <div className="rounded-2xl border overflow-hidden" style={{ background: "white", borderColor: "hsl(213 20% 91%)" }}>
+        <div className="rounded-2xl border overflow-hidden" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
           <div className="flex items-center gap-2.5 px-5 py-3.5 border-b" style={{ borderColor: "hsl(213 20% 91%)" }}>
             <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: accentLight }}>
               <ListChecks className="w-3.5 h-3.5" style={{ color: accent }} />
@@ -714,7 +713,7 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
         </div>
 
         {/* ── Setup checklist ── */}
-        <div className="rounded-2xl border p-5" style={{ background: "white", borderColor: "hsl(213 20% 91%)" }}>
+        <div className="rounded-2xl border p-5" style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))" }}>
           <div className="flex items-center gap-2 mb-4">
             <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: accent }}>Getting Started</span>
             <div className="flex-1 h-px" style={{ background: "hsl(213 20% 91%)" }} />
@@ -753,7 +752,7 @@ function SimpleDashboard({ firstName, kpis, nbaItems }: {
               className="flex flex-col items-center gap-2.5 p-4 rounded-2xl border transition-all hover:shadow-sm"
               style={{ background: bgClr, borderColor: borderClr }}>
               <div className="w-8 h-8 rounded-xl flex items-center justify-center"
-                style={{ background: "white", boxShadow: `0 1px 4px ${clr}22` }}>
+                style={{ background: "hsl(var(--card))", boxShadow: `0 1px 4px ${clr}22` }}>
                 <Icon className="w-4 h-4" style={{ color: clr }} />
               </div>
               <span className="text-xs font-bold" style={{ color: clr }}>{label}</span>
@@ -1125,7 +1124,7 @@ function ExecutiveDashboard({
   const topKpis = [
     { label: "On Track",       value: kpis.onTrack,        clr: "hsl(152 60% 50%)", unit: "" },
     { label: "At Risk",        value: kpis.atRisk + kpis.blocked, clr: "hsl(38 90% 56%)", unit: "" },
-    { label: "Org Health",      value: orgHealth,            clr: "hsl(213 90% 62%)", unit: "%" },
+    { label: "Operational Health", value: departments.length === 0 ? 0 : orgHealth, clr: "hsl(213 90% 62%)", unit: "%" },
     { label: "Budget Used",    value: budgetPct,            clr: budgetPct > 90 ? "hsl(0 72% 58%)" : "hsl(38 90% 56%)", unit: "%" },
   ];
 
@@ -1161,7 +1160,7 @@ function ExecutiveDashboard({
               {unit && <span className="text-xl font-bold font-mono" style={{ color: clr }}>{unit}</span>}
             </div>
             <span className="text-[10px]" style={{ color: dimText }}>
-              {label === "Org Health" ? `Trend: ${healthTrend}` :
+              {label === "Operational Health" ? `Trend: ${healthTrend}` :
                label === "Budget Used" ? "of allocated" :
                label === "On Track" ? "initiatives healthy" : "need attention"}
             </span>
@@ -1172,11 +1171,11 @@ function ExecutiveDashboard({
       {/* ── Main 3-column grid ── */}
       <div className="flex-1 p-5 grid grid-cols-1 xl:grid-cols-3 gap-4 max-w-[1560px] mx-auto w-full">
 
-        {/* Col 1 — Org Health ── */}
+        {/* Col 1 — Operational Health ── */}
         <div className="rounded-2xl overflow-hidden flex flex-col" style={{ background: card, border: `1px solid ${border}` }}>
           <div className="px-5 py-4 border-b flex items-center gap-3" style={{ borderColor: border }}>
             <div className="w-2 h-2 rounded-full" style={{ background: "hsl(213 90% 62%)" }} />
-            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: dimText }}>Org Health</span>
+            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: dimText }}>Operational Health</span>
             <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full"
               style={{ background: healthTrend === "Improving" ? "hsl(152 60% 40% / 0.25)" : healthTrend === "Declining" ? "hsl(0 72% 48% / 0.25)" : "hsl(213 90% 52% / 0.25)",
                        color: healthTrend === "Improving" ? "hsl(152 60% 60%)" : healthTrend === "Declining" ? "hsl(0 72% 65%)" : "hsl(213 90% 72%)" }}>
@@ -1194,9 +1193,9 @@ function ExecutiveDashboard({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-2xl font-black" style={{ color: white }}>{orgHealth}%</span>
-                <ScoreExplainer metricName="Org Health" rawScore={orgHealth} variant="dark" size="md" />
+                <ScoreExplainer metricName="Operational Health" rawScore={departments.length === 0 ? 0 : orgHealth} variant="dark" size="md" />
               </div>
-              <div className="text-xs mt-0.5" style={{ color: muted }}>Overall organizational health</div>
+              <div className="text-xs mt-0.5" style={{ color: muted }}>Operational performance score</div>
               <div className="flex items-center gap-1.5 mt-2">
                 {[...Array(5)].map((_, i) => (
                   <div key={i} className="h-1.5 flex-1 rounded-full" style={{ background: i < Math.round(orgHealth / 20) ? "hsl(213 90% 62%)" : "hsl(224 20% 22%)" }} />
@@ -1458,7 +1457,7 @@ export default function Dashboard() {
     }] : []),
   ];
 
-  useEffect(() => { const t = setTimeout(() => setPopupsVisible(true), 900); return () => clearTimeout(t); }, []);
+  // Popups disabled by creator request
 
   function addReaction(winId: string, key: WinReactionKey) {
     if (reactedTo[winId]) return;
@@ -1649,27 +1648,27 @@ export default function Dashboard() {
                         <span className="text-[10px] text-muted-foreground">{win.owner}</span>
                         <div className="flex items-center gap-1 flex-wrap">
                           {(Object.entries(winReactions[win.id]) as [WinReactionKey, number][]).map(([key, count]) => {
-                            const IconComp = WIN_ICON_MAP[key];
-                            if (!IconComp) return null;
+                            const emoji = WIN_EMOJI_MAP[key];
+                            if (!emoji) return null;
                             return (
                             <button key={key} onClick={() => addReaction(win.id, key)}
                               className={cn(
-                                "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] border transition-all",
+                                "flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[11px] border transition-all",
                                 reactedTo[win.id] === key
-                                  ? "bg-electric-blue/15 border-electric-blue/30 text-electric-blue"
-                                  : "border-border hover:bg-muted/60 text-muted-foreground"
+                                  ? "bg-electric-blue/15 border-electric-blue/30"
+                                  : "border-border hover:bg-muted/60"
                               )}>
-                              <IconComp className="w-2.5 h-2.5 flex-shrink-0" />
-                              <span className="font-mono">{count}</span>
+                              <span>{emoji}</span>
+                              <span className="font-mono text-[10px] text-muted-foreground">{count}</span>
                             </button>
                             );
                           })}
                           {ALL_REACTION_KEYS.filter(k => !(k in (winReactions[win.id] ?? win.reactions))).slice(0, 1).map(k => {
-                            const IconComp = WIN_ICON_MAP[k];
+                            const emoji = WIN_EMOJI_MAP[k];
                             return (
                               <button key={k} onClick={() => addReaction(win.id, k)}
-                                className="flex items-center justify-center w-5 h-5 rounded-full border transition-all border-border/50 text-muted-foreground hover:border-border hover:text-foreground">
-                                <IconComp className="w-2.5 h-2.5" />
+                                className="flex items-center justify-center w-5 h-5 rounded-full border transition-all border-border/50 hover:border-border">
+                                <span className="text-[10px]">{emoji}</span>
                               </button>
                             );
                           })}

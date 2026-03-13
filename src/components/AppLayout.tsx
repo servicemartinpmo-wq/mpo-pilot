@@ -10,7 +10,7 @@ import {
   Menu, X, MoreHorizontal, WifiOff, DollarSign,
   CalendarDays, Shield, Star, ArrowRightLeft, Mic,
 } from "lucide-react";
-import pmoLogoIcon from "@/assets/pmo-logo-icon.jpg";
+import pmoLogoNew from "@/assets/pmo-logo-new.png";
 import { useUserMode } from "@/hooks/useUserMode";
 import { useStarredNav } from "@/hooks/useStarredNav";
 import { cn } from "@/lib/utils";
@@ -61,6 +61,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/projects",     label: "Projects",     icon: FolderOpen  },
       { to: "/action-items", label: "Action Items", icon: CheckSquare, subItems: [
         { to: "/meetings",   label: "Meetings & Notes", icon: CalendarDays },
+        { to: "/note-taker", label: "Note Taker",       icon: Mic          },
         { to: "/compliance", label: "Compliance",       icon: Shield       },
       ]},
       { to: "/agile",        label: "Agile Board",  icon: Layers      },
@@ -76,7 +77,6 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/graph",        label: "Graph View",   icon: Network     },
       { to: "/workflows",    label: "Workflows",    icon: GitBranch   },
       { to: "/advisory",     label: "Advisory",     icon: Headphones  },
-      { to: "/note-taker",   label: "Note Taker",       icon: Mic         },
       { to: "/migrate-hub",  label: "Import / Migrate", icon: ArrowRightLeft },
       { to: "/expenses",     label: "Expenses",         icon: DollarSign  },
       { to: "/tech-ops",     label: "Tech-Ops",         icon: Shield      },
@@ -104,6 +104,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/projects",     label: "Projects",     icon: FolderOpen  },
       { to: "/action-items", label: "Action Items", icon: CheckSquare, subItems: [
         { to: "/meetings",   label: "Meetings & Notes", icon: CalendarDays },
+        { to: "/note-taker", label: "Note Taker",       icon: Mic          },
         { to: "/compliance", label: "Compliance",       icon: Shield       },
       ]},
     ],
@@ -115,7 +116,6 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/reports",      label: "Reports",      icon: FileText   },
       { to: "/diagnostics",  label: "Diagnostics",  icon: Activity   },
       { to: "/knowledge",    label: "Resource Hub", icon: BookOpen   },
-      { to: "/note-taker",   label: "Note Taker",   icon: Mic        },
       { to: "/migrate-hub",  label: "Import / Migrate", icon: ArrowRightLeft },
       { to: "/expenses",     label: "Expenses",         icon: DollarSign },
       { to: "/tech-ops",     label: "Tech-Ops",         icon: Shield     },
@@ -143,6 +143,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/agile",        label: "Agile Board", icon: Layers      },
       { to: "/action-items", label: "Backlog",     icon: CheckSquare, subItems: [
         { to: "/meetings",   label: "Meetings & Notes", icon: CalendarDays },
+        { to: "/note-taker", label: "Note Taker",       icon: Mic          },
         { to: "/compliance", label: "Compliance",       icon: Shield       },
       ]},
     ],
@@ -151,7 +152,6 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/marketing", label: "Growth",   icon: TrendingUp  },
     ],
     tools: [
-      { to: "/note-taker",   label: "Note Taker",       icon: Mic       },
       { to: "/migrate-hub",  label: "Import / Migrate", icon: ArrowRightLeft },
       { to: "/expenses",     label: "Expenses",         icon: DollarSign },
       { to: "/tech-ops",     label: "Tech-Ops",         icon: Shield    },
@@ -947,7 +947,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
             {mobileDrawerOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
           <div className="flex-1 flex items-center gap-2.5">
-            <img src={pmoLogoIcon} alt="PMO-Ops" className="h-6 w-6 flex-shrink-0 object-contain" />
+            <img src={pmoLogoNew} alt="PMO-Ops" className="h-6 w-6 flex-shrink-0 object-contain" />
             <span className="text-[13px] font-black text-white leading-none tracking-tight">PMO-Ops</span>
           </div>
           <div className="flex items-center gap-2">
@@ -1023,7 +1023,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
           <div className="flex items-center gap-2.5 px-3 py-3 border-b" style={{ borderColor: "hsl(0 0% 100% / 0.06)" }}>
             {/* Logo — always visible */}
             <img
-              src={pmoLogoIcon}
+              src={pmoLogoNew}
               alt="PMO-Ops"
               className="h-7 w-auto flex-shrink-0 object-contain"
               style={{ maxWidth: 28 }}
@@ -1461,7 +1461,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
               {/* Migrate / Import link */}
               <div className="relative group/toolstar">
                 <NavLink
-                  to="/migrate"
+                  to="/migrate-hub"
                   className={({ isActive }) =>
                     cn(
                       "flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 relative",
@@ -1490,11 +1490,11 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
                 </NavLink>
                 {!collapsed && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleStar("/migrate", "Import / Migrate"); }}
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); toggleStar("/migrate-hub", "Import / Migrate"); }}
                     className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover/toolstar:opacity-100 transition-opacity p-1 rounded hover:bg-white/10 z-10">
                     <Star
-                      className={cn("w-3 h-3 transition-colors", isStarred("/migrate") ? "fill-current" : "")}
-                      style={{ color: isStarred("/migrate") ? "hsl(38 92% 55%)" : "hsl(220 50% 92% / 0.3)" }}
+                      className={cn("w-3 h-3 transition-colors", isStarred("/migrate-hub") ? "fill-current" : "")}
+                      style={{ color: isStarred("/migrate-hub") ? "hsl(38 92% 55%)" : "hsl(220 50% 92% / 0.3)" }}
                     />
                   </button>
                 )}

@@ -224,6 +224,7 @@ function AppRoutes() {
             <Route path="/compliance" element={<Compliance />} />
             <Route path="/tech-ops" element={<TechOps />} />
             <Route path="/migrate" element={<MigrateHub />} />
+            <Route path="/migrate-hub" element={<MigrateHub />} />
             <Route path="/note-taker" element={<NoteTaker />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

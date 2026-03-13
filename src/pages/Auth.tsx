@@ -2,12 +2,12 @@
  * Auth — Sign in / Sign up / Forgot password
  * Google OAuth (primary) + Microsoft SSO + email/password fallback
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, CheckCircle, AlertCircle, Building2, Sparkles } from "lucide-react";
-import pmoLogoIcon from "@/assets/pmo-logo-icon.jpg";
+import pmoLogoNew from "@/assets/pmo-logo-new.png";
 import { SiGoogle } from "react-icons/si";
 import { activateDemo } from "@/lib/companyStore";
 
@@ -33,6 +33,34 @@ export default function AuthPage() {
   const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  // ── Hidden creator access ──────────────────────────────────────────────────
+  const [logoClickCount, setLogoClickCount] = useState(0);
+  const [showCreatorInput, setShowCreatorInput] = useState(false);
+  const [creatorPassphrase, setCreatorPassphrase] = useState("");
+  const [creatorError, setCreatorError] = useState(false);
+  const logoClickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleLogoClick = () => {
+    const next = logoClickCount + 1;
+    setLogoClickCount(next);
+    if (logoClickTimer.current) clearTimeout(logoClickTimer.current);
+    logoClickTimer.current = setTimeout(() => setLogoClickCount(0), 3000);
+    if (next >= 5) {
+      setShowCreatorInput(true);
+      setLogoClickCount(0);
+    }
+  };
+
+  const handleCreatorUnlock = () => {
+    if (creatorPassphrase.trim().toLowerCase() === "apphia-creator") {
+      localStorage.setItem("apphia_creator_unlocked", "true");
+      navigate("/creator-lab");
+    } else {
+      setCreatorError(true);
+      setTimeout(() => setCreatorError(false), 2000);
+    }
+  };
 
   // Read ?error= from the URL and display a friendly message
   useEffect(() => {
@@ -143,7 +171,37 @@ export default function AuthPage() {
       <div className="relative z-10 w-full max-w-md px-6 py-10">
         {/* Brand */}
         <div className="text-center mb-8">
-          <img src={pmoLogoIcon} alt="PMO-Ops" className="h-16 w-16 mx-auto mb-4 object-contain flex-shrink-0" style={{ filter: `drop-shadow(0 0 18px ${ACCENT}55)` }} />
+          <img
+            src={pmoLogoNew}
+            alt="PMO-Ops"
+            className="h-20 w-20 mx-auto mb-4 object-contain flex-shrink-0 cursor-pointer select-none"
+            style={{ filter: `drop-shadow(0 0 22px ${ACCENT}55)` }}
+            onClick={handleLogoClick}
+            title=""
+          />
+          {showCreatorInput && (
+            <div className="mt-2 mb-3 flex flex-col items-center gap-2">
+              <input
+                type="password"
+                placeholder="Creator passphrase"
+                value={creatorPassphrase}
+                onChange={e => setCreatorPassphrase(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleCreatorUnlock()}
+                className={cn(
+                  "w-48 text-center text-xs px-3 py-2 rounded-lg border bg-card text-foreground outline-none transition-all",
+                  creatorError ? "border-rose-500 animate-pulse" : "border-border focus:border-electric-blue"
+                )}
+                autoFocus
+              />
+              <button
+                onClick={handleCreatorUnlock}
+                className="text-[10px] font-semibold px-3 py-1 rounded-md bg-electric-blue/10 text-electric-blue border border-electric-blue/20 hover:bg-electric-blue/20 transition-all"
+              >
+                Enter
+              </button>
+              {creatorError && <p className="text-[10px] text-rose-500">Invalid passphrase</p>}
+            </div>
+          )}
           <div className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground mb-1">PMO-Ops</div>
           <h1 className="text-2xl font-black text-foreground tracking-tight">
             {mode === "signin" ? "Welcome back" : mode === "signup" ? "Create your account" : "Reset your password"}
