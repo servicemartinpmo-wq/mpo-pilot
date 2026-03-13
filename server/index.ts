@@ -6,6 +6,8 @@ import { runServerSync, runSyncForAllConnected, startScheduledSync, stopSchedule
 import reportRoutes from "./reportRoutes";
 import crmRoutes from "./crmRoutes";
 import moduleRoutes from "./moduleRoutes";
+
+export const TECH_OPS_BASE_URL = process.env.TECH_OPS_BASE_URL || "https://tech-ops.replit.app";
 const app = express();
 
 app.use(express.json({ limit: "10mb" }));
@@ -58,6 +60,19 @@ async function main() {
     } catch (err: unknown) {
       console.error("[TechOps] Sync error:", err);
       res.status(500).json({ error: err instanceof Error ? err.message : "Sync failed" });
+    }
+  });
+
+  app.get("/api/techops/service-status", async (_req, res) => {
+    try {
+      const response = await fetch(`${TECH_OPS_BASE_URL}/api/status`, {
+        signal: AbortSignal.timeout(8000),
+      });
+      const data = await response.json();
+      res.json({ connected: true, baseUrl: TECH_OPS_BASE_URL, ...data });
+    } catch (err: unknown) {
+      console.error("[TechOps] Service status check failed:", err);
+      res.json({ connected: false, baseUrl: TECH_OPS_BASE_URL, error: err instanceof Error ? err.message : "Unreachable" });
     }
   });
 

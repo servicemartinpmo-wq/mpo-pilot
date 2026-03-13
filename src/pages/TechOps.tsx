@@ -78,6 +78,16 @@ export default function TechOps() {
   const [syncing, setSyncing] = useState<Set<string>>(new Set());
   const [draggedItem, setDraggedItem] = useState<TechOpsBackup | null>(null);
 
+  // Tech-Ops service status
+  const [serviceStatus, setServiceStatus] = useState<{ connected: boolean; status?: string; baseUrl?: string } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/techops/service-status")
+      .then(r => r.json())
+      .then(d => setServiceStatus(d))
+      .catch(() => setServiceStatus({ connected: false }));
+  }, []);
+
   // Access & Tier grants
   const [grants, setGrants] = useState<UserTierGrant[]>([]);
   const [loadingGrants, setLoadingGrants] = useState(false);
@@ -412,6 +422,21 @@ export default function TechOps() {
             <h1 className="text-xl font-bold text-white">Tech-Ops</h1>
             <p className="text-xs text-white/50">Backup, organize & manage your connected data</p>
           </div>
+          {serviceStatus !== null && (
+            <a
+              href={serviceStatus.baseUrl || "https://tech-ops.replit.app"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border transition-colors"
+              style={serviceStatus.connected
+                ? { background: "rgba(34,197,94,0.1)", borderColor: "rgba(34,197,94,0.3)", color: "#4ade80" }
+                : { background: "rgba(239,68,68,0.1)", borderColor: "rgba(239,68,68,0.3)", color: "#f87171" }}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${serviceStatus.connected ? "bg-green-400" : "bg-red-400"}`} />
+              {serviceStatus.connected ? "Service Online" : "Service Offline"}
+              <ExternalLink className="w-3 h-3 opacity-60" />
+            </a>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-4 text-xs text-white/50 mr-4">
