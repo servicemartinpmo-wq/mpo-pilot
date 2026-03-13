@@ -156,14 +156,6 @@ export function useAuth() {
     return { error };
   }, []);
 
-  // Navigates to the Express OIDC server which handles the full
-  // Replit → Supabase session bridge (creates/finds the user via
-  // Admin SDK, generates a magic-link, and redirects back with
-  // a valid Supabase session — onAuthStateChange then fires normally).
-  const signInWithReplit = useCallback(() => {
-    window.location.href = "/api/login";
-  }, []);
-
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
   }, []);
@@ -211,7 +203,6 @@ export function useAuth() {
     signOut,
     resetPassword,
     updateProfile,
-    signInWithReplit,
     refreshProfile: () => user ? loadProfile(user.id) : Promise.resolve(),
   };
 }

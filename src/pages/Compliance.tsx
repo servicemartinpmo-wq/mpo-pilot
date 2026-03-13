@@ -5,16 +5,17 @@
  * – Convert any item to an Action Item
  * – Filter, sort, and bulk operations
  */
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Shield, AlertCircle, CheckCircle, Clock, XCircle,
   Plus, ChevronDown, ChevronRight, Bell, ArrowRight,
   Filter, Download, RefreshCw, Target, Calendar,
   CheckSquare, FileText, Users, Building2, Zap,
   AlertTriangle, Star, BarChart3, SlidersHorizontal,
-  Mail, X, Check,
+  Mail, X, Check, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useModuleData } from "@/hooks/useModuleData";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -75,48 +76,47 @@ const PRIORITY_CONFIG: Record<string, { color: string; bg: string }> = {
   Low:      { color: "hsl(160 56% 42%)", bg: "hsl(160 56% 42% / 0.12)" },
 };
 
-// ── Sample data ───────────────────────────────────────────────────────────────
+// ── DB row mapper ────────────────────────────────────────────────────────────
 
-const now = new Date();
-const d = (days: number) => new Date(now.getTime() + days * 86400000).toISOString().split("T")[0];
+interface ComplianceDbRow {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  status: string;
+  owner: string;
+  due_date: string;
+  last_reviewed?: string;
+  reminder_frequency: string;
+  next_reminder_date?: string;
+  authority?: string;
+  notes?: string;
+  linked_documents?: string[];
+  tags?: string[];
+  priority: string;
+  reminders_sent?: number;
+}
 
-const SAMPLE_ITEMS: ComplianceItem[] = [
-  // Financial
-  { id: "c1", title: "Q1 GAAP Financial Statements", description: "Quarterly GAAP-compliant financial statements must be prepared, reviewed by CFO, and filed with the board within 45 days of quarter end.", category: "financial", status: "overdue", owner: "Alex Morgan", dueDate: d(-12), lastReviewed: d(-20), reminderFrequency: "daily", nextReminderDate: d(0), authority: "FASB ASC 270", tags: ["q1", "gaap", "board"], priority: "Critical", remindersSent: 5 },
-  { id: "c2", title: "Accounts Payable 60-Day Review", description: "All accounts payable over 60 days must be reviewed, approved for extension, or escalated for resolution.", category: "financial", status: "at_risk", owner: "Alex Morgan", dueDate: d(5), lastReviewed: d(-7), reminderFrequency: "weekly", nextReminderDate: d(2), tags: ["ap", "aging"], priority: "High", remindersSent: 2 },
-  { id: "c3", title: "Annual Tax Filing (Form 1120)", description: "Corporate income tax return for the fiscal year. Must be filed by September 15 (with extension).", category: "financial", status: "compliant", owner: "Finance Team", dueDate: d(185), lastReviewed: d(-3), reminderFrequency: "monthly" as any, tags: ["tax", "irs", "annual"], priority: "Critical", remindersSent: 0 },
-
-  // HR
-  { id: "c4", title: "Annual Sexual Harassment Training", description: "All employees must complete state-mandated sexual harassment prevention training annually. Completion records must be maintained.", category: "hr", status: "at_risk", owner: "HR Team", dueDate: d(14), lastReviewed: d(-30), reminderFrequency: "weekly", nextReminderDate: d(3), authority: "State Labor Code §12950.1", tags: ["training", "mandatory"], priority: "High", remindersSent: 3 },
-  { id: "c5", title: "I-9 Employment Eligibility Verification", description: "New hire I-9 forms must be completed within 3 business days of start date and stored for 3 years post-termination.", category: "hr", status: "compliant", owner: "HR Team", dueDate: d(90), lastReviewed: d(-5), reminderFrequency: "none", authority: "8 CFR 274a.2", tags: ["i9", "onboarding"], priority: "Critical", remindersSent: 0 },
-  { id: "c6", title: "Employee Handbook Annual Review", description: "Company employee handbook must be reviewed annually and updated to reflect any regulatory changes. All employees must acknowledge receipt.", category: "hr", status: "missing", owner: "Unassigned", dueDate: d(-45), reminderFrequency: "none", tags: ["handbook", "policy"], priority: "Medium", remindersSent: 0 },
-
-  // Regulatory
-  { id: "c7", title: "Business Operating License Renewal", description: "Annual business license renewal with the city. Late fees apply after the due date.", category: "regulatory", status: "at_risk", owner: "Admin Team", dueDate: d(21), lastReviewed: d(-60), reminderFrequency: "biweekly", nextReminderDate: d(7), authority: "City Municipal Code §21.00", tags: ["license", "city", "annual"], priority: "Critical", remindersSent: 1 },
-  { id: "c8", title: "OSHA Safety Inspection Records", description: "Annual OSHA safety inspection records must be maintained and posted in the workplace for 5 years.", category: "regulatory", status: "compliant", owner: "Operations", dueDate: d(240), lastReviewed: d(-10), reminderFrequency: "none", authority: "29 CFR 1904", tags: ["osha", "safety"], priority: "High", remindersSent: 0 },
-  { id: "c9", title: "EPA Environmental Compliance Report", description: "Quarterly environmental compliance report required by permit conditions. Must include waste disposal logs.", category: "regulatory", status: "overdue", owner: "Operations", dueDate: d(-8), reminderFrequency: "daily", nextReminderDate: d(0), authority: "EPA Permit #EPA-TX-2024-001", tags: ["epa", "environmental", "quarterly"], priority: "Critical", remindersSent: 8 },
-
-  // Internal
-  { id: "c10", title: "Board Meeting Minutes — Q1", description: "Formal minutes of Q1 Board of Directors meeting must be approved, signed by the Secretary, and filed in the corporate records book.", category: "internal", status: "missing", owner: "Corporate Secretary", dueDate: d(-3), reminderFrequency: "none", tags: ["board", "minutes", "q1"], priority: "High", remindersSent: 0 },
-  { id: "c11", title: "Quarterly KPI Review & Sign-off", description: "Department heads must review and sign off on quarterly KPI performance reports.", category: "internal", status: "at_risk", owner: "Department Heads", dueDate: d(9), lastReviewed: d(-14), reminderFrequency: "weekly", nextReminderDate: d(2), tags: ["kpi", "quarterly", "review"], priority: "Medium", remindersSent: 2 },
-  { id: "c12", title: "SOP Library Annual Audit", description: "All Standard Operating Procedures must be reviewed, updated if needed, and re-approved annually.", category: "internal", status: "compliant", owner: "Operations Manager", dueDate: d(120), lastReviewed: d(-15), reminderFrequency: "none", tags: ["sop", "audit", "annual"], priority: "Medium", remindersSent: 0 },
-
-  // Vendor
-  { id: "c13", title: "Vendor Insurance Certificate Verification", description: "All active vendors must provide current Certificate of Insurance (COI). Expired COIs must be flagged and vendors suspended until updated.", category: "vendor", status: "at_risk", owner: "Procurement Team", dueDate: d(7), lastReviewed: d(-30), reminderFrequency: "weekly", nextReminderDate: d(1), tags: ["vendor", "insurance", "coi"], priority: "High", remindersSent: 2 },
-  { id: "c14", title: "Vendor Contract Renewal — Nexus Analytics", description: "Annual software services contract with Nexus Analytics expires. Must be reviewed, renegotiated, or terminated 30 days prior to expiry.", category: "vendor", status: "compliant", owner: "Legal / Procurement", dueDate: d(45), lastReviewed: d(-7), reminderFrequency: "biweekly", tags: ["contract", "vendor", "nexus"], priority: "Medium", remindersSent: 0 },
-
-  // Security
-  { id: "c15", title: "Annual Security Awareness Training", description: "All staff must complete annual cybersecurity awareness training per company security policy and cyber insurance requirements.", category: "security", status: "missing", owner: "IT / HR", dueDate: d(-20), reminderFrequency: "none", tags: ["security", "training", "annual"], priority: "High", remindersSent: 0 },
-  { id: "c16", title: "Penetration Testing — Annual", description: "Annual third-party penetration test of production infrastructure required by enterprise contracts and SOC 2 compliance.", category: "security", status: "at_risk", owner: "IT Team", dueDate: d(30), lastReviewed: d(-90), reminderFrequency: "biweekly", nextReminderDate: d(5), tags: ["pentest", "soc2", "infra"], priority: "Critical", remindersSent: 1 },
-];
-
-const SAMPLE_REMINDERS: ReminderLog[] = [
-  { itemId: "c1", sentAt: d(-1), channel: "email", recipient: "a.morgan@internal.com", status: "acknowledged" },
-  { itemId: "c1", sentAt: d(-2), channel: "in-app", recipient: "Alex Morgan", status: "sent" },
-  { itemId: "c4", sentAt: d(-3), channel: "email", recipient: "hr@internal.com", status: "sent" },
-  { itemId: "c7", sentAt: d(-7), channel: "slack", recipient: "#compliance", status: "acknowledged" },
-  { itemId: "c9", sentAt: d(-1), channel: "email", recipient: "ops@internal.com", status: "ignored" },
-];
+function mapRowToItem(row: ComplianceDbRow): ComplianceItem {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description || "",
+    category: (row.category || "internal") as ComplianceCategory,
+    status: (row.status || "compliant") as ComplianceStatus,
+    owner: row.owner || "",
+    dueDate: row.due_date || "",
+    lastReviewed: row.last_reviewed,
+    reminderFrequency: (row.reminder_frequency || "none") as ReminderFrequency,
+    nextReminderDate: row.next_reminder_date,
+    authority: row.authority,
+    notes: row.notes,
+    linkedDocuments: row.linked_documents,
+    tags: row.tags,
+    priority: (row.priority || "Medium") as any,
+    remindersSent: row.reminders_sent ?? 0,
+  };
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -251,7 +251,7 @@ function ComplianceCard({
 }) {
   const sc = STATUS_CONFIG[item.status];
   const cc = CATEGORY_CONFIG[item.category];
-  const reminders = SAMPLE_REMINDERS.filter(r => r.itemId === item.id);
+  const reminders: ReminderLog[] = [];
 
   return (
     <div className="rounded-2xl border overflow-hidden transition-all" style={{ background: "hsl(224 20% 11%)", borderColor: expanded ? sc.border : "hsl(0 0% 100% / 0.07)" }}>
@@ -389,7 +389,9 @@ function ComplianceCard({
 type ComplianceView = "list" | "reminders";
 
 export default function Compliance() {
-  const [items, setItems] = useState<ComplianceItem[]>(SAMPLE_ITEMS);
+  const { data: dbRows, loading: dbLoading, update: dbUpdate } = useModuleData<ComplianceDbRow>("/api/compliance/items", { seedEndpoint: "/api/compliance/seed" });
+
+  const [items, setItems] = useState<ComplianceItem[]>([]);
   const [view, setView] = useState<ComplianceView>("list");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [convertModalItem, setConvertModalItem] = useState<ComplianceItem | null>(null);
@@ -400,7 +402,12 @@ export default function Compliance() {
   const [search, setSearch] = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
-  // Stats
+  useEffect(() => {
+    if (dbRows.length > 0) {
+      setItems(dbRows.map(mapRowToItem));
+    }
+  }, [dbRows]);
+
   const stats = useMemo(() => ({
     total:     items.length,
     compliant: items.filter(i => i.status === "compliant").length,
@@ -410,7 +417,7 @@ export default function Compliance() {
     critical:  items.filter(i => i.priority === "Critical" && i.status !== "compliant").length,
   }), [items]);
 
-  const complianceRate = Math.round((stats.compliant / stats.total) * 100);
+  const complianceRate = items.length > 0 ? Math.round((stats.compliant / stats.total) * 100) : 0;
 
   // Filtered items
   const filtered = useMemo(() => {
@@ -432,12 +439,21 @@ export default function Compliance() {
 
   function handleUpdateStatus(id: string, status: ComplianceStatus) {
     setItems(prev => prev.map(i => i.id === id ? { ...i, status } : i));
+    dbUpdate(id, { status } as any).catch(() => {});
   }
 
   // Upcoming auto-reminders
   const upcomingReminders = items
     .filter(i => i.nextReminderDate && daysUntil(i.nextReminderDate) >= 0 && daysUntil(i.nextReminderDate) <= 7)
     .sort((a, b) => (a.nextReminderDate || "").localeCompare(b.nextReminderDate || ""));
+
+  if (dbLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "hsl(224 22% 10%)" }}>
+        <div className="flex items-center gap-3 text-white/40"><Loader2 className="w-5 h-5 animate-spin" /> Loading compliance data...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-4 sm:p-6 space-y-5" style={{ background: "hsl(224 22% 10%)" }}>

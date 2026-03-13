@@ -14,7 +14,6 @@ import { activateDemo } from "@/lib/companyStore";
 type Mode = "signin" | "signup" | "forgot";
 
 const URL_ERROR_MESSAGES: Record<string, string> = {
-  replit_auth_failed: "Replit sign-in failed. Please try email login or another method.",
   auth_failed: "Sign-in failed. Please try again.",
   session_expired: "Your session expired. Please sign in again.",
   unauthorized: "You need to sign in to access this page.",
@@ -23,7 +22,7 @@ const URL_ERROR_MESSAGES: Record<string, string> = {
 export default function AuthPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signUp, resetPassword, signInWithGoogle, signInWithReplit } = useAuth();
+  const { signIn, signUp, resetPassword, signInWithGoogle } = useAuth();
 
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
@@ -31,7 +30,7 @@ export default function AuthPage() {
   const [name, setName] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | "replit" | null>(null);
+  const [oauthLoading, setOauthLoading] = useState<"google" | "microsoft" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -61,12 +60,6 @@ export default function AuthPage() {
       setOauthLoading(null);
     }
     // On success, Supabase redirects — no need to do anything
-  };
-
-  const handleReplitSignIn = () => {
-    setError(null);
-    setOauthLoading("replit");
-    signInWithReplit();
   };
 
   const handleMicrosoftSignIn = () => {
@@ -203,25 +196,6 @@ export default function AuthPage() {
                   <SiGoogle className="w-4 h-4 text-[#EA4335] group-hover:scale-110 transition-transform" />
                 )}
                 Continue with Google
-              </button>
-
-              {/* Replit */}
-              <button
-                type="button"
-                onClick={handleReplitSignIn}
-                disabled={oauthLoading !== null}
-                className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border-2 border-border bg-background hover:bg-secondary transition-all font-semibold text-sm group disabled:opacity-60"
-              >
-                {oauthLoading === "replit" ? (
-                  <div className="w-4 h-4 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
-                ) : (
-                  <svg width="16" height="16" viewBox="0 0 32 32" className="flex-shrink-0 group-hover:scale-110 transition-transform">
-                    <path d="M7 5.5C7 4.67157 7.67157 4 8.5 4H15.5C16.3284 4 17 4.67157 17 5.5V12H8.5C7.67157 12 7 11.3284 7 10.5V5.5Z" fill="#F26207"/>
-                    <path d="M17 12H25.5C26.3284 12 27 12.6716 27 13.5V18.5C27 19.3284 26.3284 20 25.5 20H17V12Z" fill="#F26207"/>
-                    <path d="M7 21.5C7 20.6716 7.67157 20 8.5 20H17V28H8.5C7.67157 28 7 27.3284 7 26.5V21.5Z" fill="#F26207"/>
-                  </svg>
-                )}
-                Continue with Replit
               </button>
 
               {/* Microsoft / SSO */}

@@ -1,13 +1,13 @@
-import { actionItems, initiatives } from "@/lib/pmoData";
 import { cn } from "@/lib/utils";
 import {
   CheckCircle, Clock, AlertTriangle, Calendar, User,
   Flag, ChevronDown, Filter, Star, Mail, MessageSquare,
   Video, Target, X, ChevronRight, Plus,
   FileText, Link as LinkIcon, Paperclip, Info, ArrowRight,
-  Repeat, Zap, Users, Flame
+  Repeat, Zap, Users, Flame, Loader2
 } from "lucide-react";
 import { useState } from "react";
+import { useActionItems, useInitiatives } from "@/hooks/useLiveData";
 
 type Tier = "1+" | "1" | "2" | "3" | "4";
 type ActionStatus = "Not Started" | "In Progress" | "Completed" | "Dropped" | "Overdue" | "Long Term" | "Short Term";
@@ -131,6 +131,9 @@ function TierBadge({ tier }: { tier: Tier }) {
 }
 
 export default function ActionItems() {
+  const { data: liveActionItems = [], isLoading: loadingActions } = useActionItems();
+  const { data: liveInitiatives = [], isLoading: loadingInits } = useInitiatives();
+
   const [category, setCategory] = useState<Category>("action-items");
   const [tierFilter, setTierFilter] = useState<Tier | "All">("All");
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
@@ -141,6 +144,23 @@ export default function ActionItems() {
   const [readItems, setReadItems] = useState<Set<string>>(new Set(["e3"]));
   const [movedToAction, setMovedToAction] = useState<Set<string>>(new Set());
   const [showSnapshot, setShowSnapshot] = useState<string | null>(null);
+
+  const actionItems = (liveActionItems as any[]).map((a: any) => ({
+    id: a.id,
+    title: a.title,
+    initiativeId: a.initiative_id || "",
+    assignedTo: a.assigned_to || a.owner_id || "",
+    dueDate: a.due_date || "",
+    status: a.status || "Not Started",
+    priority: a.priority || "Medium",
+    description: a.description || "",
+  }));
+
+  const initiatives = (liveInitiatives as any[]).map((i: any) => ({
+    id: i.id,
+    name: i.title || i.name || "",
+    department: i.department || "",
+  }));
 
   const enriched = actionItems.map(a => {
     const displayStatus = mapStatus(a.status, a.dueDate);

@@ -281,16 +281,66 @@ export function loadExpenseStore(): ExpenseStore {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
-  return {
+  const defaultStore = {
     expenses: SEED,
     budgets: SEED_BUDGETS,
     totalBudget: SEED_BUDGETS.reduce((s, b) => s + b.allocated, 0),
     fiscalYear: new Date().getFullYear(),
   };
+  syncExpensesFromApi(defaultStore);
+  return defaultStore;
 }
 
 export function saveExpenseStore(store: ExpenseStore): void {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); } catch {}
+  syncExpensesToApi(store);
+}
+
+async function syncExpensesFromApi(fallback: ExpenseStore): Promise<void> {
+  try {
+    const res = await fetch("/api/expenses");
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (rows.length > 0) {
+      const expenses: Expense[] = rows.map((r: any) => ({
+        id: r.id, title: r.title, description: r.description || "",
+        category: r.category || "Operations",
+        status: (r.status || "draft") as ExpenseStatus,
+        amount: r.amount || 0, currency: r.currency || "USD",
+        date: r.date || "", vendor: r.vendor || "",
+        department: r.department || "", costCenter: r.cost_center || "",
+        glCode: r.gl_code || "", recurrence: r.recurrence || "one-time",
+        receiptUrl: r.receipt_url, allocationLines: r.allocation_lines || [],
+        notes: (r.notes || []) as ExpenseNote[], tags: r.tags || [],
+        submittedBy: r.submitted_by || "", approvedBy: r.approved_by,
+        createdAt: r.created_at || new Date().toISOString(),
+        updatedAt: r.updated_at || new Date().toISOString(),
+      }));
+      const store = { ...fallback, expenses };
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); } catch {}
+    }
+  } catch {}
+}
+
+async function syncExpensesToApi(store: ExpenseStore): Promise<void> {
+  try {
+    for (const exp of store.expenses) {
+      await fetch("/api/expenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: exp.id, title: exp.title, description: exp.description,
+          category: exp.category, status: exp.status, amount: exp.amount,
+          currency: exp.currency, date: exp.date, vendor: exp.vendor,
+          department: exp.department, cost_center: exp.costCenter,
+          gl_code: exp.glCode, recurrence: exp.recurrence,
+          receipt_url: exp.receiptUrl, allocation_lines: exp.allocationLines,
+          notes: exp.notes, tags: exp.tags,
+          submitted_by: exp.submittedBy, approved_by: exp.approvedBy,
+        }),
+      });
+    }
+  } catch {}
 }
 
 // ── Subscription storage ─────────────────────────────────────────────────────
@@ -369,11 +419,58 @@ export function loadSubscriptionStore(): SubscriptionStore {
     const raw = localStorage.getItem(SUB_STORAGE_KEY);
     if (raw) return JSON.parse(raw);
   } catch {}
-  return { subscriptions: SEED_SUBSCRIPTIONS };
+  const defaultStore = { subscriptions: SEED_SUBSCRIPTIONS };
+  syncSubscriptionsFromApi(defaultStore);
+  return defaultStore;
 }
 
 export function saveSubscriptionStore(store: SubscriptionStore): void {
   try { localStorage.setItem(SUB_STORAGE_KEY, JSON.stringify(store)); } catch {}
+  syncSubscriptionsToApi(store);
+}
+
+async function syncSubscriptionsFromApi(fallback: SubscriptionStore): Promise<void> {
+  try {
+    const res = await fetch("/api/subscriptions");
+    if (!res.ok) return;
+    const rows = await res.json();
+    if (rows.length > 0) {
+      const subscriptions: Subscription[] = rows.map((r: any) => ({
+        id: r.id, name: r.name, vendor: r.vendor || "",
+        category: r.category || "Technology",
+        monthlyCost: r.monthly_cost || 0,
+        billingCycle: (r.billing_cycle || "monthly") as BillingCycle,
+        status: (r.status || "active") as SubscriptionStatus,
+        renewalDate: r.renewal_date || "",
+        owner: r.owner || "",
+        roiScore: r.roi_score || 50,
+        notes: r.notes,
+        lastUsed: r.updated_at,
+        createdAt: r.created_at || new Date().toISOString(),
+        updatedAt: r.updated_at || new Date().toISOString(),
+      }));
+      const store = { subscriptions };
+      try { localStorage.setItem(SUB_STORAGE_KEY, JSON.stringify(store)); } catch {}
+    }
+  } catch {}
+}
+
+async function syncSubscriptionsToApi(store: SubscriptionStore): Promise<void> {
+  try {
+    for (const sub of store.subscriptions) {
+      await fetch("/api/subscriptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: sub.id, name: sub.name, vendor: sub.vendor,
+          category: sub.category, monthly_cost: sub.monthlyCost,
+          billing_cycle: sub.billingCycle, status: sub.status,
+          renewal_date: sub.renewalDate, owner: sub.owner,
+          roi_score: sub.roiScore, notes: sub.notes,
+        }),
+      });
+    }
+  } catch {}
 }
 
 export function calcWasteMetrics(subs: Subscription[]) {

@@ -1,0 +1,83 @@
+Successful data platforms usually build three types of moats.
+1. Network Contribution Moat
+This is the most powerful moat.
+Many data platforms grow their dataset through user activity.
+Example model:
+Users install a plugin or connect their email system.
+The system analyzes email signatures or contact data (with consent).
+Example signature:
+Sarah Kim
+VP Operations
+NorthBridge Logistics
+sarah.kim@northbridge.com
+(214) 555-8392
+That automatically enriches the platform database.
+Historically, the company that became part of ZoomInfo built a huge dataset this way before the acquisition.
+The more companies using the platform → the more data is contributed.
+This creates network-driven data growth.
+2. Proprietary Data Graph
+The next moat is building a relationship graph instead of simple lists.
+Basic contact databases store:
+name
+email
+company
+A more advanced system stores relationships like:
+Company
+   ↓
+Departments
+   ↓
+Roles
+   ↓
+Employees
+   ↓
+Technologies used
+Example insight:
+Company uses Salesforce
+VP of Sales hired 3 months ago
+Hiring SDRs
+That suggests a high probability of buying sales tools.
+Graph data becomes extremely difficult for competitors to rebuild.
+3. Continuous Verification Engine
+Most contact databases decay rapidly.
+Every year:
+~30% of people change jobs
+emails stop working
+companies close or move
+Platforms that dominate the market build continuous verification systems.
+Verification methods include:
+SMTP email testing
+domain monitoring
+job change detection
+website rescanning
+social signals
+Every record receives something like:
+confidence score
+verification timestamp
+data source reliability
+This creates higher accuracy than competitors.
+Accuracy is one of the main reasons companies stay with a platform.
+What the Best Systems Combine
+The strongest sales intelligence platforms combine:
+large data sources
++
+network contributions
++
+relationship graphs
++
+continuous verification
+That combination creates a durable data advantage.
+Why This Matters for a New Platform
+The first version of your system might start with:
+crawled company websites
+business registries
+directories
+But the real long-term value comes when the system starts learning from:
+user activity
+CRM integrations
+email patterns
+job changes
+buying signals
+That transforms the platform from a static database into a living intelligence network.
+✅ In simple terms:
+Old sales databases = lists of contacts
+Modern AI systems = dynamic company intelligence graphs

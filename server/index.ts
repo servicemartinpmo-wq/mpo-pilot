@@ -4,6 +4,8 @@ import { setupAuth, closeAuth } from "./replitAuth";
 import { closePool } from "./db";
 import { runServerSync, runSyncForAllConnected, startScheduledSync, stopScheduledSync } from "./techOpsSyncService";
 import reportRoutes from "./reportRoutes";
+import crmRoutes from "./crmRoutes";
+import moduleRoutes from "./moduleRoutes";
 const app = express();
 
 app.use(express.json({ limit: "10mb" }));
@@ -29,6 +31,8 @@ async function main() {
   }
 
   app.use(reportRoutes);
+  app.use(crmRoutes);
+  app.use(moduleRoutes);
 
   app.get("/health", (_req, res) => {
     res.json({

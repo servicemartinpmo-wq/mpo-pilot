@@ -1,0 +1,125 @@
+Stage 1 — Structured Business Registries (Fastest Foundation)
+Start with sources that already contain structured company records.
+Examples in the U.S.:
+state Secretary of State business registries
+city business license directories
+nonprofit registries
+federal contractor databases
+These often include:
+company name
+address
+officers or directors
+filing dates
+industry classification
+If you aggregate all U.S. state registries, you can reach tens of millions of registered businesses quickly.
+The crawler pipeline looks like:
+State registry
+   ↓
+bulk data extraction
+   ↓
+normalized company records
+   ↓
+master company database
+This step creates the base company list.
+Stage 2 — Industry Directories & Associations
+Next layer: structured industry directories.
+Examples:
+chambers of commerce
+trade associations
+professional guilds
+vendor marketplaces
+These often include:
+company websites
+executive names
+phone numbers
+industries
+employee counts
+Because they are curated, the data quality is higher than random web scraping.
+Your earlier work verifying chamber listings is actually exactly the kind of dataset these platforms collect.
+Stage 3 — Web Crawling for Company Websites
+Once you have company domains, crawlers can scan those sites.
+The system extracts:
+leadership pages
+contact pages
+press releases
+job postings
+Example:
+company.com/about
+company.com/team
+company.com/contact
+company.com/news
+AI entity extraction identifies:
+CEO
+VP of Sales
+CTO
+HR Director
+This expands each company record with people and roles.
+Stage 4 — Contact Intelligence
+This stage creates the sales lead layer.
+Steps:
+detect email pattern for the domain
+predict employee emails
+verify deliverability
+assign confidence score
+Example:
+Company: northbridge.com
+Employee: Sarah Kim
+Pattern: first.last@northbridge.com
+Predicted email: sarah.kim@northbridge.com
+SMTP verification checks if it’s valid.
+This step converts company data into usable sales leads.
+Stage 5 — Signal Detection
+Once your database is large, you add buying signals.
+The system monitors:
+job listings
+funding announcements
+hiring spikes
+new product launches
+leadership hires
+Example:
+Company hiring 5 cybersecurity engineers
+→ strong security software buying signal
+Signals allow your platform to prioritize opportunities automatically.
+Resulting Database Structure
+Your final dataset becomes a company intelligence graph.
+Core objects:
+Companies
+Contacts
+Roles
+Departments
+Domains
+Email patterns
+Technologies
+Signals
+Locations
+Relationships allow queries like:
+Find VP-level leaders at logistics companies
+with 50-200 employees
+in Texas
+hiring operations managers
+Why This Strategy Works
+Random web crawling alone is inefficient.
+Starting with structured sources provides:
+verified company names
+real domains
+geographic data
+industry classification
+This creates a high-quality starting graph that crawlers can expand.
+Real Scale Benchmarks
+Approximate company counts in structured sources:
+US registered businesses
+≈ 32–35 million
+Global businesses
+≈ 200–300 million
+Company websites detected online
+≈ 400+ million
+That’s why data platforms end up with hundreds of millions of company profiles.
+If You Built This System
+Your growth path could look like:
+Year 1
+5–10 million companies
+Year 2
+50+ million companies
+Year 3
+150+ million companies
+At that point you have a true global sales intelligence platform.

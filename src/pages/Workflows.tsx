@@ -8,8 +8,8 @@ import {
   ArrowRight, Info, FileOutput, Settings2, Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { actionItems, initiatives } from "@/lib/pmoData";
 import { openApphia } from "@/components/ApphiaPanel";
+import { useActionItems, useInitiatives } from "@/hooks/useLiveData";
 
 // ── Types ──────────────────────────────────────────────────────────────
 type WorkflowCategory =
@@ -249,11 +249,11 @@ function savePackages(pkgs: UserPackage[]) {
 }
 
 // ── Build suggested packages from live org data ────────────────────────
-function buildSuggestions(): SuggestedPackage[] {
+function buildSuggestions(actionItemsData: any[] = [], initiativesData: any[] = []): SuggestedPackage[] {
   const now   = new Date();
-  const overdue  = actionItems.filter(a => a.status !== "Completed" && new Date(a.dueDate) < now);
-  const blocked  = initiatives.filter(i => i.status === "Blocked");
-  const atRisk   = initiatives.filter(i => i.status === "At Risk");
+  const overdue  = actionItemsData.filter(a => a.status !== "Completed" && a.due_date && new Date(a.due_date) < now);
+  const blocked  = initiativesData.filter(i => i.status === "Blocked");
+  const atRisk   = initiativesData.filter(i => i.status === "At Risk");
   const sugs: SuggestedPackage[] = [];
 
   if (overdue.length > 0) {
@@ -592,11 +592,15 @@ function DeployModal({ workflow, onClose, onDeploy }: {
 function SuggestedView({
   onDeploy,
   onSavePackage,
+  liveActionItems,
+  liveInitiatives,
 }: {
   onDeploy: (wf: WorkflowItem) => void;
   onSavePackage: (pkg: Omit<UserPackage, "id" | "createdAt">) => void;
+  liveActionItems?: any[];
+  liveInitiatives?: any[];
 }) {
-  const suggestions = useMemo(buildSuggestions, []);
+  const suggestions = useMemo(() => buildSuggestions(liveActionItems || [], liveInitiatives || []), [liveActionItems, liveInitiatives]);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
   function saveAsPkg(sug: SuggestedPackage) {
@@ -1203,6 +1207,9 @@ function BundlesView() {
 
 // ── Main Component ─────────────────────────────────────────────────────
 export default function Workflows() {
+  const { data: liveActionItems = [] } = useActionItems();
+  const { data: liveInitiatives = [] } = useInitiatives();
+
   const [viewMode, setViewMode]         = useState<"suggested" | "packages" | "library" | "bundles" | "automation">("suggested");
   const [deployingWf, setDeployingWf]   = useState<WorkflowItem | null>(null);
   const [wfStates, setWfStates]         = useState<Record<string, WorkflowItem["status"]>>({});
@@ -1324,6 +1331,8 @@ export default function Workflows() {
         <SuggestedView
           onDeploy={wf => setDeployingWf(wf)}
           onSavePackage={savePackage}
+          liveActionItems={liveActionItems as any[]}
+          liveInitiatives={liveInitiatives as any[]}
         />
       )}
       {viewMode === "packages" && (
