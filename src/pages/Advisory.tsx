@@ -48,7 +48,7 @@ const ADVISORS: Advisor[] = [
     expertise: "Vision · Competitive Analysis · Strategic Prioritization · Goal Architecture",
     description: "Helps you figure out what to focus on and in what order. Spots when your team's work isn't lining up with your goals and gives you a clear plan to fix it.",
     icon: Brain, color: "hsl(var(--electric-blue))", bg: "hsl(var(--electric-blue) / 0.08)",
-    responseTime: "24–48 hrs", activeRequests: 2,
+    responseTime: "24 hrs", activeRequests: 2,
     tags: ["Strategy", "Alignment", "Prioritization", "Competitive"],
   },
   {
@@ -57,7 +57,7 @@ const ADVISORS: Advisor[] = [
     expertise: "Process Design · Workflow Optimization · Capacity Planning · Performance Improvement",
     description: "Helps you run smoother operations. Finds where things are getting stuck, cuts out unnecessary steps, and makes sure your team can deliver consistently.",
     icon: Cog, color: "hsl(var(--teal))", bg: "hsl(var(--teal) / 0.08)",
-    responseTime: "24–48 hrs", activeRequests: 1,
+    responseTime: "24 hrs", activeRequests: 1,
     tags: ["Processes", "Optimization", "Throughput", "Value"],
   },
   {
@@ -75,7 +75,7 @@ const ADVISORS: Advisor[] = [
     expertise: "SOP Design · Authority Matrix · Policy Architecture · Compliance Frameworks",
     description: "Helps you set up the basic rules and processes that keep your team running without confusion. Covers who can approve what, how things get done, and where to find the answers.",
     icon: Shield, color: "hsl(var(--signal-green))", bg: "hsl(var(--signal-green) / 0.08)",
-    responseTime: "48 hrs", activeRequests: 0,
+    responseTime: "24 hrs", activeRequests: 0,
     tags: ["SOPs", "Authority", "Policy", "Compliance"],
   },
   {
@@ -84,7 +84,7 @@ const ADVISORS: Advisor[] = [
     expertise: "Continuous Improvement · Root Cause Analysis · KPI Design · Performance Systems",
     description: "Helps you figure out why things aren't working and fix them for good. Digs into root causes, tracks the right numbers, and sets up simple systems to keep improving.",
     icon: GitBranch, color: "hsl(var(--signal-yellow))", bg: "hsl(var(--signal-yellow) / 0.08)",
-    responseTime: "48 hrs", activeRequests: 1,
+    responseTime: "24 hrs", activeRequests: 1,
     tags: ["Performance", "Root Cause", "KPIs", "Improvement"],
   },
   // ── Optional Advisors ──
@@ -94,7 +94,7 @@ const ADVISORS: Advisor[] = [
     expertise: "Financial Modeling · Budget Planning · Cash Flow · CFO Advisory",
     description: "Helps you understand your numbers and make smarter money decisions. Covers budgeting, cash flow, and figuring out where your money is actually going.",
     icon: DollarSign, color: "hsl(var(--signal-green))", bg: "hsl(var(--signal-green) / 0.08)",
-    responseTime: "48–72 hrs", activeRequests: 0,
+    responseTime: "24 hrs", activeRequests: 0,
     tags: ["CFO", "Budget", "P&L", "Forecasting"],
   },
   {
@@ -103,7 +103,7 @@ const ADVISORS: Advisor[] = [
     expertise: "Go-to-Market · Demand Generation · Brand · Pipeline Strategy",
     description: "Helps you get more customers from your marketing efforts. Reviews what's working, what's not, and how to make sure your marketing spend turns into real revenue.",
     icon: Target, color: "hsl(var(--signal-orange))", bg: "hsl(var(--signal-orange) / 0.08)",
-    responseTime: "48–72 hrs", activeRequests: 0,
+    responseTime: "24 hrs", activeRequests: 0,
     tags: ["GTM", "Pipeline", "Brand", "Demand Gen"],
   },
   {
@@ -112,7 +112,7 @@ const ADVISORS: Advisor[] = [
     expertise: "IT Architecture · Digital Transformation · Tech Stack · Infrastructure",
     description: "Helps you make smart tech decisions. Reviews your current tools and systems, recommends what to upgrade or simplify, and keeps your tech working for you instead of against you.",
     icon: Cpu, color: "hsl(var(--electric-blue))", bg: "hsl(var(--electric-blue) / 0.08)",
-    responseTime: "72 hrs", activeRequests: 0,
+    responseTime: "24 hrs", activeRequests: 0,
     tags: ["Architecture", "Cloud", "ITIL", "Digital"],
   },
   {
@@ -121,7 +121,7 @@ const ADVISORS: Advisor[] = [
     expertise: "Data Architecture · BI · Analytics Strategy · KPI Frameworks",
     description: "Helps you turn your data into answers you can act on. Sets up dashboards, tracks the metrics that matter, and makes sure you're not flying blind.",
     icon: BarChart3, color: "hsl(var(--teal))", bg: "hsl(var(--teal) / 0.08)",
-    responseTime: "72 hrs", activeRequests: 0,
+    responseTime: "24 hrs", activeRequests: 0,
     tags: ["BI", "Data Governance", "KPIs", "Dashboards"],
   },
   {
@@ -130,7 +130,7 @@ const ADVISORS: Advisor[] = [
     expertise: "CX Design · NPS · Support Systems · Customer Success",
     description: "Helps you keep your customers happy and coming back. Figures out why satisfaction might be dropping, improves your support process, and builds a playbook for customer success.",
     icon: Headphones, color: "hsl(var(--signal-purple))", bg: "hsl(var(--signal-purple) / 0.08)",
-    responseTime: "48 hrs", activeRequests: 0,
+    responseTime: "24 hrs", activeRequests: 0,
     tags: ["NPS", "CX", "Customer Success", "Retention"],
   },
 ];

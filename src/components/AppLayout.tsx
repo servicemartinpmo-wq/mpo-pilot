@@ -530,6 +530,17 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   const toolsNav   = navCfg.tools;
   const workItems  = navCfg.work;
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
+  const modeMenuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!modeMenuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (modeMenuRef.current && !modeMenuRef.current.contains(e.target as Node)) {
+        setModeMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [modeMenuOpen]);
   const isOnWorkMgmt = workItems.some(i =>
     i.to === location.pathname ||
     location.pathname.startsWith(i.to + "/") ||
@@ -757,10 +768,10 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
 
             {/* Right controls */}
             <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-              <div className="relative">
+              <div className="relative" ref={modeMenuRef}>
                 <button onClick={() => setModeMenuOpen(o => !o)}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
-                  style={{ background: CREATIVE_ACCENT_DIM, color: CREATIVE_ACCENT, border: `1px solid hsl(38 88% 60% / 0.25)` }}>
+                  style={{ background: CREATIVE_ACCENT_DIM, color: CREATIVE_ACCENT, border: `1px solid hsl(174 72% 52% / 0.25)` }}>
                   <UserCircle className="w-3.5 h-3.5" />
                   Creative
                 </button>
@@ -1507,7 +1518,7 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
 
             {/* User mode + Engine status */}
             {!collapsed && (
-              <div className="relative">
+              <div className="relative" ref={modeMenuRef}>
                 <button
                   onClick={() => setModeMenuOpen(o => !o)}
                   className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/[0.04] transition-all">
