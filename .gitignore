@@ -27,3 +27,4 @@ bun.lockb
 *.sln
 *.sw?
 tsconfig.app.tsbuildinfo
+.supabase-applied-migrations.json
