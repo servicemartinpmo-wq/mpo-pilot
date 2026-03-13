@@ -32,6 +32,7 @@ import CRM from "./pages/CRM";
 import Agile from "./pages/Agile";
 import Marketing from "./pages/Marketing";
 import GraphView from "./pages/GraphView";
+import FallbackMode from "./pages/FallbackMode";
 import AuthPage from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
@@ -211,6 +212,7 @@ function AppRoutes() {
             <Route path="/agile" element={<Agile />} />
             <Route path="/marketing" element={<Marketing />} />
             <Route path="/graph" element={<GraphView />} />
+            <Route path="/fallback" element={<FallbackMode />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>

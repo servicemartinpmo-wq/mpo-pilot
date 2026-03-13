@@ -7,7 +7,7 @@ import {
   GitBranch, Brain, BarChart3, Moon, Bell, Clock,
   FolderOpen, Scale, Layers, UserCircle, TrendingUp,
   Network, ShoppingBag, CreditCard, Tag,
-  Menu, X, MoreHorizontal,
+  Menu, X, MoreHorizontal, WifiOff,
 } from "lucide-react";
 import pmoLogoIcon from "@/assets/pmo-logo-icon.jpg";
 import { useUserMode } from "@/hooks/useUserMode";
@@ -70,8 +70,9 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/workflows",    label: "Workflows",    icon: GitBranch   },
       { to: "/advisory",     label: "Advisory",     icon: Headphones  },
       { to: "/integrations", label: "Integrations", icon: Plug        },
-      { to: "/admin",        label: "Systems",      icon: Settings    },
-      { to: "/pricing",      label: "Upgrade",      icon: CreditCard  },
+      { to: "/admin",        label: "Systems",          icon: Settings    },
+      { to: "/fallback",     label: "Offline Guidance", icon: WifiOff     },
+      { to: "/pricing",      label: "Upgrade",          icon: CreditCard  },
     ],
   },
 
@@ -100,9 +101,10 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/reports",      label: "Reports",      icon: FileText   },
       { to: "/diagnostics",  label: "Diagnostics",  icon: Activity   },
       { to: "/knowledge",    label: "Resource Hub", icon: BookOpen   },
-      { to: "/advisory",     label: "Board",        icon: Headphones },
-      { to: "/integrations", label: "Integrations", icon: Plug       },
-      { to: "/admin",        label: "Systems",      icon: Settings   },
+      { to: "/advisory",     label: "Board",            icon: Headphones },
+      { to: "/integrations", label: "Integrations",    icon: Plug       },
+      { to: "/admin",        label: "Systems",          icon: Settings   },
+      { to: "/fallback",     label: "Offline Guidance", icon: WifiOff    },
     ],
   },
 
@@ -134,6 +136,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/knowledge",    label: "Docs & Playbooks", icon: BookOpen },
       { to: "/integrations", label: "Integrations",    icon: Plug      },
       { to: "/admin",        label: "Systems",          icon: Settings  },
+      { to: "/fallback",     label: "Offline Guidance", icon: WifiOff   },
     ],
   },
 
@@ -161,8 +164,9 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/diagnostics",  label: "Diagnostics",  icon: Activity   },
       { to: "/knowledge",    label: "Resource Hub", icon: BookOpen   },
       { to: "/advisory",     label: "Mentors",      icon: Headphones },
-      { to: "/integrations", label: "Integrations", icon: Plug       },
-      { to: "/admin",        label: "Systems",      icon: Settings   },
+      { to: "/integrations", label: "Integrations",    icon: Plug     },
+      { to: "/admin",        label: "Systems",          icon: Settings },
+      { to: "/fallback",     label: "Offline Guidance", icon: WifiOff  },
     ],
   },
 
@@ -187,8 +191,9 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/diagnostics", label: "Diagnostics",  icon: Activity   },
       { to: "/reports",     label: "Reports",      icon: FileText   },
       { to: "/knowledge",   label: "Resource Hub", icon: BookOpen   },
-      { to: "/advisory",    label: "Advisory",     icon: Headphones },
-      { to: "/admin",       label: "Systems",      icon: Settings   },
+      { to: "/advisory",    label: "Advisory",         icon: Headphones },
+      { to: "/admin",       label: "Systems",          icon: Settings   },
+      { to: "/fallback",    label: "Offline Guidance", icon: WifiOff    },
     ],
   },
 
@@ -216,8 +221,9 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/diagnostics",  label: "Diagnostics",  icon: Activity   },
       { to: "/knowledge",    label: "Resource Hub", icon: BookOpen   },
       { to: "/advisory",     label: "Mentors",      icon: Headphones },
-      { to: "/integrations", label: "Integrations", icon: Plug       },
-      { to: "/admin",        label: "Systems",      icon: Settings   },
+      { to: "/integrations", label: "Integrations",    icon: Plug     },
+      { to: "/admin",        label: "Systems",          icon: Settings },
+      { to: "/fallback",     label: "Offline Guidance", icon: WifiOff  },
     ],
   },
 };
@@ -332,6 +338,7 @@ const ROUTE_LABELS: Record<string, string> = {
 
 export default function AppLayout({ children, profile, onProfileUpdate }: Props) {
   const { user } = useAuth();
+  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [demoBannerDismissed, setDemoBannerDismissed] = useState(false);
   const inDemoMode = isDemoMode();
@@ -482,7 +489,6 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   const toolsNav   = navCfg.tools;
   const workItems  = navCfg.work;
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
-  const location = useLocation();
   const isOnWorkMgmt = workItems.some(i => location.pathname.startsWith(i.to));
   const [workMgmtOpen, setWorkMgmtOpen] = useState(() => isOnWorkMgmt);
 
