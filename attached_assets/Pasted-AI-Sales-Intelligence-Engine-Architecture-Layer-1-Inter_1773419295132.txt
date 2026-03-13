@@ -1,0 +1,203 @@
+AI Sales Intelligence Engine Architecture
+Layer 1 — Internet Discovery Engine
+This layer discovers companies automatically.
+Sources crawled:
+company websites
+public directories
+press releases
+job boards
+government business registries
+conference speaker lists
+startup databases
+Crawler tools typically use:
+Playwright
+Scrapy
+Headless Chromium
+Crawler tasks:
+discover domains
+extract company name
+detect company type
+capture contact pages
+Output:
+company name
+website
+location
+industry
+employee estimate
+Layer 2 — AI Entity Extraction
+Once pages are crawled, AI extracts structured information.
+AI reads:
+team pages
+blog posts
+press releases
+PDFs
+conference bios
+Example extraction:
+Name: Sarah Kim
+Role: VP of Operations
+Company: NorthBridge Logistics
+Location: Dallas
+Tools used:
+LLM extraction models
+NER (Named Entity Recognition)
+semantic parsing
+Database objects created:
+Company
+Contact
+Role
+Department
+Layer 3 — Organization Graph
+Instead of storing flat lists, modern systems build a relationship graph.
+Example structure:
+Company
+  ↓
+Department
+  ↓
+Employee
+  ↓
+Role
+This allows queries like:
+Find CTOs at SaaS companies with 50-200 employees
+Graph databases often used:
+Neo4j
+TypeDB
+ArangoDB
+Layer 4 — Email Pattern Intelligence
+AI learns email structures by domain.
+Example domain:
+northbridge.com
+Possible patterns:
+first@domain
+first.last@domain
+first_initial_last@domain
+Verification methods:
+SMTP handshake
+domain MX validation
+deliverability prediction
+This produces verified business emails.
+Layer 5 — Signal Detection Engine
+Sales teams care about buying signals.
+Signals detected by monitoring:
+hiring pages
+funding announcements
+leadership changes
+new product launches
+tech stack changes
+Example signal:
+Company hiring 5 DevOps engineers
+→ high probability infrastructure spending
+Signal database:
+Hiring signal
+Funding signal
+Leadership signal
+Technology signal
+Layer 6 — Technographic Scanner
+Your crawler can detect software used by companies.
+By scanning websites for:
+JavaScript libraries
+tracking pixels
+API calls
+cdn references
+Example detection:
+HubSpot
+Shopify
+Stripe
+Salesforce
+AWS
+This is called technographic data.
+Layer 7 — Lead Scoring AI
+AI ranks leads automatically.
+Example scoring model:
+industry fit
+company size
+growth signals
+job seniority
+technology stack
+engagement
+Example output:
+Score: 91/100
+Reason:
+• hiring IT team
+• uses AWS
+• new CTO
+Layer 8 — Outreach Automation
+Once leads are identified, outreach begins.
+Automated sequences:
+email
+LinkedIn connection
+follow-ups
+meeting booking
+AI personalization uses:
+company news
+recent announcements
+industry context
+Layer 9 — CRM Sync
+Your engine pushes leads to a CRM like:
+Salesforce
+HubSpot
+Example flow:
+Lead discovered
+↓
+Email verified
+↓
+Score assigned
+↓
+Lead pushed to CRM
+↓
+Sales pipeline created
+Simplified Full Architecture
+Internet
+ ↓
+Crawler Network
+ ↓
+AI Data Extraction
+ ↓
+Company Graph Database
+ ↓
+Email Intelligence Engine
+ ↓
+Signal Detection
+ ↓
+Lead Scoring AI
+ ↓
+Outreach Automation
+ ↓
+CRM Sync
+Modern Infrastructure Stack
+Backend
+Python
+FastAPI
+Node.js
+AI
+LLM extraction models
+vector databases
+embedding search
+Data
+PostgreSQL
+ElasticSearch
+Neo4j
+Redis
+Crawling
+Playwright
+Scrapy
+Puppeteer
+Cloud
+AWS
+GCP
+Kubernetes
+Docker
+Why This Is Easier Today
+When ZoomInfo started, they needed:
+huge research teams
+expensive infrastructure
+manual data entry
+Today AI can automate 80–90% of the process.
+The Hidden Advantage You Could Build
+Instead of copying ZoomInfo, you could build something more modern:
+An autonomous AI sales discovery engine that:
+finds companies
+detects decision makers
+predicts emails
+scores opportunities
+launches outreach automatically
+Essentially a self-growing sales database.
