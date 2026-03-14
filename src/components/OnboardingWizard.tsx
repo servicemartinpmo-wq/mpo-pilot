@@ -888,7 +888,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden"
+    <div className="fixed inset-0 z-50 overflow-y-auto"
       style={{ background: "hsl(225 48% 9%)" }}>
 
       {/* Full-bleed background image — low opacity for texture */}
@@ -928,7 +928,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
       </div>
 
       {/* ── Central framed card ── */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-10 overflow-y-auto">
+      <div className="relative z-10 flex items-center justify-center px-4 py-10">
         <div className="w-full max-w-3xl">
 
           {/* Navy frame wrapper */}
