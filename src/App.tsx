@@ -1,4 +1,4 @@
-import pmoAppIcon from "@/assets/pmo-logo-app-icon.jpg";
+import pmoAppIcon from "@/assets/pmo-logo-ops.png";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -103,8 +103,8 @@ function AppRoutes() {
       <div className="fixed inset-0 flex items-center justify-center"
         style={{ background: "#0c1117" }}>
         <div className="flex flex-col items-center gap-4">
-          <img src={pmoAppIcon} alt="PMO-Ops"
-            className="w-20 h-20 rounded-2xl object-cover"
+          <img src="/pmo-logo-ops.png" alt="PMO-Ops"
+            className="w-24 h-24 rounded-3xl object-contain"
             style={{ boxShadow: "0 0 48px rgba(59,130,246,0.35)" }} />
           <div className="w-7 h-7 rounded-full border-2 animate-spin"
             style={{ borderColor: "rgba(59,130,246,0.18)", borderTopColor: "#3b82f6" }} />
