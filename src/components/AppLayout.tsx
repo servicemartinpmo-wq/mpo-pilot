@@ -7,7 +7,7 @@ import {
   GitBranch, Brain, BarChart3, Moon, Bell, Clock,
   FolderOpen, Scale, Layers, UserCircle, TrendingUp,
   Network, ShoppingBag, CreditCard, Tag,
-  Menu, X, MoreHorizontal, WifiOff, DollarSign,
+  Menu, X, MoreHorizontal, WifiOff, DollarSign, LogOut,
   CalendarDays, Shield, Star, ArrowRightLeft, Mic,
 } from "lucide-react";
 import pmoLogoNew from "@/assets/pmo-logo-new.png";
@@ -377,7 +377,7 @@ const ROUTE_LABELS: Record<string, string> = {
 };
 
 export default function AppLayout({ children, profile, onProfileUpdate }: Props) {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [demoBannerDismissed, setDemoBannerDismissed] = useState(false);
@@ -387,6 +387,8 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
   const [snoozeOpen, setSnoozeOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const prevUnreadRef = useRef(0);
   const [snooze, setSnooze] = useState<SnoozeState>(() => {
     try {
@@ -541,6 +543,17 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [modeMenuOpen]);
+
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [userMenuOpen]);
   const isOnWorkMgmt = workItems.some(i =>
     i.to === location.pathname ||
     location.pathname.startsWith(i.to + "/") ||
@@ -768,6 +781,29 @@ export default function AppLayout({ children, profile, onProfileUpdate }: Props)
 
             {/* Right controls */}
             <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+              {/* User menu */}
+              <div className="relative" ref={userMenuRef}>
+                <button onClick={() => setUserMenuOpen(o => !o)}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
+                  style={{ background: "hsl(220 14% 12%)", color: "hsl(220 10% 60%)", border: `1px solid hsl(220 14% 18%)` }}>
+                  <UserCircle className="w-3.5 h-3.5" />
+                </button>
+                {userMenuOpen && (
+                  <div className="absolute top-full mt-1 right-0 rounded-xl border overflow-hidden shadow-2xl z-50 min-w-[180px]"
+                    style={{ background: "hsl(222 18% 8%)", borderColor: "hsl(220 14% 18%)" }}>
+                    <div className="px-3 py-2 border-b text-[11px]" style={{ borderColor: "hsl(220 14% 18%)", color: "hsl(220 10% 60%)" }}>
+                      {user?.email}
+                    </div>
+                    <button onClick={() => { signOut(); setUserMenuOpen(false); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-[12px] transition-all text-signal-red hover:bg-signal-red/10"
+                      style={{ color: "hsl(0 72% 55%)" }}>
+                      <LogOut className="w-3.5 h-3.5 flex-shrink-0" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="relative" ref={modeMenuRef}>
                 <button onClick={() => setModeMenuOpen(o => !o)}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-all"
