@@ -14,7 +14,13 @@ import {
   CheckCircle2, XCircle, Loader2, BarChart3,
   Cpu, Activity, Signal, TrendingDown, Award, Briefcase,
   Trash2, Save, Info, ChevronUp, Lock,
+  Brain, Newspaper, FlaskConical, Flame, TriangleAlert,
+  ArrowUp, ArrowDown, Minus, Radio, Layers, Filter,
 } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis,
+} from "recharts";
 import { cn } from "@/lib/utils";
 import {
   loadCRMSettings, saveCRMSettings,
@@ -1069,8 +1075,500 @@ function PipelineTab({ opps, onAdd }: { opps: Opportunity[]; onAdd: (stage: Oppo
   );
 }
 
+// ── Intelligence Tab Types ─────────────────────────────────────────────────
+interface TrendResult {
+  topic: string; industry: string; timeframe: string; scannedAt: string;
+  momentum: number; velocityChange: number; sentimentScore: number; totalSignals: number;
+  amplifiers: { domain: string; displayName: string; articleCount: number; influenceScore: number; category: string; whyAmplifying: string }[];
+  industryBreakdown: { industry: string; score: number; signals: number; trend: string; keywords: string[] }[];
+  relatedTopics: { topic: string; strength: number; relationship: string; growth: string }[];
+  timeSeries: { period: string; volume: number; sentiment: number; notable: string }[];
+  drivers: { category: string; headline: string; description: string; impact: string; sources: string[] }[];
+  whySummary: string;
+  predictions: { horizon: string; direction: string; magnitude: number; confidence: number; reasoning: string; keyRisks: string[]; keyOpportunities: string[] }[];
+  topHeadlines: { title: string; source: string; url: string; age: string }[];
+  scanDurationMs: number;
+}
+
+interface TrendingTopic { topic: string; momentum: number; change: number; category: string; summary: string }
+
+const TIMEFRAME_OPTIONS = [
+  { value: "week", label: "7 Days" },
+  { value: "month", label: "30 Days" },
+  { value: "quarter", label: "Quarter" },
+  { value: "year", label: "Year" },
+] as const;
+
+const INDUSTRY_OPTIONS = [
+  "All Industries", "Technology", "Finance", "Healthcare", "Retail & E-commerce",
+  "Marketing & Media", "Real Estate", "Manufacturing", "Energy", "Education",
+];
+
+const CATEGORY_COLORS: Record<string, string> = {
+  news: "hsl(222 88% 65%)", analyst: "hsl(268 68% 62%)", trade: "hsl(160 56% 42%)",
+  corporate: "hsl(38 92% 52%)", social: "hsl(174 68% 42%)", blog: "hsl(0 0% 100% / 0.35)",
+};
+const DRIVER_COLORS: Record<string, string> = {
+  funding: "hsl(160 56% 42%)", regulation: "hsl(38 92% 52%)", technology: "hsl(222 88% 65%)",
+  market: "hsl(268 68% 62%)", competitive: "hsl(350 84% 62%)", macro: "hsl(0 0% 100% / 0.4)",
+};
+const DIRECTION_META: Record<string, { color: string; icon: JSX.Element; label: string }> = {
+  accelerating: { color: "hsl(160 56% 42%)", icon: <ArrowUp className="w-4 h-4" />, label: "Accelerating" },
+  growing:       { color: "hsl(160 56% 52%)", icon: <ArrowUp className="w-4 h-4" />, label: "Growing" },
+  stable:        { color: "hsl(0 0% 100% / 0.45)", icon: <Minus className="w-4 h-4" />, label: "Stable" },
+  declining:     { color: "hsl(38 92% 52%)", icon: <ArrowDown className="w-4 h-4" />, label: "Declining" },
+  collapsing:    { color: "hsl(350 84% 62%)", icon: <ArrowDown className="w-4 h-4" />, label: "Collapsing" },
+};
+
+function MomentumRing({ value, size = 80 }: { value: number; size?: number }) {
+  const r = size * 0.38; const c = 2 * Math.PI * r;
+  const offset = c - (value / 100) * c;
+  const color = value >= 70 ? "hsl(160 56% 42%)" : value >= 45 ? "hsl(38 92% 52%)" : "hsl(350 84% 62%)";
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg className="-rotate-90" width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size/2} cy={size/2} r={r} fill="none" strokeWidth={size * 0.08} stroke="hsl(0 0% 100% / 0.06)" />
+        <circle cx={size/2} cy={size/2} r={r} fill="none" strokeWidth={size * 0.08} stroke={color} strokeLinecap="round"
+          strokeDasharray={c} strokeDashoffset={offset} style={{ transition: "stroke-dashoffset 1s ease" }} />
+      </svg>
+      <div className="absolute text-center">
+        <div className="font-black font-mono leading-none" style={{ fontSize: size * 0.24, color }}>{value}</div>
+        <div className="font-semibold uppercase tracking-wider leading-none mt-0.5" style={{ fontSize: size * 0.1, color: "hsl(0 0% 100% / 0.35)" }}>score</div>
+      </div>
+    </div>
+  );
+}
+
+function IntelligenceTab() {
+  const [topic, setTopic] = useState("");
+  const [industry, setIndustry] = useState("All Industries");
+  const [timeframe, setTimeframe] = useState<"week" | "month" | "quarter" | "year">("quarter");
+  const [scanning, setScanning] = useState(false);
+  const [result, setResult] = useState<TrendResult | null>(null);
+  const [trending, setTrending] = useState<TrendingTopic[]>([]);
+  const [trendingLoading, setTrendingLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedDriver, setExpandedDriver] = useState<number | null>(null);
+
+  useEffect(() => {
+    setTrendingLoading(true);
+    fetch("/api/crm/intelligence/trending")
+      .then(r => r.json()).then(data => { setTrending(Array.isArray(data) ? data : []); })
+      .catch(() => {}).finally(() => setTrendingLoading(false));
+  }, []);
+
+  async function handleScan() {
+    if (!topic.trim()) return;
+    setScanning(true); setError(null); setResult(null);
+    try {
+      const res = await fetch("/api/crm/intelligence/trend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic: topic.trim(), industry: industry === "All Industries" ? undefined : industry, timeframe }),
+      });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error || "Scan failed"); }
+      const data: TrendResult = await res.json();
+      setResult(data);
+    } catch (e) { setError((e as Error).message); }
+    finally { setScanning(false); }
+  }
+
+  const BG = "hsl(224 22% 10%)";
+  const CARD = "hsl(224 20% 12%)";
+  const BORDER = "hsl(0 0% 100% / 0.07)";
+  const ACCENT_BLUE = "hsl(222 88% 65%)";
+  const TEXT = "hsl(38 15% 94%)";
+  const MUTED = "hsl(0 0% 100% / 0.4)";
+
+  return (
+    <div className="space-y-5">
+      {/* ── Search Bar ── */}
+      <div className="rounded-2xl border p-5" style={{ background: CARD, borderColor: BORDER }}>
+        <div className="flex items-center gap-2 mb-3">
+          <Brain className="w-4 h-4" style={{ color: ACCENT_BLUE }} />
+          <span className="text-sm font-bold" style={{ color: TEXT }}>Market Intelligence Scanner</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider" style={{ background: "hsl(268 68% 62% / 0.15)", color: "hsl(268 68% 72%)" }}>Live</span>
+        </div>
+        <div className="flex flex-wrap gap-3 items-end">
+          <div className="flex-1 min-w-48">
+            <label className="text-[10px] font-bold uppercase tracking-wider mb-1.5 block" style={{ color: MUTED }}>Topic / Keyword</label>
+            <div className="relative">
+              <FlaskConical className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: MUTED }} />
+              <input value={topic} onChange={e => setTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && handleScan()}
+                placeholder="e.g. AI in supply chain, SaaS churn, B2B marketing…"
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border text-sm outline-none"
+                style={{ background: "hsl(224 22% 9%)", borderColor: "hsl(0 0% 100% / 0.1)", color: TEXT }} />
+            </div>
+          </div>
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-wider mb-1.5 block" style={{ color: MUTED }}>Industry</label>
+            <div className="relative">
+              <Layers className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: MUTED }} />
+              <select value={industry} onChange={e => setIndustry(e.target.value)}
+                className="pl-9 pr-8 py-2.5 rounded-xl border text-sm outline-none appearance-none cursor-pointer"
+                style={{ background: "hsl(224 22% 9%)", borderColor: "hsl(0 0% 100% / 0.1)", color: TEXT }}>
+                {INDUSTRY_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="text-[10px] font-bold uppercase tracking-wider mb-1.5 block" style={{ color: MUTED }}>Timeframe</label>
+            <div className="flex gap-1.5 p-1 rounded-xl border" style={{ background: "hsl(224 22% 9%)", borderColor: "hsl(0 0% 100% / 0.08)" }}>
+              {TIMEFRAME_OPTIONS.map(t => (
+                <button key={t.value} onClick={() => setTimeframe(t.value)}
+                  className={cn("px-3 py-1.5 rounded-lg text-xs font-semibold transition-all")}
+                  style={timeframe === t.value ? { background: ACCENT_BLUE, color: "white" } : { color: MUTED }}>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <button onClick={handleScan} disabled={!topic.trim() || scanning}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ background: scanning ? "hsl(222 88% 55%)" : ACCENT_BLUE, color: "white" }}>
+            {scanning ? <><Loader2 className="w-4 h-4 animate-spin" /> Scanning…</> : <><Radio className="w-4 h-4" /> Scan Market</>}
+          </button>
+        </div>
+        {scanning && (
+          <div className="mt-4 space-y-2">
+            <div className="flex items-center gap-2 text-xs" style={{ color: MUTED }}>
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Scanning market signals, amplifier sites, and trend patterns…
+            </div>
+            <div className="h-1 rounded-full overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
+              <div className="h-full rounded-full animate-pulse" style={{ width: "60%", background: ACCENT_BLUE }} />
+            </div>
+          </div>
+        )}
+        {error && (
+          <div className="mt-3 flex items-center gap-2 text-xs px-3 py-2 rounded-xl" style={{ background: "hsl(350 84% 62% / 0.1)", color: "hsl(350 84% 62%)", border: "1px solid hsl(350 84% 62% / 0.2)" }}>
+            <TriangleAlert className="w-3.5 h-3.5 flex-shrink-0" /> {error}
+          </div>
+        )}
+      </div>
+
+      {/* ── Trending Topics (shown before scan) ── */}
+      {!result && !scanning && (
+        <div className="rounded-2xl border p-5" style={{ background: CARD, borderColor: BORDER }}>
+          <div className="flex items-center gap-2 mb-4">
+            <Flame className="w-4 h-4" style={{ color: "hsl(38 92% 52%)" }} />
+            <span className="text-sm font-bold" style={{ color: TEXT }}>Live Market Pulse</span>
+            <span className="text-xs ml-auto" style={{ color: MUTED }}>Auto-detected topics gaining attention</span>
+          </div>
+          {trendingLoading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="h-16 rounded-xl animate-pulse" style={{ background: "hsl(0 0% 100% / 0.04)" }} />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {trending.map((t, i) => (
+                <button key={i} onClick={() => setTopic(t.topic)}
+                  className="text-left p-3 rounded-xl border transition-all hover:border-white/20"
+                  style={{ background: "hsl(224 22% 10%)", borderColor: BORDER }}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md" style={{ background: "hsl(222 88% 65% / 0.12)", color: "hsl(222 88% 72%)" }}>{t.category}</span>
+                    <div className="flex items-center gap-0.5 text-xs font-semibold" style={{ color: t.change >= 0 ? "hsl(160 56% 42%)" : "hsl(350 84% 62%)" }}>
+                      {t.change >= 0 ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
+                      {Math.abs(t.change)}%
+                    </div>
+                  </div>
+                  <div className="text-xs font-semibold leading-snug" style={{ color: TEXT }}>{t.topic}</div>
+                  <div className="mt-1.5 h-1 rounded-full overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
+                    <div className="h-full rounded-full" style={{ width: `${t.momentum}%`, background: ACCENT_BLUE }} />
+                  </div>
+                </button>
+              ))}
+              {trending.length === 0 && (
+                <div className="col-span-4 text-center py-6 text-sm" style={{ color: MUTED }}>
+                  Enter a topic above to start your market intelligence scan.
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Results ── */}
+      {result && (
+        <>
+          {/* KPI Row */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { label: "Momentum Score", value: result.momentum, unit: "/100", sub: result.velocityChange >= 0 ? `+${result.velocityChange}% velocity` : `${result.velocityChange}% velocity`, color: result.momentum >= 70 ? "hsl(160 56% 42%)" : result.momentum >= 45 ? "hsl(38 92% 52%)" : "hsl(350 84% 62%)" },
+              { label: "Sentiment", value: result.sentimentScore, unit: "/100", sub: result.sentimentScore >= 55 ? "Positive" : result.sentimentScore >= 45 ? "Neutral" : "Negative", color: result.sentimentScore >= 55 ? "hsl(160 56% 42%)" : result.sentimentScore >= 45 ? "hsl(0 0% 100% / 0.5)" : "hsl(350 84% 62%)" },
+              { label: "Total Signals", value: result.totalSignals, unit: " src", sub: `${result.amplifiers.length} amplifiers`, color: "hsl(222 88% 65%)" },
+              { label: "Scan Duration", value: (result.scanDurationMs / 1000).toFixed(1), unit: "s", sub: `${result.timeframe} view · ${new Date(result.scannedAt).toLocaleTimeString()}`, color: "hsl(0 0% 100% / 0.4)" },
+            ].map(({ label, value, unit, sub, color }) => (
+              <div key={label} className="rounded-xl border p-4" style={{ background: CARD, borderColor: BORDER }}>
+                <div className="text-xs font-semibold mb-1.5" style={{ color: MUTED }}>{label}</div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-black font-mono" style={{ color }}>{value}</span>
+                  <span className="text-xs" style={{ color: MUTED }}>{unit}</span>
+                </div>
+                <div className="text-[11px] mt-1" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Time Series + Momentum */}
+          <div className="grid lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 rounded-2xl border p-5" style={{ background: CARD, borderColor: BORDER }}>
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="w-4 h-4" style={{ color: ACCENT_BLUE }} />
+                <span className="text-sm font-bold" style={{ color: TEXT }}>Search Volume Trend</span>
+                <span className="text-xs ml-auto" style={{ color: MUTED }}>{result.timeframe} view · proxy from live web signals</span>
+              </div>
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={result.timeSeries} barSize={28}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 100% / 0.04)" vertical={false} />
+                  <XAxis dataKey="period" tick={{ fill: "hsl(0 0% 100% / 0.35)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: "hsl(0 0% 100% / 0.25)", fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 100]} />
+                  <Tooltip contentStyle={{ background: "hsl(224 22% 11%)", border: "1px solid hsl(0 0% 100% / 0.08)", borderRadius: 10 }}
+                    labelStyle={{ color: "hsl(0 0% 100% / 0.5)", fontSize: 11 }}
+                    formatter={(v: number, name: string) => [v, name === "volume" ? "Volume Index" : "Sentiment"]} />
+                  <Bar dataKey="volume" fill={ACCENT_BLUE} radius={[4, 4, 0, 0]} opacity={0.9} />
+                  <Bar dataKey="sentiment" fill="hsl(160 56% 42%)" radius={[4, 4, 0, 0]} opacity={0.5} />
+                </BarChart>
+              </ResponsiveContainer>
+              {result.timeSeries[result.timeSeries.length - 1]?.notable && (
+                <div className="mt-3 px-3 py-2 rounded-lg text-xs italic" style={{ background: "hsl(0 0% 100% / 0.03)", color: MUTED }}>
+                  Latest: "{result.timeSeries[result.timeSeries.length - 1].notable}"
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-2xl border p-5 flex flex-col items-center justify-center gap-4" style={{ background: CARD, borderColor: BORDER }}>
+              <div className="text-sm font-bold" style={{ color: TEXT }}>Momentum Score</div>
+              <MomentumRing value={result.momentum} size={120} />
+              <div className="text-center">
+                <div className="text-xs font-semibold" style={{ color: result.velocityChange >= 0 ? "hsl(160 56% 42%)" : "hsl(350 84% 62%)" }}>
+                  {result.velocityChange >= 0 ? "+" : ""}{result.velocityChange}% velocity
+                </div>
+                <div className="text-[11px] mt-1" style={{ color: MUTED }}>vs. prior period</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Industry Breakdown + Related Topics */}
+          <div className="grid lg:grid-cols-2 gap-4">
+            <div className="rounded-2xl border p-5" style={{ background: CARD, borderColor: BORDER }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Layers className="w-4 h-4" style={{ color: "hsl(268 68% 62%)" }} />
+                <span className="text-sm font-bold" style={{ color: TEXT }}>By Industry</span>
+              </div>
+              <div className="space-y-3">
+                {result.industryBreakdown.map(ind => (
+                  <div key={ind.industry}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-semibold" style={{ color: TEXT }}>{ind.industry}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold font-mono" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{ind.signals} sig</span>
+                        <div className={cn("w-1.5 h-1.5 rounded-full")} style={{ background: ind.trend === "up" ? "hsl(160 56% 42%)" : ind.trend === "down" ? "hsl(350 84% 62%)" : "hsl(0 0% 100% / 0.3)" }} />
+                        <span className="text-xs font-mono font-black" style={{ color: "hsl(222 88% 72%)" }}>{ind.score}</span>
+                      </div>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
+                      <div className="h-full rounded-full transition-all duration-700" style={{ width: `${ind.score}%`, background: `hsl(${222 - ind.score * 0.6} 88% 65%)` }} />
+                    </div>
+                    {ind.keywords.length > 0 && (
+                      <div className="flex gap-1 mt-1 flex-wrap">
+                        {ind.keywords.map(kw => (
+                          <span key={kw} className="text-[9px] px-1.5 py-0.5 rounded-md font-medium" style={{ background: "hsl(0 0% 100% / 0.04)", color: MUTED }}>{kw}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border p-5" style={{ background: CARD, borderColor: BORDER }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Zap className="w-4 h-4" style={{ color: "hsl(38 92% 52%)" }} />
+                <span className="text-sm font-bold" style={{ color: TEXT }}>Related Topics</span>
+                <span className="text-xs ml-auto" style={{ color: MUTED }}>co-occurrence in market signals</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {result.relatedTopics.map(rt => (
+                  <button key={rt.topic} onClick={() => setTopic(rt.topic)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-all hover:border-white/25 cursor-pointer"
+                    style={{ background: "hsl(224 22% 10%)", borderColor: BORDER, color: TEXT }}>
+                    {rt.growth === "rising" && <ArrowUp className="w-3 h-3" style={{ color: "hsl(160 56% 42%)" }} />}
+                    {rt.growth === "declining" && <ArrowDown className="w-3 h-3" style={{ color: "hsl(350 84% 62%)" }} />}
+                    {rt.growth === "stable" && <Minus className="w-3 h-3" style={{ color: MUTED }} />}
+                    {rt.topic}
+                    <span className="font-mono text-[10px] ml-0.5" style={{ color: MUTED }}>{rt.strength}</span>
+                  </button>
+                ))}
+              </div>
+              {result.relatedTopics.length > 0 && (
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  {["driver", "adjacent", "enabling"].map(rel => (
+                    <div key={rel} className="text-center p-2 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.03)" }}>
+                      <div className="text-lg font-black font-mono" style={{ color: ACCENT_BLUE }}>{result.relatedTopics.filter(r => r.relationship === rel).length}</div>
+                      <div className="text-[10px] capitalize" style={{ color: MUTED }}>{rel}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Amplifier Sites */}
+          <div className="rounded-2xl border p-5" style={{ background: CARD, borderColor: BORDER }}>
+            <div className="flex items-center gap-2 mb-4">
+              <Newspaper className="w-4 h-4" style={{ color: "hsl(174 68% 42%)" }} />
+              <span className="text-sm font-bold" style={{ color: TEXT }}>Which Sites Are Amplifying This</span>
+              <span className="text-xs ml-auto" style={{ color: MUTED }}>ranked by influence score</span>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {result.amplifiers.map((amp, i) => (
+                <div key={amp.domain} className="rounded-xl border p-4" style={{ background: "hsl(224 22% 10%)", borderColor: BORDER }}>
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold" style={{ color: TEXT }}>{amp.displayName}</span>
+                        {i < 3 && <span className="text-[9px] px-1.5 py-0.5 rounded-md font-bold" style={{ background: "hsl(38 92% 52% / 0.15)", color: "hsl(38 92% 62%)" }}>#{i+1}</span>}
+                      </div>
+                      <div className="text-[10px] mt-0.5" style={{ color: MUTED }}>{amp.domain}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm font-black font-mono" style={{ color: CATEGORY_COLORS[amp.category] || ACCENT_BLUE }}>{amp.influenceScore}</div>
+                      <div className="text-[9px] capitalize" style={{ color: MUTED }}>{amp.category}</div>
+                    </div>
+                  </div>
+                  <div className="h-1 rounded-full overflow-hidden mb-2" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
+                    <div className="h-full rounded-full" style={{ width: `${amp.influenceScore}%`, background: CATEGORY_COLORS[amp.category] || ACCENT_BLUE }} />
+                  </div>
+                  <div className="text-[10px] leading-snug" style={{ color: "hsl(0 0% 100% / 0.3)" }}>{amp.whyAmplifying}</div>
+                  <div className="mt-2 text-[10px] font-semibold" style={{ color: MUTED }}>{amp.articleCount} article{amp.articleCount !== 1 ? "s" : ""} detected</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Why This Is Trending + Drivers */}
+          <div className="grid lg:grid-cols-2 gap-4">
+            <div className="rounded-2xl border p-5" style={{ background: CARD, borderColor: BORDER }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Brain className="w-4 h-4" style={{ color: "hsl(268 68% 62%)" }} />
+                <span className="text-sm font-bold" style={{ color: TEXT }}>Why This Is Trending</span>
+              </div>
+              <p className="text-sm leading-relaxed" style={{ color: "hsl(38 15% 80%)" }}>{result.whySummary}</p>
+
+              <div className="mt-5 space-y-3">
+                {result.drivers.map((d, i) => (
+                  <div key={i} className="rounded-xl border overflow-hidden" style={{ borderColor: BORDER }}>
+                    <button onClick={() => setExpandedDriver(expandedDriver === i ? null : i)}
+                      className="w-full flex items-center gap-3 p-3 text-left transition-all hover:bg-white/[0.02]">
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: DRIVER_COLORS[d.category] || MUTED }} />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold capitalize" style={{ color: TEXT }}>{d.category}</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase" style={{ background: d.impact === "high" ? "hsl(350 84% 62% / 0.12)" : "hsl(38 92% 52% / 0.12)", color: d.impact === "high" ? "hsl(350 84% 62%)" : "hsl(38 92% 52%)" }}>{d.impact}</span>
+                        </div>
+                        <div className="text-[11px] leading-snug mt-0.5" style={{ color: MUTED }}>{d.headline.slice(0, 60)}{d.headline.length > 60 ? "…" : ""}</div>
+                      </div>
+                      <ChevronDown className="w-3.5 h-3.5 flex-shrink-0 transition-transform" style={{ color: MUTED, transform: expandedDriver === i ? "rotate(180deg)" : "none" }} />
+                    </button>
+                    {expandedDriver === i && (
+                      <div className="px-4 pb-3 border-t" style={{ borderColor: BORDER }}>
+                        <p className="text-xs mt-2 leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{d.description}</p>
+                        {d.sources.length > 0 && (
+                          <div className="flex gap-1 mt-2 flex-wrap">
+                            {d.sources.map(s => <span key={s} className="text-[10px] px-2 py-0.5 rounded-md" style={{ background: "hsl(0 0% 100% / 0.04)", color: MUTED }}>{s}</span>)}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {result.drivers.length === 0 && (
+                  <div className="text-xs text-center py-4" style={{ color: MUTED }}>No specific trigger drivers detected — organic interest signal.</div>
+                )}
+              </div>
+            </div>
+
+            {/* Predictions */}
+            <div className="rounded-2xl border p-5" style={{ background: CARD, borderColor: BORDER }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="w-4 h-4" style={{ color: "hsl(160 56% 42%)" }} />
+                <span className="text-sm font-bold" style={{ color: TEXT }}>Predictive Forecast</span>
+                <span className="text-xs ml-auto italic" style={{ color: MUTED }}>momentum-based model</span>
+              </div>
+              <div className="space-y-4">
+                {result.predictions.map(pred => {
+                  const meta = DIRECTION_META[pred.direction] || DIRECTION_META.stable;
+                  return (
+                    <div key={pred.horizon} className="rounded-xl border p-4" style={{ background: "hsl(224 22% 10%)", borderColor: BORDER }}>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-black font-mono px-2 py-1 rounded-lg" style={{ background: "hsl(0 0% 100% / 0.05)", color: TEXT }}>{pred.horizon === "30d" ? "Next 30 Days" : pred.horizon === "60d" ? "Next 60 Days" : "Next 90 Days"}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span style={{ color: meta.color }}>{meta.icon}</span>
+                          <span className="text-xs font-bold" style={{ color: meta.color }}>{meta.label}</span>
+                          <span className="text-[10px] ml-1" style={{ color: MUTED }}>{pred.confidence}% confidence</span>
+                        </div>
+                      </div>
+                      <p className="text-xs leading-relaxed mb-3" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{pred.reasoning}</p>
+                      {(pred.keyOpportunities.length > 0 || pred.keyRisks.length > 0) && (
+                        <div className="grid grid-cols-2 gap-2">
+                          {pred.keyOpportunities.length > 0 && (
+                            <div>
+                              <div className="text-[9px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(160 56% 42%)" }}>Opportunities</div>
+                              {pred.keyOpportunities.map(o => <div key={o} className="text-[10px] leading-snug" style={{ color: "hsl(0 0% 100% / 0.4)" }}>· {o}</div>)}
+                            </div>
+                          )}
+                          {pred.keyRisks.length > 0 && (
+                            <div>
+                              <div className="text-[9px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "hsl(350 84% 62%)" }}>Risks</div>
+                              {pred.keyRisks.map(r => <div key={r} className="text-[10px] leading-snug" style={{ color: "hsl(0 0% 100% / 0.4)" }}>· {r}</div>)}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Top Headlines */}
+          {result.topHeadlines.length > 0 && (
+            <div className="rounded-2xl border p-5" style={{ background: CARD, borderColor: BORDER }}>
+              <div className="flex items-center gap-2 mb-4">
+                <Newspaper className="w-4 h-4" style={{ color: "hsl(222 88% 65%)" }} />
+                <span className="text-sm font-bold" style={{ color: TEXT }}>Live Headlines</span>
+                <span className="text-xs ml-auto" style={{ color: MUTED }}>sourced during scan</span>
+              </div>
+              <div className="space-y-2">
+                {result.topHeadlines.map((h, i) => (
+                  <a key={i} href={h.url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-start gap-3 p-3 rounded-xl border transition-all hover:border-white/15 group"
+                    style={{ background: "hsl(224 22% 10%)", borderColor: BORDER }}>
+                    <span className="text-xs font-black font-mono w-4 flex-shrink-0 mt-0.5" style={{ color: MUTED }}>{i + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-semibold leading-snug group-hover:text-white transition-colors line-clamp-2" style={{ color: TEXT }}>{h.title}</div>
+                      <div className="text-[10px] mt-1 font-medium" style={{ color: MUTED }}>{h.source}</div>
+                    </div>
+                    <ExternalLink className="w-3 h-3 flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-60 transition-opacity" style={{ color: TEXT }} />
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Main CRM Page ─────────────────────────────────────────────────────
-type CRMTab = "discover" | "companies" | "contacts" | "pipeline";
+type CRMTab = "discover" | "companies" | "contacts" | "pipeline" | "intelligence";
 
 export default function CRM() {
   const { profile } = useAuth();
@@ -1152,6 +1650,7 @@ export default function CRM() {
     { id: "companies" as CRMTab, label: "Companies", icon: <Building2 className="w-3.5 h-3.5" /> },
     { id: "contacts" as CRMTab, label: "Contacts", icon: <Users className="w-3.5 h-3.5" /> },
     { id: "pipeline" as CRMTab, label: "Pipeline", icon: <TrendingUp className="w-3.5 h-3.5" /> },
+    { id: "intelligence" as CRMTab, label: "Market Intel", icon: <Brain className="w-3.5 h-3.5" /> },
   ];
 
   return (
@@ -1200,7 +1699,7 @@ export default function CRM() {
           ))}
         </div>
 
-        {tab !== "pipeline" && tab !== "discover" && (
+        {tab !== "pipeline" && tab !== "discover" && tab !== "intelligence" && (
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: "hsl(0 0% 100% / 0.3)" }} />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder={`Search ${tab}…`}
@@ -1221,6 +1720,7 @@ export default function CRM() {
       {tab === "companies" && <CompaniesTab search={search} />}
       {tab === "contacts" && <ContactsTab search={search} />}
       {tab === "pipeline" && <PipelineTab opps={opps} onAdd={stage => setOpps(os => [...os, { id: `o${Date.now()}`, name: "New Opportunity", stage, value: 5000, probability: 30 }])} />}
+      {tab === "intelligence" && <IntelligenceTab />}
     </div>
   );
 }

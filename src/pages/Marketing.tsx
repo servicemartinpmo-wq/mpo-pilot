@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { BarChart3, TrendingUp, Target, Zap, Plus, Activity, ArrowUp, ArrowDown, Loader2, X, Trash2 } from "lucide-react";
+import { BarChart3, TrendingUp, Target, Zap, Plus, Activity, ArrowUp, ArrowDown, Loader2, X, Trash2, Brain, Flame, Radio, ArrowRight, Layers, Newspaper, Minus } from "lucide-react";
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
 import { useModuleData } from "@/hooks/useModuleData";
 
-type MarketingTab = "scores" | "insights" | "trends";
+type MarketingTab = "scores" | "insights" | "trends" | "signal";
 
 interface CampaignRow {
   id: string;
@@ -147,16 +147,18 @@ export default function Marketing() {
         ))}
       </div>
 
-      <div className="flex items-center gap-1 p-1 rounded-xl w-fit border" style={{ background: "hsl(224 20% 12%)", borderColor: "hsl(0 0% 100% / 0.06)" }}>
+      <div className="flex flex-wrap items-center gap-1 p-1 rounded-xl w-fit border" style={{ background: "hsl(224 20% 12%)", borderColor: "hsl(0 0% 100% / 0.06)" }}>
         {([
           { id: "scores", label: "Campaign Scores", icon: Target },
           { id: "insights", label: "Insights", icon: Zap },
           { id: "trends", label: "Performance Trends", icon: TrendingUp },
+          { id: "signal", label: "Signal Intelligence", icon: Brain },
         ] as const).map(({ id, label, icon: Icon }) => (
           <button key={id} onClick={() => setTab(id)}
             className={cn("flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all", tab === id ? "text-white" : "text-white/40 hover:text-white/60")}
             style={tab === id ? { background: "hsl(38 92% 52% / 0.12)", color: "hsl(38 92% 62%)" } : {}}>
             <Icon className="w-4 h-4" />{label}
+            {id === "signal" && <span className="text-[9px] px-1.5 py-0.5 rounded-full font-bold leading-none" style={{ background: "hsl(268 68% 62% / 0.2)", color: "hsl(268 68% 72%)" }}>Live</span>}
           </button>
         ))}
       </div>
@@ -291,6 +293,188 @@ export default function Marketing() {
           )}
         </div>
       )}
+
+      {tab === "signal" && <SignalIntelligencePanel campaigns={campaigns} />}
+    </div>
+  );
+}
+
+// ── Signal Intelligence Panel ──────────────────────────────────────────────────
+interface SignalPanelProps { campaigns: CampaignRow[] }
+
+function SignalIntelligencePanel({ campaigns }: SignalPanelProps) {
+  const [topic, setTopic] = useState("");
+  const [scanning, setScanning] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [trending, setTrending] = useState<{ topic: string; momentum: number; change: number; category: string }[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/crm/intelligence/trending")
+      .then(r => r.json()).then(d => setTrending(Array.isArray(d) ? d.slice(0, 8) : []))
+      .catch(() => {});
+  }, []);
+
+  async function scan() {
+    if (!topic.trim()) return;
+    setScanning(true); setError(null); setResult(null);
+    try {
+      const res = await fetch("/api/crm/intelligence/trend", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic: topic.trim(), timeframe: "month" }),
+      });
+      if (!res.ok) throw new Error("Scan failed");
+      setResult(await res.json());
+    } catch (e) { setError("Scan failed. Try again."); }
+    finally { setScanning(false); }
+  }
+
+  const BG = "hsl(224 22% 10%)"; const CARD = "hsl(224 20% 11%)";
+  const BORDER = "hsl(0 0% 100% / 0.07)"; const TEXT = "hsl(38 15% 94%)"; const MUTED = "hsl(0 0% 100% / 0.4)";
+  const BLUE = "hsl(222 88% 65%)"; const ORANGE = "hsl(38 92% 52%)";
+
+  return (
+    <div className="space-y-5">
+      {/* Campaign Alignment Score */}
+      {campaigns.length > 0 && (
+        <div className="rounded-2xl border p-5" style={{ background: CARD, borderColor: BORDER }}>
+          <div className="flex items-center gap-2 mb-4">
+            <Layers className="w-4 h-4" style={{ color: ORANGE }} />
+            <span className="font-bold text-sm" style={{ color: TEXT }}>Campaign × Market Alignment</span>
+            <span className="text-xs ml-auto" style={{ color: MUTED }}>how well your campaigns match current market signals</span>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-3">
+            {campaigns.slice(0, 6).map((c, i) => {
+              const alignment = Math.round(((c.relevance + c.authority + c.freshness) / 3) * 1.05);
+              const cap = Math.min(99, alignment);
+              const col = cap >= 70 ? "hsl(160 56% 42%)" : cap >= 50 ? ORANGE : "hsl(350 84% 62%)";
+              return (
+                <div key={c.id} className="rounded-xl border p-3" style={{ background: BG, borderColor: BORDER }}>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-semibold truncate pr-2" style={{ color: TEXT }}>{c.name}</span>
+                    <span className="text-sm font-black font-mono flex-shrink-0" style={{ color: col }}>{cap}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
+                    <div className="h-full rounded-full" style={{ width: `${cap}%`, background: col, transition: "width 0.7s ease" }} />
+                  </div>
+                  <div className="text-[10px] mt-1.5" style={{ color: MUTED }}>{c.platform} · Relevance {c.relevance}/100</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Market Scanner */}
+      <div className="rounded-2xl border p-5" style={{ background: CARD, borderColor: BORDER }}>
+        <div className="flex items-center gap-2 mb-4">
+          <Brain className="w-4 h-4" style={{ color: BLUE }} />
+          <span className="font-bold text-sm" style={{ color: TEXT }}>Live Topic Scanner</span>
+          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider" style={{ background: "hsl(268 68% 62% / 0.15)", color: "hsl(268 68% 72%)" }}>Live</span>
+        </div>
+        <div className="flex gap-3 mb-4">
+          <input value={topic} onChange={e => setTopic(e.target.value)} onKeyDown={e => e.key === "Enter" && scan()}
+            placeholder="Scan any market topic, keyword, or trend…"
+            className="flex-1 px-4 py-2.5 rounded-xl border text-sm outline-none"
+            style={{ background: BG, borderColor: "hsl(0 0% 100% / 0.1)", color: TEXT }} />
+          <button onClick={scan} disabled={!topic.trim() || scanning}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold disabled:opacity-40 transition-all"
+            style={{ background: BLUE, color: "white" }}>
+            {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Radio className="w-4 h-4" />}
+            {scanning ? "Scanning…" : "Scan"}
+          </button>
+        </div>
+
+        {/* Trending chips */}
+        {trending.length > 0 && !result && (
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5" style={{ color: MUTED }}>
+              <Flame className="w-3 h-3" style={{ color: ORANGE }} /> Hot topics right now
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {trending.map((t, i) => (
+                <button key={i} onClick={() => setTopic(t.topic)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition-all hover:border-white/20"
+                  style={{ background: BG, borderColor: BORDER, color: TEXT }}>
+                  {t.change >= 0 ? <ArrowUp className="w-3 h-3" style={{ color: "hsl(160 56% 42%)" }} /> : <ArrowDown className="w-3 h-3" style={{ color: "hsl(350 84% 62%)" }} />}
+                  {t.topic}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {error && <p className="text-xs mt-3" style={{ color: "hsl(350 84% 62%)" }}>{error}</p>}
+
+        {/* Compact Result */}
+        {result && (
+          <div className="mt-4 space-y-4">
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Momentum", v: result.momentum, color: result.momentum >= 70 ? "hsl(160 56% 42%)" : result.momentum >= 45 ? ORANGE : "hsl(350 84% 62%)" },
+                { label: "Sentiment", v: result.sentimentScore, color: result.sentimentScore >= 55 ? "hsl(160 56% 42%)" : result.sentimentScore >= 45 ? MUTED : "hsl(350 84% 62%)" },
+                { label: "Signals", v: result.totalSignals, color: BLUE },
+              ].map(({ label, v, color }) => (
+                <div key={label} className="rounded-xl border p-3 text-center" style={{ background: BG, borderColor: BORDER }}>
+                  <div className="text-xl font-black font-mono" style={{ color }}>{v}</div>
+                  <div className="text-[10px] mt-1" style={{ color: MUTED }}>{label}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="rounded-xl border p-4" style={{ background: BG, borderColor: BORDER }}>
+              <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: MUTED }}>Why It's Trending</div>
+              <p className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.6)" }}>{result.whySummary}</p>
+            </div>
+
+            {result.amplifiers?.slice(0, 4).length > 0 && (
+              <div className="rounded-xl border p-4" style={{ background: BG, borderColor: BORDER }}>
+                <div className="text-[10px] font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5" style={{ color: MUTED }}>
+                  <Newspaper className="w-3 h-3" /> Top Amplifier Sites
+                </div>
+                <div className="space-y-2">
+                  {result.amplifiers.slice(0, 4).map((amp: any, i: number) => (
+                    <div key={amp.domain} className="flex items-center gap-3">
+                      <span className="text-[10px] font-mono w-4 text-right flex-shrink-0" style={{ color: MUTED }}>#{i+1}</span>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-xs font-semibold" style={{ color: TEXT }}>{amp.displayName}</span>
+                          <span className="text-[10px] font-mono" style={{ color: BLUE }}>{amp.influenceScore}</span>
+                        </div>
+                        <div className="h-1 rounded-full overflow-hidden" style={{ background: "hsl(0 0% 100% / 0.06)" }}>
+                          <div className="h-full rounded-full" style={{ width: `${amp.influenceScore}%`, background: BLUE }} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {result.predictions?.[0] && (
+              <div className="rounded-xl border p-4" style={{ background: BG, borderColor: BORDER }}>
+                <div className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: MUTED }}>30-Day Prediction</div>
+                <div className="flex items-center gap-2 mb-2">
+                  {result.predictions[0].direction === "accelerating" || result.predictions[0].direction === "growing"
+                    ? <ArrowUp className="w-4 h-4" style={{ color: "hsl(160 56% 42%)" }} />
+                    : result.predictions[0].direction === "declining" || result.predictions[0].direction === "collapsing"
+                    ? <ArrowDown className="w-4 h-4" style={{ color: "hsl(350 84% 62%)" }} />
+                    : <Minus className="w-4 h-4" style={{ color: MUTED }} />}
+                  <span className="text-sm font-bold capitalize" style={{ color: TEXT }}>{result.predictions[0].direction}</span>
+                  <span className="text-xs ml-auto" style={{ color: MUTED }}>{result.predictions[0].confidence}% confidence</span>
+                </div>
+                <p className="text-xs leading-relaxed" style={{ color: "hsl(0 0% 100% / 0.5)" }}>{result.predictions[0].reasoning}</p>
+              </div>
+            )}
+
+            <a href="/crm" className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all hover:bg-white/[0.03]"
+              style={{ borderColor: BORDER, color: TEXT }}>
+              <Brain className="w-4 h-4" /> Open Full Market Intelligence → CRM
+              <ArrowRight className="w-4 h-4" />
+            </a>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

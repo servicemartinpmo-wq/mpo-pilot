@@ -10,6 +10,7 @@ import { detectSignals } from "./crmSignalService";
 import { scanTechnographics } from "./crmTechScanner";
 import { crawlCompanyWebsite, getDomainFromUrl } from "./crmWebCrawler";
 import { scoreCompany } from "./crmScoringService";
+import { scanTrend, getTrendingTopics, type TrendQuery } from "./crmTrendService";
 import { getPool } from "./db";
 
 const router = Router();
@@ -210,6 +211,30 @@ router.post("/api/crm/tech-scan", async (req: Request, res: Response) => {
     res.json(unique);
   } catch (err) {
     res.status(500).json({ error: "Tech scan failed" });
+  }
+});
+
+// ── Market Intelligence ─────────────────────────────────────────────────────
+router.post("/api/crm/intelligence/trend", async (req: Request, res: Response) => {
+  try {
+    const { topic, industry, timeframe } = req.body as TrendQuery;
+    if (!topic?.trim()) return res.status(400).json({ error: "topic is required" });
+    const result = await scanTrend({ topic: topic.trim(), industry: industry?.trim(), timeframe: timeframe || "quarter" });
+    res.json(result);
+  } catch (err) {
+    console.error("[CRM/Intelligence] Trend scan error:", err);
+    res.status(500).json({ error: err instanceof Error ? err.message : "Trend scan failed" });
+  }
+});
+
+router.get("/api/crm/intelligence/trending", async (req: Request, res: Response) => {
+  try {
+    const industry = (req.query.industry as string) || undefined;
+    const topics = await getTrendingTopics(industry);
+    res.json(topics);
+  } catch (err) {
+    console.error("[CRM/Intelligence] Trending error:", err);
+    res.status(500).json({ error: "Failed to fetch trending topics" });
   }
 });
 
