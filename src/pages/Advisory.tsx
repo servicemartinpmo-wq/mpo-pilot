@@ -2,6 +2,7 @@
  * Advisory — 5 core + 4 optional advisors with request modals, tier gating, and AI recommendation
  */
 import { useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useTypewriter } from "@/hooks/useTypewriter";
 import {
@@ -155,6 +156,7 @@ interface RequestModal {
 }
 
 export default function Advisory() {
+  const navigate = useNavigate();
   const [selectedAdvisor, setSelectedAdvisor] = useState<Advisor | null>(null);
   const [requestModal, setRequestModal] = useState<RequestModal | null>(null);
   const [requestStatus, setRequestStatus] = useState<RequestStatus>("idle");
@@ -725,7 +727,7 @@ function AdvisorCard({ advisor, isHovered, onHover, onSelect, onRequest, selecte
           <p className="text-sm text-foreground/80 leading-relaxed">{advisor.description}</p>
           <div className="flex gap-2 pt-1">
             {locked ? (
-              <button className="flex-1 text-xs font-bold py-2.5 px-4 rounded-xl border-2 border-border text-muted-foreground flex items-center justify-center gap-2">
+              <button onClick={() => navigate("/pricing")} className="flex-1 text-xs font-bold py-2.5 px-4 rounded-xl border-2 border-border text-muted-foreground hover:bg-border/20 transition-colors flex items-center justify-center gap-2">
                 <Lock className="w-3.5 h-3.5" /> {advisor.tier === "t1" ? "Upgrade to Consultant" : `Upgrade to ${TIER_LABELS[advisor.tier]}`}
               </button>
             ) : (
