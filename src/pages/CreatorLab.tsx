@@ -1312,13 +1312,13 @@ export default function CreatorLab() {
     supabase.auth.getUser().then(({ data }) => setProfileId(data.user?.id ?? null));
   }, []);
 
-  // Auto-unlock if user email matches admin email
+  // Auto-unlock if user email matches admin email — check every render to catch timing issues
   useEffect(() => {
-    if (user?.email === ADMIN_EMAIL) {
+    if (user && user.email === ADMIN_EMAIL) {
       setUnlocked(true);
       localStorage.setItem(STORAGE_KEY, "true");
     }
-  }, [user?.email]);
+  }, [user]);
 
   // Load memory count
   useEffect(() => {
