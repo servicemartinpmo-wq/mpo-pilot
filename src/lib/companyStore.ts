@@ -19,6 +19,7 @@ export interface CompanyProfile {
   accentHue: number;
   font: "inter" | "mono" | "rounded";
   density: "compact" | "comfortable" | "spacious";
+  fontSize: "small" | "medium" | "large";
   analyticsEnabled: boolean;
   onboardingComplete: boolean;
 }
@@ -40,6 +41,7 @@ const defaults: CompanyProfile = {
   accentHue: 210,
   font: "inter",
   density: "comfortable",
+  fontSize: "medium",
   analyticsEnabled: true,
   onboardingComplete: false,
 };
@@ -58,6 +60,7 @@ export const DEMO_PROFILE: CompanyProfile = {
   accentHue: 215,
   font: "inter",
   density: "comfortable",
+  fontSize: "medium",
   analyticsEnabled: true,
   onboardingComplete: true,
 };
@@ -117,5 +120,39 @@ export function applyFont(font: CompanyProfile["font"]) {
     body.style.fontFamily = "'DM Sans', 'Inter', sans-serif";
   } else {
     body.style.fontFamily = "'Inter', system-ui, sans-serif";
+  }
+}
+
+export function applyDensity(density: CompanyProfile["density"]) {
+  const root = document.documentElement;
+  if (density === "compact") {
+    root.style.setProperty("--spacing-base", "0.5rem");
+    root.style.setProperty("--card-padding", "0.75rem");
+    root.style.setProperty("--row-gap", "0.5rem");
+    root.classList.remove("density-comfortable", "density-spacious");
+    root.classList.add("density-compact");
+  } else if (density === "spacious") {
+    root.style.setProperty("--spacing-base", "1.25rem");
+    root.style.setProperty("--card-padding", "1.75rem");
+    root.style.setProperty("--row-gap", "1.25rem");
+    root.classList.remove("density-compact", "density-comfortable");
+    root.classList.add("density-spacious");
+  } else {
+    root.style.setProperty("--spacing-base", "0.875rem");
+    root.style.setProperty("--card-padding", "1.25rem");
+    root.style.setProperty("--row-gap", "0.875rem");
+    root.classList.remove("density-compact", "density-spacious");
+    root.classList.add("density-comfortable");
+  }
+}
+
+export function applyFontSize(size: CompanyProfile["fontSize"]) {
+  const root = document.documentElement;
+  if (size === "small") {
+    root.style.fontSize = "13px";
+  } else if (size === "large") {
+    root.style.fontSize = "17px";
+  } else {
+    root.style.fontSize = "15px";
   }
 }

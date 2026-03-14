@@ -45,7 +45,7 @@ import CollaboratorView from "./pages/CollaboratorView";
 import AuthPage from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
-import { applyAccentColor, applyFont, saveProfile, loadProfile, isDemoMode, DEMO_PROFILE } from "./lib/companyStore";
+import { applyAccentColor, applyFont, applyDensity, applyFontSize, saveProfile, loadProfile, isDemoMode, DEMO_PROFILE } from "./lib/companyStore";
 import { seedUserData } from "./lib/supabaseDataService";
 import { useRealtimeSync } from "./hooks/useLiveData";
 import type { CompanyProfile } from "./lib/companyStore";
@@ -84,10 +84,14 @@ function AppRoutes() {
     if (profile) {
       applyAccentColor(profile.accentHue ?? 210);
       applyFont((profile.font as "inter" | "mono" | "rounded") ?? "inter");
+      applyDensity((profile.density as "compact" | "comfortable" | "spacious") ?? "comfortable");
+      applyFontSize((profile.fontSize as "small" | "medium" | "large") ?? "medium");
     } else if (isDemoMode()) {
       const local = loadProfile();
       applyAccentColor(local.accentHue ?? 215);
       applyFont(local.font ?? "inter");
+      applyDensity(local.density ?? "comfortable");
+      applyFontSize(local.fontSize ?? "medium");
     }
   }, [profile]);
 

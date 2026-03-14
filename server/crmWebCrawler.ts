@@ -229,6 +229,80 @@ export async function crawlCompanyWebsite(domain: string): Promise<CompanyWebDat
   return result;
 }
 
+// Listicle / directory indicators in URL path
+const LISTICLE_PATH_PATTERNS = [
+  /\/(top|best|leading|largest|biggest|greatest|most|list|ranking|ranked)[^/]*\d/i,
+  /\/(top|best|leading)[^/]*(compan|agenc|firm|service|provider|startup|business)/i,
+  /\/(blog|article|post|news|guide|resource|learn)/i,
+  /\/(compan(y|ies)|agency|agencies|firms|startups|businesses)\/?$/i,
+];
+const LISTICLE_DOMAINS = [
+  "clutch.co", "g2.com", "capterra.com", "getapp.com", "trustpilot.com",
+  "crunchbase.com", "pitchbook.com", "builtinaustin.com", "builtinnyc.com",
+  "builtin.com", "inc.com", "forbes.com", "businessinsider.com",
+  "entrepreneur.com", "techcrunch.com", "venturebeat.com", "fastcompany.com",
+  "goodfirms.co", "designrush.com", "upcity.com", "sortlist.com",
+  "expertise.com", "thumbtack.com", "bark.com", "angieslist.com",
+  "yelp.com", "yellowpages.com", "manta.com", "dnb.com", "hoovers.com",
+  "chamberofcommerce.com", "bbb.org", "zoominfo.com", "apollo.io",
+  "hubspot.com", "salesforce.com", "drift.com", "semrush.com",
+  "inbeat.co", "nogood.io", "wpbeginner.com", "mayple.com",
+  "tripleten.com", "flatironschool.com", "movetoaustin.org",
+  "anderson", "collaborat",
+];
+
+export function isListiclePage(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.replace(/^www\./, "");
+    if (LISTICLE_DOMAINS.some(d => hostname.includes(d))) return true;
+    const path = parsed.pathname;
+    if (LISTICLE_PATH_PATTERNS.some(p => p.test(path))) return true;
+  } catch {}
+  return false;
+}
+
+export function extractCompanyLinksFromListicle(html: string, baseUrl: string): { name: string; url: string; snippet: string }[] {
+  const $ = cheerio.load(html);
+  const results: { name: string; url: string; snippet: string }[] = [];
+  const baseDomain = (() => { try { return new URL(baseUrl).hostname; } catch { return ""; } })();
+  const seenDomains = new Set<string>();
+  const SKIP_DOMAINS = [
+    "wikipedia", "facebook", "twitter", "instagram", "youtube", "linkedin",
+    "google", "bing", "reddit", "pinterest", "tiktok", "snapchat",
+    "apple.com", "microsoft.com", "amazon.com", "duckduckgo", "yelp", "glassdoor",
+    "indeed", "trustpilot", "clutch", "g2.com", "capterra", "bbb.org",
+  ];
+
+  // Look for external links with accompanying text/headings
+  $("a[href]").each((_, el) => {
+    const href = $(el).attr("href") || "";
+    const text = $(el).text().trim();
+    try {
+      const abs = new URL(href, baseUrl);
+      const domain = abs.hostname.replace(/^www\./, "");
+      if (domain === baseDomain || seenDomains.has(domain)) return;
+      if (SKIP_DOMAINS.some(s => domain.includes(s))) return;
+      if (!/\.(com|co|io|net|org|us|biz|agency|studio|works|app)/.test(domain)) return;
+      if (abs.pathname.length < 2 && text.length < 5) return; // Skip bare domains with no text
+
+      // Only grab links that look like company homepages or company mentions
+      const isHomepage = abs.pathname === "/" || abs.pathname === "";
+      const hasMeaningfulText = text.length > 3 && text.length < 80 && !/^\d+$/.test(text);
+
+      if (isHomepage || hasMeaningfulText) {
+        seenDomains.add(domain);
+        // Try to grab surrounding context as snippet
+        const parent = $(el).closest("li, div, p, td, section").first();
+        const snippet = parent.text().replace(/\s+/g, " ").trim().slice(0, 150);
+        results.push({ name: text || domain, url: abs.href, snippet });
+      }
+    } catch {}
+  });
+
+  return results.slice(0, 20);
+}
+
 export async function searchCompanies(query: string): Promise<{ name: string; url: string; snippet: string }[]> {
   const results: { name: string; url: string; snippet: string }[] = [];
 

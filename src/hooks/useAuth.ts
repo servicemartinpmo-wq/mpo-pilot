@@ -24,6 +24,7 @@ export interface AuthProfile {
   accentHue: number;
   font: string;
   density: string;
+  fontSize: string;
   onboardingComplete: boolean;
   avatarUrl: string | null;
 }
@@ -46,6 +47,7 @@ function mapProfile(raw: Awaited<ReturnType<typeof getProfile>>): AuthProfile | 
     accentHue: raw.accent_hue ?? 210,
     font: raw.font ?? "inter",
     density: raw.density ?? "comfortable",
+    fontSize: (raw as any).font_size ?? "medium",
     onboardingComplete: raw.onboarding_complete ?? false,
     avatarUrl: raw.avatar_url ?? null,
   };

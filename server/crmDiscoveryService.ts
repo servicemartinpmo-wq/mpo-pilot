@@ -1,6 +1,7 @@
 import { getPool } from "./db";
 import {
-  searchCompanies, crawlCompanyWebsite, getDomainFromUrl,
+  searchCompanies, crawlCompanyWebsite, getDomainFromUrl, fetchPage,
+  isListiclePage, extractCompanyLinksFromListicle,
   extractPeopleFromHtml, extractPeopleFromText,
   type ExtractedPerson, type CompanyWebData,
 } from "./crmWebCrawler";
@@ -175,23 +176,52 @@ export async function runDiscovery(
       allSearchResults.push(...results);
     }
 
+    const ALWAYS_SKIP = [
+      "wikipedia", "facebook", "linkedin", "twitter", "instagram", "youtube",
+      "glassdoor", "indeed", "google", "duckduckgo", "reddit", "pinterest",
+    ];
     const seenDomains = new Set<string>();
-    const uniqueResults: typeof allSearchResults = [];
+    const directResults: typeof allSearchResults = [];
+    const listicleResults: typeof allSearchResults = [];
+
     for (const r of allSearchResults) {
       try {
         const domain = await getDomainFromUrl(r.url);
-        if (!seenDomains.has(domain) && !domain.includes("wikipedia") && !domain.includes("yelp") &&
-            !domain.includes("facebook") && !domain.includes("linkedin") && !domain.includes("twitter") &&
-            !domain.includes("instagram") && !domain.includes("youtube") && !domain.includes("glassdoor") &&
-            !domain.includes("indeed") && !domain.includes("bbb.org") && !domain.includes("yellowpages") &&
-            !domain.includes("google") && !domain.includes("duckduckgo") && !domain.includes("reddit")) {
-          seenDomains.add(domain);
-          uniqueResults.push(r);
+        if (seenDomains.has(domain)) continue;
+        if (ALWAYS_SKIP.some(s => domain.includes(s))) continue;
+        seenDomains.add(domain);
+        if (isListiclePage(r.url)) {
+          listicleResults.push(r);
+        } else {
+          directResults.push(r);
         }
       } catch {}
     }
 
-    const companyResults = uniqueResults.slice(0, 10);
+    // For listicle pages, fetch them and extract real company links
+    const extractedResults: typeof allSearchResults = [];
+    for (const lr of listicleResults.slice(0, 4)) {
+      try {
+        console.log(`[Discovery] Parsing listicle: ${lr.url}`);
+        const page = await fetchPage(lr.url);
+        if (!page) continue;
+        const links = extractCompanyLinksFromListicle(page.html, lr.url);
+        for (const lk of links) {
+          try {
+            const domain = await getDomainFromUrl(lk.url);
+            if (!seenDomains.has(domain) && !ALWAYS_SKIP.some(s => domain.includes(s)) && !isListiclePage(lk.url)) {
+              seenDomains.add(domain);
+              extractedResults.push(lk);
+            }
+          } catch {}
+        }
+      } catch (err) {
+        console.log(`[Discovery] Listicle parse failed: ${(err as Error).message}`);
+      }
+    }
+
+    console.log(`[Discovery] Direct: ${directResults.length}, from listicles: ${extractedResults.length}`);
+    const companyResults = [...directResults, ...extractedResults].slice(0, 15);
 
     onProgress?.({
       stage: "crawling",

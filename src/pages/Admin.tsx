@@ -2,7 +2,7 @@
  * Systems — Operational nerve center: analytics, delegation matrix, signal detection, quality control, roles & access
  */
 import { frameworks, departments, orgMetrics, orgProfile, authorityMatrix, sopRecords, actionItems, governanceLogs } from "@/lib/pmoData";
-import { loadProfile, saveProfile, applyAccentColor, applyFont, resetOnboarding } from "@/lib/companyStore";
+import { loadProfile, saveProfile, applyAccentColor, applyFont, applyDensity, applyFontSize, resetOnboarding } from "@/lib/companyStore";
 import type { CompanyProfile } from "@/lib/companyStore";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -121,6 +121,8 @@ export default function Admin() {
     saveProfile(companyProfile);
     applyAccentColor(companyProfile.accentHue);
     applyFont(companyProfile.font);
+    applyDensity(companyProfile.density);
+    applyFontSize(companyProfile.fontSize);
   }
 
   const pendingActions = actionItems.filter(a => a.status !== "Completed").length;
@@ -640,6 +642,61 @@ export default function Admin() {
                     onChange={e => setCompanyProfile({ ...companyProfile, accentHue: parseInt(e.target.value) })}
                     className="w-full" />
                 </div>
+
+                {/* Font Family */}
+                <div>
+                  <label className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 block">Font Family</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(["inter", "mono", "rounded"] as const).map(f => (
+                      <button key={f} onClick={() => setCompanyProfile({ ...companyProfile, font: f })}
+                        className={cn(
+                          "py-2 px-3 text-xs font-semibold rounded-lg border-2 transition-colors capitalize",
+                          companyProfile.font === f
+                            ? "border-electric-blue text-electric-blue bg-electric-blue/10"
+                            : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                        )}>
+                        {f === "inter" ? "Inter" : f === "mono" ? "Mono" : "Rounded"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Font Size */}
+                <div>
+                  <label className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 block">Text Size</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(["small", "medium", "large"] as const).map(sz => (
+                      <button key={sz} onClick={() => setCompanyProfile({ ...companyProfile, fontSize: sz })}
+                        className={cn(
+                          "py-2 px-3 text-xs font-semibold rounded-lg border-2 transition-colors capitalize",
+                          companyProfile.fontSize === sz
+                            ? "border-electric-blue text-electric-blue bg-electric-blue/10"
+                            : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                        )}>
+                        {sz.charAt(0).toUpperCase() + sz.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Density */}
+                <div>
+                  <label className="text-xs font-bold text-foreground uppercase tracking-wide mb-2 block">Layout Density</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(["compact", "comfortable", "spacious"] as const).map(d => (
+                      <button key={d} onClick={() => setCompanyProfile({ ...companyProfile, density: d })}
+                        className={cn(
+                          "py-2 px-3 text-xs font-semibold rounded-lg border-2 transition-colors capitalize",
+                          companyProfile.density === d
+                            ? "border-electric-blue text-electric-blue bg-electric-blue/10"
+                            : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground"
+                        )}>
+                        {d === "comfortable" ? "Normal" : d.charAt(0).toUpperCase() + d.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <button onClick={saveCustomize}
                   className="w-full text-sm font-bold py-3 px-4 rounded-xl border-2 border-electric-blue text-electric-blue hover:bg-electric-blue/10 transition-colors">
                   Save Changes
