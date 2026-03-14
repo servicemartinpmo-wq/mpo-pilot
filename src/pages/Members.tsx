@@ -192,8 +192,13 @@ export default function Members() {
     setError(null);
     try {
       if (demo) {
-        // Demo mode: show empty members list
-        setMembers([]);
+        // Demo mode: show sample members
+        setMembers([
+          { id: "1", owner_id: ownerId, email: profile?.email ?? "you@company.com", name: profile?.userName ?? "You (Owner)", role: "owner", status: "active", invited_at: new Date().toISOString(), joined_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: "2", owner_id: ownerId, email: "sarah.ops@company.com", name: "Sarah Okafor", role: "admin", status: "active", invited_at: new Date().toISOString(), joined_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: "3", owner_id: ownerId, email: "dev.lead@company.com", name: "Marcus Chen", role: "manager", status: "active", invited_at: new Date().toISOString(), joined_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: "4", owner_id: ownerId, email: "new.hire@company.com", name: null, role: "member", status: "pending", invited_at: new Date().toISOString(), joined_at: null, updated_at: new Date().toISOString() },
+        ]);
         setLoading(false);
         return;
       }
