@@ -25,6 +25,7 @@ import Workflows from "./pages/Workflows";
 import Integrations from "./pages/Integrations";
 import Advisory from "./pages/Advisory";
 import Team from "./pages/Team";
+import Members from "./pages/Members";
 import CreatorLab from "./pages/CreatorLab";
 import Projects from "./pages/Projects";
 import Decisions from "./pages/Decisions";
@@ -212,6 +213,7 @@ function AppRoutes() {
             <Route path="/integrations" element={<Integrations />} />
             <Route path="/advisory" element={<Advisory />} />
             <Route path="/team" element={<Team />} />
+            <Route path="/members" element={<Members />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/creator-panel" element={<CreatorLab />} />
             <Route path="/projects" element={<Projects />} />

@@ -6,6 +6,7 @@ import { runServerSync, runSyncForAllConnected, startScheduledSync, stopSchedule
 import reportRoutes from "./reportRoutes";
 import crmRoutes from "./crmRoutes";
 import moduleRoutes from "./moduleRoutes";
+import memberRoutes from "./memberRoutes";
 
 export const TECH_OPS_BASE_URL = process.env.TECH_OPS_BASE_URL || "https://tech-ops.replit.app";
 const app = express();
@@ -35,6 +36,7 @@ async function main() {
   app.use(reportRoutes);
   app.use(crmRoutes);
   app.use(moduleRoutes);
+  app.use(memberRoutes);
 
   app.get("/health", (_req, res) => {
     res.json({

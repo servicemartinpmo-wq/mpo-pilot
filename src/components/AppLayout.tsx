@@ -8,7 +8,7 @@ import {
   FolderOpen, Scale, Layers, UserCircle, TrendingUp,
   Network, ShoppingBag, CreditCard, Tag,
   Menu, X, MoreHorizontal, WifiOff, DollarSign, LogOut,
-  CalendarDays, Shield, Star, ArrowRightLeft, Mic,
+  CalendarDays, Shield, Star, ArrowRightLeft, Mic, UserPlus,
 } from "lucide-react";
 import pmoLogoNew from "@/assets/pmo-logo-new.png";
 import { useUserMode } from "@/hooks/useUserMode";
@@ -59,6 +59,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/decisions",   label: "Decisions",   icon: Scale           },
       { to: "/departments", label: "Departments", icon: Building2       },
       { to: "/team",        label: "Team",        icon: Users           },
+      { to: "/members",     label: "Members",     icon: UserPlus        },
     ],
     work: [
       { to: "/initiatives",  label: "Initiatives",  icon: Rocket      },
@@ -102,6 +103,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/decisions",   label: "Decisions", icon: Scale           },
       { to: "/departments", label: "Divisions", icon: Building2       },
       { to: "/team",        label: "Team",      icon: Users           },
+      { to: "/members",     label: "Members",   icon: UserPlus        },
     ],
     work: [
       { to: "/initiatives",  label: "Initiatives",  icon: Rocket      },
@@ -182,6 +184,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/reports",     label: "Finances",      icon: FileText        },
       { to: "/departments", label: "Functions",     icon: Building2       },
       { to: "/team",        label: "Collaborators", icon: Users           },
+      { to: "/members",     label: "Members",       icon: UserPlus        },
     ],
     work: [
       { to: "/projects",     label: "Client Work", icon: FolderOpen  },
@@ -246,6 +249,7 @@ const MODE_NAV_CONFIGS: Record<string, ModeNavConfig> = {
       { to: "/marketing",   label: "Outreach",  icon: TrendingUp      },
       { to: "/departments", label: "Functions", icon: Building2       },
       { to: "/team",        label: "Partners",  icon: Users           },
+      { to: "/members",     label: "Members",   icon: UserPlus        },
     ],
     work: [
       { to: "/projects",     label: "Projects",  icon: FolderOpen  },
