@@ -6,8 +6,11 @@ import { useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { AlertTriangle, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { insights } from "@/lib/pmoData";
+import { insights as _insights } from "@/lib/pmoData";
+import { isDemoMode } from "@/lib/companyStore";
 import pmoLogoNoBg from "@/assets/pmo-logo-nobg.png";
+
+const insights = isDemoMode() ? _insights : [];
 
 interface Props {
   onOpenCommandPalette: () => void;

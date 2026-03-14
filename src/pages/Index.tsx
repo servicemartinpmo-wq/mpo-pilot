@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { insights, actionItems, initiatives } from "@/lib/pmoData";
+import { insights as _insights, actionItems as _actionItems, initiatives as _initiatives } from "@/lib/pmoData";
+import { isDemoMode } from "@/lib/companyStore";
 import pmoLogoLight from "@/assets/pmo-logo-light.png";
 import onboardNetwork from "@/assets/onboard-network.png";
 import InsightCard from "@/components/InsightCard";
@@ -27,6 +28,11 @@ import { useIntegrationBackups, useIntegrationSyncLogs, useIntegrationConnection
 import { useStrategyScores } from "@/hooks/useStrategyScores";
 import { useUserMode } from "@/hooks/useUserMode";
 import IndustrySnapshot from "@/components/IndustrySnapshot";
+
+const _demo = isDemoMode();
+const insights    = _demo ? _insights    : [];
+const actionItems = _demo ? _actionItems : [];
+const initiatives = _demo ? _initiatives : [];
 
 // ── Day / time helpers ──────────────────────────────────
 function getTimeOfDay(): "morning" | "afternoon" | "evening" | "night" {

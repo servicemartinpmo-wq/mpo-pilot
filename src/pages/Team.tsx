@@ -1,7 +1,8 @@
 /**
  * Team Page — MOCHA per project/action item, task counts per role, delegation
  */
-import { departments } from "@/lib/pmoData";
+import { departments as _departments } from "@/lib/pmoData";
+import { isDemoMode } from "@/lib/companyStore";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import {
@@ -9,6 +10,8 @@ import {
   AlertTriangle, ArrowRight, Heart, CheckCircle, ChevronRight,
   Flame, MessageSquare, UserCheck, Lightbulb, X,
 } from "lucide-react";
+
+const departments = isDemoMode() ? _departments : [];
 
 type MOCHARole = "M" | "O" | "C" | "H" | "A";
 type TeamSize = "1" | "2-10" | "11-50" | "51-200" | "200+";

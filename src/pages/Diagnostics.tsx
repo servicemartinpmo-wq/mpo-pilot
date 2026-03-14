@@ -1,4 +1,5 @@
-import { insights, frameworks, initiatives, departments, actionItems, governanceLogs } from "@/lib/pmoData";
+import { insights as _insights, frameworks, initiatives as _initiatives, departments as _departments, actionItems as _actionItems, governanceLogs as _governanceLogs } from "@/lib/pmoData";
+import { isDemoMode } from "@/lib/companyStore";
 import UpgradeBanner from "@/components/UpgradeBanner";
 import { ScoreBadge, SignalDot } from "@/components/ScoreBadge";
 import ScoreExplainer from "@/components/ScoreExplainer";
@@ -15,6 +16,13 @@ import { getEngineState } from "@/lib/engine";
 import type { DetectedSignal } from "@/lib/engine/signals";
 import type { DiagnosisResult } from "@/lib/engine/diagnosis";
 import { getFrameworksRunBy } from "@/lib/frameworkData";
+
+const _demo = isDemoMode();
+const insights       = _demo ? _insights       : [];
+const initiatives    = _demo ? _initiatives    : [];
+const departments    = _demo ? _departments    : [];
+const actionItems    = _demo ? _actionItems    : [];
+const governanceLogs = _demo ? _governanceLogs : [];
 
 // ── 4-Stage Pipeline ──
 const pipeline = [

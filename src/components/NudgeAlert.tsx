@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { Clock, X, ArrowRight, BellOff, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
-import { actionItems } from "@/lib/pmoData";
+import { actionItems as _actionItems } from "@/lib/pmoData";
+import { isDemoMode } from "@/lib/companyStore";
+const actionItems = isDemoMode() ? _actionItems : [];
 
 const SESSION_KEY = "apphia_nudge_dismissed_session";
 const SNOOZE_KEY  = "apphia_nudge_snoozed";

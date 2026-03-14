@@ -17,11 +17,15 @@ import { cn } from "@/lib/utils";
 import type { CompanyProfile } from "@/lib/companyStore";
 import { saveProfile, loadProfile, isDemoMode, clearDemo } from "@/lib/companyStore";
 import { runOrgHealthScoring, runMaturityScoring } from "@/lib/engine/maturity";
-import { actionItems, initiatives } from "@/lib/pmoData";
+import { actionItems as _actionItems, initiatives as _initiatives } from "@/lib/pmoData";
 import NotificationsPanel from "./NotificationsPanel";
 import { useAuth } from "@/hooks/useAuth";
 import { getNotifications } from "@/lib/supabaseDataService";
 import { playAlertSound, playSuccessSound, playPingSound } from "@/lib/notificationSound";
+
+const _appLayoutDemo = isDemoMode();
+const actionItems = _appLayoutDemo ? _actionItems : [];
+const initiatives = _appLayoutDemo ? _initiatives : [];
 
 // ── Mode-specific nav configuration ────────────────────────────────────────
 // Each mode gets its own nav order, group labels, and item terminology.

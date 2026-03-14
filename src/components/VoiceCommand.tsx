@@ -37,7 +37,7 @@ const ROUTE_HINTS: RouteHint[] = [
   { keywords: ["system", "systems", "admin", "settings", "customize"], path: "/admin", label: "Go to Systems" },
   { keywords: ["agile", "sprint", "kanban", "scrum"], path: "/agile", label: "Go to Agile Board" },
   { keywords: ["decision", "decisions", "decide"], path: "/decisions", label: "Go to Decisions" },
-  { keywords: ["creator", "lab", "create", "generate"], path: "/creator-lab", label: "Go to Creator Lab" },
+  { keywords: ["creator", "lab", "create", "generate"], path: "/creator-panel", label: "Go to Creator Panel" },
   { keywords: ["pricing", "upgrade", "plan"], path: "/pricing", label: "Go to Pricing" },
   { keywords: ["graph", "knowledge graph", "map"], path: "/graph", label: "Go to Graph View" },
 ];
@@ -147,21 +147,7 @@ export default function VoiceCommand() {
 
   if (["/auth", "/reset-password"].includes(location.pathname)) return null;
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        title="Voice Navigation (Ctrl+Space)"
-        className="fixed bottom-[70px] right-6 z-40 w-10 h-10 rounded-full flex items-center justify-center shadow-md transition-all hover:scale-105 active:scale-95"
-        style={{
-          background: "hsl(222 30% 18%)",
-          border: "1px solid hsl(222 30% 28%)",
-          boxShadow: "0 4px 14px hsl(0 0% 0% / 0.28)",
-        }}>
-        <Mic className="w-4 h-4" style={{ color: "hsl(0 0% 100% / 0.55)" }} />
-      </button>
-    );
-  }
+  if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-6"

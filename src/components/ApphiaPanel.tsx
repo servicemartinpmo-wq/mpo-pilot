@@ -10,7 +10,7 @@ import {
   RefreshCw, Zap, PlayCircle, CheckCircle2, Loader2, AlertCircle, ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { actionItems, initiatives, departments } from "@/lib/pmoData";
+import { actionItems as _actionItems, initiatives as _initiatives, departments as _departments } from "@/lib/pmoData";
 import { loadProfile, isDemoMode } from "@/lib/companyStore";
 import { runMaturityScoring, runOrgHealthScoring } from "@/lib/engine/maturity";
 import { buildOrgContext, getContextFactors } from "@/lib/engine/contextEngine";
@@ -21,6 +21,11 @@ import {
 } from "@/lib/walkthroughs";
 import { upsertActionItem } from "@/lib/supabaseDataService";
 import { useAuth } from "@/hooks/useAuth";
+
+const _demo = isDemoMode();
+const actionItems  = _demo ? _actionItems  : [];
+const initiatives  = _demo ? _initiatives  : [];
+const departments  = _demo ? _departments  : [];
 
 // ── SpeechRecognition helper ────────────────────────────────────────────
 type SpeechRecognitionCtor = new () => SpeechRecognition;
