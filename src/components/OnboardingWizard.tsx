@@ -928,7 +928,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
       </div>
 
       {/* ── Central framed card ── */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-10">
+      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-10 overflow-y-auto">
         <div className="w-full max-w-3xl">
 
           {/* Navy frame wrapper */}
@@ -938,7 +938,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
           }}>
 
             {/* Off-white inner card */}
-            <div className="relative rounded-[23px] overflow-hidden px-8 py-10 lg:px-12 lg:py-12"
+            <div className="relative rounded-[23px] px-8 py-10 lg:px-12 lg:py-12"
               style={{ background: "hsl(220 18% 97%)" }}>
 
               {/* Subtle inner dot pattern */}
