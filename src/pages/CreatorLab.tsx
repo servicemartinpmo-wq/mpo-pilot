@@ -13,6 +13,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { loadProfile, saveProfile, applyAccentColor, applyFont } from "@/lib/companyStore";
 import { logCreatorPrompt } from "@/lib/supabaseDataService";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,7 +50,7 @@ import {
   type TierId, type TierDefinition, type UserTierGrant,
 } from "@/lib/tierSystem";
 
-const PASSPHRASE = "apphia-creator";
+const ADMIN_EMAIL = "service.martinpmo@gmail.com";
 const STORAGE_KEY = "apphia_creator_unlocked";
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
@@ -1284,12 +1285,10 @@ type CreatorTab = "ai" | "memory" | "patterns" | "customize" | "engine" | "acces
 
 export default function CreatorLab() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [unlocked, setUnlocked] = useState(() => {
     try { return localStorage.getItem(STORAGE_KEY) === "true"; } catch { return false; }
   });
-  const [passInput, setPassInput] = useState("");
-  const [passError, setPassError] = useState(false);
-  const [showPass, setShowPass] = useState(false);
   const [tab, setTab] = useState<CreatorTab>("ai");
   const [saved, setSaved] = useState(false);
   const [memoryCount, setMemoryCount] = useState(0);
@@ -1313,6 +1312,14 @@ export default function CreatorLab() {
     supabase.auth.getUser().then(({ data }) => setProfileId(data.user?.id ?? null));
   }, []);
 
+  // Auto-unlock if user email matches admin email
+  useEffect(() => {
+    if (user?.email === ADMIN_EMAIL) {
+      setUnlocked(true);
+      localStorage.setItem(STORAGE_KEY, "true");
+    }
+  }, [user?.email]);
+
   // Load memory count
   useEffect(() => {
     if (unlocked && profileId) {
@@ -1323,14 +1330,6 @@ export default function CreatorLab() {
   }, [unlocked, profileId]);
 
   useEffect(() => { if (unlocked) localStorage.setItem(STORAGE_KEY, "true"); }, [unlocked]);
-
-  function tryUnlock() {
-    if (passInput.trim().toLowerCase() === PASSPHRASE) {
-      setUnlocked(true); setPassError(false);
-    } else {
-      setPassError(true); setPassInput("");
-    }
-  }
 
   function handleSave() {
     const updated = { ...profile, accentHue, font, density };
@@ -1355,33 +1354,13 @@ export default function CreatorLab() {
             </div>
             <div>
               <h1 className="text-xl font-black text-foreground mb-1">Creator Lab</h1>
-              <p className="text-sm text-muted-foreground">Private access — app creator only</p>
+              <p className="text-sm text-muted-foreground">Signing in with admin access...</p>
             </div>
             <div className="space-y-3">
-              <div className="relative">
-                <input
-                  type={showPass ? "text" : "password"}
-                  placeholder="Enter passphrase"
-                  value={passInput}
-                  onChange={e => setPassInput(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && tryUnlock()}
-                  className={cn(
-                    "w-full bg-secondary border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 transition-all pr-10",
-                    passError
-                      ? "border-signal-red focus:ring-signal-red/30 text-signal-red"
-                      : "border-border focus:ring-electric-blue/30 text-foreground"
-                  )}
-                />
-                <button onClick={() => setShowPass(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 opacity-40 hover:opacity-70 transition-opacity">
-                  {showPass ? <EyeOff className="w-4 h-4 text-foreground" /> : <Eye className="w-4 h-4 text-foreground" />}
-                </button>
-              </div>
-              {passError && <p className="text-xs text-signal-red font-medium">Incorrect passphrase.</p>}
-              <button onClick={tryUnlock}
+              <button onClick={() => navigate("/auth")}
                 className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90"
                 style={{ background: "var(--gradient-electric)" }}>
-                Unlock Creator Lab
+                Sign In with Email
               </button>
             </div>
             <button onClick={() => navigate("/admin")}
