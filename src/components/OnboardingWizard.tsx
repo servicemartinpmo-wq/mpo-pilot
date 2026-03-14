@@ -211,31 +211,31 @@ function SlideShell({
       </div>
 
       {/* Scrollable content */}
-      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-12 lg:px-20 xl:px-28 py-8"
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 md:px-12 lg:px-20 xl:px-28 py-8 pb-24 md:pb-8"
         style={{ scrollbarWidth: "thin", scrollbarColor: "hsl(var(--electric-blue) / 0.3) transparent" }}>
         {children}
       </div>
 
       {/* Nav footer */}
-      <div className="relative z-10 flex items-center justify-between px-8 pb-8 pt-4 flex-shrink-0 border-t"
+      <div className="relative z-10 flex items-center justify-between px-6 md:px-8 py-4 flex-shrink-0 border-t gap-3"
         style={{ borderColor: "hsl(0 0% 100% / 0.08)" }}>
         {onPrev ? (
           <button onClick={onPrev}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
+            className="flex items-center gap-1.5 px-4 md:px-5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-all flex-shrink-0 whitespace-nowrap"
             style={{ background: "hsl(0 0% 100% / 0.07)", border: "1px solid hsl(0 0% 100% / 0.12)", color: "hsl(0 0% 100% / 0.65)" }}>
-            <ArrowLeft className="w-4 h-4" />
-            Back
+            <ArrowLeft className="w-3.5 h-3.5 md:w-4 md:h-4" />
+            <span className="hidden sm:inline">Back</span>
           </button>
-        ) : <div />}
+        ) : <div className="flex-shrink-0" />}
         <button onClick={onNext}
-          className={cn("flex items-center gap-2 px-7 py-3 rounded-xl text-sm font-black transition-all")}
+          className={cn("flex items-center gap-1.5 px-5 md:px-7 py-2.5 md:py-3 rounded-xl text-xs md:text-sm font-black transition-all flex-shrink-0 whitespace-nowrap")}
           style={{
             background: isLast ? `linear-gradient(135deg, hsl(var(--signal-green)), hsl(183 62% 30%))` : `linear-gradient(135deg, ${ACCENT}, ${TEAL})`,
             color: "white",
             boxShadow: `0 6px 24px hsl(var(--electric-blue) / 0.35)`,
           }}>
-          {nextLabel}
-          {isLast ? <Zap className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          <span>{nextLabel}</span>
+          {isLast ? <Zap className="w-3.5 h-3.5 md:w-4 md:h-4" /> : <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4" />}
         </button>
       </div>
     </div>
